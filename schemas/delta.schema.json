@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://live.infinita/schema/delta.schema.json",
+  "title": "Delta",
+  "type": "object",
+  "required": ["delta_id", "base_version", "result_version", "tick_id", "operations"],
+  "properties": {
+    "delta_id": {"type": "string"},
+    "base_version": {"type": "integer", "minimum": 0},
+    "result_version": {"type": "integer", "minimum": 1},
+    "tick_id": {"type": "integer", "minimum": 0},
+    "operations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["op", "path"],
+        "properties": {
+          "op": {"enum": ["add", "replace", "move", "link", "unlink", "activate", "deactivate", "remove"]},
+          "path": {"type": "string"},
+          "from": {},
+          "value": {}
+        },
+        "additionalProperties": false
+      }
+    },
+    "provenance": {"type": "object"}
+  },
+  "additionalProperties": false
+}
