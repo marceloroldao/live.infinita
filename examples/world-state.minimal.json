@@ -1,0 +1,64 @@
+{
+  "world_id": "world_live_001",
+  "name": "Live Infinita",
+  "schema_version": "1.0.0",
+  "created_at": "2026-09-09T20:00:00Z",
+  "current_tick": 1,
+  "current_version": 1,
+  "seed": 7251928,
+  "active_scene_id": "scene_origin",
+  "time": {"day": 1, "hour": 20, "minute": 0, "time_scale": 1.0, "paused": false},
+  "space": {"active_region_id": "region_origin", "regions": {"region_origin": {"seed": 1001}}},
+  "entities": {
+    "hero_001": {
+      "entity_id": "hero_001",
+      "class": "character",
+      "type": "hero",
+      "subtype": null,
+      "status": "active",
+      "version": 1,
+      "created_at_tick": 1,
+      "components": {
+        "transform": {"region_id": "region_origin", "x": 0, "y": 0, "z": 0},
+        "physical": {"health": 100},
+        "visual": {"generator": "procedural_character_v1", "seed": 42, "parameters": {"pose": "idle"}}
+      }
+    },
+    "fire_001": {
+      "entity_id": "fire_001",
+      "class": "environment",
+      "type": "fire",
+      "subtype": "campfire",
+      "status": "active",
+      "version": 1,
+      "created_at_tick": 1,
+      "components": {
+        "transform": {"region_id": "region_origin", "x": 2, "y": 0, "z": 1},
+        "visual": {"generator": "procedural_fire_v1", "seed": 84, "parameters": {"intensity": 0.8}}
+      }
+    }
+  },
+  "relations": {
+    "rel_001": {
+      "relation_id": "rel_001",
+      "subject": "hero_001",
+      "predicate": "near",
+      "object": "fire_001",
+      "status": "active",
+      "confidence": 1.0,
+      "valid_from_tick": 1,
+      "valid_until_tick": null,
+      "source": {"type": "world_bootstrap"},
+      "version": 1
+    }
+  },
+  "claims": {},
+  "knowledge": {},
+  "rules": {},
+  "events": {},
+  "deltas": {},
+  "versions": {"1": {"parent_version": 0, "delta_id": null}},
+  "snapshots": {},
+  "trajectories": {},
+  "provenance": {"origin": "bootstrap"}
+}
