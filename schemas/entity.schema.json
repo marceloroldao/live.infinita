@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://live.infinita/schema/entity.schema.json",
+  "title": "Entity",
+  "type": "object",
+  "required": ["entity_id", "type", "status", "version", "components"],
+  "properties": {
+    "entity_id": {"type": "string", "minLength": 1},
+    "class": {"type": "string"},
+    "type": {"type": "string", "minLength": 1},
+    "subtype": {"type": ["string", "null"]},
+    "status": {"type": "string"},
+    "version": {"type": "integer", "minimum": 0},
+    "created_at_tick": {"type": "integer", "minimum": 0},
+    "components": {
+      "type": "object",
+      "properties": {
+        "transform": {"type": "object"},
+        "physical": {"type": "object"},
+        "visual": {"type": "object"},
+        "inventory": {"type": "object"},
+        "character": {"type": "object"},
+        "knowledge": {"type": "object"},
+        "ownership": {"type": "object"},
+        "interaction": {"type": "object"}
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}
