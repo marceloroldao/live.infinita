@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://live.infinita/schema/proposed-action.schema.json",
+  "title": "ProposedAction",
+  "type": "object",
+  "required": ["proposal_id", "actor", "action", "target", "source", "tick_id"],
+  "properties": {
+    "proposal_id": {"type": "string"},
+    "actor": {"type": "string"},
+    "action": {"type": "string"},
+    "target": {"type": ["string", "null"]},
+    "parameters": {"type": "object"},
+    "source": {"type": "string"},
+    "reason": {"type": ["string", "null"]},
+    "tick_id": {"type": "integer", "minimum": 0},
+    "confidence": {"type": "number", "minimum": 0, "maximum": 1}
+  },
+  "additionalProperties": false
+}
