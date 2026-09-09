@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://live.infinita/schema/world-state.schema.json",
+  "title": "WorldState",
+  "type": "object",
+  "required": ["world_id", "schema_version", "current_tick", "current_version", "seed", "entities", "relations", "events", "deltas"],
+  "properties": {
+    "world_id": {"type": "string"},
+    "name": {"type": "string"},
+    "schema_version": {"type": "string"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "current_tick": {"type": "integer", "minimum": 0},
+    "current_version": {"type": "integer", "minimum": 0},
+    "seed": {"type": "integer"},
+    "active_scene_id": {"type": ["string", "null"]},
+    "time": {"type": "object"},
+    "space": {"type": "object"},
+    "entities": {"type": "object", "additionalProperties": {"$ref": "entity.schema.json"}},
+    "relations": {"type": "object", "additionalProperties": {"$ref": "relation.schema.json"}},
+    "claims": {"type": "object"},
+    "knowledge": {"type": "object"},
+    "rules": {"type": "object"},
+    "events": {"type": "object", "additionalProperties": {"$ref": "event.schema.json"}},
+    "deltas": {"type": "object", "additionalProperties": {"$ref": "delta.schema.json"}},
+    "versions": {"type": "object"},
+    "snapshots": {"type": "object"},
+    "trajectories": {"type": "object"},
+    "provenance": {"type": "object"}
+  },
+  "additionalProperties": false
+}
