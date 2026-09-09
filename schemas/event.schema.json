@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://live.infinita/schema/event.schema.json",
+  "title": "WorldEvent",
+  "type": "object",
+  "required": ["event_id", "tick_id", "type", "action", "provenance"],
+  "properties": {
+    "event_id": {"type": "string"},
+    "tick_id": {"type": "integer", "minimum": 0},
+    "timestamp": {"type": "string", "format": "date-time"},
+    "type": {"type": "string"},
+    "actor": {"type": ["string", "null"]},
+    "targets": {"type": "array", "items": {"type": "string"}},
+    "cause": {"type": "object"},
+    "action": {"type": "string"},
+    "before": {"type": "object"},
+    "after": {"type": "object"},
+    "delta_id": {"type": ["string", "null"]},
+    "provenance": {
+      "type": "object",
+      "required": ["origin"],
+      "properties": {
+        "origin": {"type": "string"},
+        "source_id": {"type": ["string", "null"]},
+        "processed_by": {"type": ["string", "null"]},
+        "validated_by": {"type": ["string", "null"]},
+        "confidence": {"type": "number", "minimum": 0, "maximum": 1}
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}
