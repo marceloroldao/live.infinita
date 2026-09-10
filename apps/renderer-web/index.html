@@ -6,9 +6,14 @@
   <title>Live Infinita — MVP-001</title>
   <style>
     html,body{margin:0;height:100%;background:#111;color:#eee;font-family:system-ui,sans-serif;overflow:hidden}
-    #hud{position:fixed;z-index:10;left:16px;top:16px;background:#0009;padding:10px 12px;border-radius:8px;font-size:14px;backdrop-filter:blur(4px)}
+    #hud{position:fixed;z-index:10;left:16px;top:16px;background:#000b;padding:10px 12px;border-radius:8px;font-size:14px;backdrop-filter:blur(4px);max-width:620px}
     #status{font-weight:700}
-    #narration{margin-top:6px;max-width:520px;color:#ddd}
+    #narration{margin-top:6px;max-width:560px;color:#ddd}
+    #version{margin-top:5px;color:#aaa;font-size:12px}
+    #simulator{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap}
+    #simulator button{border:1px solid #ffffff2c;background:#ffffff12;color:#eee;border-radius:6px;padding:6px 9px;cursor:pointer}
+    #simulator button:hover{background:#ffffff25}
+    #simulator button:disabled{opacity:.5;cursor:wait}
     #scene{width:100vw;height:100vh}
   </style>
 </head>
@@ -16,6 +21,15 @@
   <div id="hud">
     <div>Live Infinita MVP-001 — <span id="status">conectando…</span></div>
     <div id="narration"></div>
+    <div id="version"></div>
+    <div id="simulator">
+      <button data-action="spawn_person">+ visitante</button>
+      <button data-action="move_tree">mover árvore</button>
+      <button data-action="toggle_fire">acender/apagar fogo</button>
+      <button data-action="set_night">noite</button>
+      <button data-action="set_day">dia</button>
+      <button data-action="reset">reset</button>
+    </div>
   </div>
   <div id="scene"></div>
   <script src="https://cdn.jsdelivr.net/npm/pixi.js@8.6.6/dist/pixi.min.js"></script>
