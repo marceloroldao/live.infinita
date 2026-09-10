@@ -1,31 +1,32 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO_URL="https://github.com/marceloroldao/live.infinita.git"
-BRANCH="mvp/ubuntu-prototype-001"
 INSTALL_DIR="/opt/live.infinita"
 SERVICE_USER="liveinfinita"
+SOURCE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 if [[ ${EUID} -ne 0 ]]; then
   echo "Execute como root: sudo bash deploy/install-ubuntu.sh"
   exit 1
 fi
 
+if [[ ! -f "$SOURCE_DIR/apps/world-runtime/main.py" ]]; then
+  echo "Erro: execute o instalador a partir de um checkout completo do repositório."
+  exit 1
+fi
+
 apt-get update
-DEBIAN_FRONTEND=noninteractive apt-get install -y git python3 python3-venv python3-pip nginx curl
+DEBIAN_FRONTEND=noninteractive apt-get install -y python3 python3-venv python3-pip nginx curl rsync
 
 if ! id -u "$SERVICE_USER" >/dev/null 2>&1; then
   useradd --system --home "$INSTALL_DIR" --shell /usr/sbin/nologin "$SERVICE_USER"
 fi
 
-if [[ -d "$INSTALL_DIR/.git" ]]; then
-  git -C "$INSTALL_DIR" fetch origin "$BRANCH"
-  git -C "$INSTALL_DIR" checkout "$BRANCH"
-  git -C "$INSTALL_DIR" reset --hard "origin/$BRANCH"
-else
-  rm -rf "$INSTALL_DIR"
-  git clone --branch "$BRANCH" --single-branch "$REPO_URL" "$INSTALL_DIR"
-fi
+mkdir -p "$INSTALL_DIR"
+rsync -a --delete \
+  --exclude '.git/' \
+  --exclude '.venv/' \
+  "$SOURCE_DIR/" "$INSTALL_DIR/"
 
 python3 -m venv "$INSTALL_DIR/.venv"
 "$INSTALL_DIR/.venv/bin/pip" install --upgrade pip
@@ -42,6 +43,7 @@ nginx -t
 systemctl daemon-reload
 systemctl enable --now live-infinita
 systemctl enable --now nginx
+systemctl restart live-infinita
 systemctl restart nginx
 
 sleep 1
