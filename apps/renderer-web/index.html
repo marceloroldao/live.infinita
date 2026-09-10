@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Live Infinita — MVP-001</title>
+  <style>
+    html,body{margin:0;height:100%;background:#111;color:#eee;font-family:system-ui,sans-serif;overflow:hidden}
+    #hud{position:fixed;z-index:10;left:16px;top:16px;background:#0009;padding:10px 12px;border-radius:8px;font-size:14px;backdrop-filter:blur(4px)}
+    #status{font-weight:700}
+    #narration{margin-top:6px;max-width:520px;color:#ddd}
+    #scene{width:100vw;height:100vh}
+  </style>
+</head>
+<body>
+  <div id="hud">
+    <div>Live Infinita MVP-001 — <span id="status">conectando…</span></div>
+    <div id="narration"></div>
+  </div>
+  <div id="scene"></div>
+  <script src="https://cdn.jsdelivr.net/npm/pixi.js@8.6.6/dist/pixi.min.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>
