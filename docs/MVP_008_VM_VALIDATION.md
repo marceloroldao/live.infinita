@@ -91,3 +91,29 @@ sudo journalctl -u live-infinita -n 100 --no-pager
 ```
 
 O PR deve continuar em rascunho até registrar o resultado destas etapas na VM.
+
+## Resultado registrado — 2026-09-11
+
+Backend `b446c697fcd323afbb38f1bcd7d65f3a23f62a75` instalado na VM
+`liveinfinita`; os hashes SHA-256 de `main.py` e `store.py` foram conferidos por
+SSH após a atualização. Somente esses dois arquivos foram substituídos; nginx e
+Godot permaneceram intactos.
+
+- Suíte isolada na própria VM: **25 testes, OK** (Python 3.14).
+- Serviço `live-infinita`: **active**.
+- Health e replay validados pelo endereço local e por `https://live.etbra.com.br`.
+- Antes e depois do startup da atualização: **35 atores / 94 observações**,
+  sem duplicação de observações no backfill.
+- Verificador HTTP com `--write`: **PASS** para duplicata, mudança de nome,
+  namespaces separados e mundo inalterado.
+- Após esse teste: **37 atores / 97 observações**. As duas identidades de teste
+  usam o ID `mvp008-check-9ecbc99bf3414009a5714ef473b32311` em TikTok e YouTube
+  e permanecem no log append-only.
+- Mundo antes/depois: **192 eventos, 192 deltas, versão 193, sequência 192**.
+- Hash atual e de replay:
+  `12770f39d4cb81a9e7b926168910e0e5160798c55f93bc352595def74051b8c7`.
+- Backup anterior à atualização:
+  `/var/backups/live-infinita-mvp008-b446c69.tDUHyd`.
+
+A bateria de 100 eventos passou no ambiente local isolado; não foi executada
+contra produção. O PR não foi mesclado nesta validação.
