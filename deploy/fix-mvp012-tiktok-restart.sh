@@ -34,7 +34,10 @@ install -o root -g root -m 0644 "$source_dir/deploy/live-infinita-tiktok.service
 systemctl daemon-reload
 systemctl enable live-infinita-tiktok
 systemctl restart live-infinita-tiktok
-sleep 3
+for attempt in {1..30}; do
+  [[ -s /var/lib/live-infinita/tiktok-status.json ]] && break
+  sleep 1
+done
 systemctl is-active --quiet live-infinita-tiktok
 test -s /var/lib/live-infinita/tiktok-status.json
 echo 'Conector TikTok ativo com reinício limpo e monitoramento habilitado.'
