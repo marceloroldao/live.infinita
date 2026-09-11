@@ -11,7 +11,7 @@ def validate(base):
         with urllib.request.urlopen(base.rstrip("/") + path, timeout=15) as r:
             return json.load(r)
     health = get("/api/health")
-    assert (health["mvp"], health["version"]) == ("009", "0.10.0"), health
+    assert (health["mvp"], health["version"]) in {("009", "0.10.0"), ("010", "0.11.0")}, health
     assert health["operator_binding_enabled"], "operator key not configured"
     assert health["replay_ok"] and get("/api/replay/verify")["ok"]
     actors = get("/api/actors")

@@ -23,7 +23,7 @@ def validate(base, write=False):
             return body
 
     health = request("/api/health")
-    assert (health["mvp"], health["version"]) in {("008", "0.9.0"), ("009", "0.10.0")}, health
+    assert (health["mvp"], health["version"]) in {("008", "0.9.0"), ("009", "0.10.0"), ("010", "0.11.0")}, health
     assert health["replay_ok"] and health["cross_platform_auto_merge"] is False
     assert "audience_rules" in health and "audience_proposal_log_records" in health
     assert request("/api/replay/verify")["ok"]

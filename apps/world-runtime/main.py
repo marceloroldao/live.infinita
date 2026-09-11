@@ -6,6 +6,8 @@ import os
 import secrets
 import sys
 import time
+import urllib.error
+import urllib.request
 from pathlib import Path
 from typing import Any
 
@@ -19,16 +21,19 @@ from engine import DeterministicWorldEngine
 ROOT = Path(__file__).resolve().parents[2]
 BOOTSTRAP_FILE = ROOT / "examples" / "world-state.mvp001.bootstrap.json"
 RENDERER_DIR = ROOT / "apps" / "renderer-web"
+MANAGER_DIR = ROOT / "apps" / "manager"
 DATA_DIR = Path(os.environ.get("LIVE_INFINITA_DATA_DIR", "/var/lib/live-infinita"))
 AUDIENCE_EVENTS_FILE = DATA_DIR / "audience-events.jsonl"
 AUDIENCE_PROPOSALS_FILE = DATA_DIR / "audience-proposals.jsonl"
 ACTOR_OBSERVATIONS_FILE = DATA_DIR / "actor-observations.jsonl"
 ACTOR_BINDINGS_FILE = DATA_DIR / "actor-bindings.jsonl"
+INTEGRATIONS_FILE = DATA_DIR / "integrations.json"
 OPERATOR_TOKEN = os.environ.get("LIVE_INFINITA_OPERATOR_TOKEN", "")
 GATEWAY_DIR = ROOT / "apps" / "gateway"
 AUDIENCE_DIR = ROOT / "apps" / "audience"
 ACTORS_DIR = ROOT / "apps" / "actors"
-for path in (GATEWAY_DIR, AUDIENCE_DIR, ACTORS_DIR):
+INTEGRATIONS_DIR = ROOT / "apps" / "integrations"
+for path in (GATEWAY_DIR, AUDIENCE_DIR, ACTORS_DIR, INTEGRATIONS_DIR):
     if str(path) not in sys.path:
         sys.path.insert(0, str(path))
 
@@ -36,8 +41,9 @@ from pipeline import GatewayPipeline  # noqa: E402
 from aggregator import AudienceAggregator  # noqa: E402
 from store import ActorStore  # noqa: E402
 from bindings import ActorBindingStore, BindingConflict  # noqa: E402
+from settings import IntegrationStore  # noqa: E402
 
-app = FastAPI(title="Live Infinita MVP-009", version="0.10.0")
+app = FastAPI(title="Live Infinita MVP-010", version="0.11.0")
 clients: set[WebSocket] = set()
 world_lock = asyncio.Lock()
 audience_lock = asyncio.Lock()
@@ -47,6 +53,21 @@ pipeline = GatewayPipeline()
 aggregator = AudienceAggregator()
 actors = ActorStore(ACTOR_OBSERVATIONS_FILE)
 bindings = ActorBindingStore(ACTOR_BINDINGS_FILE)
+integrations = IntegrationStore(INTEGRATIONS_FILE)
+
+
+@app.middleware("http")
+async def management_security_headers(request, call_next):
+    response = await call_next(request)
+    if request.url.path.startswith("/manage") or request.url.path.startswith("/api/manage/"):
+        response.headers["Cache-Control"] = "no-store"
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; script-src 'self'; style-src 'self'; "
+            "connect-src 'self'; img-src 'self'; frame-ancestors 'none'; form-action 'none'"
+        )
+    return response
 
 
 def require_operator(authorization: str | None = Header(default=None)) -> None:
@@ -60,6 +81,13 @@ def require_operator(authorization: str | None = Header(default=None)) -> None:
 
 class ActorEntityRequest(BaseModel):
     entity_id: str = Field(min_length=1, max_length=200, pattern=r"^\S+$")
+
+
+class IntegrationUpdate(BaseModel):
+    openai_api_key: str | None = Field(default=None, max_length=500)
+    openai_model: str | None = Field(default=None, min_length=1, max_length=100, pattern=r"^[a-zA-Z0-9._-]+$")
+    tiktok_unique_id: str | None = Field(default=None, max_length=100, pattern=r"^@?[a-zA-Z0-9._]+$")
+    tiktok_sign_api_key: str | None = Field(default=None, max_length=500)
 
 
 def actor_views() -> list[dict[str, Any]]:
@@ -264,8 +292,8 @@ async def health() -> JSONResponse:
     return JSONResponse({
         "ok": True,
         "service": "live-infinita",
-        "mvp": "009",
-        "version": "0.10.0",
+        "mvp": "010",
+        "version": "0.11.0",
         "replay_ok": verification["ok"],
         "state_hash": verification["current_hash"],
         "pipeline": ["real-source-bridge", "actor-state", "audience-side-channel", "audience-aggregator", "proposal-gate", "intent", "validator", "runtime"],
@@ -278,6 +306,11 @@ async def health() -> JSONResponse:
         "actors_total": len(actors.actors()),
         "actor_bindings_total": len(bindings.current()),
         "operator_binding_enabled": bool(OPERATOR_TOKEN),
+        "integration_management_enabled": bool(OPERATOR_TOKEN),
+        "integrations": {
+            "openai": integrations.public_status()["openai"]["configured"],
+            "tiktok": integrations.public_status()["tiktok"]["configured"],
+        },
         "identity_namespace": "source:actor_id",
         "cross_platform_auto_merge": False,
     })
@@ -353,6 +386,51 @@ async def unbind_actor_entity(source: str, actor_id: str, request: ActorEntityRe
             raise HTTPException(status_code=409, detail=str(exc)) from exc
     return JSONResponse({"ok": True, "changed": changed, "world_mutated": False,
                          "actor_key": actor["actor_key"], "entity_id": None})
+
+
+@app.get("/api/manage/integrations", dependencies=[Depends(require_operator)])
+async def get_integrations() -> JSONResponse:
+    return JSONResponse(integrations.public_status())
+
+
+@app.put("/api/manage/integrations", dependencies=[Depends(require_operator)])
+async def update_integrations(request: IntegrationUpdate) -> JSONResponse:
+    values = request.model_dump(exclude_unset=True)
+    if "tiktok_unique_id" in values:
+        value = values["tiktok_unique_id"]
+        if value:
+            values["tiktok_unique_id"] = "@" + value.lstrip("@")
+    async with actor_lock:
+        integrations.update(values)
+    return JSONResponse({"ok": True, "integrations": integrations.public_status()})
+
+
+@app.post("/api/manage/integrations/openai/test", dependencies=[Depends(require_operator)])
+async def test_openai_integration() -> JSONResponse:
+    config = integrations.load()
+    api_key = str(config.get("openai_api_key") or "")
+    if not api_key:
+        raise HTTPException(status_code=409, detail="chave OpenAI não configurada")
+    request = urllib.request.Request(
+        "https://api.openai.com/v1/models",
+        headers={"Authorization": f"Bearer {api_key}", "Accept": "application/json"},
+    )
+    def fetch_models() -> dict[str, Any]:
+        with urllib.request.urlopen(request, timeout=15) as response:
+            return json.load(response)
+    try:
+        payload = await asyncio.to_thread(fetch_models)
+    except urllib.error.HTTPError as exc:
+        if exc.code in {401, 403}:
+            raise HTTPException(status_code=422, detail="chave OpenAI recusada") from exc
+        raise HTTPException(status_code=502, detail=f"OpenAI indisponível (HTTP {exc.code})") from exc
+    except (OSError, ValueError) as exc:
+        raise HTTPException(status_code=502, detail="não foi possível consultar a OpenAI") from exc
+    models = payload.get("data", []) if isinstance(payload, dict) else []
+    selected = config.get("openai_model", "gpt-5-mini")
+    return JSONResponse({"ok": True, "models_available": len(models),
+                         "selected_model": selected,
+                         "selected_model_available": any(item.get("id") == selected for item in models)})
 
 
 @app.get("/api/audience/events")
@@ -517,4 +595,5 @@ async def websocket_endpoint(websocket: WebSocket) -> None:
         await websocket.close()
 
 
+app.mount("/manage", StaticFiles(directory=str(MANAGER_DIR), html=True), name="manager")
 app.mount("/", StaticFiles(directory=str(RENDERER_DIR), html=True), name="renderer")
