@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import os
 import sys
 from pathlib import Path
@@ -17,15 +18,17 @@ ROOT = Path(__file__).resolve().parents[2]
 BOOTSTRAP_FILE = ROOT / "examples" / "world-state.mvp001.bootstrap.json"
 RENDERER_DIR = ROOT / "apps" / "renderer-web"
 DATA_DIR = Path(os.environ.get("LIVE_INFINITA_DATA_DIR", "/var/lib/live-infinita"))
+AUDIENCE_EVENTS_FILE = DATA_DIR / "audience-events.jsonl"
 GATEWAY_DIR = ROOT / "apps" / "gateway"
 if str(GATEWAY_DIR) not in sys.path:
     sys.path.insert(0, str(GATEWAY_DIR))
 
 from pipeline import GatewayPipeline  # noqa: E402
 
-app = FastAPI(title="Live Infinita MVP-005", version="0.6.0")
+app = FastAPI(title="Live Infinita MVP-006", version="0.7.0")
 clients: set[WebSocket] = set()
 world_lock = asyncio.Lock()
+audience_lock = asyncio.Lock()
 engine = DeterministicWorldEngine(BOOTSTRAP_FILE, DATA_DIR)
 pipeline = GatewayPipeline()
 
@@ -52,6 +55,14 @@ class SourceEventRequest(BaseModel):
     metadata: dict[str, Any] = Field(default_factory=dict)
 
 
+class AudienceEventRequest(BaseModel):
+    source_event_id: str
+    actor_id: str
+    display_name: str | None = None
+    kind: str
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
 async def broadcast(message: dict) -> None:
     dead: list[WebSocket] = []
     for client in list(clients):
@@ -61,6 +72,24 @@ async def broadcast(message: dict) -> None:
             dead.append(client)
     for client in dead:
         clients.discard(client)
+
+
+def read_audience_events() -> list[dict[str, Any]]:
+    if not AUDIENCE_EVENTS_FILE.exists():
+        return []
+    result: list[dict[str, Any]] = []
+    with AUDIENCE_EVENTS_FILE.open("r", encoding="utf-8") as fh:
+        for line in fh:
+            line = line.strip()
+            if line:
+                result.append(json.loads(line))
+    return result
+
+
+def append_audience_event(record: dict[str, Any]) -> None:
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    with AUDIENCE_EVENTS_FILE.open("a", encoding="utf-8") as fh:
+        fh.write(json.dumps(record, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n")
 
 
 async def process_gateway_payload(payload: dict[str, Any]) -> JSONResponse:
@@ -117,13 +146,15 @@ async def health() -> JSONResponse:
     return JSONResponse({
         "ok": True,
         "service": "live-infinita",
-        "mvp": "005",
-        "version": "0.6.0",
+        "mvp": "006",
+        "version": "0.7.0",
         "replay_ok": verification["ok"],
         "state_hash": verification["current_hash"],
         "pipeline": ["real-source-bridge", "source-adapter", "universal-envelope", "intent", "validator", "runtime"],
         "sources": ["simulator", "api", "tiktok", "youtube", "agent"],
         "real_sources": ["tiktok"],
+        "audience_events": ["join", "like", "gift"],
+        "audience_events_total": len(read_audience_events()),
     })
 
 
@@ -140,6 +171,11 @@ async def get_events() -> JSONResponse:
 @app.get("/api/deltas")
 async def get_deltas() -> JSONResponse:
     return JSONResponse({"deltas": engine.read_jsonl(engine.deltas_file)})
+
+
+@app.get("/api/audience/events")
+async def get_audience_events() -> JSONResponse:
+    return JSONResponse({"events": read_audience_events()})
 
 
 @app.get("/api/replay/verify")
@@ -159,6 +195,44 @@ async def source_event(source: str, request: SourceEventRequest) -> JSONResponse
     payload["source"] = source
     payload["kind"] = "text"
     return await process_gateway_payload(payload)
+
+
+@app.post("/api/audience/{source}/event")
+async def audience_event(source: str, request: AudienceEventRequest) -> JSONResponse:
+    source = source.strip().lower()
+    if source not in {"tiktok", "youtube", "simulator", "api"}:
+        raise HTTPException(status_code=400, detail=f"fonte de audiência não permitida: {source}")
+    kind = request.kind.strip().lower()
+    if kind not in {"join", "like", "gift"}:
+        raise HTTPException(status_code=400, detail=f"evento de audiência não permitido: {kind}")
+
+    record = {
+        "envelope_version": "1.0",
+        "source": source,
+        "source_event_id": request.source_event_id,
+        "actor": {"actor_id": request.actor_id, "display_name": request.display_name},
+        "kind": kind,
+        "metadata": request.metadata,
+    }
+
+    async with audience_lock:
+        existing = read_audience_events()
+        duplicate = any(
+            item.get("source") == source and item.get("source_event_id") == request.source_event_id
+            for item in existing
+        )
+        if not duplicate:
+            append_audience_event(record)
+
+    if not duplicate:
+        await broadcast({"type": "audience_event", "event": record})
+
+    return JSONResponse({
+        "ok": True,
+        "duplicate": duplicate,
+        "world_mutated": False,
+        "event": record,
+    }, status_code=200 if duplicate else 202)
 
 
 @app.post("/api/simulate")

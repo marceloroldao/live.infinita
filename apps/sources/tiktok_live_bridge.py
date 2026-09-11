@@ -10,8 +10,9 @@ from dataclasses import dataclass
 from typing import Any
 
 from TikTokLive import TikTokLiveClient
-from TikTokLive.events import CommentEvent, ConnectEvent, DisconnectEvent, LiveEndEvent
+from TikTokLive.events import CommentEvent, ConnectEvent, DisconnectEvent, GiftEvent, JoinEvent, LikeEvent, LiveEndEvent
 
+from tiktok_audience_mapping import gift_to_payload, join_to_payload, like_to_payload
 from tiktok_mapping import comment_to_payload
 
 
@@ -19,6 +20,7 @@ from tiktok_mapping import comment_to_payload
 class BridgeConfig:
     unique_id: str
     gateway_url: str
+    audience_url: str
     timeout_seconds: float = 5.0
     retry_seconds: float = 30.0
 
@@ -33,11 +35,16 @@ class BridgeConfig:
             "LIVE_INFINITA_TIKTOK_GATEWAY_URL",
             "http://127.0.0.1:8080/api/source/tiktok/event",
         ).strip()
+        audience_url = os.environ.get(
+            "LIVE_INFINITA_TIKTOK_AUDIENCE_URL",
+            "http://127.0.0.1:8080/api/audience/tiktok/event",
+        ).strip()
         timeout = float(os.environ.get("LIVE_INFINITA_SOURCE_TIMEOUT", "5"))
         retry = float(os.environ.get("LIVE_INFINITA_TIKTOK_RETRY_SECONDS", "30"))
         return cls(
             unique_id=unique_id,
             gateway_url=gateway_url,
+            audience_url=audience_url,
             timeout_seconds=timeout,
             retry_seconds=max(retry, 5.0),
         )
@@ -45,12 +52,7 @@ class BridgeConfig:
 
 def post_json(url: str, payload: dict[str, Any], timeout: float) -> tuple[int, dict[str, Any]]:
     body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
-    request = urllib.request.Request(
-        url,
-        data=body,
-        headers={"content-type": "application/json"},
-        method="POST",
-    )
+    request = urllib.request.Request(url, data=body, headers={"content-type": "application/json"}, method="POST")
     try:
         with urllib.request.urlopen(request, timeout=timeout) as response:
             raw = response.read().decode("utf-8")
@@ -69,10 +71,7 @@ def build_client(config: BridgeConfig) -> TikTokLiveClient:
 
     @client.on(ConnectEvent)
     async def on_connect(_: ConnectEvent) -> None:
-        print(
-            f"[tiktok] conectado a {config.unique_id} room_id={client.room_id}",
-            flush=True,
-        )
+        print(f"[tiktok] conectado a {config.unique_id} room_id={client.room_id}", flush=True)
 
     @client.on(CommentEvent)
     async def on_comment(event: CommentEvent) -> None:
@@ -81,11 +80,31 @@ def build_client(config: BridgeConfig) -> TikTokLiveClient:
             return
         status, result = post_json(config.gateway_url, payload, config.timeout_seconds)
         accepted = bool(result.get("ok")) if isinstance(result, dict) else False
+        print(f"[tiktok] comentário actor={payload['display_name']!r} text={payload['text']!r} http={status} accepted={accepted}", flush=True)
+
+    async def send_audience(payload: dict[str, Any]) -> None:
+        status, result = post_json(config.audience_url, payload, config.timeout_seconds)
+        duplicate = bool(result.get("duplicate")) if isinstance(result, dict) else False
         print(
-            f"[tiktok] comentário actor={payload['display_name']!r} "
-            f"text={payload['text']!r} http={status} accepted={accepted}",
+            f"[tiktok] audience kind={payload['kind']} actor={payload['display_name']!r} "
+            f"http={status} duplicate={duplicate}",
             flush=True,
         )
+
+    @client.on(JoinEvent)
+    async def on_join(event: JoinEvent) -> None:
+        await send_audience(join_to_payload(event, room_id=client.room_id))
+
+    @client.on(LikeEvent)
+    async def on_like(event: LikeEvent) -> None:
+        await send_audience(like_to_payload(event, room_id=client.room_id))
+
+    @client.on(GiftEvent)
+    async def on_gift(event: GiftEvent) -> None:
+        # Gifts em streak geram eventos intermediários. Só persiste o fechamento da sequência.
+        if bool(getattr(event, "streaking", False)):
+            return
+        await send_audience(gift_to_payload(event, room_id=client.room_id))
 
     @client.on(DisconnectEvent)
     async def on_disconnect(_: DisconnectEvent) -> None:
@@ -106,7 +125,7 @@ def main() -> int:
         return 2
 
     print(
-        f"[tiktok] bridge configurado {config.unique_id} -> {config.gateway_url}",
+        f"[tiktok] bridge configurado {config.unique_id} -> comments={config.gateway_url} audience={config.audience_url}",
         flush=True,
     )
 
@@ -115,25 +134,15 @@ def main() -> int:
             print(f"[tiktok] procurando LIVE de {config.unique_id}...", flush=True)
             client = build_client(config)
             client.run()
-            print(
-                f"[tiktok] conexão encerrada; nova tentativa em {config.retry_seconds:.0f}s",
-                flush=True,
-            )
+            print(f"[tiktok] conexão encerrada; nova tentativa em {config.retry_seconds:.0f}s", flush=True)
         except KeyboardInterrupt:
             print("[tiktok] encerrado", flush=True)
             return 0
         except Exception as exc:
             name = type(exc).__name__
             message = str(exc).replace("\n", " ")
-            print(
-                f"[tiktok] LIVE indisponível ou consulta recusada "
-                f"({name}): {message}",
-                flush=True,
-            )
-            print(
-                f"[tiktok] aguardando {config.retry_seconds:.0f}s antes de tentar novamente",
-                flush=True,
-            )
+            print(f"[tiktok] LIVE indisponível ou consulta recusada ({name}): {message}", flush=True)
+            print(f"[tiktok] aguardando {config.retry_seconds:.0f}s antes de tentar novamente", flush=True)
         time.sleep(config.retry_seconds)
 
 
