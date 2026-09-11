@@ -1,13 +1,14 @@
 const $ = id => document.getElementById(id);
 let toastTimer;
+let monitorTimer;
 async function api(path, options = {}) {
   const response = await fetch(path, {credentials: 'same-origin', ...options, headers: {'Content-Type': 'application/json', ...(options.headers || {})}});
   const body = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(body.detail || `HTTP ${response.status}`);
   return body;
 }
-function showLogin(error = '') {$('manager-view').hidden = true; $('login-view').hidden = false; $('login-message').textContent = error; $('operator').focus();}
-function showManager() {$('login-view').hidden = true; $('manager-view').hidden = false;}
+function showLogin(error = '') {clearTimeout(monitorTimer); $('manager-view').hidden = true; $('login-view').hidden = false; $('login-message').textContent = error; $('operator').focus();}
+function showManager() {$('login-view').hidden = true; $('manager-view').hidden = false; showPage(location.hash === '#integracoes' ? 'integracoes' : 'overview', false);}
 function message(text, error = false) {const el=$('message'); clearTimeout(toastTimer); el.textContent=text; el.classList.toggle('error',error); el.classList.add('show'); toastTimer=setTimeout(()=>el.classList.remove('show'),4200);}
 function badge(id, ok) {const el=$(id); el.textContent=ok?'Conectado':'Não configurado'; el.classList.toggle('ok',ok);}
 async function load() {
@@ -15,6 +16,38 @@ async function load() {
   badge('openai-state',status.openai.configured); badge('tiktok-state',status.tiktok.configured);
   $('openai-model').value=status.openai.model; $('openai-key').placeholder=status.openai.key_hint?`Atual: ${status.openai.key_hint}`:'Cole sua API key';
   $('tiktok-user').value=status.tiktok.unique_id||''; $('tiktok-key').placeholder=status.tiktok.sign_key_hint?`Atual: ${status.tiktok.sign_key_hint}`:'Deixe vazio para manter a atual';
+  await loadMonitor();
+}
+function showPage(page, refresh=true) {document.querySelectorAll('.manager-page').forEach(el=>el.hidden=el.id!==page);document.querySelectorAll('[data-page]').forEach(el=>el.classList.toggle('active',el.dataset.page===page));if(page==='overview'&&refresh)loadMonitor();}
+document.querySelectorAll('[data-page]').forEach(link=>link.onclick=()=>showPage(link.dataset.page));
+function duration(seconds) {const h=Math.floor(seconds/3600),m=Math.floor((seconds%3600)/60);return h?`${h}h ${m}min`:`${m}min`;}
+function monitorTextState(state) {return ({connected:'Ao vivo',searching:'Procurando live',waiting_retry:'Aguardando nova tentativa',disconnected:'Desconectado',live_ended:'Live encerrada',not_started:'Não iniciado',unknown:'Indisponível'})[state]||state;}
+function activityLabel(item) {return ({join:'entrou na live',like:'enviou curtidas',gift:'enviou um presente',comment:'comentou',world_event:'alterou o mundo'})[item.kind]||`gerou ${item.kind}`;}
+async function loadMonitor() {
+  clearTimeout(monitorTimer);
+  if($('manager-view').hidden)return;
+  try {
+    const data=await api('/api/manage/monitor');
+    $('runtime-value').textContent='Online'; $('runtime-detail').textContent=`ativo há ${duration(data.runtime.uptime_seconds)}`;
+    const tiktokState=data.tiktok.stale&&data.tiktok.state==='connected'?'stale':data.tiktok.state;
+    $('tiktok-value').textContent=tiktokState==='stale'?'Sem atualização':monitorTextState(tiktokState);
+    $('tiktok-detail').textContent=data.tiktok.unique_id||'não configurado';
+    $('tiktok-live-state').textContent=tiktokState==='connected'?'AO VIVO':monitorTextState(tiktokState).toUpperCase();
+    document.querySelector('.live-pulse').classList.toggle('offline',tiktokState!=='connected');
+    $('live-detail').textContent=data.tiktok.configured?`${data.tiktok.unique_id} · ${data.audience.total} eventos recebidos`:'Configure o TikTok na área de integrações.';
+    $('monitor-openai-value').textContent=data.openai.configured?(data.openai.state==='ok'?'Conectada':'Configurada'):'Não configurada';
+    $('monitor-openai-detail').textContent=data.openai.state==='ok'?`${data.openai.latency_ms} ms · ${data.openai.model}`:data.openai.model;
+    $('websocket-value').textContent=data.websocket.clients;
+    $('audience-total').textContent=`${data.audience.total} eventos`; $('joins-value').textContent=data.audience.join; $('likes-value').textContent=data.audience.like; $('gifts-value').textContent=data.audience.gift; $('actors-value').textContent=data.actors.total;
+    $('world-version').textContent=data.world.version??'—'; $('world-sequence').textContent=data.world.sequence??'—'; $('world-entities').textContent=data.world.entities; $('world-period').textContent=data.world.period||'—';
+    badge('replay-state',data.world.replay_ok); $('replay-state').textContent=data.world.replay_ok?'Replay íntegro':'Replay com erro';
+    $('system-state').classList.toggle('status-error',!data.world.replay_ok); $('system-state').lastChild.textContent=data.world.replay_ok?' Sistema online':' Verificar sistema';
+    $('last-update').textContent=`atualizado ${new Date(data.generated_at_unix*1000).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}`;
+    const list=$('activity-list'); list.replaceChildren();
+    if(!data.activity.length){const li=document.createElement('li');li.className='empty';li.textContent='Nenhum evento registrado.';list.append(li);}
+    data.activity.forEach(item=>{const li=document.createElement('li'),time=document.createElement('time'),icon=document.createElement('span'),text=document.createElement('span'),source=document.createElement('small');time.textContent=item.at_unix?new Date(item.at_unix*1000).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—';icon.className='activity-icon';icon.textContent=item.channel==='world'?'◇':'•';text.textContent=`${item.actor} ${activityLabel(item)}`;source.textContent=item.source;li.append(time,icon,text,source);list.append(li);});
+  } catch(error) {if(error.message.includes('chave')||error.message.includes('401'))return showLogin('Sua sessão expirou. Entre novamente.');$('system-state').classList.add('status-error');$('system-state').lastChild.textContent=' Monitor indisponível';}
+  monitorTimer=setTimeout(loadMonitor,5000);
 }
 $('login-form').addEventListener('submit',async event=>{event.preventDefault();const button=$('unlock');button.disabled=true;$('login-message').textContent='';try{await api('/api/manage/login',{method:'POST',body:JSON.stringify({password:$('operator').value})});$('operator').value='';await load();message('Acesso liberado.');}catch(error){showLogin(error.message);}finally{button.disabled=false;}});
 $('toggle-password').onclick=()=>{const input=$('operator');input.type=input.type==='password'?'text':'password';$('toggle-password').setAttribute('aria-label',input.type==='password'?'Mostrar senha':'Ocultar senha');};
