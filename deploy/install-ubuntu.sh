@@ -36,6 +36,7 @@ python3 -m venv "$INSTALL_DIR/.venv"
 chown -R "$SERVICE_USER:$SERVICE_USER" "$INSTALL_DIR" "$DATA_DIR"
 
 install -m 0644 "$INSTALL_DIR/deploy/live-infinita.service" /etc/systemd/system/live-infinita.service
+install -m 0644 "$INSTALL_DIR/deploy/live-infinita-tiktok.service" /etc/systemd/system/live-infinita-tiktok.service
 install -m 0644 "$INSTALL_DIR/deploy/nginx-live-infinita.conf" /etc/nginx/sites-available/live-infinita
 ln -sf /etc/nginx/sites-available/live-infinita /etc/nginx/sites-enabled/live-infinita
 rm -f /etc/nginx/sites-enabled/default
@@ -51,11 +52,11 @@ sleep 1
 curl --fail --silent http://127.0.0.1:8080/api/health >/dev/null
 
 echo
-printf 'Live Infinita MVP-004 instalado.\n'
+printf 'Live Infinita MVP-005 instalado.\n'
 printf 'Preview: http://IP_DA_VM/\n'
 printf 'Health:  http://IP_DA_VM/api/health\n'
 printf 'Gateway: http://IP_DA_VM/api/gateway/event\n'
-printf 'Fontes:  http://IP_DA_VM/api/source/{source}/event\n'
+printf 'TikTok:  opcional; configure com sudo bash deploy/configure-tiktok.sh @usuario\n'
 printf 'Replay:  http://IP_DA_VM/api/replay/verify\n'
 printf 'Dados:   /var/lib/live-infinita\n'
 printf 'Status:  systemctl status live-infinita --no-pager\n'
