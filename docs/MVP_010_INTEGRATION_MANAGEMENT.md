@@ -55,3 +55,13 @@ python3 tests/validate_mvp010_vm.py --base-url https://live.etbra.com.br
 ```
 
 O verificador é somente leitura e confirma página, autenticação, health e replay.
+
+## Validação pré-instalação — 2026-09-11
+
+- 39 testes passaram no Windows/Python 3.11 e no Ubuntu/Python 3.14.
+- Servidor isolado na VM: página, proteção, gravação com valores fictícios,
+  mascaramento, persistência após reinício, mundo inalterado e replay passaram.
+- O conector TikTok carregou usuário e chave de assinatura fictícios do arquivo
+  gerenciado, sem realizar conexão externa.
+- Sintaxe dos scripts de instalação e recarga validada no Ubuntu.
+- Nenhuma chave real foi usada durante os testes.
