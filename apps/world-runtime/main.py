@@ -23,7 +23,7 @@ if str(GATEWAY_DIR) not in sys.path:
 
 from pipeline import GatewayPipeline  # noqa: E402
 
-app = FastAPI(title="Live Infinita MVP-004", version="0.5.0")
+app = FastAPI(title="Live Infinita MVP-005", version="0.6.0")
 clients: set[WebSocket] = set()
 world_lock = asyncio.Lock()
 engine = DeterministicWorldEngine(BOOTSTRAP_FILE, DATA_DIR)
@@ -117,12 +117,13 @@ async def health() -> JSONResponse:
     return JSONResponse({
         "ok": True,
         "service": "live-infinita",
-        "mvp": "004",
-        "version": "0.5.0",
+        "mvp": "005",
+        "version": "0.6.0",
         "replay_ok": verification["ok"],
         "state_hash": verification["current_hash"],
-        "pipeline": ["source-adapter", "universal-envelope", "intent", "validator", "runtime"],
+        "pipeline": ["real-source-bridge", "source-adapter", "universal-envelope", "intent", "validator", "runtime"],
         "sources": ["simulator", "api", "tiktok", "youtube", "agent"],
+        "real_sources": ["tiktok"],
     })
 
 
