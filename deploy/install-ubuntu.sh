@@ -61,16 +61,17 @@ sleep 1
 curl --fail --silent http://127.0.0.1:8080/api/health >/dev/null
 
 echo
-printf 'Live Infinita MVP-011 instalado.\n'
-printf 'Preview:      http://IP_DA_VM/\n'
-printf 'Gerência:     http://IP_DA_VM/manage/\n'
-printf 'Health:       http://IP_DA_VM/api/health\n'
-printf 'Actors:       http://IP_DA_VM/api/actors\n'
-printf 'Audience:     http://IP_DA_VM/api/audience/events\n'
-printf 'Audience PR:  http://IP_DA_VM/api/audience/proposals\n'
-printf 'AI Proposals: http://IP_DA_VM/api/ai/proposals\n'
-printf 'Replay:       http://IP_DA_VM/api/replay/verify\n'
-printf 'TikTok:       opcional; configure com sudo bash deploy/configure-tiktok.sh @usuario\n'
-printf 'Dados:        /var/lib/live-infinita\n'
-printf 'Status:       systemctl status live-infinita --no-pager\n'
-printf 'Chave:        sudo sed -n '\''s/^LIVE_INFINITA_OPERATOR_TOKEN=//p'\'' %s\n' "$OPERATOR_ENV"
+printf 'Live Infinita MVP-012 instalado.\n'
+printf 'Preview:       http://IP_DA_VM/\n'
+printf 'Gerência:      http://IP_DA_VM/manage/\n'
+printf 'Health:        http://IP_DA_VM/api/health\n'
+printf 'Actors:        http://IP_DA_VM/api/actors\n'
+printf 'Audience:      http://IP_DA_VM/api/audience/events\n'
+printf 'Audience PR:   http://IP_DA_VM/api/audience/proposals\n'
+printf 'AI Context:    POST http://IP_DA_VM/api/ai/context/preview\n'
+printf 'AI Proposals:  http://IP_DA_VM/api/ai/proposals\n'
+printf 'Replay:        http://IP_DA_VM/api/replay/verify\n'
+printf 'TikTok:        opcional; configure com sudo bash deploy/configure-tiktok.sh @usuario\n'
+printf 'Dados:         /var/lib/live-infinita\n'
+printf 'Status:        systemctl status live-infinita --no-pager\n'
+printf 'Chave:         sudo sed -n '\''s/^LIVE_INFINITA_OPERATOR_TOKEN=//p'\'' %s\n' "$OPERATOR_ENV"

@@ -36,7 +36,8 @@ AUDIENCE_DIR = ROOT / "apps" / "audience"
 ACTORS_DIR = ROOT / "apps" / "actors"
 INTEGRATIONS_DIR = ROOT / "apps" / "integrations"
 AI_DIR = ROOT / "apps" / "ai"
-for path in (GATEWAY_DIR, AUDIENCE_DIR, ACTORS_DIR, INTEGRATIONS_DIR, AI_DIR):
+CONTEXT_DIR = ROOT / "apps" / "context"
+for path in (GATEWAY_DIR, AUDIENCE_DIR, ACTORS_DIR, INTEGRATIONS_DIR, AI_DIR, CONTEXT_DIR):
     if str(path) not in sys.path:
         sys.path.insert(0, str(path))
 
@@ -47,8 +48,9 @@ from bindings import ActorBindingStore, BindingConflict  # noqa: E402
 from settings import IntegrationStore  # noqa: E402
 from router import AIRouter, AIRouterError  # noqa: E402
 from proposals import AIProposalStore  # noqa: E402
+from compiler import ContextCompiler  # noqa: E402
 
-app = FastAPI(title="Live Infinita MVP-011", version="0.12.0")
+app = FastAPI(title="Live Infinita MVP-012", version="0.13.0")
 clients: set[WebSocket] = set()
 world_lock = asyncio.Lock()
 audience_lock = asyncio.Lock()
@@ -61,6 +63,7 @@ actors = ActorStore(ACTOR_OBSERVATIONS_FILE)
 bindings = ActorBindingStore(ACTOR_BINDINGS_FILE)
 integrations = IntegrationStore(INTEGRATIONS_FILE)
 ai_proposals = AIProposalStore(AI_PROPOSALS_FILE)
+context_compiler = ContextCompiler(max_entities=64)
 
 
 @app.middleware("http")
@@ -204,6 +207,21 @@ def build_ai_router() -> AIRouter:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
 
 
+async def compile_ai_context(*, source: str, actor_id: str):
+    source = source.strip().lower()
+    actor_id = actor_id.strip()
+    actor_key = f"{source}:{actor_id}"
+    async with world_lock, actor_lock:
+        world = engine.load_world()
+        actor = actors.get(source, actor_id)
+        bound_entity_id = bindings.current().get(actor_key)
+        return context_compiler.compile(
+            world=world,
+            actor=actor,
+            bound_entity_id=bound_entity_id,
+        )
+
+
 def backfill_actor_store() -> None:
     """Recover actor observations from historical audience/world logs once, idempotently."""
     for row in read_jsonl(AUDIENCE_EVENTS_FILE):
@@ -223,6 +241,8 @@ def backfill_actor_store() -> None:
         source_event_id = str(context.get("source_event_id") or "")
         actor_id = str(context.get("actor_id") or "")
         if not source_event_id or not actor_id:
+            continue
+        if str(row.get("source") or "").strip().lower() == "agent":
             continue
         actors.observe(
             source=str(row.get("source") or "unknown"),
@@ -264,22 +284,29 @@ async def observe_actor(
         )
 
 
-async def process_gateway_payload(payload: dict[str, Any]) -> JSONResponse:
+async def process_gateway_payload(
+    payload: dict[str, Any],
+    *,
+    expected_world: dict[str, Any] | None = None,
+) -> JSONResponse:
     try:
         normalized, proposed, validation = pipeline.process(payload)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     observed_at_unix = time.time()
-    await observe_actor(
-        source=normalized.source,
-        actor_id=normalized.actor.actor_id,
-        display_name=normalized.actor.display_name,
-        kind=normalized.kind,
-        source_event_id=normalized.source_event_id,
-        metadata={"channel": "gateway", **dict(normalized.metadata)},
-        observed_at_unix=observed_at_unix,
-    )
+    # LLM/agent output is not user evidence. Agent-originated canonical commands may
+    # mutate the world after validation, but they never feed Actor State.
+    if normalized.source != "agent":
+        await observe_actor(
+            source=normalized.source,
+            actor_id=normalized.actor.actor_id,
+            display_name=normalized.actor.display_name,
+            kind=normalized.kind,
+            source_event_id=normalized.source_event_id,
+            metadata={"channel": "gateway", **dict(normalized.metadata)},
+            observed_at_unix=observed_at_unix,
+        )
 
     normalized_dict = normalized.to_dict()
     envelope = {
@@ -291,6 +318,27 @@ async def process_gateway_payload(payload: dict[str, Any]) -> JSONResponse:
         return JSONResponse({"ok": False, **envelope}, status_code=422)
 
     async with world_lock:
+        if expected_world is not None:
+            current_world = engine.load_world()
+            current_ref = {
+                "version": int(current_world.get("version", 0)),
+                "sequence": int(current_world.get("sequence", 0)),
+                "state_hash": current_world.get("state_hash"),
+            }
+            expected_ref = {
+                "version": int(expected_world.get("version", -1)),
+                "sequence": int(expected_world.get("sequence", -1)),
+                "state_hash": expected_world.get("state_hash"),
+            }
+            if current_ref != expected_ref:
+                return JSONResponse({
+                    "ok": False,
+                    "world_mutated": False,
+                    "stale_context": True,
+                    "expected_world": expected_ref,
+                    "current_world": current_ref,
+                    **envelope,
+                }, status_code=409)
         try:
             event, delta, world = engine.commit_action(
                 validation.action,
@@ -322,11 +370,11 @@ async def health() -> JSONResponse:
     return JSONResponse({
         "ok": True,
         "service": "live-infinita",
-        "mvp": "011",
-        "version": "0.12.0",
+        "mvp": "012",
+        "version": "0.13.0",
         "replay_ok": verification["ok"],
         "state_hash": verification["current_hash"],
-        "pipeline": ["real-source-bridge", "actor-state", "audience-side-channel", "audience-aggregator", "proposal-gate", "ai-router", "ai-proposal-gate", "intent", "validator", "runtime"],
+        "pipeline": ["real-source-bridge", "actor-state", "audience-side-channel", "audience-aggregator", "proposal-gate", "context-compiler", "ai-router", "ai-proposal-gate", "intent", "validator", "runtime"],
         "audience_events": ["join", "like", "gift"],
         "audience_events_total": len(read_jsonl(AUDIENCE_EVENTS_FILE)),
         "audience_proposals_total": len(current_proposals()),
@@ -341,12 +389,20 @@ async def health() -> JSONResponse:
             "openai": integrations.public_status()["openai"]["configured"],
             "tiktok": integrations.public_status()["tiktok"]["configured"],
         },
+        "context_compiler": {
+            "enabled": True,
+            "schema_version": "1.0",
+            "max_entities": context_compiler.max_entities,
+            "stale_guard": True,
+            "actor_state_from_agent_output": False,
+        },
         "ai_router": {
             "enabled": bool(OPERATOR_TOKEN),
             "configured": integrations.public_status()["openai"]["configured"],
             "min_confidence": AI_MIN_CONFIDENCE,
             "proposals_total": len(ai_current),
             "pending_total": sum(1 for row in ai_current if row.get("status") == "pending"),
+            "stale_total": sum(1 for row in ai_current if row.get("status") == "stale"),
             "log_records": len(ai_proposals.history()),
             "direct_world_write": False,
         },
@@ -472,16 +528,33 @@ async def test_openai_integration() -> JSONResponse:
                          "selected_model_available": any(item.get("id") == selected for item in models)})
 
 
+@app.post("/api/ai/context/preview", dependencies=[Depends(require_operator)])
+async def preview_ai_context(request: AIInterpretRequest) -> JSONResponse:
+    context_package = await compile_ai_context(source=request.source, actor_id=request.actor_id)
+    return JSONResponse({
+        "ok": True,
+        "world_mutated": False,
+        "context": context_package.to_dict(),
+    })
+
+
 @app.post("/api/ai/proposals", dependencies=[Depends(require_operator)])
 async def create_ai_proposal(request: AIInterpretRequest) -> JSONResponse:
     router = build_ai_router()
+    context_package = await compile_ai_context(source=request.source, actor_id=request.actor_id)
     try:
-        proposal = await asyncio.to_thread(router.propose, request.text)
+        proposal = await asyncio.to_thread(
+            router.propose,
+            request.text,
+            context=context_package.to_dict(),
+        )
     except AIRouterError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
     proposal_dict = proposal.to_dict()
     actionable = bool(proposal.actionable and proposal.confidence >= AI_MIN_CONFIDENCE)
+    actor_view = context_package.payload.get("actor") or {}
+    binding_view = context_package.payload.get("binding") or {}
     async with ai_lock:
         stored = ai_proposals.create(
             action=proposal.action,
@@ -495,6 +568,13 @@ async def create_ai_proposal(request: AIInterpretRequest) -> JSONResponse:
             actor_id=request.actor_id.strip(),
             display_name=request.display_name,
             metadata=request.metadata,
+            context_digest=context_package.digest,
+            context_schema_version=context_package.payload.get("schema_version"),
+            context_world_version=context_package.world_version,
+            context_world_sequence=context_package.world_sequence,
+            context_world_state_hash=context_package.world_state_hash,
+            context_actor_key=actor_view.get("actor_key"),
+            context_bound_entity_id=binding_view.get("entity_id"),
         )
     await broadcast({"type": "ai_proposal", "proposal": stored})
     return JSONResponse({"ok": True, "world_mutated": False, "proposal": stored}, status_code=202)
@@ -517,6 +597,15 @@ async def commit_ai_proposal(proposal_id: str) -> JSONResponse:
     if not gateway_text:
         raise HTTPException(status_code=409, detail="proposta AI não é acionável")
 
+    context_ref = dict(proposal.get("context") or {})
+    if not context_ref.get("digest"):
+        raise HTTPException(status_code=409, detail="proposta AI legada sem Context Package; gere uma nova proposta")
+    expected_world = {
+        "version": context_ref.get("world_version"),
+        "sequence": context_ref.get("world_sequence"),
+        "state_hash": context_ref.get("world_state_hash"),
+    }
+
     response = await process_gateway_payload({
         "source": "agent",
         "source_event_id": f"ai-proposal-{proposal_id}",
@@ -529,9 +618,27 @@ async def commit_ai_proposal(proposal_id: str) -> JSONResponse:
             "ai_model": proposal.get("model"),
             "ai_confidence": proposal.get("confidence"),
             "original_source": proposal.get("source"),
+            "context_digest": context_ref.get("digest"),
+            "context_world_version": context_ref.get("world_version"),
+            "context_world_sequence": context_ref.get("world_sequence"),
             **dict(proposal.get("metadata") or {}),
         },
-    })
+    }, expected_world=expected_world)
+
+    if response.status_code == 409:
+        payload = json.loads(response.body.decode("utf-8"))
+        if payload.get("stale_context"):
+            current_world = payload.get("current_world") or {}
+            async with ai_lock:
+                stale = ai_proposals.mark_stale(
+                    proposal_id,
+                    current_world_version=int(current_world.get("version", 0)),
+                    current_world_sequence=int(current_world.get("sequence", 0)),
+                    current_world_state_hash=current_world.get("state_hash"),
+                )
+            await broadcast({"type": "ai_proposal", "proposal": stale})
+            return JSONResponse({**payload, "proposal": stale}, status_code=409)
+
     if response.status_code < 300:
         payload = json.loads(response.body.decode("utf-8"))
         world_event_id = (payload.get("event") or {}).get("event_id")
