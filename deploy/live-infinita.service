@@ -1,5 +1,5 @@
 [Unit]
-Description=Live Infinita MVP-001
+Description=Live Infinita MVP-002
 After=network.target
 
 [Service]
@@ -8,6 +8,7 @@ User=liveinfinita
 Group=liveinfinita
 WorkingDirectory=/opt/live.infinita
 Environment="PYTHONUNBUFFERED=1"
+Environment="LIVE_INFINITA_DATA_DIR=/var/lib/live-infinita"
 ExecStart=/opt/live.infinita/.venv/bin/uvicorn --app-dir /opt/live.infinita/apps/world-runtime main:app --host 0.0.0.0 --port 8080
 Restart=on-failure
 RestartSec=3
