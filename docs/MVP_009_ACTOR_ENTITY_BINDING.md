@@ -77,3 +77,13 @@ python3 tests/validate_mvp009_vm.py
 
 Testes de vínculo usam dados temporários, incluindo o personagem de teste.
 A verificação de produção não cria observações nem executa ações do mundo.
+
+## Validação pré-instalação — 2026-09-11
+
+- 33 testes passaram no Windows/Python 3.11 e no Ubuntu/Python 3.14.
+- Servidor HTTP isolado na VM: vínculo, reinício real do processo, persistência,
+  repetição sem duplicar, desvínculo e replay passaram.
+- O teste confirmou mundo inalterado entre vincular e desvincular, e HTTP 401
+  para tentativa de vínculo sem chave.
+- Sintaxe Bash e hashes dos arquivos do instalador foram conferidos na VM.
+- Instalação no serviço de produção ainda pendente de execução com sudo.
