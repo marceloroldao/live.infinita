@@ -1,0 +1,32 @@
+{
+  "world_id": "mvp001",
+  "version": 1,
+  "title": "Clareira Inicial",
+  "environment": {
+    "period": "day"
+  },
+  "entities": [
+    {
+      "id": "tree_01",
+      "type": "tree",
+      "position": {"x": 220, "y": 250},
+      "scale": 1.0,
+      "properties": {"label": "Árvore"}
+    },
+    {
+      "id": "fire_01",
+      "type": "campfire",
+      "position": {"x": 470, "y": 330},
+      "scale": 1.0,
+      "properties": {"label": "Fogueira", "lit": true}
+    }
+  ],
+  "narration": {
+    "text": "Uma clareira silenciosa. Uma árvore permanece ao lado de uma pequena fogueira.",
+    "tts_enabled": false
+  },
+  "provenance": {
+    "source": "mvp001-bootstrap",
+    "authority": "world-runtime"
+  }
+}
