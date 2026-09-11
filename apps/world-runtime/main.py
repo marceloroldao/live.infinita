@@ -4,6 +4,7 @@ import asyncio
 import json
 import os
 import sys
+import time
 from pathlib import Path
 from typing import Any
 
@@ -19,18 +20,23 @@ BOOTSTRAP_FILE = ROOT / "examples" / "world-state.mvp001.bootstrap.json"
 RENDERER_DIR = ROOT / "apps" / "renderer-web"
 DATA_DIR = Path(os.environ.get("LIVE_INFINITA_DATA_DIR", "/var/lib/live-infinita"))
 AUDIENCE_EVENTS_FILE = DATA_DIR / "audience-events.jsonl"
+AUDIENCE_PROPOSALS_FILE = DATA_DIR / "audience-proposals.jsonl"
 GATEWAY_DIR = ROOT / "apps" / "gateway"
-if str(GATEWAY_DIR) not in sys.path:
-    sys.path.insert(0, str(GATEWAY_DIR))
+AUDIENCE_DIR = ROOT / "apps" / "audience"
+for path in (GATEWAY_DIR, AUDIENCE_DIR):
+    if str(path) not in sys.path:
+        sys.path.insert(0, str(path))
 
 from pipeline import GatewayPipeline  # noqa: E402
+from aggregator import AudienceAggregator  # noqa: E402
 
-app = FastAPI(title="Live Infinita MVP-006", version="0.7.0")
+app = FastAPI(title="Live Infinita MVP-007", version="0.8.0")
 clients: set[WebSocket] = set()
 world_lock = asyncio.Lock()
 audience_lock = asyncio.Lock()
 engine = DeterministicWorldEngine(BOOTSTRAP_FILE, DATA_DIR)
 pipeline = GatewayPipeline()
+aggregator = AudienceAggregator()
 
 
 class SimulationRequest(BaseModel):
@@ -74,11 +80,11 @@ async def broadcast(message: dict) -> None:
         clients.discard(client)
 
 
-def read_audience_events() -> list[dict[str, Any]]:
-    if not AUDIENCE_EVENTS_FILE.exists():
+def read_jsonl(path: Path) -> list[dict[str, Any]]:
+    if not path.exists():
         return []
     result: list[dict[str, Any]] = []
-    with AUDIENCE_EVENTS_FILE.open("r", encoding="utf-8") as fh:
+    with path.open("r", encoding="utf-8") as fh:
         for line in fh:
             line = line.strip()
             if line:
@@ -86,9 +92,9 @@ def read_audience_events() -> list[dict[str, Any]]:
     return result
 
 
-def append_audience_event(record: dict[str, Any]) -> None:
+def append_jsonl(path: Path, record: dict[str, Any]) -> None:
     DATA_DIR.mkdir(parents=True, exist_ok=True)
-    with AUDIENCE_EVENTS_FILE.open("a", encoding="utf-8") as fh:
+    with path.open("a", encoding="utf-8") as fh:
         fh.write(json.dumps(record, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n")
 
 
@@ -101,18 +107,9 @@ async def process_gateway_payload(payload: dict[str, Any]) -> JSONResponse:
     normalized_dict = normalized.to_dict()
     envelope = {
         "normalized_event": normalized_dict,
-        "proposed_action": {
-            "action": proposed.action,
-            "confidence": proposed.confidence,
-            "reason": proposed.reason,
-        },
-        "validation": {
-            "accepted": validation.accepted,
-            "action": validation.action,
-            "reason": validation.reason,
-        },
+        "proposed_action": {"action": proposed.action, "confidence": proposed.confidence, "reason": proposed.reason},
+        "validation": {"accepted": validation.accepted, "action": validation.action, "reason": validation.reason},
     }
-
     if not validation.accepted or validation.action is None:
         return JSONResponse({"ok": False, **envelope}, status_code=422)
 
@@ -146,15 +143,15 @@ async def health() -> JSONResponse:
     return JSONResponse({
         "ok": True,
         "service": "live-infinita",
-        "mvp": "006",
-        "version": "0.7.0",
+        "mvp": "007",
+        "version": "0.8.0",
         "replay_ok": verification["ok"],
         "state_hash": verification["current_hash"],
-        "pipeline": ["real-source-bridge", "source-adapter", "universal-envelope", "intent", "validator", "runtime"],
-        "sources": ["simulator", "api", "tiktok", "youtube", "agent"],
-        "real_sources": ["tiktok"],
+        "pipeline": ["real-source-bridge", "audience-side-channel", "audience-aggregator", "proposal-gate", "intent", "validator", "runtime"],
         "audience_events": ["join", "like", "gift"],
-        "audience_events_total": len(read_audience_events()),
+        "audience_events_total": len(read_jsonl(AUDIENCE_EVENTS_FILE)),
+        "audience_proposals_total": len(read_jsonl(AUDIENCE_PROPOSALS_FILE)),
+        "audience_rules": aggregator.rules_snapshot(),
     })
 
 
@@ -175,7 +172,40 @@ async def get_deltas() -> JSONResponse:
 
 @app.get("/api/audience/events")
 async def get_audience_events() -> JSONResponse:
-    return JSONResponse({"events": read_audience_events()})
+    return JSONResponse({"events": read_jsonl(AUDIENCE_EVENTS_FILE)})
+
+
+@app.get("/api/audience/rules")
+async def get_audience_rules() -> JSONResponse:
+    return JSONResponse({"rules": aggregator.rules_snapshot()})
+
+
+@app.get("/api/audience/proposals")
+async def get_audience_proposals() -> JSONResponse:
+    return JSONResponse({"proposals": read_jsonl(AUDIENCE_PROPOSALS_FILE)})
+
+
+@app.post("/api/audience/proposals/{proposal_id}/commit")
+async def commit_audience_proposal(proposal_id: str) -> JSONResponse:
+    proposals = read_jsonl(AUDIENCE_PROPOSALS_FILE)
+    proposal = next((p for p in reversed(proposals) if p.get("proposal_id") == proposal_id), None)
+    if proposal is None:
+        raise HTTPException(status_code=404, detail="proposta não encontrada")
+    if proposal.get("status") != "pending":
+        raise HTTPException(status_code=409, detail="proposta não está pendente")
+
+    response = await process_gateway_payload({
+        "source": "api",
+        "source_event_id": f"audience-proposal-{proposal_id}",
+        "actor_id": "audience-aggregator",
+        "display_name": "Audience Aggregator",
+        "kind": "text",
+        "text": proposal["gateway_text"],
+        "metadata": {"proposal_id": proposal_id, "rule_id": proposal["rule_id"]},
+    })
+    if response.status_code < 300:
+        append_jsonl(AUDIENCE_PROPOSALS_FILE, {**proposal, "status": "committed", "committed_at_unix": time.time()})
+    return response
 
 
 @app.get("/api/replay/verify")
@@ -213,25 +243,30 @@ async def audience_event(source: str, request: AudienceEventRequest) -> JSONResp
         "actor": {"actor_id": request.actor_id, "display_name": request.display_name},
         "kind": kind,
         "metadata": request.metadata,
+        "received_at_unix": time.time(),
     }
 
     async with audience_lock:
-        existing = read_audience_events()
-        duplicate = any(
-            item.get("source") == source and item.get("source_event_id") == request.source_event_id
-            for item in existing
-        )
+        existing = read_jsonl(AUDIENCE_EVENTS_FILE)
+        duplicate = any(item.get("source") == source and item.get("source_event_id") == request.source_event_id for item in existing)
+        proposals: list[dict[str, Any]] = []
         if not duplicate:
-            append_audience_event(record)
+            append_jsonl(AUDIENCE_EVENTS_FILE, record)
+            proposals = aggregator.ingest(record, now=record["received_at_unix"])
+            for proposal in proposals:
+                append_jsonl(AUDIENCE_PROPOSALS_FILE, proposal)
 
     if not duplicate:
         await broadcast({"type": "audience_event", "event": record})
+        for proposal in proposals:
+            await broadcast({"type": "audience_proposal", "proposal": proposal})
 
     return JSONResponse({
         "ok": True,
         "duplicate": duplicate,
         "world_mutated": False,
         "event": record,
+        "proposals": proposals,
     }, status_code=200 if duplicate else 202)
 
 
