@@ -40,9 +40,11 @@ chmod 0640 "$ENV_FILE"
 install -m 0644 "$INSTALL_DIR/deploy/live-infinita-tiktok.service" /etc/systemd/system/live-infinita-tiktok.service
 
 systemctl daemon-reload
-systemctl enable --now "$SERVICE"
+systemctl enable "$SERVICE"
+systemctl restart "$SERVICE"
 
 echo
 printf 'TikTok Live Source configurado para %s.\n' "$UNIQUE_ID"
+printf 'Config: %s\n' "$ENV_FILE"
 printf 'Status: systemctl status %s --no-pager\n' "$SERVICE"
 printf 'Logs:   journalctl -u %s -f\n' "$SERVICE"
