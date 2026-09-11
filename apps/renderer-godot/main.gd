@@ -1,6 +1,7 @@
 extends Node2D
 
 const EntityVisual = preload("res://entity_visual.gd")
+const WebAudio = preload("res://audio_web.gd")
 
 var socket := WebSocketPeer.new()
 var world: Dictionary = {}
@@ -11,8 +12,12 @@ var last_reconcile := {"added": 0, "updated": 0, "removed": 0, "unchanged": 0}
 var request_in_flight := false
 var control_status := "controles prontos"
 var http_request: HTTPRequest
+var audio = WebAudio.new()
+var audio_status := "áudio desligado — toque em Ativar áudio"
+var last_spoken_narration := ""
 
 func _ready() -> void:
+    audio.setup()
     _build_debug_controls()
     _connect_websocket()
     queue_redraw()
@@ -30,8 +35,8 @@ func _build_debug_controls() -> void:
 
     var panel := PanelContainer.new()
     panel.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
-    panel.position = Vector2(-325, -118)
-    panel.custom_minimum_size = Vector2(650, 92)
+    panel.position = Vector2(-325, -170)
+    panel.custom_minimum_size = Vector2(650, 144)
     layer.add_child(panel)
 
     var vbox := VBoxContainer.new()
@@ -54,12 +59,73 @@ func _build_debug_controls() -> void:
     _add_action_button(row, "Mover árvore", "move_tree")
     _add_action_button(row, "+ Visitante", "spawn_person")
 
+    var audio_row := HBoxContainer.new()
+    audio_row.alignment = BoxContainer.ALIGNMENT_CENTER
+    audio_row.add_theme_constant_override("separation", 6)
+    vbox.add_child(audio_row)
+
+    var enable_audio := Button.new()
+    enable_audio.text = "🔊 Ativar áudio"
+    enable_audio.custom_minimum_size = Vector2(150, 38)
+    enable_audio.pressed.connect(_on_enable_audio_pressed)
+    audio_row.add_child(enable_audio)
+
+    var narrate := Button.new()
+    narrate.text = "Narrar agora"
+    narrate.custom_minimum_size = Vector2(125, 38)
+    narrate.pressed.connect(_on_narrate_pressed)
+    audio_row.add_child(narrate)
+
+    var quieter := Button.new()
+    quieter.text = "Ambiente −"
+    quieter.custom_minimum_size = Vector2(105, 38)
+    quieter.pressed.connect(func(): _change_ambient_volume(-0.05))
+    audio_row.add_child(quieter)
+
+    var louder := Button.new()
+    louder.text = "Ambiente +"
+    louder.custom_minimum_size = Vector2(105, 38)
+    louder.pressed.connect(func(): _change_ambient_volume(0.05))
+    audio_row.add_child(louder)
+
 func _add_action_button(parent: Control, label: String, action: String) -> void:
     var button := Button.new()
     button.text = label
     button.custom_minimum_size = Vector2(112, 38)
     button.pressed.connect(func(): _send_debug_action(action))
     parent.add_child(button)
+
+func _on_enable_audio_pressed() -> void:
+    if audio.enable_audio():
+        audio.set_ambient_volume(audio.ambient_volume)
+        audio_status = "áudio ativo · narrador pt-BR · ambiente %.0f%%" % (audio.ambient_volume * 100.0)
+        var narration := str(world.get("narration", {}).get("text", "")).strip_edges()
+        if not narration.is_empty():
+            audio.speak(narration)
+            last_spoken_narration = narration
+    else:
+        audio_status = "áudio indisponível neste cliente"
+    queue_redraw()
+
+func _on_narrate_pressed() -> void:
+    if not audio.enabled:
+        _on_enable_audio_pressed()
+        return
+    var narration := str(world.get("narration", {}).get("text", "")).strip_edges()
+    if narration.is_empty():
+        audio_status = "não há narração no World State"
+    else:
+        audio.speak(narration)
+        last_spoken_narration = narration
+        audio_status = "narrando evento atual"
+    queue_redraw()
+
+func _change_ambient_volume(delta: float) -> void:
+    if not audio.enabled:
+        _on_enable_audio_pressed()
+    audio.set_ambient_volume(audio.ambient_volume + delta)
+    audio_status = "áudio ativo · narrador pt-BR · ambiente %.0f%%" % (audio.ambient_volume * 100.0)
+    queue_redraw()
 
 func _api_base_url() -> String:
     if OS.has_feature("web"):
@@ -126,6 +192,13 @@ func _apply_world_state(next_world: Dictionary) -> void:
     last_reconcile = _reconcile_entities(world.get("entities", []))
     last_message = "World State v%s / seq %s" % [world.get("version", "?"), world.get("sequence", "?")]
     control_status = "World State recebido via WebSocket"
+
+    var narration := str(world.get("narration", {}).get("text", "")).strip_edges()
+    if audio.enabled and not narration.is_empty() and narration != last_spoken_narration:
+        audio.speak(narration)
+        last_spoken_narration = narration
+        audio_status = "narrador reproduziu o novo evento"
+
     queue_redraw()
 
 func _reconcile_entities(entities) -> Dictionary:
@@ -178,7 +251,7 @@ func _draw() -> void:
     else:
         draw_circle(Vector2(viewport.x - 110, 90), 38, Color("#ffd34f"))
 
-    var panel := Rect2(20, 20, 440, 158)
+    var panel := Rect2(20, 20, 500, 184)
     draw_rect(panel, Color(0.03, 0.05, 0.08, 0.86), true)
     draw_rect(panel, Color(0.55, 0.85, 1.0, 0.8), false, 2.0)
     var font := ThemeDB.fallback_font
@@ -195,8 +268,9 @@ func _draw() -> void:
         Color("#c9f7cf")
     )
     draw_string(font, Vector2(38, 153), control_status, HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color("#f3d89b"))
+    draw_string(font, Vector2(38, 178), audio_status, HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color("#e6c7ff"))
 
     var narration := str(world.get("narration", {}).get("text", ""))
     if not narration.is_empty():
-        draw_rect(Rect2(110, viewport.y - 148, viewport.x - 220, 48), Color(0.02, 0.03, 0.05, 0.82), true)
-        draw_string(font, Vector2(135, viewport.y - 117), narration, HORIZONTAL_ALIGNMENT_CENTER, viewport.x - 270, 18, Color.WHITE)
+        draw_rect(Rect2(110, viewport.y - 208, viewport.x - 220, 48), Color(0.02, 0.03, 0.05, 0.82), true)
+        draw_string(font, Vector2(135, viewport.y - 177), narration, HORIZONTAL_ALIGNMENT_CENTER, viewport.x - 270, 18, Color.WHITE)
