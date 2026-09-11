@@ -1,37 +1,35 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Live Infinita — Gerência</title>
-  <link rel="stylesheet" href="/manage/style.css">
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#080a0f">
+  <title>Live Infinita — Manager</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23080a0f'/%3E%3Cpath d='M14 33c7-14 15-14 22 0s15 14 22 0' fill='none' stroke='%23b7ff44' stroke-width='7' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <main>
-    <header><span>LIVE INFINITA</span><h1>Gerência</h1><p>Conecte os serviços usados pela live.</p></header>
-    <section class="unlock">
-      <label>Chave de gerenciamento</label>
-      <div class="row"><input id="operator" type="password" autocomplete="current-password" placeholder="Cole a chave do operador"><button id="unlock">Entrar</button></div>
-      <small>A chave fica apenas nesta aba.</small>
+  <div class="ambient" aria-hidden="true"></div>
+  <main id="login-view" class="login-shell">
+    <section class="login-card" aria-labelledby="login-title">
+      <div class="brand-mark" aria-hidden="true">∞</div><p class="eyebrow">LIVE INFINITA</p>
+      <h1 id="login-title">Bem-vindo de volta.</h1><p class="intro">Entre para acessar o centro de controle da sua live.</p>
+      <form id="login-form"><label for="operator">Senha de gerenciamento</label><div class="password-field"><input id="operator" type="password" autocomplete="current-password" placeholder="Digite sua senha" required autofocus><button id="toggle-password" class="icon-button" type="button" aria-label="Mostrar senha">◉</button></div><button id="unlock" class="primary wide" type="submit"><span>Entrar no manager</span><span aria-hidden="true">→</span></button></form>
+      <p id="login-message" class="message" role="status"></p><p class="secure-note"><span aria-hidden="true">◆</span> Acesso protegido e conexão segura</p>
     </section>
-    <div id="panel" hidden>
-      <section>
-        <div class="title"><h2>OpenAI</h2><span id="openai-state" class="badge">Não configurado</span></div>
-        <label>API key</label><input id="openai-key" type="password" autocomplete="off" placeholder="Deixe vazio para manter a atual">
-        <label>Modelo</label><input id="openai-model" value="gpt-5-mini">
-        <div class="actions"><button data-save="openai">Salvar</button><button class="secondary" id="test-openai">Testar conexão</button><button class="danger" data-clear="openai_api_key">Remover chave</button></div>
-      </section>
-      <section>
-        <div class="title"><h2>TikTok Live</h2><span id="tiktok-state" class="badge">Não configurado</span></div>
-        <label>Usuário da live</label><input id="tiktok-user" placeholder="@usuario">
-        <label>Chave Euler Stream (opcional)</label><input id="tiktok-key" type="password" autocomplete="off" placeholder="Deixe vazio para manter a atual">
-        <p class="note">A integração atual lê lives públicas pelo usuário. A chave opcional aumenta os limites do assinador usado pela biblioteca TikTokLive.</p>
-        <div class="actions"><button data-save="tiktok">Salvar</button><button class="danger" data-clear="tiktok_sign_api_key">Remover chave</button></div>
-        <p class="note">Quando o conector estiver ativo, ele será reiniciado automaticamente após salvar.</p>
-      </section>
-    </div>
-    <p id="message" role="status"></p>
   </main>
-  <script src="/manage/app.js"></script>
-</body>
-</html>
+  <div id="manager-view" class="app-shell" hidden>
+    <aside class="sidebar">
+      <a class="brand" href="/" aria-label="Live Infinita Manager"><span class="brand-symbol">∞</span><span>LIVE<br>INFINITA</span></a>
+      <nav aria-label="Navegação principal"><a class="nav-link active" href="#integracoes"><span>◫</span> Integrações</a><a class="nav-link" href="/godot/"><span>◇</span> Godot <b>↗</b></a><a class="nav-link" href="/gdscript/"><span>⌁</span> GDScript <b>↗</b></a></nav>
+      <button id="logout" class="logout" type="button"><span>↪</span> Sair</button>
+    </aside>
+    <main class="workspace" id="integracoes">
+      <header class="topbar"><div><p class="eyebrow">CENTRO DE CONTROLE</p><h1>Integrações</h1></div><span class="system-status"><i></i> Sistema online</span></header>
+      <section class="hero"><div><p class="eyebrow green">CONEXÕES</p><h2>Alimente o seu mundo.</h2><p>Conecte os serviços que dão inteligência e audiência à Live Infinita.</p></div><div class="hero-orbit" aria-hidden="true"><span>∞</span></div></section>
+      <div class="integration-grid">
+        <section class="integration-card"><div class="card-heading"><div class="service-icon openai">AI</div><div><h2>OpenAI</h2><p>Inteligência do mundo</p></div><span id="openai-state" class="badge">Não configurado</span></div><label for="openai-key">API key</label><input id="openai-key" type="password" autocomplete="off" placeholder="Cole sua API key"><label for="openai-model">Modelo</label><input id="openai-model" value="gpt-5-mini"><div class="actions"><button class="primary" data-save="openai">Salvar alterações</button><button class="secondary" id="test-openai">Testar</button></div><button class="remove" data-clear="openai_api_key">Remover chave</button></section>
+        <section class="integration-card"><div class="card-heading"><div class="service-icon tiktok">♪</div><div><h2>TikTok Live</h2><p>Audiência em tempo real</p></div><span id="tiktok-state" class="badge">Não configurado</span></div><label for="tiktok-user">Usuário da live</label><input id="tiktok-user" placeholder="@usuario"><label for="tiktok-key">Chave Euler Stream <small>opcional</small></label><input id="tiktok-key" type="password" autocomplete="off" placeholder="Deixe vazio para manter a atual"><div class="actions"><button class="primary" data-save="tiktok">Salvar alterações</button></div><button class="remove" data-clear="tiktok_sign_api_key">Remover chave</button></section>
+      </div><p id="message" class="toast" role="status"></p>
+    </main>
+  </div>
+  <script src="/app.js"></script>
+</body></html>

@@ -38,9 +38,10 @@ class IntegrationManagementAPITest(unittest.TestCase):
         self.headers = {"Authorization": "Bearer manager-token"}
 
     def test_manager_page_and_api_authentication(self):
-        page = self.client.get("/manage/")
+        page = self.client.get("/")
         self.assertEqual(page.status_code, 200)
-        self.assertIn("Gerência", page.text)
+        self.assertIn("Live Infinita", page.text)
+        self.assertIn("login-form", page.text)
         self.assertEqual(page.headers["cache-control"], "no-store")
         self.assertIn("frame-ancestors 'none'", page.headers["content-security-policy"])
         self.assertEqual(self.client.get("/api/manage/integrations").status_code, 401)

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
+import hmac
 import json
 import os
 import secrets
@@ -11,8 +13,8 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
-from fastapi import Depends, FastAPI, Header, HTTPException, WebSocket, WebSocketDisconnect
-from fastapi.responses import JSONResponse
+from fastapi import Cookie, Depends, FastAPI, Header, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -29,6 +31,8 @@ ACTOR_OBSERVATIONS_FILE = DATA_DIR / "actor-observations.jsonl"
 ACTOR_BINDINGS_FILE = DATA_DIR / "actor-bindings.jsonl"
 INTEGRATIONS_FILE = DATA_DIR / "integrations.json"
 OPERATOR_TOKEN = os.environ.get("LIVE_INFINITA_OPERATOR_TOKEN", "")
+SESSION_COOKIE = "live_infinita_session"
+SESSION_MAX_AGE = 60 * 60 * 12
 GATEWAY_DIR = ROOT / "apps" / "gateway"
 AUDIENCE_DIR = ROOT / "apps" / "audience"
 ACTORS_DIR = ROOT / "apps" / "actors"
@@ -43,7 +47,7 @@ from store import ActorStore  # noqa: E402
 from bindings import ActorBindingStore, BindingConflict  # noqa: E402
 from settings import IntegrationStore  # noqa: E402
 
-app = FastAPI(title="Live Infinita MVP-010", version="0.11.0")
+app = FastAPI(title="Live Infinita MVP-011", version="0.12.0")
 clients: set[WebSocket] = set()
 world_lock = asyncio.Lock()
 audience_lock = asyncio.Lock()
@@ -59,28 +63,53 @@ integrations = IntegrationStore(INTEGRATIONS_FILE)
 @app.middleware("http")
 async def management_security_headers(request, call_next):
     response = await call_next(request)
-    if request.url.path.startswith("/manage") or request.url.path.startswith("/api/manage/"):
+    if (request.url.path == "/" or request.url.path.startswith("/manage")
+            or request.url.path.startswith("/api/manage/") or request.url.path in {"/style.css", "/app.js"}):
         response.headers["Cache-Control"] = "no-store"
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; script-src 'self'; style-src 'self'; "
-            "connect-src 'self'; img-src 'self'; frame-ancestors 'none'; form-action 'none'"
+            "connect-src 'self'; img-src 'self'; frame-ancestors 'none'; form-action 'self'"
         )
     return response
 
 
-def require_operator(authorization: str | None = Header(default=None)) -> None:
+def session_value(expires_at: int) -> str:
+    signature = hmac.new(OPERATOR_TOKEN.encode("utf-8"), str(expires_at).encode("ascii"), hashlib.sha256).hexdigest()
+    return f"{expires_at}.{signature}"
+
+
+def valid_session(value: str | None) -> bool:
+    if not OPERATOR_TOKEN or not value:
+        return False
+    try:
+        expires_raw, signature = value.split(".", 1)
+        expires_at = int(expires_raw)
+    except (TypeError, ValueError):
+        return False
+    return expires_at >= int(time.time()) and secrets.compare_digest(value, session_value(expires_at))
+
+
+def require_operator(
+    authorization: str | None = Header(default=None),
+    session: str | None = Cookie(default=None, alias=SESSION_COOKIE),
+) -> None:
     if not OPERATOR_TOKEN:
         raise HTTPException(status_code=503, detail="chave do operador não configurada")
     expected = f"Bearer {OPERATOR_TOKEN}".encode("utf-8")
-    if not secrets.compare_digest((authorization or "").encode("utf-8"), expected):
+    bearer_ok = secrets.compare_digest((authorization or "").encode("utf-8"), expected)
+    if not bearer_ok and not valid_session(session):
         raise HTTPException(status_code=401, detail="chave do operador inválida",
                             headers={"WWW-Authenticate": "Bearer"})
 
 
 class ActorEntityRequest(BaseModel):
     entity_id: str = Field(min_length=1, max_length=200, pattern=r"^\S+$")
+
+
+class LoginRequest(BaseModel):
+    password: str = Field(min_length=1, max_length=500)
 
 
 class IntegrationUpdate(BaseModel):
@@ -292,8 +321,8 @@ async def health() -> JSONResponse:
     return JSONResponse({
         "ok": True,
         "service": "live-infinita",
-        "mvp": "010",
-        "version": "0.11.0",
+        "mvp": "011",
+        "version": "0.12.0",
         "replay_ok": verification["ok"],
         "state_hash": verification["current_hash"],
         "pipeline": ["real-source-bridge", "actor-state", "audience-side-channel", "audience-aggregator", "proposal-gate", "intent", "validator", "runtime"],
@@ -391,6 +420,26 @@ async def unbind_actor_entity(source: str, actor_id: str, request: ActorEntityRe
 @app.get("/api/manage/integrations", dependencies=[Depends(require_operator)])
 async def get_integrations() -> JSONResponse:
     return JSONResponse(integrations.public_status())
+
+
+@app.post("/api/manage/login")
+async def manager_login(request: LoginRequest) -> JSONResponse:
+    if not OPERATOR_TOKEN:
+        raise HTTPException(status_code=503, detail="acesso da gerência não configurado")
+    if not secrets.compare_digest(request.password.encode("utf-8"), OPERATOR_TOKEN.encode("utf-8")):
+        raise HTTPException(status_code=401, detail="senha inválida")
+    expires_at = int(time.time()) + SESSION_MAX_AGE
+    result = JSONResponse({"ok": True, "expires_at": expires_at})
+    result.set_cookie(SESSION_COOKIE, session_value(expires_at), max_age=SESSION_MAX_AGE,
+                      httponly=True, secure=True, samesite="strict", path="/")
+    return result
+
+
+@app.post("/api/manage/logout")
+async def manager_logout() -> JSONResponse:
+    result = JSONResponse({"ok": True})
+    result.delete_cookie(SESSION_COOKIE, path="/", secure=True, httponly=True, samesite="strict")
+    return result
 
 
 @app.put("/api/manage/integrations", dependencies=[Depends(require_operator)])
@@ -595,5 +644,11 @@ async def websocket_endpoint(websocket: WebSocket) -> None:
         await websocket.close()
 
 
-app.mount("/manage", StaticFiles(directory=str(MANAGER_DIR), html=True), name="manager")
-app.mount("/", StaticFiles(directory=str(RENDERER_DIR), html=True), name="renderer")
+@app.get("/manage", include_in_schema=False)
+@app.get("/manage/", include_in_schema=False)
+async def legacy_manager_redirect() -> RedirectResponse:
+    return RedirectResponse(url="/", status_code=308)
+
+
+app.mount("/gdscript", StaticFiles(directory=str(RENDERER_DIR), html=True), name="gdscript-renderer")
+app.mount("/", StaticFiles(directory=str(MANAGER_DIR), html=True), name="manager")
