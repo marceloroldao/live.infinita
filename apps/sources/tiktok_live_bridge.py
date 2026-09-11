@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 import os
 import sys
-import time
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
@@ -11,6 +10,8 @@ from typing import Any
 
 from TikTokLive import TikTokLiveClient
 from TikTokLive.events import CommentEvent, ConnectEvent, DisconnectEvent, LiveEndEvent
+
+from tiktok_mapping import comment_to_payload
 
 
 @dataclass(frozen=True)
@@ -32,45 +33,6 @@ class BridgeConfig:
         ).strip()
         timeout = float(os.environ.get("LIVE_INFINITA_SOURCE_TIMEOUT", "5"))
         return cls(unique_id=unique_id, gateway_url=gateway_url, timeout_seconds=timeout)
-
-
-def _scalar(value: Any) -> str | int | float | bool | None:
-    if value is None or isinstance(value, (str, int, float, bool)):
-        return value
-    return str(value)
-
-
-def comment_to_payload(event: Any, room_id: Any = None) -> dict[str, Any]:
-    user = getattr(event, "user", None)
-    actor_id = (
-        getattr(user, "unique_id", None)
-        or getattr(user, "id", None)
-        or getattr(user, "user_id", None)
-        or "unknown"
-    )
-    display_name = (
-        getattr(user, "nickname", None)
-        or getattr(user, "unique_id", None)
-        or str(actor_id)
-    )
-    comment = str(getattr(event, "comment", "")).strip()
-    common = getattr(event, "common", None)
-    source_event_id = (
-        getattr(common, "msg_id", None)
-        or getattr(common, "message_id", None)
-        or f"comment-{time.time_ns()}"
-    )
-    return {
-        "source_event_id": str(source_event_id),
-        "actor_id": str(actor_id),
-        "display_name": str(display_name),
-        "text": comment,
-        "metadata": {
-            "event_type": "comment",
-            "room_id": _scalar(room_id),
-            "bridge": "TikTokLive",
-        },
-    }
 
 
 def post_json(url: str, payload: dict[str, Any], timeout: float) -> tuple[int, dict[str, Any]]:
@@ -98,7 +60,7 @@ def build_client(config: BridgeConfig) -> TikTokLiveClient:
     client = TikTokLiveClient(unique_id=config.unique_id)
 
     @client.on(ConnectEvent)
-    async def on_connect(event: ConnectEvent) -> None:
+    async def on_connect(_: ConnectEvent) -> None:
         print(
             f"[tiktok] conectado a {config.unique_id} room_id={client.room_id}",
             flush=True,
