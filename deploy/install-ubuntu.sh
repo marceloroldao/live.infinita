@@ -48,9 +48,10 @@ sleep 1
 curl --fail --silent http://127.0.0.1:8080/api/health >/dev/null
 
 echo
-printf 'Live Infinita MVP-007 instalado.\n'
+printf 'Live Infinita MVP-008 instalado.\n'
 printf 'Preview:    http://IP_DA_VM/\n'
 printf 'Health:     http://IP_DA_VM/api/health\n'
+printf 'Actors:     http://IP_DA_VM/api/actors\n'
 printf 'Audience:   http://IP_DA_VM/api/audience/events\n'
 printf 'Rules:      http://IP_DA_VM/api/audience/rules\n'
 printf 'Proposals:  http://IP_DA_VM/api/audience/proposals\n'
