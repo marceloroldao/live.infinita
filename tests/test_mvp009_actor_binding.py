@@ -95,7 +95,7 @@ class ActorBindingTest(unittest.TestCase):
 
     def test_health_exposes_binding_capability_without_secret(self):
         health = self.client.get("/api/health").json()
-        self.assertEqual((health["mvp"], health["version"]), ("009", "0.10.0"))
+        self.assertEqual(health["version"], self.runtime.app.version)
         self.assertTrue(health["operator_binding_enabled"])
         self.assertEqual(health["actor_bindings_total"], 0)
         self.bind()

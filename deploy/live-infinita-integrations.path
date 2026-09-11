@@ -1,0 +1,9 @@
+[Unit]
+Description=Live Infinita integration settings watcher
+
+[Path]
+PathChanged=/var/lib/live-infinita/integrations.json
+Unit=live-infinita-integrations-reload.service
+
+[Install]
+WantedBy=multi-user.target
