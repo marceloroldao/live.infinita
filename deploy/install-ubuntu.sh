@@ -24,17 +24,13 @@ if ! id -u "$SERVICE_USER" >/dev/null 2>&1; then
 fi
 
 mkdir -p "$INSTALL_DIR" "$DATA_DIR"
-rsync -a --delete \
-  --exclude '.git/' \
-  --exclude '.venv/' \
-  "$SOURCE_DIR/" "$INSTALL_DIR/"
+rsync -a --delete --exclude '.git/' --exclude '.venv/' "$SOURCE_DIR/" "$INSTALL_DIR/"
 
 python3 -m venv "$INSTALL_DIR/.venv"
 "$INSTALL_DIR/.venv/bin/pip" install --upgrade pip
 "$INSTALL_DIR/.venv/bin/pip" install -r "$INSTALL_DIR/apps/world-runtime/requirements.txt"
 
 chown -R "$SERVICE_USER:$SERVICE_USER" "$INSTALL_DIR" "$DATA_DIR"
-
 install -m 0644 "$INSTALL_DIR/deploy/live-infinita.service" /etc/systemd/system/live-infinita.service
 install -m 0644 "$INSTALL_DIR/deploy/live-infinita-tiktok.service" /etc/systemd/system/live-infinita-tiktok.service
 install -m 0644 "$INSTALL_DIR/deploy/nginx-live-infinita.conf" /etc/nginx/sites-available/live-infinita
@@ -52,12 +48,13 @@ sleep 1
 curl --fail --silent http://127.0.0.1:8080/api/health >/dev/null
 
 echo
-printf 'Live Infinita MVP-006 instalado.\n'
-printf 'Preview:   http://IP_DA_VM/\n'
-printf 'Health:    http://IP_DA_VM/api/health\n'
-printf 'Gateway:   http://IP_DA_VM/api/gateway/event\n'
-printf 'Audience:  http://IP_DA_VM/api/audience/events\n'
-printf 'TikTok:    opcional; configure com sudo bash deploy/configure-tiktok.sh @usuario\n'
-printf 'Replay:    http://IP_DA_VM/api/replay/verify\n'
-printf 'Dados:     /var/lib/live-infinita\n'
-printf 'Status:    systemctl status live-infinita --no-pager\n'
+printf 'Live Infinita MVP-007 instalado.\n'
+printf 'Preview:    http://IP_DA_VM/\n'
+printf 'Health:     http://IP_DA_VM/api/health\n'
+printf 'Audience:   http://IP_DA_VM/api/audience/events\n'
+printf 'Rules:      http://IP_DA_VM/api/audience/rules\n'
+printf 'Proposals:  http://IP_DA_VM/api/audience/proposals\n'
+printf 'Replay:     http://IP_DA_VM/api/replay/verify\n'
+printf 'TikTok:     opcional; configure com sudo bash deploy/configure-tiktok.sh @usuario\n'
+printf 'Dados:      /var/lib/live-infinita\n'
+printf 'Status:     systemctl status live-infinita --no-pager\n'
