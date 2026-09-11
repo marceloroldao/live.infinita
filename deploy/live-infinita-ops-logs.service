@@ -1,0 +1,21 @@
+[Unit]
+Description=Live Infinita protected operations log reader
+After=network.target live-infinita.service
+
+[Service]
+Type=simple
+User=liveinfinita
+Group=liveinfinita
+SupplementaryGroups=systemd-journal
+WorkingDirectory=/opt/live.infinita
+ExecStart=/opt/live.infinita/.venv/bin/python /opt/live.infinita/apps/ops-log-service/log_service.py
+Restart=always
+RestartSec=2
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadOnlyPaths=/var/log/journal /run/log/journal
+
+[Install]
+WantedBy=multi-user.target
