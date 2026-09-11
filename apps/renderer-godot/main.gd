@@ -1,9 +1,13 @@
 extends Node2D
 
+const EntityVisual = preload("res://entity_visual.gd")
+
 var socket := WebSocketPeer.new()
 var world: Dictionary = {}
 var connection_state := "conectando"
 var last_message := "aguardando World State"
+var entity_nodes: Dictionary = {}
+var last_reconcile := {"added": 0, "updated": 0, "removed": 0, "unchanged": 0}
 
 func _ready() -> void:
     _connect_websocket()
@@ -32,12 +36,53 @@ func _process(_delta: float) -> void:
             if typeof(parsed) == TYPE_DICTIONARY:
                 var msg: Dictionary = parsed
                 if msg.get("type") == "world_state" and typeof(msg.get("world")) == TYPE_DICTIONARY:
-                    world = msg["world"]
-                    last_message = "World State v%s / seq %s" % [world.get("version", "?"), world.get("sequence", "?")]
-                    queue_redraw()
+                    _apply_world_state(msg["world"])
     elif state == WebSocketPeer.STATE_CLOSED:
         connection_state = "desconectado"
         queue_redraw()
+
+func _apply_world_state(next_world: Dictionary) -> void:
+    world = next_world.duplicate(true)
+    last_reconcile = _reconcile_entities(world.get("entities", []))
+    last_message = "World State v%s / seq %s" % [world.get("version", "?"), world.get("sequence", "?")]
+    queue_redraw()
+
+func _reconcile_entities(entities) -> Dictionary:
+    var result := {"added": 0, "updated": 0, "removed": 0, "unchanged": 0}
+    var seen: Dictionary = {}
+
+    if typeof(entities) == TYPE_ARRAY:
+        for entity in entities:
+            if typeof(entity) != TYPE_DICTIONARY:
+                continue
+            var entity_id := str(entity.get("id", "")).strip_edges()
+            if entity_id.is_empty():
+                continue
+            seen[entity_id] = true
+
+            if not entity_nodes.has(entity_id):
+                var visual = EntityVisual.new()
+                visual.name = "Entity_%s" % entity_id
+                add_child(visual)
+                entity_nodes[entity_id] = visual
+                visual.apply_entity(entity)
+                result["added"] += 1
+            else:
+                var visual = entity_nodes[entity_id]
+                if visual.apply_entity(entity):
+                    result["updated"] += 1
+                else:
+                    result["unchanged"] += 1
+
+    var known_ids := entity_nodes.keys().duplicate()
+    for entity_id in known_ids:
+        if not seen.has(entity_id):
+            var visual = entity_nodes[entity_id]
+            entity_nodes.erase(entity_id)
+            visual.queue_free()
+            result["removed"] += 1
+
+    return result
 
 func _draw() -> void:
     var viewport := get_viewport_rect().size
@@ -52,46 +97,24 @@ func _draw() -> void:
     else:
         draw_circle(Vector2(viewport.x - 110, 90), 38, Color("#ffd34f"))
 
-    var entities = world.get("entities", [])
-    if typeof(entities) == TYPE_ARRAY:
-        for entity in entities:
-            if typeof(entity) != TYPE_DICTIONARY:
-                continue
-            _draw_entity(entity)
-
-    var panel := Rect2(20, 20, 330, 104)
+    var panel := Rect2(20, 20, 410, 132)
     draw_rect(panel, Color(0.03, 0.05, 0.08, 0.86), true)
     draw_rect(panel, Color(0.55, 0.85, 1.0, 0.8), false, 2.0)
     var font := ThemeDB.fallback_font
     draw_string(font, Vector2(38, 50), "LIVE INFINITA · GODOT", HORIZONTAL_ALIGNMENT_LEFT, -1, 22, Color.WHITE)
     draw_string(font, Vector2(38, 78), "WebSocket: %s" % connection_state, HORIZONTAL_ALIGNMENT_LEFT, -1, 17, Color("#b9dcff"))
     draw_string(font, Vector2(38, 103), last_message, HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Color("#d5d9de"))
+    draw_string(
+        font,
+        Vector2(38, 128),
+        "Reconcile +%s ~%s -%s =%s" % [last_reconcile["added"], last_reconcile["updated"], last_reconcile["removed"], last_reconcile["unchanged"]],
+        HORIZONTAL_ALIGNMENT_LEFT,
+        -1,
+        15,
+        Color("#c9f7cf")
+    )
 
     var narration := str(world.get("narration", {}).get("text", ""))
     if not narration.is_empty():
         draw_rect(Rect2(110, viewport.y - 78, viewport.x - 220, 48), Color(0.02, 0.03, 0.05, 0.82), true)
         draw_string(font, Vector2(135, viewport.y - 47), narration, HORIZONTAL_ALIGNMENT_CENTER, viewport.x - 270, 18, Color.WHITE)
-
-func _draw_entity(entity: Dictionary) -> void:
-    var p_data = entity.get("position", {})
-    var p := Vector2(float(p_data.get("x", 0)), float(p_data.get("y", 0)))
-    var scale_value := float(entity.get("scale", 1.0))
-    match str(entity.get("type", "")):
-        "tree":
-            draw_rect(Rect2(p.x - 13 * scale_value, p.y, 26 * scale_value, 95 * scale_value), Color("#6c4428"), true)
-            draw_circle(p + Vector2(0, -8), 60 * scale_value, Color("#286542"))
-            draw_circle(p + Vector2(-35, 18), 42 * scale_value, Color("#347d4d"))
-            draw_circle(p + Vector2(34, 18), 42 * scale_value, Color("#347d4d"))
-        "campfire":
-            draw_line(p + Vector2(-25, 20), p + Vector2(25, -12), Color("#6d4b31"), 9)
-            draw_line(p + Vector2(-25, -12), p + Vector2(25, 20), Color("#6d4b31"), 9)
-            if bool(entity.get("properties", {}).get("lit", false)):
-                draw_circle(p + Vector2(0, -12), 31, Color("#ff7c2d"))
-                draw_circle(p + Vector2(0, -20), 19, Color("#ffd24a"))
-        "human":
-            draw_circle(p + Vector2(0, -42), 15 * scale_value, Color("#f0c7a0"))
-            draw_line(p + Vector2(0, -27), p + Vector2(0, 22), Color("#384d88"), 15 * scale_value)
-            draw_line(p + Vector2(0, -4), p + Vector2(-22, 12), Color("#384d88"), 8 * scale_value)
-            draw_line(p + Vector2(0, -4), p + Vector2(22, 12), Color("#384d88"), 8 * scale_value)
-            draw_line(p + Vector2(0, 20), p + Vector2(-15, 50), Color("#26304e"), 8 * scale_value)
-            draw_line(p + Vector2(0, 20), p + Vector2(15, 50), Color("#26304e"), 8 * scale_value)
