@@ -30,7 +30,7 @@ for path in (GATEWAY_DIR, AUDIENCE_DIR):
 from pipeline import GatewayPipeline  # noqa: E402
 from aggregator import AudienceAggregator  # noqa: E402
 
-app = FastAPI(title="Live Infinita MVP-007", version="0.8.0")
+app = FastAPI(title="Live Infinita MVP-007", version="0.8.1")
 clients: set[WebSocket] = set()
 world_lock = asyncio.Lock()
 audience_lock = asyncio.Lock()
@@ -98,6 +98,20 @@ def append_jsonl(path: Path, record: dict[str, Any]) -> None:
         fh.write(json.dumps(record, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n")
 
 
+def current_proposals() -> list[dict[str, Any]]:
+    """Fold append-only proposal history to the latest state per proposal_id."""
+    latest: dict[str, dict[str, Any]] = {}
+    order: list[str] = []
+    for record in read_jsonl(AUDIENCE_PROPOSALS_FILE):
+        proposal_id = str(record.get("proposal_id", "")).strip()
+        if not proposal_id:
+            continue
+        if proposal_id not in latest:
+            order.append(proposal_id)
+        latest[proposal_id] = record
+    return [latest[proposal_id] for proposal_id in order]
+
+
 async def process_gateway_payload(payload: dict[str, Any]) -> JSONResponse:
     try:
         normalized, proposed, validation = pipeline.process(payload)
@@ -144,13 +158,14 @@ async def health() -> JSONResponse:
         "ok": True,
         "service": "live-infinita",
         "mvp": "007",
-        "version": "0.8.0",
+        "version": "0.8.1",
         "replay_ok": verification["ok"],
         "state_hash": verification["current_hash"],
         "pipeline": ["real-source-bridge", "audience-side-channel", "audience-aggregator", "proposal-gate", "intent", "validator", "runtime"],
         "audience_events": ["join", "like", "gift"],
         "audience_events_total": len(read_jsonl(AUDIENCE_EVENTS_FILE)),
-        "audience_proposals_total": len(read_jsonl(AUDIENCE_PROPOSALS_FILE)),
+        "audience_proposals_total": len(current_proposals()),
+        "audience_proposal_log_records": len(read_jsonl(AUDIENCE_PROPOSALS_FILE)),
         "audience_rules": aggregator.rules_snapshot(),
     })
 
@@ -182,13 +197,15 @@ async def get_audience_rules() -> JSONResponse:
 
 @app.get("/api/audience/proposals")
 async def get_audience_proposals() -> JSONResponse:
-    return JSONResponse({"proposals": read_jsonl(AUDIENCE_PROPOSALS_FILE)})
+    return JSONResponse({
+        "proposals": current_proposals(),
+        "log_records": len(read_jsonl(AUDIENCE_PROPOSALS_FILE)),
+    })
 
 
 @app.post("/api/audience/proposals/{proposal_id}/commit")
 async def commit_audience_proposal(proposal_id: str) -> JSONResponse:
-    proposals = read_jsonl(AUDIENCE_PROPOSALS_FILE)
-    proposal = next((p for p in reversed(proposals) if p.get("proposal_id") == proposal_id), None)
+    proposal = next((p for p in current_proposals() if p.get("proposal_id") == proposal_id), None)
     if proposal is None:
         raise HTTPException(status_code=404, detail="proposta não encontrada")
     if proposal.get("status") != "pending":
