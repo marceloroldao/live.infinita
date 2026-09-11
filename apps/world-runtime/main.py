@@ -28,12 +28,15 @@ AUDIENCE_PROPOSALS_FILE = DATA_DIR / "audience-proposals.jsonl"
 ACTOR_OBSERVATIONS_FILE = DATA_DIR / "actor-observations.jsonl"
 ACTOR_BINDINGS_FILE = DATA_DIR / "actor-bindings.jsonl"
 INTEGRATIONS_FILE = DATA_DIR / "integrations.json"
+AI_PROPOSALS_FILE = DATA_DIR / "ai-proposals.jsonl"
 OPERATOR_TOKEN = os.environ.get("LIVE_INFINITA_OPERATOR_TOKEN", "")
+AI_MIN_CONFIDENCE = 0.75
 GATEWAY_DIR = ROOT / "apps" / "gateway"
 AUDIENCE_DIR = ROOT / "apps" / "audience"
 ACTORS_DIR = ROOT / "apps" / "actors"
 INTEGRATIONS_DIR = ROOT / "apps" / "integrations"
-for path in (GATEWAY_DIR, AUDIENCE_DIR, ACTORS_DIR, INTEGRATIONS_DIR):
+AI_DIR = ROOT / "apps" / "ai"
+for path in (GATEWAY_DIR, AUDIENCE_DIR, ACTORS_DIR, INTEGRATIONS_DIR, AI_DIR):
     if str(path) not in sys.path:
         sys.path.insert(0, str(path))
 
@@ -42,18 +45,22 @@ from aggregator import AudienceAggregator  # noqa: E402
 from store import ActorStore  # noqa: E402
 from bindings import ActorBindingStore, BindingConflict  # noqa: E402
 from settings import IntegrationStore  # noqa: E402
+from router import AIRouter, AIRouterError  # noqa: E402
+from proposals import AIProposalStore  # noqa: E402
 
-app = FastAPI(title="Live Infinita MVP-010", version="0.11.0")
+app = FastAPI(title="Live Infinita MVP-011", version="0.12.0")
 clients: set[WebSocket] = set()
 world_lock = asyncio.Lock()
 audience_lock = asyncio.Lock()
 actor_lock = asyncio.Lock()
+ai_lock = asyncio.Lock()
 engine = DeterministicWorldEngine(BOOTSTRAP_FILE, DATA_DIR)
 pipeline = GatewayPipeline()
 aggregator = AudienceAggregator()
 actors = ActorStore(ACTOR_OBSERVATIONS_FILE)
 bindings = ActorBindingStore(ACTOR_BINDINGS_FILE)
 integrations = IntegrationStore(INTEGRATIONS_FILE)
+ai_proposals = AIProposalStore(AI_PROPOSALS_FILE)
 
 
 @app.middleware("http")
@@ -88,6 +95,18 @@ class IntegrationUpdate(BaseModel):
     openai_model: str | None = Field(default=None, min_length=1, max_length=100, pattern=r"^[a-zA-Z0-9._-]+$")
     tiktok_unique_id: str | None = Field(default=None, max_length=100, pattern=r"^@?[a-zA-Z0-9._]+$")
     tiktok_sign_api_key: str | None = Field(default=None, max_length=500)
+
+
+class AIInterpretRequest(BaseModel):
+    text: str = Field(min_length=1, max_length=2000)
+    source: str = Field(default="api", min_length=1, max_length=50)
+    actor_id: str = Field(default="operator", min_length=1, max_length=200)
+    display_name: str | None = Field(default="Operator", max_length=200)
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class AIRejectRequest(BaseModel):
+    reason: str = Field(default="rejeitada pelo operador", min_length=1, max_length=500)
 
 
 def actor_views() -> list[dict[str, Any]]:
@@ -173,6 +192,16 @@ def current_proposals() -> list[dict[str, Any]]:
             order.append(proposal_id)
         latest[proposal_id] = record
     return [latest[proposal_id] for proposal_id in order]
+
+
+def build_ai_router() -> AIRouter:
+    config = integrations.load()
+    api_key = str(config.get("openai_api_key") or "").strip()
+    model = str(config.get("openai_model") or "gpt-5-mini").strip()
+    try:
+        return AIRouter(api_key=api_key, model=model)
+    except AIRouterError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
 
 
 def backfill_actor_store() -> None:
@@ -289,14 +318,15 @@ async def process_gateway_payload(payload: dict[str, Any]) -> JSONResponse:
 @app.get("/api/health")
 async def health() -> JSONResponse:
     verification = engine.verify_replay()
+    ai_current = ai_proposals.current()
     return JSONResponse({
         "ok": True,
         "service": "live-infinita",
-        "mvp": "010",
-        "version": "0.11.0",
+        "mvp": "011",
+        "version": "0.12.0",
         "replay_ok": verification["ok"],
         "state_hash": verification["current_hash"],
-        "pipeline": ["real-source-bridge", "actor-state", "audience-side-channel", "audience-aggregator", "proposal-gate", "intent", "validator", "runtime"],
+        "pipeline": ["real-source-bridge", "actor-state", "audience-side-channel", "audience-aggregator", "proposal-gate", "ai-router", "ai-proposal-gate", "intent", "validator", "runtime"],
         "audience_events": ["join", "like", "gift"],
         "audience_events_total": len(read_jsonl(AUDIENCE_EVENTS_FILE)),
         "audience_proposals_total": len(current_proposals()),
@@ -310,6 +340,15 @@ async def health() -> JSONResponse:
         "integrations": {
             "openai": integrations.public_status()["openai"]["configured"],
             "tiktok": integrations.public_status()["tiktok"]["configured"],
+        },
+        "ai_router": {
+            "enabled": bool(OPERATOR_TOKEN),
+            "configured": integrations.public_status()["openai"]["configured"],
+            "min_confidence": AI_MIN_CONFIDENCE,
+            "proposals_total": len(ai_current),
+            "pending_total": sum(1 for row in ai_current if row.get("status") == "pending"),
+            "log_records": len(ai_proposals.history()),
+            "direct_world_write": False,
         },
         "identity_namespace": "source:actor_id",
         "cross_platform_auto_merge": False,
@@ -431,6 +470,88 @@ async def test_openai_integration() -> JSONResponse:
     return JSONResponse({"ok": True, "models_available": len(models),
                          "selected_model": selected,
                          "selected_model_available": any(item.get("id") == selected for item in models)})
+
+
+@app.post("/api/ai/proposals", dependencies=[Depends(require_operator)])
+async def create_ai_proposal(request: AIInterpretRequest) -> JSONResponse:
+    router = build_ai_router()
+    try:
+        proposal = await asyncio.to_thread(router.propose, request.text)
+    except AIRouterError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+    proposal_dict = proposal.to_dict()
+    actionable = bool(proposal.actionable and proposal.confidence >= AI_MIN_CONFIDENCE)
+    async with ai_lock:
+        stored = ai_proposals.create(
+            action=proposal.action,
+            confidence=proposal.confidence,
+            reason=proposal.reason,
+            original_text=proposal.original_text,
+            model=proposal.model,
+            gateway_text=proposal_dict.get("gateway_text") if actionable else None,
+            actionable=actionable,
+            source=request.source.strip().lower(),
+            actor_id=request.actor_id.strip(),
+            display_name=request.display_name,
+            metadata=request.metadata,
+        )
+    await broadcast({"type": "ai_proposal", "proposal": stored})
+    return JSONResponse({"ok": True, "world_mutated": False, "proposal": stored}, status_code=202)
+
+
+@app.get("/api/ai/proposals", dependencies=[Depends(require_operator)])
+async def get_ai_proposals() -> JSONResponse:
+    return JSONResponse({"proposals": ai_proposals.current(), "log_records": len(ai_proposals.history())})
+
+
+@app.post("/api/ai/proposals/{proposal_id}/commit", dependencies=[Depends(require_operator)])
+async def commit_ai_proposal(proposal_id: str) -> JSONResponse:
+    async with ai_lock:
+        proposal = ai_proposals.get(proposal_id)
+    if proposal is None:
+        raise HTTPException(status_code=404, detail="proposta AI não encontrada")
+    if proposal.get("status") != "pending":
+        raise HTTPException(status_code=409, detail="proposta AI não está pendente")
+    gateway_text = str(proposal.get("gateway_text") or "").strip()
+    if not gateway_text:
+        raise HTTPException(status_code=409, detail="proposta AI não é acionável")
+
+    response = await process_gateway_payload({
+        "source": "agent",
+        "source_event_id": f"ai-proposal-{proposal_id}",
+        "actor_id": str(proposal.get("actor_id") or "ai-router"),
+        "display_name": proposal.get("display_name") or "AI Router",
+        "kind": "text",
+        "text": gateway_text,
+        "metadata": {
+            "ai_proposal_id": proposal_id,
+            "ai_model": proposal.get("model"),
+            "ai_confidence": proposal.get("confidence"),
+            "original_source": proposal.get("source"),
+            **dict(proposal.get("metadata") or {}),
+        },
+    })
+    if response.status_code < 300:
+        payload = json.loads(response.body.decode("utf-8"))
+        world_event_id = (payload.get("event") or {}).get("event_id")
+        async with ai_lock:
+            committed = ai_proposals.mark_committed(proposal_id, world_event_id=world_event_id)
+        await broadcast({"type": "ai_proposal", "proposal": committed})
+    return response
+
+
+@app.post("/api/ai/proposals/{proposal_id}/reject", dependencies=[Depends(require_operator)])
+async def reject_ai_proposal(proposal_id: str, request: AIRejectRequest) -> JSONResponse:
+    try:
+        async with ai_lock:
+            rejected = ai_proposals.mark_rejected(proposal_id, reason=request.reason)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="proposta AI não encontrada") from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    await broadcast({"type": "ai_proposal", "proposal": rejected})
+    return JSONResponse({"ok": True, "world_mutated": False, "proposal": rejected})
 
 
 @app.get("/api/audience/events")
