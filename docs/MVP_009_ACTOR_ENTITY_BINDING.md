@@ -86,4 +86,20 @@ A verificação de produção não cria observações nem executa ações do mun
 - O teste confirmou mundo inalterado entre vincular e desvincular, e HTTP 401
   para tentativa de vínculo sem chave.
 - Sintaxe Bash e hashes dos arquivos do instalador foram conferidos na VM.
-- Instalação no serviço de produção ainda pendente de execução com sudo.
+- Instalação no serviço de produção concluída; resultado abaixo.
+
+## Produção — 2026-09-11
+
+- Instalador executado pelo operador; backup em
+  `/var/backups/live-infinita-mvp009.SpHEGr`.
+- Serviço `live-infinita` ativo; hashes de `main.py`, `bindings.py` e do helper
+  conferidos por SSH e correspondentes à implementação `cd5ceb7`.
+- `validate_mvp009_vm.py`: PASS pelo endereço local e por
+  `https://live.etbra.com.br`, incluindo recusa HTTP 401 sem chave de operador.
+- 37 atores, nenhum vínculo criado; `person_01` (Visitante) está disponível.
+- Mundo preservado: 192 eventos, 192 deltas, versão 193, sequência 192.
+- Hash atual e replay iguais:
+  `12770f39d4cb81a9e7b926168910e0e5160798c55f93bc352595def74051b8c7`.
+- Esta conferência não criou vínculos nem ações no mundo de produção. O ciclo de
+  vínculo, reinício e desvínculo foi validado no servidor isolado da VM.
+- Nginx e Godot preservados pelo instalador.
