@@ -1,5 +1,5 @@
 [Unit]
-Description=Live Infinita MVP-005 TikTok Live Source Bridge
+Description=Live Infinita MVP-006 TikTok Live Source Bridge
 After=network-online.target live-infinita.service
 Wants=network-online.target
 Requires=live-infinita.service
