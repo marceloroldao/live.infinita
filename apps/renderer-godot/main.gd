@@ -8,9 +8,89 @@ var connection_state := "conectando"
 var last_message := "aguardando World State"
 var entity_nodes: Dictionary = {}
 var last_reconcile := {"added": 0, "updated": 0, "removed": 0, "unchanged": 0}
+var request_in_flight := false
+var control_status := "controles prontos"
+var http_request: HTTPRequest
 
 func _ready() -> void:
+    _build_debug_controls()
     _connect_websocket()
+    queue_redraw()
+
+func _build_debug_controls() -> void:
+    http_request = HTTPRequest.new()
+    http_request.name = "DebugHTTPRequest"
+    http_request.request_completed.connect(_on_debug_request_completed)
+    add_child(http_request)
+
+    var layer := CanvasLayer.new()
+    layer.name = "DebugControls"
+    layer.layer = 20
+    add_child(layer)
+
+    var panel := PanelContainer.new()
+    panel.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+    panel.position = Vector2(-325, -118)
+    panel.custom_minimum_size = Vector2(650, 92)
+    layer.add_child(panel)
+
+    var vbox := VBoxContainer.new()
+    vbox.add_theme_constant_override("separation", 6)
+    panel.add_child(vbox)
+
+    var title := Label.new()
+    title.text = "TESTE AO VIVO — mantenha esta tela aberta"
+    title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    vbox.add_child(title)
+
+    var row := HBoxContainer.new()
+    row.alignment = BoxContainer.ALIGNMENT_CENTER
+    row.add_theme_constant_override("separation", 6)
+    vbox.add_child(row)
+
+    _add_action_button(row, "Dia", "set_day")
+    _add_action_button(row, "Noite", "set_night")
+    _add_action_button(row, "Fogueira", "toggle_fire")
+    _add_action_button(row, "Mover árvore", "move_tree")
+    _add_action_button(row, "+ Visitante", "spawn_person")
+
+func _add_action_button(parent: Control, label: String, action: String) -> void:
+    var button := Button.new()
+    button.text = label
+    button.custom_minimum_size = Vector2(112, 38)
+    button.pressed.connect(func(): _send_debug_action(action))
+    parent.add_child(button)
+
+func _api_base_url() -> String:
+    if OS.has_feature("web"):
+        var origin = JavaScriptBridge.eval("window.location.origin")
+        return str(origin)
+    return "http://127.0.0.1:8080"
+
+func _send_debug_action(action: String) -> void:
+    if request_in_flight:
+        control_status = "aguardando resposta anterior"
+        queue_redraw()
+        return
+    request_in_flight = true
+    control_status = "enviando %s..." % action
+    queue_redraw()
+    var headers := PackedStringArray(["Content-Type: application/json"])
+    var body := JSON.stringify({"action": action})
+    var err := http_request.request(
+        _api_base_url() + "/api/simulate",
+        headers,
+        HTTPClient.METHOD_POST,
+        body
+    )
+    if err != OK:
+        request_in_flight = false
+        control_status = "erro HTTPRequest=%s" % err
+        queue_redraw()
+
+func _on_debug_request_completed(_result: int, response_code: int, _headers: PackedStringArray, _body: PackedByteArray) -> void:
+    request_in_flight = false
+    control_status = "POST concluído HTTP %s — aguardando WebSocket" % response_code
     queue_redraw()
 
 func _connect_websocket() -> void:
@@ -45,6 +125,7 @@ func _apply_world_state(next_world: Dictionary) -> void:
     world = next_world.duplicate(true)
     last_reconcile = _reconcile_entities(world.get("entities", []))
     last_message = "World State v%s / seq %s" % [world.get("version", "?"), world.get("sequence", "?")]
+    control_status = "World State recebido via WebSocket"
     queue_redraw()
 
 func _reconcile_entities(entities) -> Dictionary:
@@ -97,7 +178,7 @@ func _draw() -> void:
     else:
         draw_circle(Vector2(viewport.x - 110, 90), 38, Color("#ffd34f"))
 
-    var panel := Rect2(20, 20, 410, 132)
+    var panel := Rect2(20, 20, 440, 158)
     draw_rect(panel, Color(0.03, 0.05, 0.08, 0.86), true)
     draw_rect(panel, Color(0.55, 0.85, 1.0, 0.8), false, 2.0)
     var font := ThemeDB.fallback_font
@@ -113,8 +194,9 @@ func _draw() -> void:
         15,
         Color("#c9f7cf")
     )
+    draw_string(font, Vector2(38, 153), control_status, HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color("#f3d89b"))
 
     var narration := str(world.get("narration", {}).get("text", ""))
     if not narration.is_empty():
-        draw_rect(Rect2(110, viewport.y - 78, viewport.x - 220, 48), Color(0.02, 0.03, 0.05, 0.82), true)
-        draw_string(font, Vector2(135, viewport.y - 47), narration, HORIZONTAL_ALIGNMENT_CENTER, viewport.x - 270, 18, Color.WHITE)
+        draw_rect(Rect2(110, viewport.y - 148, viewport.x - 220, 48), Color(0.02, 0.03, 0.05, 0.82), true)
+        draw_string(font, Vector2(135, viewport.y - 117), narration, HORIZONTAL_ALIGNMENT_CENTER, viewport.x - 270, 18, Color.WHITE)
