@@ -56,15 +56,16 @@ class DeterministicWorldEngine:
                 return entity
         return None
 
-    def propose(self, world: dict[str, Any], action: str) -> tuple[dict[str, Any], dict[str, Any]]:
+    def propose(self, world: dict[str, Any], action: str, source: str = "runtime", context: dict[str, Any] | None = None) -> tuple[dict[str, Any], dict[str, Any]]:
         action = action.strip().lower()
         sequence = int(world.get("sequence", 0)) + 1
         event = {
             "event_id": f"evt_{sequence:06d}",
             "sequence": sequence,
-            "type": "simulator_action",
+            "type": "validated_action",
             "action": action,
-            "source": "simulator",
+            "source": source,
+            "context": context or {},
         }
         operations: list[dict[str, Any]] = []
         narration = ""
@@ -144,9 +145,9 @@ class DeterministicWorldEngine:
         result["state_hash"] = self.hash_world(result)
         return result
 
-    def commit_action(self, action: str) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+    def commit_action(self, action: str, source: str = "runtime", context: dict[str, Any] | None = None) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
         world = self.load_world()
-        event, delta = self.propose(world, action)
+        event, delta = self.propose(world, action, source=source, context=context)
         new_world = self.apply_delta(world, delta)
         delta["result_hash"] = new_world["state_hash"]
         self._append_jsonl(self.events_file, event)
