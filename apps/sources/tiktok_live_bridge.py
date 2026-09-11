@@ -7,6 +7,7 @@ import time
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 from TikTokLive import TikTokLiveClient
@@ -23,10 +24,18 @@ class BridgeConfig:
     audience_url: str
     timeout_seconds: float = 5.0
     retry_seconds: float = 30.0
+    sign_api_key: str | None = None
 
     @classmethod
     def from_env(cls) -> "BridgeConfig":
-        unique_id = os.environ.get("TIKTOK_UNIQUE_ID", "").strip()
+        stored: dict[str, Any] = {}
+        config_path = Path(os.environ.get("LIVE_INFINITA_INTEGRATIONS_FILE", "/var/lib/live-infinita/integrations.json"))
+        if config_path.exists():
+            with config_path.open(encoding="utf-8") as fh:
+                candidate = json.load(fh)
+            if isinstance(candidate, dict):
+                stored = candidate
+        unique_id = str(stored.get("tiktok_unique_id") or os.environ.get("TIKTOK_UNIQUE_ID", "")).strip()
         if not unique_id:
             raise RuntimeError("TIKTOK_UNIQUE_ID não configurado")
         if not unique_id.startswith("@"):
@@ -47,6 +56,7 @@ class BridgeConfig:
             audience_url=audience_url,
             timeout_seconds=timeout,
             retry_seconds=max(retry, 5.0),
+            sign_api_key=str(stored.get("tiktok_sign_api_key") or "") or None,
         )
 
 
@@ -67,6 +77,8 @@ def post_json(url: str, payload: dict[str, Any], timeout: float) -> tuple[int, d
 
 
 def build_client(config: BridgeConfig) -> TikTokLiveClient:
+    from TikTokLive.client.web.web_settings import WebDefaults
+    WebDefaults.tiktok_sign_api_key = config.sign_api_key
     client = TikTokLiveClient(unique_id=config.unique_id)
 
     @client.on(ConnectEvent)

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Live Infinita — Gerência</title>
+  <link rel="stylesheet" href="/manage/style.css">
+</head>
+<body>
+  <main>
+    <header><span>LIVE INFINITA</span><h1>Gerência</h1><p>Conecte os serviços usados pela live.</p></header>
+    <section class="unlock">
+      <label>Chave de gerenciamento</label>
+      <div class="row"><input id="operator" type="password" autocomplete="current-password" placeholder="Cole a chave do operador"><button id="unlock">Entrar</button></div>
+      <small>A chave fica apenas nesta aba.</small>
+    </section>
+    <div id="panel" hidden>
+      <section>
+        <div class="title"><h2>OpenAI</h2><span id="openai-state" class="badge">Não configurado</span></div>
+        <label>API key</label><input id="openai-key" type="password" autocomplete="off" placeholder="Deixe vazio para manter a atual">
+        <label>Modelo</label><input id="openai-model" value="gpt-5-mini">
+        <div class="actions"><button data-save="openai">Salvar</button><button class="secondary" id="test-openai">Testar conexão</button><button class="danger" data-clear="openai_api_key">Remover chave</button></div>
+      </section>
+      <section>
+        <div class="title"><h2>TikTok Live</h2><span id="tiktok-state" class="badge">Não configurado</span></div>
+        <label>Usuário da live</label><input id="tiktok-user" placeholder="@usuario">
+        <label>Chave Euler Stream (opcional)</label><input id="tiktok-key" type="password" autocomplete="off" placeholder="Deixe vazio para manter a atual">
+        <p class="note">A integração atual lê lives públicas pelo usuário. A chave opcional aumenta os limites do assinador usado pela biblioteca TikTokLive.</p>
+        <div class="actions"><button data-save="tiktok">Salvar</button><button class="danger" data-clear="tiktok_sign_api_key">Remover chave</button></div>
+        <p class="note">Quando o conector estiver ativo, ele será reiniciado automaticamente após salvar.</p>
+      </section>
+    </div>
+    <p id="message" role="status"></p>
+  </main>
+  <script src="/manage/app.js"></script>
+</body>
+</html>
