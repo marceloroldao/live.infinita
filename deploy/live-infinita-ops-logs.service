@@ -15,7 +15,7 @@ NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=true
-ReadOnlyPaths=/var/log/journal /run/log/journal
+ReadOnlyPaths=-/var/log/journal -/run/log/journal
 
 [Install]
 WantedBy=multi-user.target
