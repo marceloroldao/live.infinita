@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import sys
+import time
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
@@ -19,6 +20,7 @@ class BridgeConfig:
     unique_id: str
     gateway_url: str
     timeout_seconds: float = 5.0
+    retry_seconds: float = 30.0
 
     @classmethod
     def from_env(cls) -> "BridgeConfig":
@@ -32,7 +34,13 @@ class BridgeConfig:
             "http://127.0.0.1:8080/api/source/tiktok/event",
         ).strip()
         timeout = float(os.environ.get("LIVE_INFINITA_SOURCE_TIMEOUT", "5"))
-        return cls(unique_id=unique_id, gateway_url=gateway_url, timeout_seconds=timeout)
+        retry = float(os.environ.get("LIVE_INFINITA_TIKTOK_RETRY_SECONDS", "30"))
+        return cls(
+            unique_id=unique_id,
+            gateway_url=gateway_url,
+            timeout_seconds=timeout,
+            retry_seconds=max(retry, 5.0),
+        )
 
 
 def post_json(url: str, payload: dict[str, Any], timeout: float) -> tuple[int, dict[str, Any]]:
@@ -98,12 +106,35 @@ def main() -> int:
         return 2
 
     print(
-        f"[tiktok] iniciando bridge {config.unique_id} -> {config.gateway_url}",
+        f"[tiktok] bridge configurado {config.unique_id} -> {config.gateway_url}",
         flush=True,
     )
-    client = build_client(config)
-    client.run()
-    return 0
+
+    while True:
+        try:
+            print(f"[tiktok] procurando LIVE de {config.unique_id}...", flush=True)
+            client = build_client(config)
+            client.run()
+            print(
+                f"[tiktok] conexão encerrada; nova tentativa em {config.retry_seconds:.0f}s",
+                flush=True,
+            )
+        except KeyboardInterrupt:
+            print("[tiktok] encerrado", flush=True)
+            return 0
+        except Exception as exc:
+            name = type(exc).__name__
+            message = str(exc).replace("\n", " ")
+            print(
+                f"[tiktok] LIVE indisponível ou consulta recusada "
+                f"({name}): {message}",
+                flush=True,
+            )
+            print(
+                f"[tiktok] aguardando {config.retry_seconds:.0f}s antes de tentar novamente",
+                flush=True,
+            )
+        time.sleep(config.retry_seconds)
 
 
 if __name__ == "__main__":
