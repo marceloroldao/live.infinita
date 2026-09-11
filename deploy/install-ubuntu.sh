@@ -51,10 +51,11 @@ sleep 1
 curl --fail --silent http://127.0.0.1:8080/api/health >/dev/null
 
 echo
-printf 'Live Infinita MVP-003 instalado.\n'
+printf 'Live Infinita MVP-004 instalado.\n'
 printf 'Preview: http://IP_DA_VM/\n'
 printf 'Health:  http://IP_DA_VM/api/health\n'
 printf 'Gateway: http://IP_DA_VM/api/gateway/event\n'
+printf 'Fontes:  http://IP_DA_VM/api/source/{source}/event\n'
 printf 'Replay:  http://IP_DA_VM/api/replay/verify\n'
 printf 'Dados:   /var/lib/live-infinita\n'
 printf 'Status:  systemctl status live-infinita --no-pager\n'

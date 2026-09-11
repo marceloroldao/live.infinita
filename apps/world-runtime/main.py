@@ -9,7 +9,7 @@ from typing import Any
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from engine import DeterministicWorldEngine
 
@@ -23,7 +23,7 @@ if str(GATEWAY_DIR) not in sys.path:
 
 from pipeline import GatewayPipeline  # noqa: E402
 
-app = FastAPI(title="Live Infinita MVP-003", version="0.4.0")
+app = FastAPI(title="Live Infinita MVP-004", version="0.5.0")
 clients: set[WebSocket] = set()
 world_lock = asyncio.Lock()
 engine = DeterministicWorldEngine(BOOTSTRAP_FILE, DATA_DIR)
@@ -36,10 +36,20 @@ class SimulationRequest(BaseModel):
 
 class GatewayEventRequest(BaseModel):
     source: str = "simulator"
+    source_event_id: str = "local-1"
     actor_id: str = "local-user"
+    display_name: str | None = None
     kind: str = "text"
     text: str
-    metadata: dict[str, Any] = {}
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class SourceEventRequest(BaseModel):
+    source_event_id: str
+    actor_id: str
+    display_name: str | None = None
+    text: str
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 async def broadcast(message: dict) -> None:
@@ -59,14 +69,9 @@ async def process_gateway_payload(payload: dict[str, Any]) -> JSONResponse:
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
+    normalized_dict = normalized.to_dict()
     envelope = {
-        "normalized_event": {
-            "source": normalized.source,
-            "actor_id": normalized.actor_id,
-            "kind": normalized.kind,
-            "text": normalized.text,
-            "metadata": normalized.metadata,
-        },
+        "normalized_event": normalized_dict,
         "proposed_action": {
             "action": proposed.action,
             "confidence": proposed.confidence,
@@ -88,7 +93,10 @@ async def process_gateway_payload(payload: dict[str, Any]) -> JSONResponse:
                 validation.action,
                 source=normalized.source,
                 context={
-                    "actor_id": normalized.actor_id,
+                    "envelope_version": normalized.envelope_version,
+                    "source_event_id": normalized.source_event_id,
+                    "actor_id": normalized.actor.actor_id,
+                    "display_name": normalized.actor.display_name,
                     "kind": normalized.kind,
                     "text": normalized.text,
                     "metadata": normalized.metadata,
@@ -109,11 +117,12 @@ async def health() -> JSONResponse:
     return JSONResponse({
         "ok": True,
         "service": "live-infinita",
-        "mvp": "003",
-        "version": "0.4.0",
+        "mvp": "004",
+        "version": "0.5.0",
         "replay_ok": verification["ok"],
         "state_hash": verification["current_hash"],
-        "pipeline": ["gateway", "intent", "validator", "runtime"],
+        "pipeline": ["source-adapter", "universal-envelope", "intent", "validator", "runtime"],
+        "sources": ["simulator", "api", "tiktok", "youtube", "agent"],
     })
 
 
@@ -143,9 +152,16 @@ async def gateway_event(request: GatewayEventRequest) -> JSONResponse:
     return await process_gateway_payload(request.model_dump())
 
 
+@app.post("/api/source/{source}/event")
+async def source_event(source: str, request: SourceEventRequest) -> JSONResponse:
+    payload = request.model_dump()
+    payload["source"] = source
+    payload["kind"] = "text"
+    return await process_gateway_payload(payload)
+
+
 @app.post("/api/simulate")
 async def simulate(request: SimulationRequest) -> JSONResponse:
-    # Compatibilidade com o MVP-001/002: o botão antigo agora entra pelo Gateway.
     text_by_action = {
         "spawn_person": "+ visitante",
         "move_tree": "mover árvore",
@@ -159,6 +175,7 @@ async def simulate(request: SimulationRequest) -> JSONResponse:
         raise HTTPException(status_code=400, detail=f"ação desconhecida: {request.action}")
     return await process_gateway_payload({
         "source": "simulator",
+        "source_event_id": f"preview-{engine.load_world().get('sequence', 0) + 1}",
         "actor_id": "preview-user",
         "kind": "text",
         "text": text,
@@ -170,6 +187,7 @@ async def simulate(request: SimulationRequest) -> JSONResponse:
 async def reset_world() -> JSONResponse:
     return await process_gateway_payload({
         "source": "api",
+        "source_event_id": f"reset-{engine.load_world().get('sequence', 0) + 1}",
         "actor_id": "system",
         "kind": "text",
         "text": "reset",
