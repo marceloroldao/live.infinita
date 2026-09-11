@@ -65,3 +65,18 @@ O verificador é somente leitura e confirma página, autenticação, health e re
   gerenciado, sem realizar conexão externa.
 - Sintaxe dos scripts de instalação e recarga validada no Ubuntu.
 - Nenhuma chave real foi usada durante os testes.
+
+## Produção — 2026-09-11
+
+- Instalador executado pelo operador; backup em
+  `/var/backups/live-infinita-mvp010.kRT9Ct`.
+- Serviço principal e monitor de configurações ativos.
+- Hashes de `main.py` e do conector TikTok conferidos após a instalação.
+- Validação passou pelo endereço local e por `https://live.etbra.com.br`.
+- Gerência online com OpenAI e TikTok ainda não configurados; o arquivo de
+  integrações será criado somente no primeiro salvamento.
+- Chave de operador em `/etc/live-infinita/operator.env`, `root:root`, modo 600.
+- Mundo preservado: 192 eventos, 192 deltas, versão 193, sequência 192, com hash
+  atual e replay iguais a
+  `12770f39d4cb81a9e7b926168910e0e5160798c55f93bc352595def74051b8c7`.
+- Nginx, Godot e segredos existentes foram preservados.
