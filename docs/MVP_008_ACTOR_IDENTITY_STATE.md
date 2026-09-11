@@ -54,3 +54,19 @@ Actor State não é World State. Observar ou atualizar a identidade de um partic
 4. um novo join ou comentário atualiza o mesmo ator sem criar identidade duplicada;
 5. o mesmo `actor_id` em TikTok e YouTube gera duas identidades distintas;
 6. `/api/replay/verify` permanece `ok=true`.
+
+## Ordem temporal e recuperação
+O fold ordena pelo `observed_at_unix`; empates preservam a ordem de append.
+Uma observação antiga recebida depois não substitui nome/última interação mais recentes.
+Novos comandos aceitos pelo Gateway preservam esse horário no contexto do evento do
+runtime, permitindo reconstruir a mesma cronologia no backfill.
+
+Eventos antigos do runtime não possuem horário real. Nesses casos, mantém-se o
+horário da recuperação, identificado por `metadata.timestamp_basis=backfill` na
+observação. Esses horários não devem ser interpretados como a data original da
+interação. Observações já persistidas não são reescritas. Comentários rejeitados
+anteriores ao MVP-008 não podem ser recuperados dos logs do runtime.
+
+## Testes e VM
+Ver [roteiro Ubuntu](MVP_008_VM_VALIDATION.md). A suíte usa diretórios temporários;
+o verificador HTTP consulta apenas por padrão e exige `--write` para criar dados.

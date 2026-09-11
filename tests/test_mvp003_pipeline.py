@@ -36,7 +36,7 @@ class MVP003PipelineTest(unittest.TestCase):
             event, delta, world = engine.commit_action(
                 validation.action,
                 source=normalized.source,
-                context={"actor_id": normalized.actor_id, "text": normalized.text},
+                context={"actor_id": normalized.actor.actor_id, "text": normalized.text},
             )
             self.assertEqual(event["source"], "simulator")
             self.assertEqual(event["type"], "validated_action")

@@ -105,7 +105,9 @@ class ActorStore:
     def actors(self) -> list[dict[str, Any]]:
         states: dict[str, dict[str, Any]] = {}
         order: list[str] = []
-        for row in self._read():
+        # Backfill and delayed delivery can append older observations last.
+        # Stable sorting also makes equal timestamps follow append order.
+        for row in sorted(self._read(), key=lambda row: row["observed_at_unix"]):
             actor_key = str(row.get("actor_key") or f"{row.get('source')}:{row.get('actor_id')}")
             if actor_key not in states:
                 order.append(actor_key)

@@ -127,7 +127,7 @@ def backfill_actor_store() -> None:
             kind=str(row.get("kind") or "unknown"),
             source_event_id=str(row.get("source_event_id") or ""),
             metadata={"backfill": True, **dict(row.get("metadata") or {})},
-            observed_at_unix=float(row.get("received_at_unix") or time.time()),
+            observed_at_unix=row.get("received_at_unix"),
         )
 
     for row in engine.read_jsonl(engine.events_file):
@@ -142,7 +142,12 @@ def backfill_actor_store() -> None:
             display_name=context.get("display_name"),
             kind=str(context.get("kind") or "text"),
             source_event_id=source_event_id,
-            metadata={"backfill": True, "world_event_id": row.get("event_id")},
+            metadata={
+                "backfill": True,
+                "world_event_id": row.get("event_id"),
+                "timestamp_basis": "event" if context.get("observed_at_unix") is not None else "backfill",
+            },
+            observed_at_unix=context.get("observed_at_unix"),
         )
 
 
@@ -177,6 +182,7 @@ async def process_gateway_payload(payload: dict[str, Any]) -> JSONResponse:
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
+    observed_at_unix = time.time()
     await observe_actor(
         source=normalized.source,
         actor_id=normalized.actor.actor_id,
@@ -184,6 +190,7 @@ async def process_gateway_payload(payload: dict[str, Any]) -> JSONResponse:
         kind=normalized.kind,
         source_event_id=normalized.source_event_id,
         metadata={"channel": "gateway", **dict(normalized.metadata)},
+        observed_at_unix=observed_at_unix,
     )
 
     normalized_dict = normalized.to_dict()
@@ -206,6 +213,7 @@ async def process_gateway_payload(payload: dict[str, Any]) -> JSONResponse:
                     "actor_id": normalized.actor.actor_id,
                     "display_name": normalized.actor.display_name,
                     "kind": normalized.kind,
+                    "observed_at_unix": observed_at_unix,
                     "text": normalized.text,
                     "metadata": normalized.metadata,
                     "intent_reason": proposed.reason,
@@ -233,6 +241,8 @@ async def health() -> JSONResponse:
         "audience_events": ["join", "like", "gift"],
         "audience_events_total": len(read_jsonl(AUDIENCE_EVENTS_FILE)),
         "audience_proposals_total": len(current_proposals()),
+        "audience_proposal_log_records": len(read_jsonl(AUDIENCE_PROPOSALS_FILE)),
+        "audience_rules": aggregator.rules_snapshot(),
         "actor_observations_total": len(actors.observations()),
         "actors_total": len(actors.actors()),
         "identity_namespace": "source:actor_id",

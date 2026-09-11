@@ -33,6 +33,21 @@ class ActorStoreTest(unittest.TestCase):
         self.assertEqual(actor["display_name"], "Alice 2")
         self.assertEqual(actor["display_names_seen"], ["Alice", "Alice 2"])
 
+    def test_delayed_observations_fold_chronologically_after_restart(self) -> None:
+        for event_id, timestamp, name in [("new", 30, "Current"), ("old", 0, "Original"), ("middle", 20, None)]:
+            self.store.observe(source="tiktok", actor_id="alice", display_name=name,
+                               kind="join", source_event_id=event_id, observed_at_unix=timestamp)
+        reopened = ActorStore(self.store.path)
+        actor = reopened.get(" TIKTOK ", " alice ")
+        self.assertEqual(actor["first_seen_unix"], 0)
+        self.assertEqual(actor["last_seen_unix"], 30)
+        self.assertEqual(actor["display_name"], "Current")
+        self.assertEqual(actor["display_names_seen"], ["Original", "Current"])
+        self.assertEqual(actor["last_interaction"]["source_event_id"], "new")
+        self.assertEqual(actor["interactions_total"], 3)
+        self.assertFalse(reopened.observe(source="tiktok", actor_id="alice", display_name="Again",
+                                         kind="join", source_event_id="new"))
+
     def test_cross_platform_ids_are_not_merged(self) -> None:
         self.store.observe(source="tiktok", actor_id="alice", display_name="Alice", kind="join", source_event_id="tt-1")
         self.store.observe(source="youtube", actor_id="alice", display_name="Alice", kind="join", source_event_id="yt-1")
