@@ -6,6 +6,7 @@ install_dir=/opt/live.infinita
 runtime=$install_dir/apps/world-runtime/main.py
 bridge=$install_dir/apps/sources/tiktok_live_bridge.py
 manager=$install_dir/apps/manager
+unit=/etc/systemd/system/live-infinita-tiktok.service
 
 check_hash() { printf '%s  %s\n' "$1" "$2" | sha256sum --check --status; }
 check_hash 8adc1109b2c6879cb6b3581bfccc612cfc5de2f73a418174612ad72e1cf17565 "$runtime"
@@ -14,6 +15,7 @@ check_hash d246b0cb97061a94f2be9df7fd943069e04a8de47a2f7b8c2f976a205321d142 "$ma
 check_hash 86f55a26ccb44d5a7605760a5e0f56264d6c507e220ae11b0d1db0e9bb56edea "$manager/app.js"
 check_hash 53f5e732de0ec84024dcebf4c688a56c4ada8906bbf528c076982aedfe2b2454 "$manager/style.css"
 check_hash 8dca5a333a03b3cb4ca2ab16a450ac2bbc8cd35393d45002c8059ddc385d988a "$manager/visibility.css"
+check_hash 97dba2c1a9d43e1ed09d1cf87572844eab5e435de6bfd8687a8aa47b15bc7856 "$unit"
 systemctl is-active --quiet live-infinita
 
 backup=$(mktemp -d /var/backups/live-infinita-mvp012.XXXXXX)
@@ -25,11 +27,14 @@ cp -p "$manager/index.html" "$backup/index.html"
 cp -p "$manager/app.js" "$backup/app.js"
 cp -p "$manager/style.css" "$backup/style.css"
 cp -p "$manager/visibility.css" "$backup/visibility.css"
+cp -p "$unit" "$backup/live-infinita-tiktok.service"
 tar -C /var/lib -czf "$backup/data-before-update.tar.gz" live-infinita
 
 changed=0
 tiktok_was_active=0
 systemctl is-active --quiet live-infinita-tiktok && tiktok_was_active=1 || true
+tiktok_should_run=$tiktok_was_active
+"$install_dir/.venv/bin/python" -c 'import json,sys; p="/var/lib/live-infinita/integrations.json"; d=json.load(open(p)) if __import__("os").path.exists(p) else {}; sys.exit(0 if d.get("tiktok_unique_id") else 1)' && tiktok_should_run=1 || true
 recover() {
   result=$?
   trap - EXIT
@@ -42,7 +47,9 @@ recover() {
     install -o liveinfinita -g liveinfinita -m 0644 "$backup/app.js" "$manager/app.js"
     install -o liveinfinita -g liveinfinita -m 0644 "$backup/style.css" "$manager/style.css"
     install -o liveinfinita -g liveinfinita -m 0644 "$backup/visibility.css" "$manager/visibility.css"
+    install -o root -g root -m 0644 "$backup/live-infinita-tiktok.service" "$unit"
     rm -f "$manager/monitoring.css"
+    systemctl daemon-reload || true
     systemctl start live-infinita || true
     [[ $tiktok_was_active -eq 0 ]] || systemctl start live-infinita-tiktok || true
     echo "Dados e segredos preservados; backup em $backup" >&2
@@ -59,8 +66,10 @@ install -o liveinfinita -g liveinfinita -m 0644 "$source_dir/apps/sources/tiktok
 install -o liveinfinita -g liveinfinita -m 0644 "$source_dir/apps/manager/index.html" "$manager/index.html"
 install -o liveinfinita -g liveinfinita -m 0644 "$source_dir/apps/manager/app.js" "$manager/app.js"
 install -o liveinfinita -g liveinfinita -m 0644 "$source_dir/apps/manager/monitoring.css" "$manager/monitoring.css"
+install -o root -g root -m 0644 "$source_dir/deploy/live-infinita-tiktok.service" "$unit"
+systemctl daemon-reload
 systemctl start live-infinita
-[[ $tiktok_was_active -eq 0 ]] || systemctl start live-infinita-tiktok
+[[ $tiktok_should_run -eq 0 ]] || systemctl start live-infinita-tiktok
 
 "$install_dir/.venv/bin/python" - <<'PY'
 import json, time, urllib.error, urllib.request
