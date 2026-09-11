@@ -5,7 +5,8 @@ GODOT_VERSION="4.7.2"
 GODOT_TAG="${GODOT_VERSION}-stable"
 GODOT_TEMPLATE_DIR_VERSION="${GODOT_VERSION}.stable"
 INSTALL_ROOT="/opt/live-infinita-godot"
-PROJECT_DIR="/opt/live.infinita/apps/renderer-godot"
+SOURCE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PROJECT_DIR="$SOURCE_DIR/apps/renderer-godot"
 WEB_DIR="/var/www/live-infinita-godot"
 CACHE_DIR="/var/cache/live-infinita-godot"
 ENGINE_ZIP="$CACHE_DIR/Godot_v${GODOT_TAG}_linux.x86_64.zip"
@@ -18,8 +19,14 @@ if [[ ${EUID} -ne 0 ]]; then
   exit 1
 fi
 
+if [[ ! -f "$PROJECT_DIR/project.godot" ]]; then
+  echo "Erro: projeto Godot não encontrado em: $PROJECT_DIR"
+  echo "Execute este script a partir de um checkout completo do repositório."
+  exit 1
+fi
+
 apt-get update
-DEBIAN_FRONTEND=noninteractive apt-get install -y curl unzip ca-certificates
+DEBIAN_FRONTEND=noninteractive apt-get install -y curl unzip ca-certificates libfontconfig1 fontconfig
 mkdir -p "$INSTALL_ROOT" "$WEB_DIR" "$CACHE_DIR"
 
 if [[ ! -f "$ENGINE_ZIP" ]]; then
@@ -53,5 +60,5 @@ systemctl reload nginx
 
 echo
 echo "Godot ${GODOT_VERSION} Web exportado com sucesso."
-echo "Abra: http://IP_DA_VM/godot/"
-echo "Renderer clássico continua em: http://IP_DA_VM/"
+echo "Projeto: $PROJECT_DIR"
+echo "Abra: https://live.etbra.com.br/godot/"
