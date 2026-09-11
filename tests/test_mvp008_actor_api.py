@@ -89,7 +89,7 @@ class ActorAPITest(unittest.TestCase):
 
     def test_health_preserves_mvp007_fields(self):
         health = self.client.get("/api/health").json()
-        self.assertEqual((health["mvp"], health["version"]), ("008", "0.9.0"))
+        self.assertEqual(health["version"], self.runtime.app.version)
         self.assertTrue(health["replay_ok"])
         self.assertFalse(health["cross_platform_auto_merge"])
         self.assertIn("audience_rules", health)

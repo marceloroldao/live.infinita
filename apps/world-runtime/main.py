@@ -3,12 +3,13 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import secrets
 import sys
 import time
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import Depends, FastAPI, Header, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -22,6 +23,8 @@ DATA_DIR = Path(os.environ.get("LIVE_INFINITA_DATA_DIR", "/var/lib/live-infinita
 AUDIENCE_EVENTS_FILE = DATA_DIR / "audience-events.jsonl"
 AUDIENCE_PROPOSALS_FILE = DATA_DIR / "audience-proposals.jsonl"
 ACTOR_OBSERVATIONS_FILE = DATA_DIR / "actor-observations.jsonl"
+ACTOR_BINDINGS_FILE = DATA_DIR / "actor-bindings.jsonl"
+OPERATOR_TOKEN = os.environ.get("LIVE_INFINITA_OPERATOR_TOKEN", "")
 GATEWAY_DIR = ROOT / "apps" / "gateway"
 AUDIENCE_DIR = ROOT / "apps" / "audience"
 ACTORS_DIR = ROOT / "apps" / "actors"
@@ -32,8 +35,9 @@ for path in (GATEWAY_DIR, AUDIENCE_DIR, ACTORS_DIR):
 from pipeline import GatewayPipeline  # noqa: E402
 from aggregator import AudienceAggregator  # noqa: E402
 from store import ActorStore  # noqa: E402
+from bindings import ActorBindingStore, BindingConflict  # noqa: E402
 
-app = FastAPI(title="Live Infinita MVP-008", version="0.9.0")
+app = FastAPI(title="Live Infinita MVP-009", version="0.10.0")
 clients: set[WebSocket] = set()
 world_lock = asyncio.Lock()
 audience_lock = asyncio.Lock()
@@ -42,6 +46,33 @@ engine = DeterministicWorldEngine(BOOTSTRAP_FILE, DATA_DIR)
 pipeline = GatewayPipeline()
 aggregator = AudienceAggregator()
 actors = ActorStore(ACTOR_OBSERVATIONS_FILE)
+bindings = ActorBindingStore(ACTOR_BINDINGS_FILE)
+
+
+def require_operator(authorization: str | None = Header(default=None)) -> None:
+    if not OPERATOR_TOKEN:
+        raise HTTPException(status_code=503, detail="chave do operador não configurada")
+    expected = f"Bearer {OPERATOR_TOKEN}".encode("utf-8")
+    if not secrets.compare_digest((authorization or "").encode("utf-8"), expected):
+        raise HTTPException(status_code=401, detail="chave do operador inválida",
+                            headers={"WWW-Authenticate": "Bearer"})
+
+
+class ActorEntityRequest(BaseModel):
+    entity_id: str = Field(min_length=1, max_length=200, pattern=r"^\S+$")
+
+
+def actor_views() -> list[dict[str, Any]]:
+    links = bindings.current()
+    characters = {entity["id"] for entity in engine.load_world().get("entities", [])
+                  if entity.get("type") == "human"}
+    result = actors.actors()
+    for actor in result:
+        entity_id = links.get(actor["actor_key"])
+        actor["entity_id"] = entity_id
+        actor["binding_status"] = ("unbound" if entity_id is None else
+                                   "active" if entity_id in characters else "missing_entity")
+    return result
 
 
 class SimulationRequest(BaseModel):
@@ -233,8 +264,8 @@ async def health() -> JSONResponse:
     return JSONResponse({
         "ok": True,
         "service": "live-infinita",
-        "mvp": "008",
-        "version": "0.9.0",
+        "mvp": "009",
+        "version": "0.10.0",
         "replay_ok": verification["ok"],
         "state_hash": verification["current_hash"],
         "pipeline": ["real-source-bridge", "actor-state", "audience-side-channel", "audience-aggregator", "proposal-gate", "intent", "validator", "runtime"],
@@ -245,6 +276,8 @@ async def health() -> JSONResponse:
         "audience_rules": aggregator.rules_snapshot(),
         "actor_observations_total": len(actors.observations()),
         "actors_total": len(actors.actors()),
+        "actor_bindings_total": len(bindings.current()),
+        "operator_binding_enabled": bool(OPERATOR_TOKEN),
         "identity_namespace": "source:actor_id",
         "cross_platform_auto_merge": False,
     })
@@ -267,15 +300,59 @@ async def get_deltas() -> JSONResponse:
 
 @app.get("/api/actors")
 async def get_actors() -> JSONResponse:
-    return JSONResponse({"actors": actors.actors(), "observations_total": len(actors.observations())})
+    return JSONResponse({"actors": actor_views(), "observations_total": len(actors.observations())})
 
 
 @app.get("/api/actors/{source}/{actor_id}")
 async def get_actor(source: str, actor_id: str) -> JSONResponse:
-    actor = actors.get(source, actor_id)
+    key = f"{source.strip().lower()}:{actor_id.strip()}"
+    actor = next((item for item in actor_views() if item["actor_key"] == key), None)
     if actor is None:
         raise HTTPException(status_code=404, detail="ator não encontrado")
     return JSONResponse(actor)
+
+
+@app.get("/api/actors/{source}/{actor_id}/bindings")
+async def get_actor_bindings(source: str, actor_id: str) -> JSONResponse:
+    actor = actors.get(source, actor_id)
+    if actor is None:
+        raise HTTPException(status_code=404, detail="ator não encontrado")
+    return JSONResponse({"history": [row for row in bindings.history()
+                                     if row["actor_key"] == actor["actor_key"]]})
+
+
+@app.put("/api/actors/{source}/{actor_id}/entity", dependencies=[Depends(require_operator)])
+async def bind_actor_entity(source: str, actor_id: str, request: ActorEntityRequest) -> JSONResponse:
+    async with world_lock, actor_lock:
+        actor = actors.get(source, actor_id)
+        if actor is None:
+            raise HTTPException(status_code=404, detail="ator não encontrado")
+        entity = next((item for item in engine.load_world().get("entities", [])
+                       if item["id"] == request.entity_id), None)
+        if entity is None:
+            raise HTTPException(status_code=404, detail="personagem não encontrado")
+        if entity.get("type") != "human":
+            raise HTTPException(status_code=422, detail="entidade precisa ser um personagem humano")
+        try:
+            changed = bindings.bind(actor["actor_key"], request.entity_id)
+        except BindingConflict as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+    return JSONResponse({"ok": True, "changed": changed, "world_mutated": False,
+                         "actor_key": actor["actor_key"], "entity_id": request.entity_id})
+
+
+@app.delete("/api/actors/{source}/{actor_id}/entity", dependencies=[Depends(require_operator)])
+async def unbind_actor_entity(source: str, actor_id: str, request: ActorEntityRequest) -> JSONResponse:
+    async with actor_lock:
+        actor = actors.get(source, actor_id)
+        if actor is None:
+            raise HTTPException(status_code=404, detail="ator não encontrado")
+        try:
+            changed = bindings.unbind(actor["actor_key"], request.entity_id)
+        except BindingConflict as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+    return JSONResponse({"ok": True, "changed": changed, "world_mutated": False,
+                         "actor_key": actor["actor_key"], "entity_id": None})
 
 
 @app.get("/api/audience/events")
