@@ -21,22 +21,27 @@ RENDERER_DIR = ROOT / "apps" / "renderer-web"
 DATA_DIR = Path(os.environ.get("LIVE_INFINITA_DATA_DIR", "/var/lib/live-infinita"))
 AUDIENCE_EVENTS_FILE = DATA_DIR / "audience-events.jsonl"
 AUDIENCE_PROPOSALS_FILE = DATA_DIR / "audience-proposals.jsonl"
+ACTOR_OBSERVATIONS_FILE = DATA_DIR / "actor-observations.jsonl"
 GATEWAY_DIR = ROOT / "apps" / "gateway"
 AUDIENCE_DIR = ROOT / "apps" / "audience"
-for path in (GATEWAY_DIR, AUDIENCE_DIR):
+ACTORS_DIR = ROOT / "apps" / "actors"
+for path in (GATEWAY_DIR, AUDIENCE_DIR, ACTORS_DIR):
     if str(path) not in sys.path:
         sys.path.insert(0, str(path))
 
 from pipeline import GatewayPipeline  # noqa: E402
 from aggregator import AudienceAggregator  # noqa: E402
+from store import ActorStore  # noqa: E402
 
-app = FastAPI(title="Live Infinita MVP-007", version="0.8.1")
+app = FastAPI(title="Live Infinita MVP-008", version="0.9.0")
 clients: set[WebSocket] = set()
 world_lock = asyncio.Lock()
 audience_lock = asyncio.Lock()
+actor_lock = asyncio.Lock()
 engine = DeterministicWorldEngine(BOOTSTRAP_FILE, DATA_DIR)
 pipeline = GatewayPipeline()
 aggregator = AudienceAggregator()
+actors = ActorStore(ACTOR_OBSERVATIONS_FILE)
 
 
 class SimulationRequest(BaseModel):
@@ -99,7 +104,6 @@ def append_jsonl(path: Path, record: dict[str, Any]) -> None:
 
 
 def current_proposals() -> list[dict[str, Any]]:
-    """Fold append-only proposal history to the latest state per proposal_id."""
     latest: dict[str, dict[str, Any]] = {}
     order: list[str] = []
     for record in read_jsonl(AUDIENCE_PROPOSALS_FILE):
@@ -112,11 +116,75 @@ def current_proposals() -> list[dict[str, Any]]:
     return [latest[proposal_id] for proposal_id in order]
 
 
+def backfill_actor_store() -> None:
+    """Recover actor observations from historical audience/world logs once, idempotently."""
+    for row in read_jsonl(AUDIENCE_EVENTS_FILE):
+        actor = row.get("actor") or {}
+        actors.observe(
+            source=str(row.get("source") or "unknown"),
+            actor_id=str(actor.get("actor_id") or ""),
+            display_name=actor.get("display_name"),
+            kind=str(row.get("kind") or "unknown"),
+            source_event_id=str(row.get("source_event_id") or ""),
+            metadata={"backfill": True, **dict(row.get("metadata") or {})},
+            observed_at_unix=float(row.get("received_at_unix") or time.time()),
+        )
+
+    for row in engine.read_jsonl(engine.events_file):
+        context = row.get("context") or {}
+        source_event_id = str(context.get("source_event_id") or "")
+        actor_id = str(context.get("actor_id") or "")
+        if not source_event_id or not actor_id:
+            continue
+        actors.observe(
+            source=str(row.get("source") or "unknown"),
+            actor_id=actor_id,
+            display_name=context.get("display_name"),
+            kind=str(context.get("kind") or "text"),
+            source_event_id=source_event_id,
+            metadata={"backfill": True, "world_event_id": row.get("event_id")},
+        )
+
+
+backfill_actor_store()
+
+
+async def observe_actor(
+    *,
+    source: str,
+    actor_id: str,
+    display_name: str | None,
+    kind: str,
+    source_event_id: str,
+    metadata: dict[str, Any],
+    observed_at_unix: float | None = None,
+) -> bool:
+    async with actor_lock:
+        return actors.observe(
+            source=source,
+            actor_id=actor_id,
+            display_name=display_name,
+            kind=kind,
+            source_event_id=source_event_id,
+            metadata=metadata,
+            observed_at_unix=observed_at_unix,
+        )
+
+
 async def process_gateway_payload(payload: dict[str, Any]) -> JSONResponse:
     try:
         normalized, proposed, validation = pipeline.process(payload)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    await observe_actor(
+        source=normalized.source,
+        actor_id=normalized.actor.actor_id,
+        display_name=normalized.actor.display_name,
+        kind=normalized.kind,
+        source_event_id=normalized.source_event_id,
+        metadata={"channel": "gateway", **dict(normalized.metadata)},
+    )
 
     normalized_dict = normalized.to_dict()
     envelope = {
@@ -157,16 +225,18 @@ async def health() -> JSONResponse:
     return JSONResponse({
         "ok": True,
         "service": "live-infinita",
-        "mvp": "007",
-        "version": "0.8.1",
+        "mvp": "008",
+        "version": "0.9.0",
         "replay_ok": verification["ok"],
         "state_hash": verification["current_hash"],
-        "pipeline": ["real-source-bridge", "audience-side-channel", "audience-aggregator", "proposal-gate", "intent", "validator", "runtime"],
+        "pipeline": ["real-source-bridge", "actor-state", "audience-side-channel", "audience-aggregator", "proposal-gate", "intent", "validator", "runtime"],
         "audience_events": ["join", "like", "gift"],
         "audience_events_total": len(read_jsonl(AUDIENCE_EVENTS_FILE)),
         "audience_proposals_total": len(current_proposals()),
-        "audience_proposal_log_records": len(read_jsonl(AUDIENCE_PROPOSALS_FILE)),
-        "audience_rules": aggregator.rules_snapshot(),
+        "actor_observations_total": len(actors.observations()),
+        "actors_total": len(actors.actors()),
+        "identity_namespace": "source:actor_id",
+        "cross_platform_auto_merge": False,
     })
 
 
@@ -185,6 +255,19 @@ async def get_deltas() -> JSONResponse:
     return JSONResponse({"deltas": engine.read_jsonl(engine.deltas_file)})
 
 
+@app.get("/api/actors")
+async def get_actors() -> JSONResponse:
+    return JSONResponse({"actors": actors.actors(), "observations_total": len(actors.observations())})
+
+
+@app.get("/api/actors/{source}/{actor_id}")
+async def get_actor(source: str, actor_id: str) -> JSONResponse:
+    actor = actors.get(source, actor_id)
+    if actor is None:
+        raise HTTPException(status_code=404, detail="ator não encontrado")
+    return JSONResponse(actor)
+
+
 @app.get("/api/audience/events")
 async def get_audience_events() -> JSONResponse:
     return JSONResponse({"events": read_jsonl(AUDIENCE_EVENTS_FILE)})
@@ -197,10 +280,7 @@ async def get_audience_rules() -> JSONResponse:
 
 @app.get("/api/audience/proposals")
 async def get_audience_proposals() -> JSONResponse:
-    return JSONResponse({
-        "proposals": current_proposals(),
-        "log_records": len(read_jsonl(AUDIENCE_PROPOSALS_FILE)),
-    })
+    return JSONResponse({"proposals": current_proposals(), "log_records": len(read_jsonl(AUDIENCE_PROPOSALS_FILE))})
 
 
 @app.post("/api/audience/proposals/{proposal_id}/commit")
@@ -274,6 +354,15 @@ async def audience_event(source: str, request: AudienceEventRequest) -> JSONResp
                 append_jsonl(AUDIENCE_PROPOSALS_FILE, proposal)
 
     if not duplicate:
+        await observe_actor(
+            source=source,
+            actor_id=request.actor_id,
+            display_name=request.display_name,
+            kind=kind,
+            source_event_id=request.source_event_id,
+            metadata={"channel": "audience", **dict(request.metadata)},
+            observed_at_unix=record["received_at_unix"],
+        )
         await broadcast({"type": "audience_event", "event": record})
         for proposal in proposals:
             await broadcast({"type": "audience_proposal", "proposal": proposal})
@@ -304,6 +393,7 @@ async def simulate(request: SimulationRequest) -> JSONResponse:
         "source": "simulator",
         "source_event_id": f"preview-{engine.load_world().get('sequence', 0) + 1}",
         "actor_id": "preview-user",
+        "display_name": "Preview User",
         "kind": "text",
         "text": text,
         "metadata": {"legacy_action": request.action},
@@ -316,6 +406,7 @@ async def reset_world() -> JSONResponse:
         "source": "api",
         "source_event_id": f"reset-{engine.load_world().get('sequence', 0) + 1}",
         "actor_id": "system",
+        "display_name": "System",
         "kind": "text",
         "text": "reset",
         "metadata": {},
