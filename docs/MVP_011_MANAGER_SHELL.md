@@ -24,3 +24,7 @@ disponível para scripts operacionais existentes.
 O script `deploy/update-mvp011.sh` valida a versão instalada, cria backup do
 código, do nginx e dos dados, instala a nova interface, valida o nginx, reinicia
 o serviço e testa as três rotas. Em caso de falha, restaura o MVP-010.
+
+Depois da primeira atualização, execute `deploy/enable-https-mvp011.sh` uma vez
+para emitir o certificado, redirecionar HTTP para HTTPS e tornar a sessão de
+login utilizável com transporte seguro.
