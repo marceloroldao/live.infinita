@@ -86,13 +86,15 @@ class PlanLedger:
         now = time.time()
         actor = str(actor_entity_id or intent.get("actor_entity_id") or principal.get("subject_entity_id") or "").strip() or None
         row = {
-            "plan_schema": "intent_plan_v2",
+            "plan_schema": "intent_plan_v3",
             "plan_id": f"plan_{int(now * 1000)}_{uuid.uuid4().hex[:10]}",
             "proposal_id": str(proposal_id or "").strip() or None,
             "proposer_id": str(proposer_id or "").strip(),
             "principal": deepcopy(principal),
             "intent": deepcopy(intent),
             "plan": deepcopy(plan),
+            "plan_revision": 0,
+            "plan_revision_history": [],
             "priority": int(priority),
             "actor_entity_id": actor,
             "status": "planned",
@@ -124,6 +126,34 @@ class PlanLedger:
         row["updated_at_unix"] = time.time()
         return self._append(row)
 
+    def replace_plan_revision(self, plan_id: str, *, plan: dict[str, Any], reason: str) -> dict[str, Any]:
+        current = self.get(plan_id)
+        if current is None:
+            raise KeyError("plan not found")
+        if str(current.get("status") or "") != "replanning":
+            raise PlanLedgerError("plan replacement requires replanning status")
+
+        revision = int(current.get("plan_revision", 0))
+        history = list(current.get("plan_revision_history") or [])
+        history.append({
+            "plan_revision": revision,
+            "plan": deepcopy(current.get("plan") or {}),
+            "next_step_index": int(current.get("next_step_index", 0)),
+            "reason": str(reason or "replanned"),
+            "replaced_at_unix": time.time(),
+        })
+        return self.transition(
+            plan_id,
+            "running",
+            plan=deepcopy(plan),
+            plan_revision=revision + 1,
+            plan_revision_history=history,
+            next_step_index=0,
+            waiting_reason=None,
+            preempted_by_plan_id=None,
+            last_error=None,
+        )
+
     def mark_step_completed(
         self,
         plan_id: str,
@@ -141,6 +171,7 @@ class PlanLedger:
             raise PlanLedgerError(f"step out of order: {step_index} != {expected}")
         completed = list(current.get("completed_steps") or [])
         completed.append({
+            "plan_revision": int(current.get("plan_revision", 0)),
             "step_index": step_index,
             "mutation_decision_id": mutation_decision_id,
             "world_event_id": world_event_id,
