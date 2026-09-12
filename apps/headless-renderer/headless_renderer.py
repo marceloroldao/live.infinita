@@ -16,43 +16,40 @@ class RendererConfigError(ValueError):
     pass
 
 
-def _which_any(names: tuple[str, ...]) -> str | None:
-    for name in names:
-        resolved = shutil.which(name)
-        if resolved:
-            return resolved
-    return None
-
-
 @dataclass(frozen=True)
 class HeadlessRendererConfig:
-    page_url: str = "http://127.0.0.1/godot/?capture=1"
+    project_dir: str = "/opt/live.infinita/apps/renderer-godot"
+    godot_bin: str = "/opt/live-infinita-godot/engine/Godot_v4.7.2-stable_linux.x86_64"
     display: str = ":99"
     width: int = 1280
     height: int = 720
     fps: int = 30
     video_output: str = "udp://127.0.0.1:5600?pkt_size=1316"
     video_bitrate_kbps: int = 6000
-    startup_seconds: float = 3.0
+    startup_seconds: float = 2.0
 
     @classmethod
     def from_env(cls) -> "HeadlessRendererConfig":
         return cls(
-            page_url=os.getenv("LIVE_INFINITA_RENDER_URL", "http://127.0.0.1/godot/?capture=1").strip(),
+            project_dir=os.getenv("LIVE_INFINITA_RENDER_PROJECT", "/opt/live.infinita/apps/renderer-godot").strip(),
+            godot_bin=os.getenv(
+                "LIVE_INFINITA_GODOT_BIN",
+                "/opt/live-infinita-godot/engine/Godot_v4.7.2-stable_linux.x86_64",
+            ).strip(),
             display=os.getenv("LIVE_INFINITA_RENDER_DISPLAY", ":99").strip(),
             width=int(os.getenv("LIVE_INFINITA_RENDER_WIDTH", "1280")),
             height=int(os.getenv("LIVE_INFINITA_RENDER_HEIGHT", "720")),
             fps=int(os.getenv("LIVE_INFINITA_RENDER_FPS", "30")),
             video_output=os.getenv("LIVE_INFINITA_VIDEO_BUS", "udp://127.0.0.1:5600?pkt_size=1316").strip(),
             video_bitrate_kbps=int(os.getenv("LIVE_INFINITA_RENDER_BITRATE_KBPS", "6000")),
-            startup_seconds=float(os.getenv("LIVE_INFINITA_RENDER_STARTUP_SECONDS", "3")),
+            startup_seconds=float(os.getenv("LIVE_INFINITA_RENDER_STARTUP_SECONDS", "2")),
         )
 
     def validate(self) -> None:
-        if not self.page_url.startswith(("http://", "https://")):
-            raise RendererConfigError("LIVE_INFINITA_RENDER_URL deve ser HTTP/HTTPS")
-        if "capture=1" not in self.page_url:
-            raise RendererConfigError("URL de render precisa usar capture=1")
+        if not self.project_dir:
+            raise RendererConfigError("diretório do projeto Godot ausente")
+        if not self.godot_bin:
+            raise RendererConfigError("binário Godot ausente")
         if not self.display.startswith(":"):
             raise RendererConfigError("display X11 inválido")
         if self.width < 320 or self.height < 240:
@@ -61,8 +58,8 @@ class HeadlessRendererConfig:
             raise RendererConfigError("FPS deve ficar entre 1 e 60")
         if self.video_bitrate_kbps < 500:
             raise RendererConfigError("bitrate de vídeo muito baixo")
-        if not self.video_output.startswith("udp://"):
-            raise RendererConfigError("video bus deve usar UDP local")
+        if not self.video_output.startswith("udp://127.0.0.1:"):
+            raise RendererConfigError("video bus deve ser UDP em loopback")
 
     def xvfb_command(self, xvfb_bin: str = "Xvfb") -> list[str]:
         self.validate()
@@ -73,22 +70,13 @@ class HeadlessRendererConfig:
             "-ac", "-nolisten", "tcp", "+extension", "GLX", "+render",
         ]
 
-    def browser_command(self, browser_bin: str = "chromium") -> list[str]:
+    def godot_command(self) -> list[str]:
         self.validate()
         return [
-            browser_bin,
-            "--no-sandbox",
-            "--disable-dev-shm-usage",
-            "--disable-background-networking",
-            "--disable-default-apps",
-            "--disable-extensions",
-            "--disable-popup-blocking",
-            "--disable-session-crashed-bubble",
-            "--disable-infobars",
-            "--autoplay-policy=no-user-gesture-required",
-            "--kiosk",
-            f"--window-size={self.width},{self.height}",
-            f"--app={self.page_url}",
+            self.godot_bin,
+            "--path", self.project_dir,
+            "--display-driver", "x11",
+            "--resolution", f"{self.width}x{self.height}",
         ]
 
     def capture_command(self, ffmpeg_bin: str = "ffmpeg") -> list[str]:
@@ -139,7 +127,7 @@ class HeadlessRenderer:
                 process.kill()
         self.processes.clear()
 
-    def run(self, xvfb_bin: str, browser_bin: str, ffmpeg_bin: str) -> int:
+    def run(self, xvfb_bin: str, ffmpeg_bin: str) -> int:
         self.config.validate()
         xvfb = self._spawn(self.config.xvfb_command(xvfb_bin))
         time.sleep(0.5)
@@ -148,14 +136,14 @@ class HeadlessRenderer:
 
         env = os.environ.copy()
         env["DISPLAY"] = self.config.display
-        browser = self._spawn(self.config.browser_command(browser_bin), env=env)
+        godot = self._spawn(self.config.godot_command(), env=env)
         time.sleep(max(0.0, self.config.startup_seconds))
-        if browser.poll() is not None:
-            return int(browser.returncode or 1)
+        if godot.poll() is not None:
+            return int(godot.returncode or 1)
 
         capture = self._spawn(self.config.capture_command(ffmpeg_bin), env=env)
         while not self.stop_requested:
-            for process in (xvfb, browser, capture):
+            for process in (xvfb, godot, capture):
                 code = process.poll()
                 if code is not None:
                     return int(code or 1)
@@ -163,37 +151,45 @@ class HeadlessRenderer:
         return 0
 
 
-def safe_commands(config: HeadlessRendererConfig, xvfb_bin: str, browser_bin: str, ffmpeg_bin: str) -> str:
+def safe_commands(config: HeadlessRendererConfig, xvfb_bin: str, ffmpeg_bin: str) -> str:
     blocks = [
         config.xvfb_command(xvfb_bin),
-        config.browser_command(browser_bin),
+        config.godot_command(),
         config.capture_command(ffmpeg_bin),
     ]
     return "\n".join(shlex.join(command) for command in blocks)
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Live Infinita server-side headless renderer")
+    parser = argparse.ArgumentParser(description="Live Infinita native Godot renderer on virtual X11 display")
     parser.add_argument("--dry-run", action="store_true", help="valida configuração e imprime processos sem iniciar")
     args = parser.parse_args(argv)
 
-    xvfb_bin = _which_any(("Xvfb",))
-    browser_bin = _which_any(("chromium", "chromium-browser", "google-chrome", "google-chrome-stable"))
-    ffmpeg_bin = _which_any(("ffmpeg",))
-    missing = [name for name, value in (("Xvfb", xvfb_bin), ("Chromium/Chrome", browser_bin), ("ffmpeg", ffmpeg_bin)) if value is None]
+    xvfb_bin = shutil.which("Xvfb")
+    ffmpeg_bin = shutil.which("ffmpeg")
+    config = HeadlessRendererConfig.from_env()
+
+    missing: list[str] = []
+    if xvfb_bin is None:
+        missing.append("Xvfb")
+    if ffmpeg_bin is None:
+        missing.append("ffmpeg")
+    if not Path(config.godot_bin).is_file():
+        missing.append("Godot")
+    if not Path(config.project_dir, "project.godot").is_file():
+        missing.append("renderer project")
     if missing:
         print(f"[renderer] dependências ausentes: {', '.join(missing)}", file=sys.stderr)
         return 2
 
-    config = HeadlessRendererConfig.from_env()
     try:
         config.validate()
     except (RendererConfigError, ValueError) as exc:
         print(f"[renderer] configuração inválida: {exc}", file=sys.stderr)
         return 2
 
-    assert xvfb_bin and browser_bin and ffmpeg_bin
-    print("[renderer] pipeline:\n" + safe_commands(config, xvfb_bin, browser_bin, ffmpeg_bin), flush=True)
+    assert xvfb_bin and ffmpeg_bin
+    print("[renderer] pipeline:\n" + safe_commands(config, xvfb_bin, ffmpeg_bin), flush=True)
     if args.dry_run:
         return 0
 
@@ -205,7 +201,7 @@ def main(argv: list[str] | None = None) -> int:
     signal.signal(signal.SIGTERM, request_stop)
     signal.signal(signal.SIGINT, request_stop)
     try:
-        return renderer.run(xvfb_bin, browser_bin, ffmpeg_bin)
+        return renderer.run(xvfb_bin, ffmpeg_bin)
     finally:
         renderer.stop()
 
