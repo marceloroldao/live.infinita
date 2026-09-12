@@ -23,7 +23,8 @@ class MonitorContractTest(unittest.TestCase):
         lowered = js.lower()
         self.assertNotIn('localstorage', lowered)
         self.assertNotIn('sessionstorage', lowered)
-        self.assertIn('Bearer ${operatorToken}', js)
+        self.assertIn('Authorization:', js)
+        self.assertIn('Bearer ${token}', js)
         self.assertIn("operatorToken = ''", js)
 
     def test_monitor_cannot_start_external_broadcast(self):
