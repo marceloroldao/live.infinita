@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Live Infinita — Monitor</title>
+  <link rel="stylesheet" href="/monitor/style.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div><span class="eyebrow">LIVE INFINITA</span><h1>Monitor de transmissão</h1><p>Programa e telemetria. Esta tela não faz parte da transmissão.</p></div>
+      <div class="master"><span id="master-dot" class="dot muted"></span><strong id="master-state">BLOQUEADO</strong></div>
+    </header>
+
+    <section id="unlock-card" class="unlock card">
+      <div><h2>Acesso do operador</h2><p>Use a mesma chave da área de Gerência. Ela permanece somente nesta aba.</p></div>
+      <div class="unlock-row"><input id="operator" type="password" autocomplete="current-password" placeholder="Chave do operador"><button id="unlock">Abrir monitor</button></div>
+      <p id="unlock-message" class="message"></p>
+    </section>
+
+    <div id="monitor" hidden>
+      <section class="program card">
+        <div class="section-head"><div><span class="eyebrow">PROGRAM</span><h2>Imagem da Live</h2></div><div class="actions"><button id="audio" class="secondary">Ativar áudio</button><button id="refresh" class="ghost">Atualizar</button></div></div>
+        <div class="phone-wrap"><div class="phone"><iframe id="preview" title="Preview da Live Infinita" src="/godot/?capture=1" allow="autoplay"></iframe></div></div>
+        <audio id="program-audio" preload="none"></audio>
+      </section>
+
+      <aside class="telemetry">
+        <section class="card status-card">
+          <div class="section-head"><div><span class="eyebrow">STATUS</span><h2>Operação</h2></div><span id="updated">—</span></div>
+          <div class="status-grid">
+            <div class="status"><span id="runtime-dot" class="dot muted"></span><div><small>Runtime</small><strong id="runtime-state">—</strong></div></div>
+            <div class="status"><span id="replay-dot" class="dot muted"></span><div><small>Replay</small><strong id="replay-state">—</strong></div></div>
+            <div class="status"><span id="audio-dot" class="dot muted"></span><div><small>Áudio</small><strong id="audio-state">—</strong></div></div>
+            <div class="status"><span id="tiktok-dot" class="dot muted"></span><div><small>TikTok</small><strong id="tiktok-state">—</strong></div></div>
+            <div class="status"><span id="openai-dot" class="dot muted"></span><div><small>OpenAI</small><strong id="openai-state">—</strong></div></div>
+            <div class="status"><span class="dot info"></span><div><small>Formato</small><strong>720×1280 · 30 fps</strong></div></div>
+          </div>
+        </section>
+
+        <section class="card world-card">
+          <span class="eyebrow">WORLD STATE</span><h2>Mundo atual</h2>
+          <dl><div><dt>Sequência</dt><dd id="sequence">—</dd></div><div><dt>Versão</dt><dd id="version">—</dd></div><div><dt>Entidades</dt><dd id="entities">—</dd></div><div><dt>Período</dt><dd id="period">—</dd></div></dl>
+          <p id="narration" class="narration">Aguardando estado do mundo…</p>
+        </section>
+
+        <section class="card counters-card">
+          <span class="eyebrow">AUDIÊNCIA</span><h2>Atividade</h2>
+          <div class="counters"><div><strong id="audience-events">—</strong><span>eventos</span></div><div><strong id="actors">—</strong><span>atores</span></div><div><strong id="proposals">—</strong><span>propostas</span></div></div>
+        </section>
+      </aside>
+    </div>
+  </main>
+  <script src="/monitor/app.js"></script>
+</body>
+</html>
