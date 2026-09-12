@@ -63,7 +63,9 @@ jobs:
           GODOT_VERSION=4.7.2
           GODOT_TAG="${GODOT_VERSION}-stable"
           ZIP="Godot_v${GODOT_TAG}_linux.x86_64.zip"
-          curl -fsSL "https://github.com/godotengine/godot/releases/download/${GODOT_TAG}/${ZIP}" -o "/tmp/${ZIP}"
+          curl --retry 5 --retry-delay 2 --retry-all-errors -fsSL \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_TAG}/${ZIP}" \
+            -o "/tmp/${ZIP}"
           unzip -q "/tmp/${ZIP}" -d /tmp/godot
           GODOT_BIN="$(find /tmp/godot -maxdepth 1 -type f -name 'Godot_v*_linux.x86_64' | head -n1)"
           chmod +x "$GODOT_BIN"
