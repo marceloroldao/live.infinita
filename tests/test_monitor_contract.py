@@ -5,6 +5,7 @@ ROOT = Path(__file__).resolve().parents[1]
 INDEX = ROOT / "apps" / "renderer-web" / "monitor" / "index.html"
 JS = ROOT / "apps" / "renderer-web" / "monitor" / "app.js"
 CSS = ROOT / "apps" / "renderer-web" / "monitor" / "style.css"
+SPATIAL_METRICS = ROOT / "apps" / "renderer-godot" / "spatial_metrics.gd"
 
 
 class MonitorContractTest(unittest.TestCase):
@@ -12,6 +13,7 @@ class MonitorContractTest(unittest.TestCase):
         self.assertTrue(INDEX.is_file())
         self.assertTrue(JS.is_file())
         self.assertTrue(CSS.is_file())
+        self.assertTrue(SPATIAL_METRICS.is_file())
 
     def test_preview_uses_clean_capture_mode(self):
         html = INDEX.read_text(encoding="utf-8")
@@ -39,6 +41,20 @@ class MonitorContractTest(unittest.TestCase):
         js = JS.read_text(encoding="utf-8")
         self.assertIn('id="audio"', html)
         self.assertIn("audioButton.addEventListener('click', toggleAudio)", js)
+
+    def test_spatial_metrics_are_monitor_only_and_same_origin(self):
+        html = INDEX.read_text(encoding="utf-8")
+        js = JS.read_text(encoding="utf-8")
+        gd = SPATIAL_METRICS.read_text(encoding="utf-8")
+        self.assertIn('id="spatial-hot"', html)
+        self.assertIn('id="spatial-warm"', html)
+        self.assertIn('id="spatial-hit-rate"', html)
+        self.assertIn("event.origin !== window.location.origin", js)
+        self.assertIn("live-infinita-spatial-metrics", js)
+        self.assertIn("window.parent.postMessage", gd)
+        self.assertIn("window.location.origin", gd)
+        self.assertNotIn("LIVE_INFINITA_STREAM_OUTPUT", gd)
+        self.assertNotIn("Authorization", gd)
 
 
 if __name__ == "__main__":
