@@ -6,7 +6,6 @@ import json
 from pathlib import Path
 from typing import Any
 
-from engine import DeterministicWorldEngine
 from packages.spatial import FileRegionColdStore, externalize_world_entities
 
 
@@ -34,6 +33,13 @@ class ColdAuthoritativeWorldEngine:
             world["sequence"] = 0
             world["state_hash"] = self._bootstrap_hash(world)
             self._save_json(self.world_file, world)
+        else:
+            world = self._load_json(self.world_file)
+            cold = world.get("cold_entities") if isinstance(world.get("cold_entities"), dict) else {}
+            if cold.get("mode") != "region_file_store" or world.get("entities") not in ([], None):
+                raise ValueError("cold engine requires a migrated cold-backed world.json")
+            if not self.cold_store.manifest_file.exists():
+                raise ValueError("cold engine requires an existing cold-store manifest")
 
     @staticmethod
     def _load_json(path: Path) -> dict[str, Any]:
