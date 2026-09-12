@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from contextvars import ContextVar
 from pathlib import Path
 from typing import Any
 
@@ -15,24 +16,35 @@ from proposal_ledger_runtime import install_runtime_proposal_ledger
 from spatial_session import SpatialSession
 
 app = core.app
+_operator_approval_context: ContextVar[bool] = ContextVar("operator_approval_context", default=False)
 
 
 @app.middleware("http")
 async def audience_proposal_commit_requires_operator(request, call_next):
     """Legacy audience commit endpoint is an operator approval boundary."""
     path = request.url.path
-    if request.method.upper() == "POST" and path.startswith("/api/audience/proposals/") and path.endswith("/commit"):
-        if not core.OPERATOR_TOKEN:
-            return core.JSONResponse({"detail": "chave do operador não configurada"}, status_code=503)
-        expected = f"Bearer {core.OPERATOR_TOKEN}".encode("utf-8")
-        supplied = (request.headers.get("authorization") or "").encode("utf-8")
-        if not core.secrets.compare_digest(supplied, expected):
-            return core.JSONResponse(
-                {"detail": "chave do operador inválida"},
-                status_code=401,
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-    return await call_next(request)
+    is_audience_commit = (
+        request.method.upper() == "POST"
+        and path.startswith("/api/audience/proposals/")
+        and path.endswith("/commit")
+    )
+    if not is_audience_commit:
+        return await call_next(request)
+    if not core.OPERATOR_TOKEN:
+        return core.JSONResponse({"detail": "chave do operador não configurada"}, status_code=503)
+    expected = f"Bearer {core.OPERATOR_TOKEN}".encode("utf-8")
+    supplied = (request.headers.get("authorization") or "").encode("utf-8")
+    if not core.secrets.compare_digest(supplied, expected):
+        return core.JSONResponse(
+            {"detail": "chave do operador inválida"},
+            status_code=401,
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    token = _operator_approval_context.set(True)
+    try:
+        return await call_next(request)
+    finally:
+        _operator_approval_context.reset(token)
 
 
 def _cold_store_root() -> Path | None:
@@ -77,7 +89,7 @@ def _principal_for_action(source: str, context: dict[str, Any] | None) -> Mutati
         # AI proposals only reach this path after the operator explicitly commits them.
         authority = "operator"
     elif metadata.get("operator_approved") and metadata.get("proposal_id"):
-        # Audience proposal commit endpoint is protected by operator bearer auth.
+        # Marker can only be injected inside the authenticated approval context.
         authority = "operator"
     elif metadata.get("proposal_id") or metadata.get("rule_id"):
         # Audience aggregation remains proposal-only until explicit approval.
@@ -138,7 +150,8 @@ def _install_operator_approval_marker() -> None:
         cloned = dict(payload)
         metadata = dict(cloned.get("metadata") or {})
         if (
-            str(cloned.get("source") or "").strip().lower() == "api"
+            _operator_approval_context.get()
+            and str(cloned.get("source") or "").strip().lower() == "api"
             and str(cloned.get("actor_id") or "").strip() == "audience-aggregator"
             and metadata.get("proposal_id")
         ):
