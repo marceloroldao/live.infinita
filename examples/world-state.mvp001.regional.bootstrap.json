@@ -1,0 +1,45 @@
+{
+  "world_id": "mvp001-regional",
+  "version": 1,
+  "title": "Clareira Inicial",
+  "environment": {
+    "period": "day",
+    "biome": "forest"
+  },
+  "regions": [
+    {
+      "id": "clearing_001",
+      "center": {"x": 360, "y": 300},
+      "radius": 420,
+      "biome": "forest",
+      "neighbors": [],
+      "metadata": {"label": "Clareira Inicial"}
+    }
+  ],
+  "entities": [
+    {
+      "id": "tree_01",
+      "type": "tree",
+      "region_id": "clearing_001",
+      "position": {"x": 220, "y": 250},
+      "scale": 1.0,
+      "properties": {"label": "Árvore"}
+    },
+    {
+      "id": "fire_01",
+      "type": "campfire",
+      "region_id": "clearing_001",
+      "position": {"x": 470, "y": 330},
+      "scale": 1.0,
+      "properties": {"label": "Fogueira", "lit": true}
+    }
+  ],
+  "narration": {
+    "text": "Uma clareira silenciosa. Uma árvore permanece ao lado de uma pequena fogueira.",
+    "tts_enabled": false
+  },
+  "provenance": {
+    "source": "mvp001-regional-bootstrap",
+    "authority": "world-runtime"
+  }
+}
