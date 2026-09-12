@@ -13,11 +13,69 @@ var last_action := "aguardando evento"
 var last_event_id := "-"
 var last_delta_id := "-"
 var narration_text := "A Live Infinita está começando."
-var audio_label := "Server Audio · OpenAI TTS + fallback local"
+var audio_label := "Áudio local: Piper + ambiente procedural · clique ATIVAR ÁUDIO"
 
 func _ready() -> void:
     _connect_websocket()
+    _install_browser_audio_bridge()
     queue_redraw()
+
+func _install_browser_audio_bridge() -> void:
+    if not OS.has_feature("web"):
+        return
+    var script := """
+(() => {
+  if (window.__liveInfinitaAudioInstalled) return true;
+  window.__liveInfinitaAudioInstalled = true;
+  const audio = document.createElement('audio');
+  audio.id = 'live-infinita-program-audio';
+  audio.preload = 'none';
+  audio.src = '/audio/live.mp3';
+  audio.volume = 1.0;
+  document.body.appendChild(audio);
+
+  const btn = document.createElement('button');
+  btn.id = 'live-infinita-audio-button';
+  btn.textContent = '🔊 ATIVAR ÁUDIO DA LIVE';
+  Object.assign(btn.style, {
+    position: 'fixed', left: '50%', bottom: '18px', transform: 'translateX(-50%)',
+    zIndex: '99999', padding: '14px 22px', borderRadius: '12px',
+    border: '1px solid rgba(255,255,255,.35)', background: 'rgba(8,12,20,.92)',
+    color: '#fff', font: '700 15px system-ui,sans-serif', cursor: 'pointer',
+    boxShadow: '0 8px 30px rgba(0,0,0,.35)'
+  });
+  document.body.appendChild(btn);
+
+  const start = async () => {
+    try {
+      audio.src = '/audio/live.mp3?ts=' + Date.now();
+      await audio.play();
+      btn.textContent = '🔊 ÁUDIO ATIVO';
+      btn.style.background = 'rgba(18,78,44,.92)';
+      setTimeout(() => { btn.style.display = 'none'; }, 1400);
+      window.__liveInfinitaAudioActive = true;
+    } catch (e) {
+      btn.textContent = '⚠ TOQUE NOVAMENTE PARA ATIVAR ÁUDIO';
+      btn.style.background = 'rgba(110,55,20,.95)';
+    }
+  };
+  btn.addEventListener('click', start);
+
+  const reconnect = () => {
+    if (!window.__liveInfinitaAudioActive) return;
+    setTimeout(async () => {
+      try {
+        audio.src = '/audio/live.mp3?ts=' + Date.now();
+        await audio.play();
+      } catch (_) {}
+    }, 1200);
+  };
+  audio.addEventListener('ended', reconnect);
+  audio.addEventListener('error', reconnect);
+  return true;
+})()
+"""
+    JavaScriptBridge.eval(script)
 
 func _connect_websocket() -> void:
     var url := "ws://127.0.0.1:8080/ws"
@@ -160,7 +218,6 @@ func _draw() -> void:
 
     var font := ThemeDB.fallback_font
 
-    # World/construction panel.
     var state_panel := Rect2(20, 20, 420, 182)
     _draw_panel(state_panel, Color(0.45, 0.82, 1.0, 0.85))
     draw_string(font, Vector2(38, 50), "LIVE INFINITA · MUNDO", HORIZONTAL_ALIGNMENT_LEFT, -1, 22, Color.WHITE)
@@ -170,7 +227,6 @@ func _draw() -> void:
     draw_string(font, Vector2(38, 153), "Event %s · Delta %s" % [last_event_id, last_delta_id], HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color("#b7c0ca"))
     draw_string(font, Vector2(38, 178), "Entidades +%s ~%s -%s =%s" % [last_reconcile["added"], last_reconcile["updated"], last_reconcile["removed"], last_reconcile["unchanged"]], HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color("#f1d18a"))
 
-    # Audience live feed.
     var feed_w := 330.0
     var feed_panel := Rect2(viewport.x - feed_w - 20, 20, feed_w, 228)
     _draw_panel(feed_panel, Color(0.95, 0.53, 0.74, 0.9))
@@ -183,7 +239,6 @@ func _draw() -> void:
             draw_string(font, Vector2(feed_panel.position.x + 18, y), "• " + line, HORIZONTAL_ALIGNMENT_LEFT, feed_w - 36, 14, Color("#f4edf2"))
             y += 23.0
 
-    # Narration panel follows authoritative World State narration.
     var narration_panel := Rect2(90, viewport.y - 112, viewport.x - 180, 82)
     _draw_panel(narration_panel, Color(0.95, 0.78, 0.36, 0.9))
     draw_string(font, Vector2(112, viewport.y - 84), "NARRATIVA", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color("#f8d878"))
