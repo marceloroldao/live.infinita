@@ -1,3 +1,4 @@
+from .agent_intent import AgentIntentError, AgentIntentResolver, ResolvedIntent
 from .cold_mutation import ColdEntityMutator, ColdMutationError
 from .cold_store import ColdRegionCandidateCache, FileRegionColdStore, externalize_world_entities
 from .mutation_gate import MutationDecision, MutationGate, MutationPrincipal
@@ -22,4 +23,7 @@ __all__ = [
     "MutationPrincipal",
     "MutationDecision",
     "MutationGate",
+    "AgentIntentError",
+    "AgentIntentResolver",
+    "ResolvedIntent",
 ]
