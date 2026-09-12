@@ -37,6 +37,7 @@ class SpatialSessionTest(unittest.TestCase):
 
     def test_default_view_prefers_first_human(self) -> None:
         view = self.session.default_view(self.world)
+        self.assertEqual(view["observer_entity_id"], "nov")
         self.assertEqual(view["position"], {"x": 100, "y": 100})
 
     def test_local_slice_materializes_only_hot_entities(self) -> None:
@@ -65,16 +66,30 @@ class SpatialSessionTest(unittest.TestCase):
         )
         self.assertEqual(wrapped["type"], "world_state")
         self.assertEqual(wrapped["delivery"]["mode"], "local_world_slice")
+        self.assertEqual(wrapped["delivery"]["observer_entity_id"], "nov")
         self.assertEqual(wrapped["event"]["event_id"], "e1")
 
-    def test_interest_update_normalizes_position_and_direction(self) -> None:
+    def test_interest_update_normalizes_position_direction_and_observer(self) -> None:
         fallback = self.session.default_view(self.world)
         view = self.session.normalize_view(
-            {"position": {"x": 250, "y": 260}, "direction": {"x": 0, "y": -1}},
+            {
+                "observer_entity_id": "",
+                "position": {"x": 250, "y": 260},
+                "direction": {"x": 0, "y": -1},
+            },
             fallback,
         )
+        self.assertIsNone(view["observer_entity_id"])
         self.assertEqual(view["position"], {"x": 250.0, "y": 260.0})
         self.assertEqual(view["direction"], {"x": 0.0, "y": -1.0})
+
+    def test_observer_entity_follows_authoritative_world_position(self) -> None:
+        view = self.session.default_view(self.world)
+        self.world["entities"][0]["position"] = {"x": 500, "y": 420}
+        resolved = self.session.resolve_observer(self.world, view)
+        self.assertEqual(resolved, {"x": 500.0, "y": 420.0})
+        wrapped = self.session.wrap_world_message({"type": "world_state", "world": self.world}, view)
+        self.assertEqual(wrapped["delivery"]["observer"], {"x": 500.0, "y": 420.0})
 
 
 if __name__ == "__main__":
