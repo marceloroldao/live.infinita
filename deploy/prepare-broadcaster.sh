@@ -25,8 +25,8 @@ if [[ ! -e "$ENV_FILE" ]]; then
 # Video and audio buses are local defaults (:5600 and :5500).
 # Configure ONLY when ready to transmit:
 # LIVE_INFINITA_STREAM_OUTPUT=rtmps://provider.example/app/STREAM_KEY
-# LIVE_INFINITA_STREAM_WIDTH=1280
-# LIVE_INFINITA_STREAM_HEIGHT=720
+# LIVE_INFINITA_STREAM_WIDTH=720
+# LIVE_INFINITA_STREAM_HEIGHT=1280
 # LIVE_INFINITA_STREAM_FPS=30
 # LIVE_INFINITA_VIDEO_BITRATE_KBPS=3500
 # LIVE_INFINITA_AUDIO_BITRATE_KBPS=128
@@ -41,7 +41,7 @@ systemctl stop live-infinita-broadcaster.service >/dev/null 2>&1 || true
 
 echo 'Broadcaster preparado, mas DESABILITADO.'
 echo "Configuração futura: $ENV_FILE"
-echo 'Para validar depois sem transmitir, use:'
-echo '  sudo systemctl show live-infinita-broadcaster.service --property=EnvironmentFiles'
+echo 'Para validar depois sem transmitir:'
 echo '  sudo -u liveinfinita /opt/live.infinita/.venv/bin/python /opt/live.infinita/apps/broadcaster/broadcaster.py --probe'
+echo 'Status sanitizado: /var/lib/live-infinita/broadcaster-status.json'
 echo 'Nenhuma transmissão externa foi iniciada.'
