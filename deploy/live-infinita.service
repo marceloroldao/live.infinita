@@ -1,5 +1,5 @@
 [Unit]
-Description=Live Infinita MVP-010
+Description=Live Infinita Runtime + Spatial Delivery
 After=network.target
 
 [Service]
@@ -9,7 +9,7 @@ Group=liveinfinita
 WorkingDirectory=/opt/live.infinita
 Environment="PYTHONUNBUFFERED=1"
 Environment="LIVE_INFINITA_DATA_DIR=/var/lib/live-infinita"
-ExecStart=/opt/live.infinita/.venv/bin/uvicorn --app-dir /opt/live.infinita/apps/world-runtime main:app --host 0.0.0.0 --port 8080
+ExecStart=/opt/live.infinita/.venv/bin/uvicorn --app-dir /opt/live.infinita/apps/world-runtime main_spatial:app --host 0.0.0.0 --port 8080
 Restart=on-failure
 RestartSec=3
 
