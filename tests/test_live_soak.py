@@ -75,7 +75,10 @@ class LiveSoakTest(unittest.TestCase):
             self.assertGreaterEqual(last_world["sequence"], 500)
             verification = engine.verify_replay()
             self.assertTrue(verification["ok"], verification)
-            self.assertEqual(verification["replayed_state_hash"], last_world["state_hash"])
+            self.assertEqual(verification["current_hash"], verification["replay_hash"])
+            self.assertEqual(verification["current_hash"], last_world["state_hash"])
+            self.assertEqual(verification["events"], 500)
+            self.assertEqual(verification["deltas"], 500)
 
 
 if __name__ == "__main__":
