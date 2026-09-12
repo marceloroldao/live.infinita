@@ -1,5 +1,8 @@
 extends Node2D
 
+const LOGICAL_WORLD_SIZE := Vector2(1280.0, 720.0)
+const PORTRAIT_STAGE := Rect2(90.0, 330.0, 540.0, 620.0)
+
 var entity_id: String = ""
 var entity_type: String = ""
 var entity_data: Dictionary = {}
@@ -8,6 +11,14 @@ var world_position := Vector2.ZERO
 var target_position := Vector2.ZERO
 var target_presentation_scale := 1.0
 var visual_time := 0.0
+
+func world_to_portrait(value: Vector2) -> Vector2:
+    var nx := clamp(value.x / LOGICAL_WORLD_SIZE.x, 0.0, 1.0)
+    var ny := clamp(value.y / LOGICAL_WORLD_SIZE.y, 0.0, 1.0)
+    return Vector2(
+        PORTRAIT_STAGE.position.x + nx * PORTRAIT_STAGE.size.x,
+        PORTRAIT_STAGE.position.y + ny * PORTRAIT_STAGE.size.y
+    )
 
 func apply_entity(next_entity: Dictionary) -> bool:
     var next_signature := JSON.stringify(next_entity)
@@ -21,8 +32,7 @@ func apply_entity(next_entity: Dictionary) -> bool:
 
     var p_data = entity_data.get("position", {})
     world_position = Vector2(float(p_data.get("x", 0)), float(p_data.get("y", 0)))
-    if target_position == Vector2.ZERO:
-        target_position = world_position
+    target_position = world_to_portrait(world_position)
     if position == Vector2.ZERO:
         position = target_position
     queue_redraw()
@@ -31,6 +41,9 @@ func apply_entity(next_entity: Dictionary) -> bool:
 func set_presentation_target(screen_position: Vector2, emphasis: float = 1.0) -> void:
     target_position = screen_position
     target_presentation_scale = clamp(emphasis, 0.75, 1.35)
+
+func restore_default_presentation(emphasis: float = 1.0) -> void:
+    set_presentation_target(world_to_portrait(world_position), emphasis)
 
 func _process(delta: float) -> void:
     visual_time += delta
@@ -53,7 +66,6 @@ func _draw_tree(s: float) -> void:
         Vector2(11, -4) * s, Vector2(18, 72) * s
     ]), PackedColorArray([Color("#4b2d20"), Color("#68402a"), Color("#74492e"), Color("#4b2d20")]))
     draw_line(Vector2(-4, 4) * s, Vector2(-6, 60) * s, Color(0.82, 0.58, 0.38, 0.22), 3.0 * s)
-
     var dark := Color("#173d30")
     var mid := Color("#255b3d")
     var light := Color("#3d7750")
@@ -73,7 +85,6 @@ func _draw_fire(s: float) -> void:
     if not lit:
         draw_circle(Vector2.ZERO, 4 * s, Color(0.12, 0.10, 0.09, 0.7))
         return
-
     var pulse := 1.0 + sin(visual_time * 8.0) * 0.06
     var flicker := sin(visual_time * 13.0) * 4.0
     draw_circle(Vector2(0, -18) * s, 66 * s * pulse, Color(1.0, 0.45, 0.12, 0.075))
