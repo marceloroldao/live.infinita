@@ -44,9 +44,15 @@ class BroadcasterCoreTest(unittest.TestCase):
 
     def test_probe_mode_never_contains_output_url(self):
         config = self.config()
-        cmd = config.command(include_output=False)
+        cmd = config.command(include_output=False, duration_seconds=5)
         self.assertNotIn(config.output_url, cmd)
         self.assertEqual(cmd[-3:], ["-f", "null", "-"])
+        self.assertIn("-t", cmd)
+        self.assertIn("5", cmd)
+
+    def test_invalid_probe_duration_is_rejected(self):
+        with self.assertRaises(BroadcasterConfigError):
+            self.config().command(include_output=False, duration_seconds=0)
 
     def test_invalid_fps_is_rejected(self):
         with self.assertRaises(BroadcasterConfigError):
