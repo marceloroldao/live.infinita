@@ -25,7 +25,7 @@ PlanLedger = load("plan_ledger_resume_policy_test", RUNTIME / "plan_ledger.py").
 PlanArbiter = load("plan_arbiter_resume_policy_test", RUNTIME / "plan_arbiter.py").PlanArbiter
 PlanScheduler = load("plan_scheduler_resume_policy_test", RUNTIME / "plan_scheduler.py").PlanScheduler
 
-from packages.spatial import DeterministicIntentPlanner, FileRegionColdStore, RegionCatalog
+from packages.spatial import DeterministicIntentPlanner, FileRegionColdStore, Region, RegionCatalog
 
 
 class DummyResolver:
@@ -44,13 +44,11 @@ def world_entities():
 
 
 def region_catalog():
-    return RegionCatalog.from_world({
-        "regions": [
-            {"id": "r0", "center": {"x": 0, "y": 0}, "radius": 60, "neighbors": ["r1"]},
-            {"id": "r1", "center": {"x": 100, "y": 0}, "radius": 60, "neighbors": ["r0", "r2"]},
-            {"id": "r2", "center": {"x": 200, "y": 0}, "radius": 60, "neighbors": ["r1"]},
-        ]
-    })
+    return RegionCatalog([
+        Region("r0", (0.0, 0.0), 60.0, neighbors=("r1",)),
+        Region("r1", (100.0, 0.0), 60.0, neighbors=("r0", "r2")),
+        Region("r2", (200.0, 0.0), 60.0, neighbors=("r1",)),
+    ])
 
 
 PRINCIPAL = {
