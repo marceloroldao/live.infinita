@@ -88,12 +88,7 @@ class PlanScheduler:
         )
 
     def assess_resume(self, record: dict[str, Any]) -> dict[str, str]:
-        """Classify a preempted plan before it becomes runnable again.
-
-        resume: current cursor and goal assumptions are still valid.
-        replan: actor/route assumptions changed but the semantic goal still exists.
-        cancel: semantic goal can no longer be planned (for example target removed).
-        """
+        """Classify a preempted plan before it becomes runnable again."""
         try:
             plan = self._rehydrate_plan(dict(record.get("plan") or {}))
             index = int(record.get("next_step_index", 0))
@@ -153,6 +148,34 @@ class PlanScheduler:
                 world_event_id=event_id,
             )
 
+    def replan(self, plan_id: str) -> dict[str, Any]:
+        record = self.ledger.get(plan_id)
+        if record is None:
+            raise KeyError("plan not found")
+        if str(record.get("status") or "") != "replanning":
+            return record
+        reason = str(record.get("last_error") or "world state invalidated current plan")
+        try:
+            fresh = self.planner.plan(dict(record.get("intent") or {}))
+        except ValueError as exc:
+            cancelled = self.ledger.transition(
+                plan_id,
+                "cancelled",
+                waiting_reason=None,
+                preempted_by_plan_id=None,
+                last_error=f"replan failed: {exc}",
+            )
+            self._reject_proposal(cancelled, str(cancelled.get("last_error") or exc))
+            return cancelled
+        return self.ledger.replace_plan_revision(plan_id, plan=fresh.as_dict(), reason=reason)
+
+    def replan_all(self) -> list[dict[str, Any]]:
+        rows = sorted(
+            [row for row in self.ledger.active() if str(row.get("status") or "") == "replanning"],
+            key=lambda row: str(row.get("plan_id") or ""),
+        )
+        return [self.replan(str(row["plan_id"])) for row in rows]
+
     def tick(self, plan_id: str) -> dict[str, Any]:
         record = self.ledger.get(plan_id)
         if record is None:
@@ -161,9 +184,13 @@ class PlanScheduler:
         if status in self.ledger.TERMINAL:
             self._commit_proposal_if_complete(record)
             return record
-        if status in {"waiting", "replanning"}:
+        if status == "waiting":
             return record
-        if status == "planned":
+        if status == "replanning":
+            record = self.replan(plan_id)
+            if str(record.get("status") or "") in self.ledger.TERMINAL:
+                return record
+        if str(record.get("status") or "") == "planned":
             record = self.ledger.transition(plan_id, "running")
 
         plan = self._rehydrate_plan(record["plan"])
@@ -193,6 +220,7 @@ class PlanScheduler:
                 "plan_id": plan_id,
                 "proposal_id": record.get("proposal_id"),
                 "plan_priority": int(record.get("priority", 0)),
+                "plan_revision": int(record.get("plan_revision", 0)),
                 "intent_plan": {
                     "intent_type": plan.intent_type,
                     "step_index": index,
@@ -202,7 +230,7 @@ class PlanScheduler:
                     "region_path": list(plan.region_path),
                 },
             },
-            narration=f"plan {plan_id} step {index + 1}/{len(plan.steps)}: {resolved.rationale}",
+            narration=f"plan {plan_id} revision {int(record.get('plan_revision', 0))} step {index + 1}/{len(plan.steps)}: {resolved.rationale}",
         )
         audit = result.get("audit") or {}
         decision_id = str(audit.get("mutation_decision_id") or "").strip() or None
