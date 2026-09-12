@@ -1,0 +1,31 @@
+[Unit]
+Description=Live Infinita Native Godot Renderer
+After=network-online.target live-infinita.service
+Wants=network-online.target
+Requires=live-infinita.service
+
+[Service]
+Type=simple
+User=liveinfinita
+Group=liveinfinita
+WorkingDirectory=/opt/live.infinita
+Environment=PYTHONUNBUFFERED=1
+Environment=LIVE_INFINITA_RENDER_PROJECT=/opt/live.infinita/apps/renderer-godot
+Environment=LIVE_INFINITA_GODOT_BIN=/opt/live-infinita-godot/engine/Godot_v4.7.2-stable_linux.x86_64
+Environment=LIVE_INFINITA_RENDER_DISPLAY=:99
+Environment=LIVE_INFINITA_RENDER_WIDTH=1280
+Environment=LIVE_INFINITA_RENDER_HEIGHT=720
+Environment=LIVE_INFINITA_RENDER_FPS=30
+Environment=LIVE_INFINITA_VIDEO_BUS=udp://127.0.0.1:5600?pkt_size=1316
+ExecStart=/opt/live.infinita/.venv/bin/python /opt/live.infinita/apps/headless-renderer/headless_renderer.py
+Restart=always
+RestartSec=3
+TimeoutStopSec=8
+KillMode=control-group
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target
