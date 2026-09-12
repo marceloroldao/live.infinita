@@ -4,7 +4,9 @@ var entity_id: String = ""
 var entity_type: String = ""
 var entity_data: Dictionary = {}
 var data_signature: String = ""
+var world_position := Vector2.ZERO
 var target_position := Vector2.ZERO
+var target_presentation_scale := 1.0
 var visual_time := 0.0
 
 func apply_entity(next_entity: Dictionary) -> bool:
@@ -18,15 +20,24 @@ func apply_entity(next_entity: Dictionary) -> bool:
     data_signature = next_signature
 
     var p_data = entity_data.get("position", {})
-    target_position = Vector2(float(p_data.get("x", 0)), float(p_data.get("y", 0)))
+    world_position = Vector2(float(p_data.get("x", 0)), float(p_data.get("y", 0)))
+    if target_position == Vector2.ZERO:
+        target_position = world_position
     if position == Vector2.ZERO:
         position = target_position
     queue_redraw()
     return true
 
+func set_presentation_target(screen_position: Vector2, emphasis: float = 1.0) -> void:
+    target_position = screen_position
+    target_presentation_scale = clamp(emphasis, 0.75, 1.35)
+
 func _process(delta: float) -> void:
     visual_time += delta
-    position = position.lerp(target_position, min(1.0, delta * 5.5))
+    position = position.lerp(target_position, min(1.0, delta * 3.8))
+    var uniform := scale.x
+    uniform = lerpf(uniform, target_presentation_scale, min(1.0, delta * 3.2))
+    scale = Vector2.ONE * uniform
     if entity_type == "campfire" and bool(entity_data.get("properties", {}).get("lit", false)):
         queue_redraw()
 
@@ -37,14 +48,12 @@ func _shadow(radius_x: float, radius_y: float, offset_y: float = 44.0) -> void:
 
 func _draw_tree(s: float) -> void:
     _shadow(48.0 * s, 18.0 * s, 78.0 * s)
-    # trunk with a darker edge and warm center
     draw_polygon(PackedVector2Array([
         Vector2(-15, 72) * s, Vector2(-10, -4) * s,
         Vector2(11, -4) * s, Vector2(18, 72) * s
     ]), PackedColorArray([Color("#4b2d20"), Color("#68402a"), Color("#74492e"), Color("#4b2d20")]))
     draw_line(Vector2(-4, 4) * s, Vector2(-6, 60) * s, Color(0.82, 0.58, 0.38, 0.22), 3.0 * s)
 
-    # canopy: overlapping masses create a soft illustrated silhouette
     var dark := Color("#173d30")
     var mid := Color("#255b3d")
     var light := Color("#3d7750")
@@ -67,7 +76,6 @@ func _draw_fire(s: float) -> void:
 
     var pulse := 1.0 + sin(visual_time * 8.0) * 0.06
     var flicker := sin(visual_time * 13.0) * 4.0
-    # atmospheric glow behind the flame
     draw_circle(Vector2(0, -18) * s, 66 * s * pulse, Color(1.0, 0.45, 0.12, 0.075))
     draw_circle(Vector2(0, -18) * s, 45 * s * pulse, Color(1.0, 0.56, 0.16, 0.11))
     var outer := PackedVector2Array([
@@ -89,10 +97,8 @@ func _draw_human(s: float) -> void:
     var skin := Color("#e8b98e")
     var coat := Color("#435a83")
     var coat_dark := Color("#2d3f62")
-    # legs behind torso
     draw_line(Vector2(-6, 15) * s, Vector2(-16, 49) * s, Color("#26334b"), 9 * s)
     draw_line(Vector2(6, 15) * s, Vector2(16, 49) * s, Color("#26334b"), 9 * s)
-    # body with small shoulder silhouette
     draw_colored_polygon(PackedVector2Array([
         Vector2(-17, -23) * s, Vector2(16, -23) * s,
         Vector2(13, 22) * s, Vector2(-13, 22) * s
@@ -100,19 +106,15 @@ func _draw_human(s: float) -> void:
     draw_line(Vector2(-13, -15) * s, Vector2(-29, 8) * s, coat_dark, 8 * s)
     draw_line(Vector2(13, -15) * s, Vector2(29, 8) * s, coat_dark, 8 * s)
     draw_circle(Vector2(0, -42) * s, 16 * s, skin)
-    # hair and face mark, enough to feel character-like without sprite assets
     draw_arc(Vector2(0, -45) * s, 15 * s, PI, TAU, 18, Color("#382d2a"), 7 * s)
     draw_circle(Vector2(5, -42) * s, 1.5 * s, Color("#3b302d"))
 
 func _draw() -> void:
     var scale_value := float(entity_data.get("scale", 1.0))
     match entity_type:
-        "tree":
-            _draw_tree(scale_value)
-        "campfire":
-            _draw_fire(scale_value)
-        "human":
-            _draw_human(scale_value)
+        "tree": _draw_tree(scale_value)
+        "campfire": _draw_fire(scale_value)
+        "human": _draw_human(scale_value)
         _:
             _shadow(14.0 * scale_value, 5.0 * scale_value, 13.0 * scale_value)
             draw_circle(Vector2.ZERO, 12 * scale_value, Color("#d7e1df"))
