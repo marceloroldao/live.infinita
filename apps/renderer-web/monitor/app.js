@@ -7,8 +7,19 @@
 
   const HISTORY_MAX_SAMPLES = 240;
   const HISTORY_MIN_SAMPLE_MS = 5000;
+  const ALERT_HISTORY_MAX = 40;
+  const ALERT_DEDUP_MS = 15000;
+  const HOT_WARN = 80;
+  const HOT_CRITICAL = 96;
+  const WARM_WARN = 160;
+  const WARM_CRITICAL = 192;
+  const PREFETCH_WARN_RATE = 0.70;
+  const PREFETCH_MIN_PROMOTIONS = 10;
+
   const spatialHistory = [];
+  const alertHistory = [];
   let lastHistorySampleAt = 0;
+  const lastAlertAt = new Map();
 
   const $ = (id) => document.getElementById(id);
   const monitor = $('monitor');
@@ -91,6 +102,74 @@
     renderSpatialHistory();
   }
 
+  function renderAlerts() {
+    const list = $('alert-history');
+    if (!list) return;
+    list.replaceChildren();
+    if (alertHistory.length === 0) {
+      const item = document.createElement('li');
+      item.className = 'alert-empty';
+      item.textContent = 'Nenhum alerta espacial nesta sessão.';
+      list.appendChild(item);
+      return;
+    }
+    for (const row of [...alertHistory].reverse()) {
+      const item = document.createElement('li');
+      item.className = `alert-item ${row.level}`;
+      const when = new Date(row.at).toLocaleTimeString('pt-BR');
+      item.textContent = `${when} · ${row.message}`;
+      list.appendChild(item);
+    }
+  }
+
+  function pushAlert(key, level, message) {
+    const now = Date.now();
+    const previous = Number(lastAlertAt.get(key) || 0);
+    if (now - previous < ALERT_DEDUP_MS) return;
+    lastAlertAt.set(key, now);
+    alertHistory.push({ at: now, key, level, message });
+    while (alertHistory.length > ALERT_HISTORY_MAX) alertHistory.shift();
+    renderAlerts();
+  }
+
+  function evaluateSpatialAlerts(payload) {
+    const hot = Number(payload.hot);
+    const warm = Number(payload.warm);
+    const rate = Number(payload.prefetch_hit_rate);
+    const promotions = Number(payload.promotions_total || 0);
+
+    let level = 'good';
+    let label = 'NORMAL';
+
+    if (Number.isFinite(hot)) {
+      if (hot >= HOT_CRITICAL) {
+        pushAlert('hot-critical', 'critical', `HOT atingiu ${hot}/${HOT_CRITICAL}`);
+        level = 'bad'; label = 'CRÍTICO';
+      } else if (hot >= HOT_WARN) {
+        pushAlert('hot-warn', 'warn', `HOT elevado: ${hot}/${HOT_CRITICAL}`);
+        if (level === 'good') { level = 'warn'; label = 'ATENÇÃO'; }
+      }
+    }
+
+    if (Number.isFinite(warm)) {
+      if (warm >= WARM_CRITICAL) {
+        pushAlert('warm-critical', 'critical', `WARM atingiu ${warm}/${WARM_CRITICAL}`);
+        level = 'bad'; label = 'CRÍTICO';
+      } else if (warm >= WARM_WARN) {
+        pushAlert('warm-warn', 'warn', `WARM elevado: ${warm}/${WARM_CRITICAL}`);
+        if (level === 'good') { level = 'warn'; label = 'ATENÇÃO'; }
+      }
+    }
+
+    if (promotions >= PREFETCH_MIN_PROMOTIONS && Number.isFinite(rate) && rate < PREFETCH_WARN_RATE) {
+      pushAlert('prefetch-low', 'warn', `Prefetch abaixo de 70%: ${Math.round(rate * 100)}%`);
+      if (level === 'good') { level = 'warn'; label = 'ATENÇÃO'; }
+    }
+
+    text('spatial-alert-state', label);
+    dot('spatial-alert-dot', level);
+  }
+
   function applySpatialMetrics(payload) {
     text('spatial-hot', payload.hot ?? '—');
     text('spatial-warm', payload.warm ?? '—');
@@ -101,6 +180,7 @@
     text('spatial-transitions', payload.active_transitions ?? '—');
     text('spatial-cold', payload.cold_omitted ? 'OMITIDO' : '—');
     appendSpatialHistory(payload);
+    evaluateSpatialAlerts(payload);
   }
 
   async function refreshTelemetry() {
@@ -232,5 +312,9 @@
     if (timer) window.clearInterval(timer);
     operatorToken = '';
     spatialHistory.length = 0;
+    alertHistory.length = 0;
+    lastAlertAt.clear();
   });
+
+  renderAlerts();
 })();
