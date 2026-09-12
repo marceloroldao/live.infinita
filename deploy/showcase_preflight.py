@@ -25,6 +25,7 @@ def source_checks(root: Path = ROOT) -> list[Check]:
         "apps/world-runtime/main.py",
         "apps/audio-service/server_audio.py",
         "apps/audio-web-bridge/audio_web_bridge.py",
+        "apps/broadcaster/broadcaster.py",
         "apps/renderer-godot/project.godot",
         "apps/renderer-godot/main.tscn",
         "apps/renderer-godot/main.gd",
@@ -53,6 +54,15 @@ def source_checks(root: Path = ROOT) -> list[Check]:
             Check("installer:server-audio", "install-server-audio.sh" in text, "Server Audio integrado"),
             Check("installer:browser-audio", "install-browser-audio.sh" in text, "Browser Audio integrado"),
             Check("installer:replay", "/api/replay/verify" in text, "replay verificado"),
+        ])
+
+    broadcaster = root / "apps/broadcaster/broadcaster.py"
+    if broadcaster.is_file():
+        text = broadcaster.read_text(encoding="utf-8")
+        checks.extend([
+            Check("broadcaster:dry-run", "--dry-run" in text, "modo seguro sem transmissão"),
+            Check("broadcaster:redaction", "redact_url" in text, "stream key mascarada em logs"),
+            Check("broadcaster:audio-bus", "LIVE_INFINITA_AUDIO_INPUT" in text, "bus de áudio configurável"),
         ])
     return checks
 
