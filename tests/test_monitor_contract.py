@@ -56,6 +56,19 @@ class MonitorContractTest(unittest.TestCase):
         self.assertNotIn("LIVE_INFINITA_STREAM_OUTPUT", gd)
         self.assertNotIn("Authorization", gd)
 
+    def test_spatial_history_is_bounded_and_memory_only(self):
+        html = INDEX.read_text(encoding="utf-8")
+        js = JS.read_text(encoding="utf-8")
+        lowered = js.lower()
+        self.assertIn('id="spatial-history"', html)
+        self.assertIn('HISTORY_MAX_SAMPLES = 240', js)
+        self.assertIn('HISTORY_MIN_SAMPLE_MS = 5000', js)
+        self.assertIn('while (spatialHistory.length > HISTORY_MAX_SAMPLES)', js)
+        self.assertIn('spatialHistory.length = 0', js)
+        self.assertNotIn('indexeddb', lowered)
+        self.assertNotIn('localstorage', lowered)
+        self.assertNotIn('sessionstorage', lowered)
+
 
 if __name__ == "__main__":
     unittest.main()
