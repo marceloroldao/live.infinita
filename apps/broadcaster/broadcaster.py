@@ -85,8 +85,10 @@ class BroadcasterConfig:
         if not 1 <= self.keyframe_seconds <= 10:
             raise BroadcasterConfigError("intervalo de keyframe inválido")
 
-    def command(self, include_output: bool = True) -> list[str]:
+    def command(self, include_output: bool = True, duration_seconds: float | None = None) -> list[str]:
         self.validate(require_output=include_output)
+        if duration_seconds is not None and duration_seconds <= 0:
+            raise BroadcasterConfigError("duração de probe deve ser positiva")
         gop = self.fps * self.keyframe_seconds
         cmd = [
             "ffmpeg", "-hide_banner", "-loglevel", "warning",
@@ -102,14 +104,16 @@ class BroadcasterConfig:
             "-c:a", "aac", "-b:a", f"{self.audio_bitrate_kbps}k", "-ar", "48000", "-ac", "2",
             "-shortest",
         ]
+        if duration_seconds is not None:
+            cmd.extend(["-t", f"{duration_seconds:g}"])
         if include_output:
             cmd.extend(["-f", "flv", self.output_url])
         else:
             cmd.extend(["-f", "null", "-"])
         return cmd
 
-    def safe_command_text(self, include_output: bool = True) -> str:
-        command = self.command(include_output=include_output)
+    def safe_command_text(self, include_output: bool = True, duration_seconds: float | None = None) -> str:
+        command = self.command(include_output=include_output, duration_seconds=duration_seconds)
         if include_output and self.output_url:
             command[-1] = redact_url(self.output_url)
         return shlex.join(command)
@@ -119,6 +123,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Live Infinita provider-neutral broadcaster")
     parser.add_argument("--dry-run", action="store_true", help="valida configuração e imprime comando sem transmitir")
     parser.add_argument("--probe", action="store_true", help="valida inputs com saída descartada; não transmite")
+    parser.add_argument("--probe-seconds", type=float, default=5.0, help="duração do probe local (padrão: 5s)")
     args = parser.parse_args(argv)
 
     if shutil.which("ffmpeg") is None:
@@ -126,16 +131,17 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     config = BroadcasterConfig.from_env()
+    duration = args.probe_seconds if args.probe else None
     try:
-        if args.probe:
-            command = config.command(include_output=False)
-        else:
-            command = config.command(include_output=True)
+        command = config.command(include_output=not args.probe, duration_seconds=duration)
     except (BroadcasterConfigError, ValueError) as exc:
         print(f"[broadcaster] configuração inválida: {exc}", file=sys.stderr)
         return 2
 
-    print(f"[broadcaster] {config.safe_command_text(include_output=not args.probe)}", flush=True)
+    print(
+        f"[broadcaster] {config.safe_command_text(include_output=not args.probe, duration_seconds=duration)}",
+        flush=True,
+    )
     if args.dry_run:
         return 0
 
