@@ -46,7 +46,10 @@ class BroadcasterConfig:
 
     @classmethod
     def from_env(cls) -> "BroadcasterConfig":
-        video_input = os.getenv("LIVE_INFINITA_VIDEO_INPUT", "").strip()
+        video_input = os.getenv(
+            "LIVE_INFINITA_VIDEO_INPUT",
+            "udp://127.0.0.1:5600?fifo_size=2000000&overrun_nonfatal=1",
+        ).strip()
         audio_input = os.getenv(
             "LIVE_INFINITA_AUDIO_INPUT",
             "udp://127.0.0.1:5500?fifo_size=1000000&overrun_nonfatal=1",
@@ -87,7 +90,7 @@ class BroadcasterConfig:
         gop = self.fps * self.keyframe_seconds
         cmd = [
             "ffmpeg", "-hide_banner", "-loglevel", "warning",
-            "-thread_queue_size", "1024", "-i", self.video_input,
+            "-thread_queue_size", "1024", "-fflags", "+genpts+nobuffer", "-i", self.video_input,
             "-thread_queue_size", "1024", "-fflags", "+genpts+nobuffer", "-i", self.audio_input,
             "-map", "0:v:0", "-map", "1:a:0",
             "-vf", f"scale={self.width}:{self.height}:force_original_aspect_ratio=decrease,pad={self.width}:{self.height}:(ow-iw)/2:(oh-ih)/2",
