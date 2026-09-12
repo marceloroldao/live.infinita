@@ -69,6 +69,23 @@ class MonitorContractTest(unittest.TestCase):
         self.assertNotIn('localstorage', lowered)
         self.assertNotIn('sessionstorage', lowered)
 
+    def test_spatial_alerts_use_resolver_limits_and_bounded_memory(self):
+        html = INDEX.read_text(encoding="utf-8")
+        js = JS.read_text(encoding="utf-8")
+        self.assertIn('id="spatial-alert-state"', html)
+        self.assertIn('id="alert-history"', html)
+        self.assertIn('HOT_WARN = 80', js)
+        self.assertIn('HOT_CRITICAL = 96', js)
+        self.assertIn('WARM_WARN = 160', js)
+        self.assertIn('WARM_CRITICAL = 192', js)
+        self.assertIn('PREFETCH_WARN_RATE = 0.70', js)
+        self.assertIn('PREFETCH_MIN_PROMOTIONS = 10', js)
+        self.assertIn('ALERT_HISTORY_MAX = 40', js)
+        self.assertIn('ALERT_DEDUP_MS = 15000', js)
+        self.assertIn('while (alertHistory.length > ALERT_HISTORY_MAX)', js)
+        self.assertIn('alertHistory.length = 0', js)
+        self.assertIn('lastAlertAt.clear()', js)
+
 
 if __name__ == "__main__":
     unittest.main()
