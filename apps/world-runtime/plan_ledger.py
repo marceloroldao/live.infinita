@@ -76,23 +76,30 @@ class PlanLedger:
         intent: dict[str, Any],
         plan: dict[str, Any],
         idempotency_key: str | None = None,
+        priority: int = 0,
+        actor_entity_id: str | None = None,
     ) -> dict[str, Any]:
         if idempotency_key:
             for row in self.current():
                 if row.get("idempotency_key") == idempotency_key:
                     return row
         now = time.time()
+        actor = str(actor_entity_id or intent.get("actor_entity_id") or principal.get("subject_entity_id") or "").strip() or None
         row = {
-            "plan_schema": "intent_plan_v1",
+            "plan_schema": "intent_plan_v2",
             "plan_id": f"plan_{int(now * 1000)}_{uuid.uuid4().hex[:10]}",
             "proposal_id": str(proposal_id or "").strip() or None,
             "proposer_id": str(proposer_id or "").strip(),
             "principal": deepcopy(principal),
             "intent": deepcopy(intent),
             "plan": deepcopy(plan),
+            "priority": int(priority),
+            "actor_entity_id": actor,
             "status": "planned",
             "next_step_index": 0,
             "completed_steps": [],
+            "waiting_reason": None,
+            "preempted_by_plan_id": None,
             "idempotency_key": str(idempotency_key or "").strip() or None,
             "last_error": None,
             "created_at_unix": now,
@@ -148,5 +155,7 @@ class PlanLedger:
             status,
             next_step_index=next_index,
             completed_steps=completed,
+            waiting_reason=None,
+            preempted_by_plan_id=None,
             last_error=None,
         )
