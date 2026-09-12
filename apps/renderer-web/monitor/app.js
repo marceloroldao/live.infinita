@@ -5,6 +5,11 @@
   let timer = null;
   let audioActive = false;
 
+  const HISTORY_MAX_SAMPLES = 240;
+  const HISTORY_MIN_SAMPLE_MS = 5000;
+  const spatialHistory = [];
+  let lastHistorySampleAt = 0;
+
   const $ = (id) => document.getElementById(id);
   const monitor = $('monitor');
   const unlockCard = $('unlock-card');
@@ -42,6 +47,50 @@
     return { live: false, label: String(payload.state || 'PARADO').toUpperCase(), level: 'muted' };
   }
 
+  function renderSpatialHistory() {
+    const hotLine = $('history-hot');
+    const warmLine = $('history-warm');
+    if (!hotLine || !warmLine) return;
+    if (spatialHistory.length === 0) {
+      hotLine.setAttribute('points', '');
+      warmLine.setAttribute('points', '');
+      text('history-window', '0 min');
+      text('history-hit', 'Prefetch —');
+      return;
+    }
+
+    const width = 600;
+    const height = 180;
+    const maxValue = Math.max(1, ...spatialHistory.flatMap((row) => [row.hot, row.warm]));
+    const xFor = (index) => spatialHistory.length === 1 ? width : (index / (spatialHistory.length - 1)) * width;
+    const yFor = (value) => height - (Math.max(0, value) / maxValue) * (height - 8) - 4;
+    const pointsFor = (key) => spatialHistory.map((row, index) => `${xFor(index).toFixed(1)},${yFor(row[key]).toFixed(1)}`).join(' ');
+
+    hotLine.setAttribute('points', pointsFor('hot'));
+    warmLine.setAttribute('points', pointsFor('warm'));
+    const elapsedMs = spatialHistory[spatialHistory.length - 1].at - spatialHistory[0].at;
+    text('history-window', `${Math.max(0, Math.round(elapsedMs / 60000))} min`);
+    const latest = spatialHistory[spatialHistory.length - 1];
+    text('history-hit', Number.isFinite(latest.hitRate) ? `Prefetch ${Math.round(latest.hitRate * 100)}%` : 'Prefetch —');
+  }
+
+  function appendSpatialHistory(payload) {
+    const now = Date.now();
+    if (now - lastHistorySampleAt < HISTORY_MIN_SAMPLE_MS) return;
+    const hot = Number(payload.hot);
+    const warm = Number(payload.warm);
+    if (!Number.isFinite(hot) || !Number.isFinite(warm)) return;
+    spatialHistory.push({
+      at: now,
+      hot: Math.max(0, hot),
+      warm: Math.max(0, warm),
+      hitRate: Number(payload.prefetch_hit_rate),
+    });
+    lastHistorySampleAt = now;
+    while (spatialHistory.length > HISTORY_MAX_SAMPLES) spatialHistory.shift();
+    renderSpatialHistory();
+  }
+
   function applySpatialMetrics(payload) {
     text('spatial-hot', payload.hot ?? '—');
     text('spatial-warm', payload.warm ?? '—');
@@ -51,6 +100,7 @@
     text('spatial-unexpected', payload.unexpected_promotions_total ?? '—');
     text('spatial-transitions', payload.active_transitions ?? '—');
     text('spatial-cold', payload.cold_omitted ? 'OMITIDO' : '—');
+    appendSpatialHistory(payload);
   }
 
   async function refreshTelemetry() {
@@ -181,5 +231,6 @@
   window.addEventListener('beforeunload', () => {
     if (timer) window.clearInterval(timer);
     operatorToken = '';
+    spatialHistory.length = 0;
   });
 })();
