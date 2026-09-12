@@ -8,7 +8,8 @@
   const HISTORY_MAX_SAMPLES = 240;
   const HISTORY_MIN_SAMPLE_MS = 5000;
   const ALERT_HISTORY_MAX = 40;
-  const ALERT_DEDUP_MS = 15000;
+  const ALERT_WARN_COOLDOWN_MS = 60000;
+  const ALERT_CRITICAL_COOLDOWN_MS = 20000;
   const HOT_WARN = 80;
   const HOT_CRITICAL = 96;
   const WARM_WARN = 160;
@@ -19,7 +20,9 @@
   const spatialHistory = [];
   const alertHistory = [];
   let lastHistorySampleAt = 0;
-  const lastAlertAt = new Map();
+  const lastAlertState = new Map();
+  let alertLevelFilter = 'all';
+  let alertKindFilter = 'all';
 
   const $ = (id) => document.getElementById(id);
   const monitor = $('monitor');
@@ -91,43 +94,54 @@
     const hot = Number(payload.hot);
     const warm = Number(payload.warm);
     if (!Number.isFinite(hot) || !Number.isFinite(warm)) return;
-    spatialHistory.push({
-      at: now,
-      hot: Math.max(0, hot),
-      warm: Math.max(0, warm),
-      hitRate: Number(payload.prefetch_hit_rate),
-    });
+    spatialHistory.push({ at: now, hot: Math.max(0, hot), warm: Math.max(0, warm), hitRate: Number(payload.prefetch_hit_rate) });
     lastHistorySampleAt = now;
     while (spatialHistory.length > HISTORY_MAX_SAMPLES) spatialHistory.shift();
     renderSpatialHistory();
+  }
+
+  function alertMatches(row) {
+    const levelOk = alertLevelFilter === 'all' || row.level === alertLevelFilter;
+    const kindOk = alertKindFilter === 'all' || row.kind === alertKindFilter;
+    return levelOk && kindOk;
+  }
+
+  function renderAlertFilters() {
+    document.querySelectorAll('[data-alert-level]').forEach((button) => button.classList.toggle('active', button.dataset.alertLevel === alertLevelFilter));
+    document.querySelectorAll('[data-alert-kind]').forEach((button) => button.classList.toggle('active', button.dataset.alertKind === alertKindFilter));
   }
 
   function renderAlerts() {
     const list = $('alert-history');
     if (!list) return;
     list.replaceChildren();
-    if (alertHistory.length === 0) {
+    const rows = alertHistory.filter(alertMatches);
+    if (rows.length === 0) {
       const item = document.createElement('li');
       item.className = 'alert-empty';
-      item.textContent = 'Nenhum alerta espacial nesta sessão.';
+      item.textContent = alertHistory.length === 0 ? 'Nenhum alerta espacial nesta sessão.' : 'Nenhum alerta neste filtro.';
       list.appendChild(item);
+      renderAlertFilters();
       return;
     }
-    for (const row of [...alertHistory].reverse()) {
+    for (const row of [...rows].reverse()) {
       const item = document.createElement('li');
       item.className = `alert-item ${row.level}`;
       const when = new Date(row.at).toLocaleTimeString('pt-BR');
-      item.textContent = `${when} · ${row.message}`;
+      item.textContent = `${when} · ${row.kind.toUpperCase()} · ${row.message}`;
       list.appendChild(item);
     }
+    renderAlertFilters();
   }
 
-  function pushAlert(key, level, message) {
+  function pushAlert(key, kind, level, message) {
     const now = Date.now();
-    const previous = Number(lastAlertAt.get(key) || 0);
-    if (now - previous < ALERT_DEDUP_MS) return;
-    lastAlertAt.set(key, now);
-    alertHistory.push({ at: now, key, level, message });
+    const previous = lastAlertState.get(key) || { at: 0, level: '' };
+    const escalated = previous.level === 'warn' && level === 'critical';
+    const cooldown = level === 'critical' ? ALERT_CRITICAL_COOLDOWN_MS : ALERT_WARN_COOLDOWN_MS;
+    if (!escalated && now - Number(previous.at || 0) < cooldown) return;
+    lastAlertState.set(key, { at: now, level });
+    alertHistory.push({ at: now, key, kind, level, message, escalated });
     while (alertHistory.length > ALERT_HISTORY_MAX) alertHistory.shift();
     renderAlerts();
   }
@@ -143,26 +157,26 @@
 
     if (Number.isFinite(hot)) {
       if (hot >= HOT_CRITICAL) {
-        pushAlert('hot-critical', 'critical', `HOT atingiu ${hot}/${HOT_CRITICAL}`);
+        pushAlert('hot', 'hot', 'critical', `HOT atingiu ${hot}/${HOT_CRITICAL}`);
         level = 'bad'; label = 'CRÍTICO';
       } else if (hot >= HOT_WARN) {
-        pushAlert('hot-warn', 'warn', `HOT elevado: ${hot}/${HOT_CRITICAL}`);
+        pushAlert('hot', 'hot', 'warn', `HOT elevado: ${hot}/${HOT_CRITICAL}`);
         if (level === 'good') { level = 'warn'; label = 'ATENÇÃO'; }
       }
     }
 
     if (Number.isFinite(warm)) {
       if (warm >= WARM_CRITICAL) {
-        pushAlert('warm-critical', 'critical', `WARM atingiu ${warm}/${WARM_CRITICAL}`);
+        pushAlert('warm', 'warm', 'critical', `WARM atingiu ${warm}/${WARM_CRITICAL}`);
         level = 'bad'; label = 'CRÍTICO';
       } else if (warm >= WARM_WARN) {
-        pushAlert('warm-warn', 'warn', `WARM elevado: ${warm}/${WARM_CRITICAL}`);
+        pushAlert('warm', 'warm', 'warn', `WARM elevado: ${warm}/${WARM_CRITICAL}`);
         if (level === 'good') { level = 'warn'; label = 'ATENÇÃO'; }
       }
     }
 
     if (promotions >= PREFETCH_MIN_PROMOTIONS && Number.isFinite(rate) && rate < PREFETCH_WARN_RATE) {
-      pushAlert('prefetch-low', 'warn', `Prefetch abaixo de 70%: ${Math.round(rate * 100)}%`);
+      pushAlert('prefetch', 'prefetch', 'warn', `Prefetch abaixo de 70%: ${Math.round(rate * 100)}%`);
       if (level === 'good') { level = 'warn'; label = 'ATENÇÃO'; }
     }
 
@@ -185,15 +199,9 @@
 
   async function refreshTelemetry() {
     if (!operatorToken) return;
-
     const [healthResult, worldResult, replayResult, audioResult, broadcasterResult] = await Promise.allSettled([
-      getJSON('/api/health'),
-      getJSON('/api/world'),
-      getJSON('/api/replay/verify'),
-      getJSON('/audio/health'),
-      getJSON('/broadcast-status.json'),
+      getJSON('/api/health'), getJSON('/api/world'), getJSON('/api/replay/verify'), getJSON('/audio/health'), getJSON('/broadcast-status.json'),
     ]);
-
     const health = healthResult.status === 'fulfilled' ? healthResult.value : null;
     const world = worldResult.status === 'fulfilled' ? worldResult.value : null;
     const replay = replayResult.status === 'fulfilled' ? replayResult.value : null;
@@ -204,80 +212,47 @@
     status('runtime-state', 'runtime-dot', Boolean(health?.ok), 'ONLINE');
     status('replay-state', 'replay-dot', Boolean(replay?.ok), 'ÍNTEGRO', 'FALHA');
     status('audio-state', 'audio-dot', Boolean(audioHealth?.ok), 'ONLINE');
-    text('broadcaster-state', broadcast.label);
-    dot('broadcaster-dot', broadcast.level);
+    text('broadcaster-state', broadcast.label); dot('broadcaster-dot', broadcast.level);
 
     const tiktokConfigured = Boolean(health?.integrations?.tiktok);
-    text('tiktok-state', tiktokConfigured ? 'CONFIGURADO' : 'NÃO CONFIG.');
-    dot('tiktok-dot', tiktokConfigured ? 'good' : 'warn');
-
+    text('tiktok-state', tiktokConfigured ? 'CONFIGURADO' : 'NÃO CONFIG.'); dot('tiktok-dot', tiktokConfigured ? 'good' : 'warn');
     const openaiConfigured = Boolean(health?.integrations?.openai);
-    text('openai-state', openaiConfigured ? 'CONFIGURADO' : 'NÃO CONFIG.');
-    dot('openai-dot', openaiConfigured ? 'good' : 'warn');
+    text('openai-state', openaiConfigured ? 'CONFIGURADO' : 'NÃO CONFIG.'); dot('openai-dot', openaiConfigured ? 'good' : 'warn');
 
     if (world) {
-      text('sequence', world.sequence ?? '—');
-      text('version', world.version ?? '—');
+      text('sequence', world.sequence ?? '—'); text('version', world.version ?? '—');
       text('entities', Array.isArray(world.entities) ? world.entities.length : '—');
-      text('period', world.environment?.period ?? '—');
-      text('narration', world.narration?.text || 'Sem narrativa no estado atual.');
+      text('period', world.environment?.period ?? '—'); text('narration', world.narration?.text || 'Sem narrativa no estado atual.');
     }
-
     if (health) {
-      text('audience-events', health.audience_events_total ?? '—');
-      text('actors', health.actors_total ?? '—');
-      text('proposals', health.audience_proposals_total ?? '—');
+      text('audience-events', health.audience_events_total ?? '—'); text('actors', health.actors_total ?? '—'); text('proposals', health.audience_proposals_total ?? '—');
     }
-
     const coreReady = Boolean(health?.ok && replay?.ok && audioHealth?.ok);
     if (broadcast.live && coreReady) setMaster('LIVE', 'good');
     else if (coreReady) setMaster('PRONTO', 'good');
     else if (health?.ok) setMaster('DEGRADADO', 'warn');
     else setMaster('OFFLINE', 'bad');
-
     text('updated', new Date().toLocaleTimeString('pt-BR'));
   }
 
   async function unlock() {
     const token = $('operator').value.trim();
     if (!token) { unlockMessage.textContent = 'Informe a chave do operador.'; return; }
-    $('unlock').disabled = true;
-    unlockMessage.textContent = 'Validando…';
+    $('unlock').disabled = true; unlockMessage.textContent = 'Validando…';
     try {
-      await validateOperator(token);
-      operatorToken = token;
-      $('operator').value = '';
-      unlockCard.hidden = true;
-      monitor.hidden = false;
-      unlockMessage.textContent = '';
-      setMaster('CARREGANDO', 'warn');
-      await refreshTelemetry();
-      timer = window.setInterval(refreshTelemetry, 3000);
+      await validateOperator(token); operatorToken = token; $('operator').value = ''; unlockCard.hidden = true; monitor.hidden = false; unlockMessage.textContent = '';
+      setMaster('CARREGANDO', 'warn'); await refreshTelemetry(); timer = window.setInterval(refreshTelemetry, 3000);
     } catch (_) {
-      operatorToken = '';
-      unlockMessage.textContent = 'Chave inválida ou Runtime indisponível.';
-      setMaster('BLOQUEADO', 'muted');
-    } finally {
-      $('unlock').disabled = false;
-    }
+      operatorToken = ''; unlockMessage.textContent = 'Chave inválida ou Runtime indisponível.'; setMaster('BLOQUEADO', 'muted');
+    } finally { $('unlock').disabled = false; }
   }
 
   async function toggleAudio() {
     if (!audioActive) {
-      try {
-        audio.src = `/audio/live.mp3?ts=${Date.now()}`;
-        await audio.play();
-        audioActive = true;
-        audioButton.textContent = 'Silenciar áudio';
-      } catch (_) {
-        audioButton.textContent = 'Tentar áudio novamente';
-      }
+      try { audio.src = `/audio/live.mp3?ts=${Date.now()}`; await audio.play(); audioActive = true; audioButton.textContent = 'Silenciar áudio'; }
+      catch (_) { audioButton.textContent = 'Tentar áudio novamente'; }
     } else {
-      audio.pause();
-      audio.removeAttribute('src');
-      audio.load();
-      audioActive = false;
-      audioButton.textContent = 'Ativar áudio';
+      audio.pause(); audio.removeAttribute('src'); audio.load(); audioActive = false; audioButton.textContent = 'Ativar áudio';
     }
   }
 
@@ -285,10 +260,7 @@
     if (!audioActive) return;
     window.setTimeout(async () => {
       if (!audioActive) return;
-      try {
-        audio.src = `/audio/live.mp3?ts=${Date.now()}`;
-        await audio.play();
-      } catch (_) { restartAudioIfNeeded(); }
+      try { audio.src = `/audio/live.mp3?ts=${Date.now()}`; await audio.play(); } catch (_) { restartAudioIfNeeded(); }
     }, 1200);
   }
 
@@ -299,21 +271,21 @@
     applySpatialMetrics(payload);
   });
 
+  document.querySelectorAll('[data-alert-level]').forEach((button) => button.addEventListener('click', () => {
+    alertLevelFilter = button.dataset.alertLevel || 'all'; renderAlerts();
+  }));
+  document.querySelectorAll('[data-alert-kind]').forEach((button) => button.addEventListener('click', () => {
+    alertKindFilter = button.dataset.alertKind || 'all'; renderAlerts();
+  }));
+
   $('unlock').addEventListener('click', unlock);
   $('operator').addEventListener('keydown', (event) => { if (event.key === 'Enter') unlock(); });
-  $('refresh').addEventListener('click', async () => {
-    preview.src = `/godot/?capture=1&ts=${Date.now()}`;
-    await refreshTelemetry();
-  });
+  $('refresh').addEventListener('click', async () => { preview.src = `/godot/?capture=1&ts=${Date.now()}`; await refreshTelemetry(); });
   audioButton.addEventListener('click', toggleAudio);
-  audio.addEventListener('ended', restartAudioIfNeeded);
-  audio.addEventListener('error', restartAudioIfNeeded);
+  audio.addEventListener('ended', restartAudioIfNeeded); audio.addEventListener('error', restartAudioIfNeeded);
   window.addEventListener('beforeunload', () => {
     if (timer) window.clearInterval(timer);
-    operatorToken = '';
-    spatialHistory.length = 0;
-    alertHistory.length = 0;
-    lastAlertAt.clear();
+    operatorToken = ''; spatialHistory.length = 0; alertHistory.length = 0; lastAlertState.clear();
   });
 
   renderAlerts();
