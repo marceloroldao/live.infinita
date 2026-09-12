@@ -40,6 +40,15 @@ class RegionEntityIndex:
         self._by_region.get(region_id, {}).pop(entity_id, None)
         return True
 
+    def get(self, entity_id: str) -> dict[str, Any] | None:
+        region_id = self._entity_region.get(entity_id)
+        if region_id is None:
+            return None
+        return self._by_region.get(region_id, {}).get(entity_id)
+
+    def region_for_entity(self, entity_id: str) -> str | None:
+        return self._entity_region.get(entity_id)
+
     def entities_for_regions(self, region_ids: Iterable[str]) -> list[dict[str, Any]]:
         rows: list[dict[str, Any]] = []
         for region_id in sorted(set(region_ids)):
