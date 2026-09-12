@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from conditional_event_scheduler import ConditionalEventScheduler
+from conditional_intent_scheduler import ConditionalIntentScheduler
 from plan_scheduler import PlanScheduler
 from simulation_clock import SimulationClock
 from world_event_scheduler import WorldEventScheduler
@@ -17,11 +18,13 @@ class WorldTickRunner:
         scheduler: PlanScheduler,
         event_scheduler: WorldEventScheduler | None = None,
         conditional_event_scheduler: ConditionalEventScheduler | None = None,
+        conditional_intent_scheduler: ConditionalIntentScheduler | None = None,
     ) -> None:
         self.clock = clock
         self.scheduler = scheduler
         self.event_scheduler = event_scheduler
         self.conditional_event_scheduler = conditional_event_scheduler
+        self.conditional_intent_scheduler = conditional_intent_scheduler
 
     def tick(self) -> dict[str, Any]:
         before = self.clock.state()
@@ -31,6 +34,7 @@ class WorldTickRunner:
                 "clock": before.as_dict(),
                 "events": [],
                 "conditional_events": [],
+                "conditional_intents": [],
                 "plans": [],
             }
 
@@ -49,9 +53,8 @@ class WorldTickRunner:
                     "last_mutation_decision_id": row.get("last_mutation_decision_id"),
                 })
 
-        # Conditional events observe the authoritative state after time events
-        # of this tick and before character plans. This makes ordering stable:
-        # clock -> scheduled events -> conditional events -> plans.
+        # Direct conditional mutations observe authoritative state after scheduled
+        # events and before any plan execution.
         conditional_results: list[dict[str, Any]] = []
         if self.conditional_event_scheduler is not None:
             for row in self.conditional_event_scheduler.evaluate_tick(after.tick):
@@ -63,6 +66,22 @@ class WorldTickRunner:
                     "last_fired_tick": row.get("last_fired_tick"),
                     "last_world_event_id": row.get("last_world_event_id"),
                     "last_mutation_decision_id": row.get("last_mutation_decision_id"),
+                })
+
+        # Conditional semantic intents are converted to proposals + persistent
+        # plans before the active plan set is enumerated. A newly created plan may
+        # therefore execute its first step later in this same logical tick.
+        conditional_intent_results: list[dict[str, Any]] = []
+        if self.conditional_intent_scheduler is not None:
+            for row in self.conditional_intent_scheduler.evaluate_tick(after.tick):
+                conditional_intent_results.append({
+                    "conditional_intent_id": row.get("conditional_intent_id"),
+                    "status": row.get("status"),
+                    "condition_value": row.get("last_condition_value"),
+                    "fire_count": row.get("fire_count"),
+                    "last_fired_tick": row.get("last_fired_tick"),
+                    "last_proposal_id": row.get("last_proposal_id"),
+                    "last_plan_id": row.get("last_plan_id"),
                 })
 
         active = sorted(
@@ -88,5 +107,6 @@ class WorldTickRunner:
             "clock": after.as_dict(),
             "events": event_results,
             "conditional_events": conditional_results,
+            "conditional_intents": conditional_intent_results,
             "plans": results,
         }
