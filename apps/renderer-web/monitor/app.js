@@ -42,6 +42,17 @@
     return { live: false, label: String(payload.state || 'PARADO').toUpperCase(), level: 'muted' };
   }
 
+  function applySpatialMetrics(payload) {
+    text('spatial-hot', payload.hot ?? '—');
+    text('spatial-warm', payload.warm ?? '—');
+    const rate = Number(payload.prefetch_hit_rate);
+    text('spatial-hit-rate', Number.isFinite(rate) ? `${Math.round(rate * 100)}%` : '—');
+    text('spatial-predicted', payload.predicted_promotions_total ?? '—');
+    text('spatial-unexpected', payload.unexpected_promotions_total ?? '—');
+    text('spatial-transitions', payload.active_transitions ?? '—');
+    text('spatial-cold', payload.cold_omitted ? 'OMITIDO' : '—');
+  }
+
   async function refreshTelemetry() {
     if (!operatorToken) return;
 
@@ -150,6 +161,13 @@
       } catch (_) { restartAudioIfNeeded(); }
     }, 1200);
   }
+
+  window.addEventListener('message', (event) => {
+    if (event.origin !== window.location.origin) return;
+    const payload = event.data;
+    if (!payload || payload.type !== 'live-infinita-spatial-metrics') return;
+    applySpatialMetrics(payload);
+  });
 
   $('unlock').addEventListener('click', unlock);
   $('operator').addEventListener('keydown', (event) => { if (event.key === 'Enter') unlock(); });
