@@ -28,6 +28,11 @@ func _install_browser_audio_bridge() -> void:
         return
     var script := """
 (() => {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('capture') === '1') {
+    window.__liveInfinitaCaptureMode = true;
+    return true;
+  }
   if (window.__liveInfinitaAudioInstalled) return true;
   window.__liveInfinitaAudioInstalled = true;
   const audio = document.createElement('audio');
@@ -142,7 +147,8 @@ func _process(_delta: float) -> void:
         if connection_state != "desconectado":
             connection_state = "desconectado"
             _schedule_websocket_reconnect()
-            queue_redraw()
+        _maybe_reconnect_websocket()
+    else:
         _maybe_reconnect_websocket()
 
 func _apply_world_state(message: Dictionary) -> void:
