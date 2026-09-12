@@ -2,76 +2,65 @@
 
 ## Objetivo
 
-Preparar o Live Infinita para uma prova ponta a ponta de longa duração sem exigir validações manuais a cada alteração. Esta etapa não muda a autoridade do mundo: ela endurece transporte, apresentação, áudio e instalação.
+Reduzir dependência de validação manual na VM e preparar a Live Infinita para operar com vídeo, áudio e controle integralmente no servidor.
 
-## Fluxo preservado
+## Arquitetura desta baseline
 
-`TikTok/API/Agent -> Gateway -> Intent/Validator -> Runtime -> World State`
+```text
+TikTok / fontes
+      |
+      v
+Gateway -> AI Router -> Validator -> World State
+                                  |        |
+                                  |        +-> Server Audio -> UDP :5500
+                                  |
+                                  +-> Godot nativo -> Xvfb -> FFmpeg -> UDP :5600
 
-Saídas somente leitura:
+UDP :5600 (vídeo) + UDP :5500 (áudio)
+                 |
+                 v
+          Broadcaster Core
+                 |
+           RTMP/RTMPS futuro
+```
 
-- `World State -> Godot Web`
-- `World State -> Server Audio -> AAC/UDP -> Browser Audio Relay -> Edge/Live Studio`
-- `TikTok audience -> side-channel -> Godot feed`
+O Broadcaster é preparado, mas permanece explicitamente desabilitado nesta fase.
 
-## Melhorias desta etapa
+## Hardening implementado
 
-### CI
+- CI com compileall, bateria unitária/API, soak test, preflight e validação shell.
+- Godot validado headlessly e também por smoke test gráfico real em Xvfb.
+- Server-side renderer nativo em `apps/headless-renderer/headless_renderer.py`.
+- Serviço `live-infinita-renderer.service` supervisiona Xvfb + Godot + FFmpeg.
+- Vídeo interno isolado em UDP loopback `:5600`.
+- Áudio interno permanece em UDP loopback `:5500`.
+- Broadcaster Core usa os dois buses e exige saída externa explícita.
+- Unidade `live-infinita-broadcaster.service` é instalada desabilitada.
+- `prepare-broadcaster.sh` força o serviço a permanecer parado após instalação.
+- `--probe` do Broadcaster termina automaticamente após 5 segundos por padrão.
+- Stream key é mascarada em logs.
+- Browser Audio continua disponível para inspeção humana em `/godot/`, mas não faz parte do caminho do broadcast server-side.
+- Godot Web suporta `?capture=1` sem controles de áudio HTML, embora o pipeline preferido no servidor seja Godot nativo.
+- AudienceAggregator mantém somente janelas temporais necessárias; não cresce com a duração da Live.
+- Soak test cobre 20.000 eventos de audiência e 500 commits de mundo com replay determinístico.
 
-A workflow `.github/workflows/ci.yml` executa automaticamente:
+## Segurança operacional
 
-1. instalação das dependências de teste;
-2. `compileall` do código Python;
-3. bateria unitária/API;
-4. `bash -n` dos instaladores;
-5. abertura headless do projeto Godot para validar GDScript e recursos.
+World State continua sendo a única autoridade do mundo. Renderer, áudio e Broadcaster são saídas.
 
-### Browser Audio
+O Broadcaster não inicia automaticamente. O instalador falha se detectar `live-infinita-broadcaster.service` ativo nessa fase.
 
-O relay agora:
+A stream key deve existir somente em `/etc/live-infinita/broadcaster.env`, com permissões restritas, e nunca no repositório.
 
-- verifica se FFmpeg realmente existe;
-- publica no health o input UDP efetivo;
-- limita o número de clientes simultâneos;
-- encerra o FFmpeg filho quando o navegador desconecta;
-- desabilita buffering de proxy para reduzir latência.
+## Próxima validação física
 
-### Nginx
+Quando for conveniente usar a VM:
 
-A criação da rota `/audio/` saiu do shell embutido e foi isolada em `deploy/nginx_audio_patch.py`.
+1. `python3 deploy/showcase_preflight.py --host`
+2. instalar `hardening/live-showcase-002`
+3. confirmar Runtime, Audio e Renderer ativos
+4. executar Broadcaster `--probe` por 5 s, sem saída externa
+5. validar o frame/fluxo local
+6. somente então configurar uma saída RTMP/RTMPS e habilitar Broadcaster
 
-O patch é:
-
-- idempotente;
-- aplicado a todos os blocos HTTP/HTTPS do hostname;
-- compatível com aliases em `server_name`;
-- coberto por testes;
-- fail-closed em configuração estruturalmente inválida.
-
-### TikTok
-
-Chamadas HTTP para o Gateway não bloqueiam mais o event loop do TikTokLive. Falhas temporárias de transporte são contidas no bridge e não devem derrubar a conexão da Live por causa de um POST local que falhou.
-
-### Godot
-
-O renderer reconecta automaticamente ao `/ws` usando backoff exponencial. Uma interrupção do WebSocket não exige mais recarregar manualmente a página. A reconexão do áudio do navegador também impede múltiplos timers concorrentes.
-
-### Instalação
-
-`deploy/install-live-showcase.sh` passa a fechar todo o caminho:
-
-1. valida Runtime;
-2. instala Server Audio;
-3. instala Browser Audio, patch Nginx e exporta Godot;
-4. confirma Runtime, Server Audio, Browser Audio e replay determinístico.
-
-## O que continua deliberadamente fora desta etapa
-
-- credenciais ou RTMP do broadcaster;
-- mutação direta do World State por renderer, áudio ou LLM;
-- mudança da baseline validada do runtime;
-- implantação automática na VM sem uma janela explícita de validação.
-
-## Próxima validação na VM
-
-Quando for conveniente testar no servidor, a intenção é que reste apenas uma validação operacional curta: instalar a branch, abrir `/godot/`, ativar o áudio e provar o fluxo real TikTok -> mundo -> imagem -> narração -> transmissão. Até lá, toda evolução possível deve permanecer coberta pelo CI.
+Até essa etapa, a branch permanece em draft e a baseline `demo/live-showcase-001` não é alterada.
