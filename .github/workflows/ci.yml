@@ -41,6 +41,9 @@ jobs:
       - name: Unit and API tests
         run: python -m unittest discover -v -s tests -p 'test_*.py'
 
+      - name: Showcase source preflight
+        run: python deploy/showcase_preflight.py
+
       - name: Validate shell scripts
         shell: bash
         run: |
