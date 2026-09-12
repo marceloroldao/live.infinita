@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import os
 import sys
@@ -74,6 +75,15 @@ def post_json(url: str, payload: dict[str, Any], timeout: float) -> tuple[int, d
         except json.JSONDecodeError:
             data = {"raw": raw}
         return exc.code, data
+    except (urllib.error.URLError, TimeoutError, OSError) as exc:
+        return 0, {"ok": False, "transport_error": type(exc).__name__}
+
+
+async def post_json_async(url: str, payload: dict[str, Any], timeout: float) -> tuple[int, dict[str, Any]]:
+    # TikTokLive event handlers share an asyncio event loop. urllib is blocking,
+    # so gateway I/O must run in a worker thread to avoid stalling comments,
+    # joins, likes, gifts and disconnect heartbeats together.
+    return await asyncio.to_thread(post_json, url, payload, timeout)
 
 
 def build_client(config: BridgeConfig) -> TikTokLiveClient:
@@ -90,12 +100,12 @@ def build_client(config: BridgeConfig) -> TikTokLiveClient:
         payload = comment_to_payload(event, room_id=client.room_id)
         if not payload["text"]:
             return
-        status, result = post_json(config.gateway_url, payload, config.timeout_seconds)
+        status, result = await post_json_async(config.gateway_url, payload, config.timeout_seconds)
         accepted = bool(result.get("ok")) if isinstance(result, dict) else False
         print(f"[tiktok] comentário actor={payload['display_name']!r} text={payload['text']!r} http={status} accepted={accepted}", flush=True)
 
     async def send_audience(payload: dict[str, Any]) -> None:
-        status, result = post_json(config.audience_url, payload, config.timeout_seconds)
+        status, result = await post_json_async(config.audience_url, payload, config.timeout_seconds)
         duplicate = bool(result.get("duplicate")) if isinstance(result, dict) else False
         print(
             f"[tiktok] audience kind={payload['kind']} actor={payload['display_name']!r} "
