@@ -1,15 +1,31 @@
 from __future__ import annotations
 
+import os
+from pathlib import Path
 from typing import Any
 
 from fastapi import WebSocket, WebSocketDisconnect
 from starlette.routing import WebSocketRoute
 
 import main as core
+from packages.spatial import FileRegionColdStore
 from spatial_session import SpatialSession
 
 app = core.app
-spatial_session = SpatialSession()
+
+
+def _build_spatial_session() -> SpatialSession:
+    root = str(os.getenv("LIVE_INFINITA_COLD_STORE_DIR", "")).strip()
+    if not root:
+        return SpatialSession()
+    store_root = Path(root)
+    manifest = store_root / "manifest.json"
+    if not manifest.exists():
+        return SpatialSession()
+    return SpatialSession(cold_store=FileRegionColdStore(store_root))
+
+
+spatial_session = _build_spatial_session()
 session_views: dict[WebSocket, dict[str, Any]] = {}
 
 
