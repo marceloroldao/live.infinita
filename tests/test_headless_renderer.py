@@ -24,7 +24,8 @@ class HeadlessRendererConfigTest(unittest.TestCase):
         self.assertIn("--display-driver", command)
         self.assertIn("x11", command)
         self.assertIn("--resolution", command)
-        self.assertIn("1280x720", command)
+        self.assertIn("720x1280", command)
+        self.assertEqual((cfg.width, cfg.height), (720, 1280))
         self.assertIn(cfg.project_dir, command)
 
     def test_capture_is_video_only_local_udp_mpegts(self):
@@ -35,11 +36,13 @@ class HeadlessRendererConfigTest(unittest.TestCase):
         self.assertIn("-an", command)
         self.assertIn("libx264", command)
         self.assertIn("mpegts", command)
+        self.assertIn("720x1280", command)
         self.assertIn("udp://127.0.0.1:5600", text)
 
     def test_xvfb_does_not_listen_on_tcp(self):
         cfg = HeadlessRendererConfig()
         command = cfg.xvfb_command("Xvfb")
+        self.assertIn("720x1280x24", command)
         self.assertIn("-nolisten", command)
         self.assertIn("tcp", command)
 
