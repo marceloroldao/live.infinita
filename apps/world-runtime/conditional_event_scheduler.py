@@ -19,17 +19,9 @@ class ConditionalEventError(ValueError):
 class ConditionalEventScheduler:
     """Evaluate deterministic state predicates once per logical tick.
 
-    Supported condition kinds v2:
-      entity_in_region
-      world_equals
-      entity_property_equals
-      all
-      any
-      not
-      nobody_near_entity
-
-    A condition may also require `sustain_ticks`, meaning its raw predicate must
-    remain true continuously for that many logical ticks before becoming true.
+    A trigger can produce either a guarded canonical mutation or a semantic
+    intent plan. Plan creation itself never mutates world state; plan steps later
+    pass through the normal PlanScheduler + MutationGate path.
     """
 
     TERMINAL = frozenset({"completed", "cancelled", "failed"})
@@ -43,10 +35,16 @@ class ConditionalEventScheduler:
         "nobody_near_entity",
     })
 
-    def __init__(self, path: Path, guarded_mutations: GuardedMutationService) -> None:
+    def __init__(
+        self,
+        path: Path,
+        guarded_mutations: GuardedMutationService,
+        plan_dispatcher: Any | None = None,
+    ) -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.guarded = guarded_mutations
+        self.plan_dispatcher = plan_dispatcher
 
     def history(self) -> list[dict[str, Any]]:
         if not self.path.exists():
@@ -125,8 +123,9 @@ class ConditionalEventScheduler:
         self,
         *,
         condition: dict[str, Any],
-        operations: list[dict[str, Any]],
         principal: MutationPrincipal | dict[str, Any],
+        operations: list[dict[str, Any]] | None = None,
+        intent: dict[str, Any] | None = None,
         trigger_mode: str = "edge",
         cooldown_ticks: int = 0,
         one_shot: bool = False,
@@ -140,8 +139,12 @@ class ConditionalEventScheduler:
             raise ConditionalEventError("trigger_mode must be edge or level")
         if int(cooldown_ticks) < 0:
             raise ConditionalEventError("cooldown_ticks must be >= 0")
-        if not operations:
-            raise ConditionalEventError("operations are required")
+        has_operations = bool(operations)
+        has_intent = isinstance(intent, dict) and bool(intent)
+        if has_operations == has_intent:
+            raise ConditionalEventError("exactly one effect is required: operations or intent")
+        if has_intent and self.plan_dispatcher is None:
+            raise ConditionalEventError("plan_intent effect requires plan_dispatcher")
 
         key = str(idempotency_key or "").strip() or None
         if key:
@@ -151,11 +154,13 @@ class ConditionalEventScheduler:
 
         now = time.time()
         row = {
-            "conditional_schema": "conditional_world_event_v2",
+            "conditional_schema": "conditional_world_event_v3",
             "conditional_event_id": f"cev_{int(now * 1000)}_{uuid.uuid4().hex[:10]}",
             "status": "active",
             "condition": deepcopy(condition),
-            "operations": deepcopy(operations),
+            "effect_kind": "plan_intent" if has_intent else "mutation",
+            "operations": deepcopy(operations or []),
+            "intent": deepcopy(intent) if has_intent else None,
             "principal": self._principal_dict(principal),
             "trigger_mode": trigger_mode,
             "cooldown_ticks": int(cooldown_ticks),
@@ -172,6 +177,8 @@ class ConditionalEventScheduler:
             "last_world_event_id": None,
             "last_mutation_decision_id": None,
             "last_state_hash": None,
+            "last_proposal_id": None,
+            "last_plan_id": None,
             "last_error": None,
             "created_at_unix": now,
             "updated_at_unix": now,
@@ -339,33 +346,60 @@ class ConditionalEventScheduler:
 
             if should_fire:
                 conditional_id = str(row.get("conditional_event_id") or "")
-                result = self.guarded.commit(
-                    list(row.get("operations") or []),
-                    principal=dict(row.get("principal") or {}),
-                    context={
-                        "conditional_event_id": conditional_id,
-                        "condition": deepcopy(row.get("condition") or {}),
-                        "true_since_tick": true_since,
-                        "fired_at_tick": tick,
-                        "conditional_metadata": deepcopy(row.get("metadata") or {}),
-                    },
-                    narration=str(row.get("narration") or f"conditional world event {conditional_id}"),
-                )
-                audit = result.get("audit") or {}
-                updated["last_mutation_decision_id"] = str(audit.get("mutation_decision_id") or "").strip() or None
-                if not result.get("ok"):
-                    updated["status"] = "failed"
-                    updated["last_error"] = str((result.get("decision") or {}).get("reason") or "mutation rejected")[:1000]
+                if row.get("effect_kind") == "plan_intent":
+                    try:
+                        dispatch = self.plan_dispatcher.dispatch(
+                            conditional_event_id=conditional_id,
+                            tick=tick,
+                            fire_index=int(row.get("fire_count", 0)) + 1,
+                            intent=deepcopy(row.get("intent") or {}),
+                            principal=deepcopy(row.get("principal") or {}),
+                            metadata={
+                                "condition": deepcopy(row.get("condition") or {}),
+                                "true_since_tick": true_since,
+                                **deepcopy(row.get("metadata") or {}),
+                            },
+                        )
+                        proposal = dispatch.get("proposal") or {}
+                        plan = dispatch.get("plan") or {}
+                        updated["fire_count"] = int(updated.get("fire_count", 0)) + 1
+                        updated["last_fired_tick"] = tick
+                        updated["last_proposal_id"] = str(proposal.get("proposal_id") or "").strip() or None
+                        updated["last_plan_id"] = str(plan.get("plan_id") or "").strip() or None
+                        updated["last_error"] = None
+                        if bool(updated.get("one_shot")):
+                            updated["status"] = "completed"
+                    except Exception as exc:
+                        updated["status"] = "failed"
+                        updated["last_error"] = str(exc)[:1000]
                 else:
-                    world = result.get("world") or {}
-                    event = result.get("event") or {}
-                    updated["fire_count"] = int(updated.get("fire_count", 0)) + 1
-                    updated["last_fired_tick"] = tick
-                    updated["last_world_event_id"] = str(event.get("event_id") or "").strip() or None
-                    updated["last_state_hash"] = str(world.get("state_hash") or "").strip() or None
-                    updated["last_error"] = None
-                    if bool(updated.get("one_shot")):
-                        updated["status"] = "completed"
+                    result = self.guarded.commit(
+                        list(row.get("operations") or []),
+                        principal=dict(row.get("principal") or {}),
+                        context={
+                            "conditional_event_id": conditional_id,
+                            "condition": deepcopy(row.get("condition") or {}),
+                            "true_since_tick": true_since,
+                            "fired_at_tick": tick,
+                            "conditional_metadata": deepcopy(row.get("metadata") or {}),
+                        },
+                        narration=str(row.get("narration") or f"conditional world event {conditional_id}"),
+                    )
+                    audit = result.get("audit") or {}
+                    updated["last_mutation_decision_id"] = str(audit.get("mutation_decision_id") or "").strip() or None
+                    if not result.get("ok"):
+                        updated["status"] = "failed"
+                        updated["last_error"] = str((result.get("decision") or {}).get("reason") or "mutation rejected")[:1000]
+                    else:
+                        world = result.get("world") or {}
+                        event = result.get("event") or {}
+                        updated["fire_count"] = int(updated.get("fire_count", 0)) + 1
+                        updated["last_fired_tick"] = tick
+                        updated["last_world_event_id"] = str(event.get("event_id") or "").strip() or None
+                        updated["last_state_hash"] = str(world.get("state_hash") or "").strip() or None
+                        updated["last_error"] = None
+                        if bool(updated.get("one_shot")):
+                            updated["status"] = "completed"
 
             self._append(updated)
             results.append(updated)
