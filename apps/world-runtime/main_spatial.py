@@ -8,24 +8,45 @@ from fastapi import WebSocket, WebSocketDisconnect
 from starlette.routing import WebSocketRoute
 
 import main as core
+from cold_engine import ColdAuthoritativeWorldEngine
 from packages.spatial import FileRegionColdStore
 from spatial_session import SpatialSession
 
 app = core.app
 
 
-def _build_spatial_session() -> SpatialSession:
-    root = str(os.getenv("LIVE_INFINITA_COLD_STORE_DIR", "")).strip()
-    if not root:
-        return SpatialSession()
-    store_root = Path(root)
-    manifest = store_root / "manifest.json"
-    if not manifest.exists():
-        return SpatialSession()
-    return SpatialSession(cold_store=FileRegionColdStore(store_root))
+def _cold_store_root() -> Path | None:
+    value = str(os.getenv("LIVE_INFINITA_COLD_STORE_DIR", "")).strip()
+    return Path(value) if value else None
 
 
-spatial_session = _build_spatial_session()
+def _cold_engine_enabled() -> bool:
+    return str(os.getenv("LIVE_INFINITA_COLD_ENGINE", "")).strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _configure_authoritative_engine() -> FileRegionColdStore | None:
+    store_root = _cold_store_root()
+    if not _cold_engine_enabled():
+        if store_root is not None and (store_root / "manifest.json").exists():
+            return FileRegionColdStore(store_root)
+        return None
+    if store_root is None:
+        raise RuntimeError("LIVE_INFINITA_COLD_ENGINE requires LIVE_INFINITA_COLD_STORE_DIR")
+
+    bootstrap_value = str(os.getenv("LIVE_INFINITA_COLD_BOOTSTRAP_FILE", "")).strip()
+    bootstrap = Path(bootstrap_value) if bootstrap_value else (
+        core.ROOT / "examples" / "world-state.mvp001.regional.bootstrap.json"
+    )
+    if not bootstrap.exists():
+        raise RuntimeError(f"cold bootstrap not found: {bootstrap}")
+
+    store = FileRegionColdStore(store_root)
+    core.engine = ColdAuthoritativeWorldEngine(bootstrap, core.DATA_DIR, store)
+    return store
+
+
+cold_store = _configure_authoritative_engine()
+spatial_session = SpatialSession(cold_store=cold_store) if cold_store is not None else SpatialSession()
 session_views: dict[WebSocket, dict[str, Any]] = {}
 
 
@@ -83,7 +104,8 @@ def _replace_world_websocket_route() -> None:
     raise RuntimeError("world websocket route /ws not found")
 
 
-# Existing runtime code resolves `broadcast` from the `main` module globals at call time,
-# so replacing this symbol keeps REST/API logic untouched while making delivery observer-local.
+# Existing runtime code resolves `broadcast` and `engine` from the `main` module
+# globals at call time. Replacing those symbols keeps REST/API logic untouched
+# while making delivery observer-local and, when opted in, cold-authoritative.
 core.broadcast = spatial_broadcast
 _replace_world_websocket_route()
