@@ -34,12 +34,14 @@ def source_checks(root: Path = ROOT) -> list[Check]:
         "deploy/install-server-audio.sh",
         "deploy/install-browser-audio.sh",
         "deploy/install-headless-renderer.sh",
+        "deploy/prepare-broadcaster.sh",
         "deploy/nginx_audio_patch.py",
         "deploy/install-godot-web.sh",
         "deploy/install-live-showcase.sh",
         "deploy/live-infinita-audio.service",
         "deploy/live-infinita-audio-web.service",
         "deploy/live-infinita-renderer.service",
+        "deploy/live-infinita-broadcaster.service",
     ]
     checks = [
         Check(f"source:{path}", (root / path).is_file(), "arquivo obrigatório")
@@ -57,6 +59,8 @@ def source_checks(root: Path = ROOT) -> list[Check]:
         checks.extend([
             Check("installer:server-audio", "install-server-audio.sh" in text, "Server Audio integrado"),
             Check("installer:browser-audio", "install-browser-audio.sh" in text, "Browser Audio integrado"),
+            Check("installer:renderer", "install-headless-renderer.sh" in text, "renderer nativo integrado"),
+            Check("installer:broadcaster-safe", "prepare-broadcaster.sh" in text and "Broadcaster não deveria estar ativo" in text, "Broadcaster preparado sem auto-start"),
             Check("installer:replay", "/api/replay/verify" in text, "replay verificado"),
         ])
 
@@ -106,6 +110,21 @@ def _service_check(service: str) -> Check:
     return Check(f"host:service:{service}", result.returncode == 0, detail)
 
 
+def _service_inactive_check(service: str) -> Check:
+    try:
+        result = subprocess.run(
+            ["systemctl", "is-active", service],
+            capture_output=True,
+            text=True,
+            timeout=5,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        return Check(f"host:service-inactive:{service}", False, type(exc).__name__)
+    detail = (result.stdout or result.stderr).strip() or f"exit={result.returncode}"
+    return Check(f"host:service-inactive:{service}", result.returncode != 0, detail)
+
+
 def _json_endpoint(name: str, url: str, required_key: str) -> Check:
     try:
         with urllib.request.urlopen(url, timeout=5) as response:
@@ -124,6 +143,7 @@ def host_checks() -> list[Check]:
         _service_check("live-infinita-audio.service"),
         _service_check("live-infinita-audio-web.service"),
         _service_check("live-infinita-renderer.service"),
+        _service_inactive_check("live-infinita-broadcaster.service"),
         _json_endpoint("host:runtime-health", "http://127.0.0.1:8080/api/health", "ok"),
         _json_endpoint("host:replay", "http://127.0.0.1:8080/api/replay/verify", "ok"),
         _json_endpoint("host:audio-web-health", "http://127.0.0.1:8092/health", "ok"),
