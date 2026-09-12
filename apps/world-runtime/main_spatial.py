@@ -9,7 +9,8 @@ from starlette.routing import WebSocketRoute
 
 import main as core
 from cold_engine import ColdAuthoritativeWorldEngine
-from packages.spatial import FileRegionColdStore
+from mutation_gate_service import GuardedMutationService
+from packages.spatial import FileRegionColdStore, MutationPrincipal
 from spatial_session import SpatialSession
 
 app = core.app
@@ -45,7 +46,68 @@ def _configure_authoritative_engine() -> FileRegionColdStore | None:
     return store
 
 
+def _principal_for_action(source: str, context: dict[str, Any] | None) -> MutationPrincipal:
+    context = context or {}
+    metadata = context.get("metadata") if isinstance(context.get("metadata"), dict) else {}
+    actor_id = str(context.get("actor_id") or "unknown").strip() or "unknown"
+    normalized_source = str(source or "runtime").strip().lower() or "runtime"
+
+    if actor_id == "system":
+        authority = "system"
+    elif metadata.get("ai_proposal_id"):
+        # AI proposals only reach this path after the operator explicitly commits them.
+        authority = "operator"
+    elif metadata.get("proposal_id") or metadata.get("rule_id"):
+        # Audience aggregation is proposal-only; it never receives direct mutation rights.
+        authority = "audience"
+    elif normalized_source in {"tiktok", "youtube"}:
+        authority = "audience"
+    else:
+        authority = "observer"
+
+    return MutationPrincipal(
+        source=normalized_source,
+        actor_id=actor_id,
+        authority=authority,
+        subject_entity_id=None,
+    )
+
+
+def _install_cold_mutation_gate() -> None:
+    if not isinstance(core.engine, ColdAuthoritativeWorldEngine):
+        return
+
+    engine = core.engine
+    guarded = GuardedMutationService(engine)
+
+    def guarded_commit_action(
+        action: str,
+        source: str = "runtime",
+        context: dict[str, Any] | None = None,
+    ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+        world = engine.load_world()
+        _event, proposed_delta = engine.propose(world, action, source=source, context=context)
+        principal = _principal_for_action(source, context)
+        result = guarded.commit(
+            list(proposed_delta.get("operations", [])),
+            principal=principal,
+            context={
+                **dict(context or {}),
+                "validated_action": action,
+                "proposal_narration": proposed_delta.get("narration", ""),
+            },
+            narration=str(proposed_delta.get("narration", "")),
+        )
+        if not result["ok"]:
+            decision = result["decision"]
+            raise ValueError(f"mutation rejected by policy: {decision['reason']}")
+        return result["event"], result["delta"], result["world"]
+
+    engine.commit_action = guarded_commit_action  # type: ignore[method-assign]
+
+
 cold_store = _configure_authoritative_engine()
+_install_cold_mutation_gate()
 spatial_session = SpatialSession(cold_store=cold_store) if cold_store is not None else SpatialSession()
 session_views: dict[WebSocket, dict[str, Any]] = {}
 
