@@ -17,6 +17,24 @@ from spatial_session import SpatialSession
 app = core.app
 
 
+@app.middleware("http")
+async def audience_proposal_commit_requires_operator(request, call_next):
+    """Legacy audience commit endpoint is an operator approval boundary."""
+    path = request.url.path
+    if request.method.upper() == "POST" and path.startswith("/api/audience/proposals/") and path.endswith("/commit"):
+        if not core.OPERATOR_TOKEN:
+            return core.JSONResponse({"detail": "chave do operador não configurada"}, status_code=503)
+        expected = f"Bearer {core.OPERATOR_TOKEN}".encode("utf-8")
+        supplied = (request.headers.get("authorization") or "").encode("utf-8")
+        if not core.secrets.compare_digest(supplied, expected):
+            return core.JSONResponse(
+                {"detail": "chave do operador inválida"},
+                status_code=401,
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+    return await call_next(request)
+
+
 def _cold_store_root() -> Path | None:
     value = str(os.getenv("LIVE_INFINITA_COLD_STORE_DIR", "")).strip()
     return Path(value) if value else None
@@ -58,8 +76,11 @@ def _principal_for_action(source: str, context: dict[str, Any] | None) -> Mutati
     elif metadata.get("ai_proposal_id"):
         # AI proposals only reach this path after the operator explicitly commits them.
         authority = "operator"
+    elif metadata.get("operator_approved") and metadata.get("proposal_id"):
+        # Audience proposal commit endpoint is protected by operator bearer auth.
+        authority = "operator"
     elif metadata.get("proposal_id") or metadata.get("rule_id"):
-        # Audience aggregation is proposal-only; it never receives direct mutation rights.
+        # Audience aggregation remains proposal-only until explicit approval.
         authority = "audience"
     elif normalized_source in {"tiktok", "youtube"}:
         authority = "audience"
@@ -110,8 +131,27 @@ def _install_cold_mutation_gate() -> None:
     engine.commit_action = guarded_commit_action  # type: ignore[method-assign]
 
 
+def _install_operator_approval_marker() -> None:
+    original = core.process_gateway_payload
+
+    async def wrapped(payload: dict[str, Any]):
+        cloned = dict(payload)
+        metadata = dict(cloned.get("metadata") or {})
+        if (
+            str(cloned.get("source") or "").strip().lower() == "api"
+            and str(cloned.get("actor_id") or "").strip() == "audience-aggregator"
+            and metadata.get("proposal_id")
+        ):
+            metadata["operator_approved"] = True
+            cloned["metadata"] = metadata
+        return await original(cloned)
+
+    core.process_gateway_payload = wrapped
+
+
 cold_store = _configure_authoritative_engine()
 _install_cold_mutation_gate()
+_install_operator_approval_marker()
 proposal_ledger = install_runtime_proposal_ledger(core, core.DATA_DIR)
 spatial_session = SpatialSession(cold_store=cold_store) if cold_store is not None else SpatialSession()
 session_views: dict[WebSocket, dict[str, Any]] = {}
