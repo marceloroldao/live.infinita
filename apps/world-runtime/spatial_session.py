@@ -1,23 +1,23 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from math import hypot
 from typing import Any
 
-from packages.spatial import Region, RegionCatalog, RegionEntityIndex, SpatialResolver
+from packages.spatial import Region, RegionCatalog, RegionEntityIndex, RegionSpatialGrid, SpatialResolver
 
 
 class SpatialSession:
     """Observer-local projection of the authoritative global World State.
 
-    Indexed worlds use region-local candidate lookup. Legacy worlds without
-    region_id remain supported and fall back to global candidate resolution.
+    Indexed worlds use region-local entity candidates plus a spatial grid for
+    position -> region lookup. Legacy worlds remain backward compatible.
     """
 
     def __init__(self, resolver: SpatialResolver | None = None) -> None:
         self.resolver = resolver or SpatialResolver()
         self._catalog: RegionCatalog | None = None
         self._index: RegionEntityIndex | None = None
+        self._region_grid: RegionSpatialGrid | None = None
         self._index_sequence: int | None = None
 
     @staticmethod
@@ -92,6 +92,7 @@ class SpatialSession:
         entities = [row for row in world.get("entities", []) if isinstance(row, dict)]
         self._catalog = self._catalog_from_world(world)
         self._index = RegionEntityIndex(entities)
+        self._region_grid = RegionSpatialGrid(self._catalog.all())
         self._index_sequence = int(world.get("sequence", 0))
 
     @staticmethod
@@ -102,7 +103,7 @@ class SpatialSession:
         return None
 
     def _sync_index_from_delta(self, world: dict[str, Any], delta: dict[str, Any] | None) -> None:
-        if self._index is None or self._catalog is None:
+        if self._index is None or self._catalog is None or self._region_grid is None:
             self._rebuild_index(world)
             return
         sequence = int(world.get("sequence", 0))
@@ -138,6 +139,9 @@ class SpatialSession:
                 path = operation.get("path", [])
                 if isinstance(path, list) and len(path) >= 2 and path[0] == "entities":
                     affected.add(str(path[1]))
+                elif isinstance(path, list) and path and path[0] == "regions":
+                    rebuild = True
+                    break
 
         if rebuild:
             self._rebuild_index(world)
@@ -175,22 +179,20 @@ class SpatialSession:
             "y": float(fallback.get("y", 0.0)),
         }
 
-    def _locate_region(self, observer: dict[str, float], view: dict[str, Any]) -> str | None:
+    def _locate_region(self, observer: dict[str, float], view: dict[str, Any]) -> tuple[str | None, dict[str, Any]]:
         entity_id = str(view.get("observer_entity_id") or "").strip()
         if entity_id and self._index is not None:
             region_id = self._index.region_for_entity(entity_id)
             if region_id:
-                return region_id
-        if self._catalog is None:
-            return None
-        best: tuple[float, str] | None = None
-        for region in self._catalog.all():
-            distance = hypot(region.center[0] - observer["x"], region.center[1] - observer["y"])
-            if distance <= region.radius:
-                candidate = (distance, region.id)
-                if best is None or candidate < best:
-                    best = candidate
-        return best[1] if best else None
+                return region_id, {"mode": "entity_region_index", "region_candidates_examined": 1}
+        if self._region_grid is not None:
+            result = self._region_grid.lookup(observer["x"], observer["y"])
+            return result.region_id, {
+                "mode": "region_spatial_grid",
+                "region_candidates_examined": result.candidates_examined,
+                "region_cell": [result.cell[0], result.cell[1]],
+            }
+        return None, {"mode": "region_unresolved", "region_candidates_examined": 0}
 
     def build(
         self,
@@ -209,15 +211,17 @@ class SpatialSession:
             "mode": "legacy_global_scan",
             "candidates_examined": len(all_entities),
             "candidate_region_ids": [],
+            "region_lookup_mode": "legacy_global_scan",
+            "region_candidates_examined": len(all_regions),
         }
 
         if indexed:
-            if self._index is None or self._catalog is None:
+            if self._index is None or self._catalog is None or self._region_grid is None:
                 self._rebuild_index(world)
             else:
                 self._sync_index_from_delta(world, delta)
             observer = self.resolve_observer(world, view)
-            current_region_id = self._locate_region(observer, view)
+            current_region_id, region_lookup = self._locate_region(observer, view)
             if current_region_id and self._index is not None and self._catalog is not None:
                 query = self._index.candidates(
                     catalog=self._catalog,
@@ -233,6 +237,9 @@ class SpatialSession:
                     "candidates_examined": int(query["candidates_examined"]),
                     "candidate_region_ids": query["region_ids"],
                     "indexed_entities_total": self._index.size(),
+                    "region_lookup_mode": region_lookup["mode"],
+                    "region_candidates_examined": region_lookup["region_candidates_examined"],
+                    **({"region_cell": region_lookup["region_cell"]} if "region_cell" in region_lookup else {}),
                 }
         else:
             observer = self.resolve_observer(world, view)
@@ -264,6 +271,7 @@ class SpatialSession:
             "observer_entity_id": view.get("observer_entity_id"),
             "warm_entities": warm_entities,
             "source_entities_total": len(all_entities),
+            "source_regions_total": len(all_regions),
             "materialized_entities_total": len(hot_entities),
         }
         return local
@@ -278,17 +286,20 @@ class SpatialSession:
         wrapped = deepcopy(message)
         delta = message.get("delta") if isinstance(message.get("delta"), dict) else None
         if self._indexed_world(message["world"]):
-            if self._index is None or self._catalog is None:
+            if self._index is None or self._catalog is None or self._region_grid is None:
                 self._rebuild_index(message["world"])
             else:
                 self._sync_index_from_delta(message["world"], delta)
         observer = self.resolve_observer(message["world"], view)
         wrapped["world"] = self.build(message["world"], view, delta=delta)
+        interest = wrapped["world"].get("interest", {})
         wrapped["delivery"] = {
             "mode": "local_world_slice",
             "observer_entity_id": view.get("observer_entity_id"),
             "observer": observer,
-            "candidate_mode": wrapped["world"].get("interest", {}).get("mode", "legacy_global_scan"),
-            "candidates_examined": wrapped["world"].get("interest", {}).get("candidates_examined", 0),
+            "candidate_mode": interest.get("mode", "legacy_global_scan"),
+            "candidates_examined": interest.get("candidates_examined", 0),
+            "region_lookup_mode": interest.get("region_lookup_mode", "legacy_global_scan"),
+            "region_candidates_examined": interest.get("region_candidates_examined", 0),
         }
         return wrapped
