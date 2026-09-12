@@ -7,11 +7,8 @@ import os
 import random
 import signal
 import subprocess
-import tempfile
 import threading
 import time
-import urllib.error
-import urllib.request
 from array import array
 from collections import deque
 from pathlib import Path
@@ -22,20 +19,17 @@ import websockets
 SAMPLE_RATE = int(os.getenv("LIVE_INFINITA_AUDIO_SAMPLE_RATE", "48000"))
 CHANNELS = 2
 CHUNK_FRAMES = 960  # 20 ms at 48 kHz
+CHUNK_SECONDS = CHUNK_FRAMES / SAMPLE_RATE
 UDP_OUTPUT = os.getenv("LIVE_INFINITA_AUDIO_UDP", "udp://127.0.0.1:5500?pkt_size=1316")
 WORLD_WS = os.getenv("LIVE_INFINITA_WORLD_WS", "ws://127.0.0.1:8080/ws")
 DATA_DIR = Path(os.getenv("LIVE_INFINITA_DATA_DIR", "/var/lib/live-infinita"))
-INTEGRATIONS_FILE = DATA_DIR / "integrations.json"
 AUDIO_DIR = DATA_DIR / "audio"
 TTS_DIR = AUDIO_DIR / "tts"
 STATUS_FILE = AUDIO_DIR / "status.json"
 EVENT_LOG = AUDIO_DIR / "narration-events.jsonl"
-TTS_MODEL = os.getenv("LIVE_INFINITA_TTS_MODEL", "gpt-4o-mini-tts")
-TTS_VOICE = os.getenv("LIVE_INFINITA_TTS_VOICE", "alloy")
-TTS_INSTRUCTIONS = os.getenv(
-    "LIVE_INFINITA_TTS_INSTRUCTIONS",
-    "Fale em português brasileiro, como um narrador calmo, cinematográfico e natural."
-)
+LAST_EVENT_FILE = AUDIO_DIR / "last-narrated-event.txt"
+PIPER_BIN = os.getenv("LIVE_INFINITA_PIPER_BIN", "/opt/live.infinita/.venv/bin/piper")
+PIPER_MODEL = os.getenv("LIVE_INFINITA_PIPER_MODEL", "/var/lib/live-infinita/audio/models/pt_BR-faber-medium.onnx")
 AMBIENT_VOLUME = float(os.getenv("LIVE_INFINITA_AMBIENT_VOLUME", "0.075"))
 DUCKED_AMBIENT_VOLUME = float(os.getenv("LIVE_INFINITA_DUCKED_AMBIENT_VOLUME", "0.025"))
 NARRATION_VOLUME = float(os.getenv("LIVE_INFINITA_NARRATION_VOLUME", "0.95"))
@@ -106,7 +100,6 @@ class ProgramAudio:
         return max(-32768, min(32767, value))
 
     def _ambient_sample(self, volume: float) -> int:
-        # A subtle procedural bed: two slow tones plus low-pass noise.
         self.phase_a += 2 * math.pi * 73.0 / SAMPLE_RATE
         self.phase_b += 2 * math.pi * 109.0 / SAMPLE_RATE
         if self.phase_a > 2 * math.pi:
@@ -123,6 +116,7 @@ class ProgramAudio:
         return int(signal_value * 32767 * volume)
 
     def _run(self) -> None:
+        next_deadline = time.monotonic()
         while not self.stop_event.is_set():
             if self.ffmpeg is None or self.ffmpeg.poll() is not None:
                 try:
@@ -148,15 +142,16 @@ class ProgramAudio:
                     pass
                 self.ffmpeg = None
                 time.sleep(0.5)
+                next_deadline = time.monotonic()
+                continue
 
-
-def load_integrations() -> dict[str, Any]:
-    try:
-        with INTEGRATIONS_FILE.open(encoding="utf-8") as fh:
-            value = json.load(fh)
-        return value if isinstance(value, dict) else {}
-    except (OSError, json.JSONDecodeError):
-        return {}
+            next_deadline += CHUNK_SECONDS
+            wait = next_deadline - time.monotonic()
+            if wait > 0:
+                self.stop_event.wait(wait)
+            elif wait < -0.25:
+                # Resynchronize instead of attempting to "catch up" by burning CPU.
+                next_deadline = time.monotonic()
 
 
 def write_status(**updates: Any) -> None:
@@ -184,36 +179,53 @@ def append_event(record: dict[str, Any]) -> None:
         fh.write(json.dumps(record, ensure_ascii=False, sort_keys=True) + "\n")
 
 
-def openai_tts(text: str, target: Path) -> bool:
-    integrations = load_integrations()
-    api_key = str(integrations.get("openai_api_key") or "").strip()
-    if not api_key:
-        return False
-    payload = json.dumps({
-        "model": TTS_MODEL,
-        "voice": TTS_VOICE,
-        "input": text,
-        "instructions": TTS_INSTRUCTIONS,
-        "response_format": "mp3",
-    }, ensure_ascii=False).encode("utf-8")
-    request = urllib.request.Request(
-        "https://api.openai.com/v1/audio/speech",
-        data=payload,
-        headers={
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-        },
-        method="POST",
-    )
+def load_last_identity() -> str:
     try:
-        with urllib.request.urlopen(request, timeout=45) as response:
-            target.write_bytes(response.read())
-        return target.stat().st_size > 0
-    except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, OSError):
+        return LAST_EVENT_FILE.read_text(encoding="utf-8").strip()
+    except OSError:
+        return ""
+
+
+def persist_last_identity(identity: str) -> None:
+    AUDIO_DIR.mkdir(parents=True, exist_ok=True)
+    tmp = LAST_EVENT_FILE.with_suffix(".tmp")
+    tmp.write_text(identity + "\n", encoding="utf-8")
+    tmp.replace(LAST_EVENT_FILE)
+
+
+def piper_tts(text: str, target: Path) -> bool:
+    model = Path(PIPER_MODEL)
+    binary = Path(PIPER_BIN)
+    if not binary.exists() or not model.exists() or not model.with_suffix(model.suffix + ".json").exists():
         return False
+    wav_target = target.with_suffix(".wav")
+    try:
+        subprocess.run(
+            [str(binary), "--model", str(model), "--output_file", str(wav_target)],
+            input=(text + "\n").encode("utf-8"),
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=True,
+            timeout=45,
+        )
+        subprocess.run(
+            ["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-i", str(wav_target), str(target)],
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            timeout=30,
+        )
+        return target.exists() and target.stat().st_size > 0
+    except (subprocess.SubprocessError, OSError):
+        return False
+    finally:
+        try:
+            wav_target.unlink(missing_ok=True)
+        except OSError:
+            pass
 
 
-def local_tts(text: str, target: Path) -> bool:
+def espeak_tts(text: str, target: Path) -> bool:
     wav_target = target.with_suffix(".wav")
     try:
         subprocess.run(
@@ -226,6 +238,8 @@ def local_tts(text: str, target: Path) -> bool:
         subprocess.run(
             ["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-i", str(wav_target), str(target)],
             check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
             timeout=30,
         )
         return target.exists() and target.stat().st_size > 0
@@ -256,7 +270,7 @@ def decode_to_pcm(source: Path) -> bytes:
 class NarrationService:
     def __init__(self, audio: ProgramAudio) -> None:
         self.audio = audio
-        self.last_identity = ""
+        self.last_identity = load_last_identity()
         self.queue: asyncio.Queue[tuple[str, str]] = asyncio.Queue(maxsize=64)
         self.stop = asyncio.Event()
 
@@ -275,6 +289,7 @@ class NarrationService:
         if not text or identity == self.last_identity:
             return
         self.last_identity = identity
+        persist_last_identity(identity)
         try:
             self.queue.put_nowait((identity, text))
         except asyncio.QueueFull:
@@ -292,11 +307,13 @@ class NarrationService:
             started = time.time()
             safe_identity = "".join(c if c.isalnum() or c in "-_" else "_" for c in identity)[:100]
             target = TTS_DIR / f"{safe_identity or int(started * 1000)}.mp3"
-            provider = "openai"
-            ok = await asyncio.to_thread(openai_tts, text, target)
+
+            provider = "piper-local"
+            ok = await asyncio.to_thread(piper_tts, text, target)
             if not ok:
-                provider = "espeak-ng"
-                ok = await asyncio.to_thread(local_tts, text, target)
+                provider = "espeak-ng-local"
+                ok = await asyncio.to_thread(espeak_tts, text, target)
+
             record = {
                 "event_identity": identity,
                 "text": text,
@@ -314,14 +331,19 @@ class NarrationService:
                         last_narration=text,
                         last_event_identity=identity,
                         tts_provider=provider,
-                        tts_model=TTS_MODEL if provider == "openai" else None,
+                        tts_model=Path(PIPER_MODEL).name if provider == "piper-local" else "espeak-ng pt-br",
+                        tts_local=True,
+                        openai_audio_enabled=False,
                         udp_output=UDP_OUTPUT,
                     )
+                    print(f"[audio] narrativa {identity!s}: {text!r} provider={provider} queued_pcm={len(pcm)}", flush=True)
                 except (subprocess.SubprocessError, OSError) as exc:
                     record["ok"] = False
                     record["decode_error"] = type(exc).__name__
+                    print(f"[audio] falha ao decodificar {identity}: {type(exc).__name__}", flush=True)
             else:
-                write_status(state="tts_error", last_narration=text, last_event_identity=identity)
+                write_status(state="tts_error", last_narration=text, last_event_identity=identity, tts_local=True, openai_audio_enabled=False)
+                print(f"[audio] TTS local falhou para {identity}", flush=True)
             record["finished_at_unix"] = time.time()
             append_event(record)
             self.queue.task_done()
@@ -329,10 +351,11 @@ class NarrationService:
     async def world_listener(self) -> None:
         backoff = 1.0
         while not self.stop.is_set():
-            write_status(state="connecting", world_ws=WORLD_WS, udp_output=UDP_OUTPUT)
+            write_status(state="connecting", world_ws=WORLD_WS, udp_output=UDP_OUTPUT, tts_local=True, openai_audio_enabled=False)
             try:
                 async with websockets.connect(WORLD_WS, ping_interval=20, ping_timeout=20) as websocket:
-                    write_status(state="connected", world_ws=WORLD_WS, udp_output=UDP_OUTPUT)
+                    write_status(state="connected", world_ws=WORLD_WS, udp_output=UDP_OUTPUT, tts_local=True, openai_audio_enabled=False)
+                    print(f"[audio] conectado ao World State {WORLD_WS}; saída {UDP_OUTPUT}", flush=True)
                     backoff = 1.0
                     async for raw in websocket:
                         try:
@@ -345,8 +368,9 @@ class NarrationService:
                             await self.submit_world(message["world"])
                         if self.stop.is_set():
                             break
-            except Exception as exc:  # connector boundary; reconnect instead of killing audio
-                write_status(state="reconnecting", connector_error=type(exc).__name__)
+            except Exception as exc:
+                write_status(state="reconnecting", connector_error=type(exc).__name__, tts_local=True, openai_audio_enabled=False)
+                print(f"[audio] WebSocket desconectado ({type(exc).__name__}); reconectando", flush=True)
                 await asyncio.sleep(backoff)
                 backoff = min(backoff * 2.0, 30.0)
 
@@ -363,6 +387,10 @@ async def main() -> None:
         sample_rate=SAMPLE_RATE,
         channels=CHANNELS,
         ambient_enabled=True,
+        ambient_provider="local-procedural",
+        tts_local=True,
+        openai_audio_enabled=False,
+        tts_model=Path(PIPER_MODEL).name,
     )
 
     loop = asyncio.get_running_loop()

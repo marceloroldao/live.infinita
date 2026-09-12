@@ -1,0 +1,20 @@
+[Unit]
+Description=Live Infinita Browser Audio Relay
+After=network.target live-infinita-audio.service
+Requires=live-infinita-audio.service
+
+[Service]
+Type=simple
+User=liveinfinita
+Group=liveinfinita
+WorkingDirectory=/opt/live.infinita
+ExecStart=/opt/live.infinita/.venv/bin/uvicorn --app-dir /opt/live.infinita/apps/audio-web-bridge audio_web_bridge:app --host 127.0.0.1 --port 8092
+Restart=always
+RestartSec=2
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+
+[Install]
+WantedBy=multi-user.target
