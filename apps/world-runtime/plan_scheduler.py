@@ -87,6 +87,39 @@ class PlanScheduler:
             actor_entity_id=plan.actor_entity_id,
         )
 
+    def assess_resume(self, record: dict[str, Any]) -> dict[str, str]:
+        """Classify a preempted plan before it becomes runnable again.
+
+        resume: current cursor and goal assumptions are still valid.
+        replan: actor/route assumptions changed but the semantic goal still exists.
+        cancel: semantic goal can no longer be planned (for example target removed).
+        """
+        try:
+            plan = self._rehydrate_plan(dict(record.get("plan") or {}))
+            index = int(record.get("next_step_index", 0))
+            if index >= len(plan.steps):
+                return {"action": "resume", "reason": "plan already at terminal cursor"}
+
+            original_intent = dict(record.get("intent") or {})
+            try:
+                fresh = self.planner.plan(original_intent)
+            except ValueError as exc:
+                return {"action": "cancel", "reason": f"goal invalid after preemption: {exc}"}
+
+            try:
+                self.planner.revalidate_step(plan, index)
+            except ValueError as exc:
+                return {"action": "replan", "reason": str(exc)}
+
+            if plan.goal_region_id != fresh.goal_region_id:
+                return {
+                    "action": "replan",
+                    "reason": f"goal region changed: {plan.goal_region_id!r} -> {fresh.goal_region_id!r}",
+                }
+            return {"action": "resume", "reason": "goal and current step remain valid"}
+        except Exception as exc:
+            return {"action": "cancel", "reason": f"resume validation failed: {exc}"}
+
     def _reject_proposal(self, record: dict[str, Any], reason: str) -> None:
         if self.proposal_ledger is None:
             return
