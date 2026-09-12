@@ -17,18 +17,15 @@ RendererConfigError = module.RendererConfigError
 
 
 class HeadlessRendererConfigTest(unittest.TestCase):
-    def test_capture_url_must_be_clean_mode(self):
-        cfg = HeadlessRendererConfig(page_url="http://127.0.0.1/godot/")
-        with self.assertRaises(RendererConfigError):
-            cfg.validate()
-
-    def test_browser_runs_kiosk_capture_mode(self):
+    def test_godot_runs_native_x11_at_expected_resolution(self):
         cfg = HeadlessRendererConfig()
-        command = cfg.browser_command("chromium")
-        text = " ".join(command)
-        self.assertIn("--kiosk", command)
-        self.assertIn("capture=1", text)
-        self.assertIn("--window-size=1280,720", command)
+        command = cfg.godot_command()
+        self.assertEqual(command[0], cfg.godot_bin)
+        self.assertIn("--display-driver", command)
+        self.assertIn("x11", command)
+        self.assertIn("--resolution", command)
+        self.assertIn("1280x720", command)
+        self.assertIn(cfg.project_dir, command)
 
     def test_capture_is_video_only_local_udp_mpegts(self):
         cfg = HeadlessRendererConfig()
@@ -47,6 +44,11 @@ class HeadlessRendererConfigTest(unittest.TestCase):
         self.assertIn("tcp", command)
 
     def test_invalid_remote_video_bus_is_rejected(self):
+        cfg = HeadlessRendererConfig(video_output="udp://10.0.0.9:5600")
+        with self.assertRaises(RendererConfigError):
+            cfg.validate()
+
+    def test_rtmp_video_bus_is_rejected(self):
         cfg = HeadlessRendererConfig(video_output="rtmp://example.invalid/live")
         with self.assertRaises(RendererConfigError):
             cfg.validate()
