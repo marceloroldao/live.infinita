@@ -2,6 +2,8 @@ extends Node2D
 
 const EntityVisual = preload("res://entity_visual.gd")
 const WS_RECONNECT_MAX_MS := 30000
+const DIRECTOR_FOCUS_MS := 6500
+const DIRECTOR_STAGE_CENTER := Vector2(360, 650)
 
 var socket := WebSocketPeer.new()
 var world: Dictionary = {}
@@ -17,6 +19,8 @@ var narration_text := "A Live Infinita está começando."
 var ws_reconnect_attempt := 0
 var ws_reconnect_at_ms := 0
 var visual_time := 0.0
+var director_focus_entity_id := ""
+var director_focus_until_ms := 0
 
 func _ready() -> void:
     _connect_websocket()
@@ -94,6 +98,7 @@ func _process(delta: float) -> void:
         if connection_state != "desconectado": connection_state = "desconectado"; _schedule_websocket_reconnect()
         _maybe_reconnect_websocket()
     else: _maybe_reconnect_websocket()
+    _update_director_layout()
     queue_redraw()
 
 func _apply_world_state(message: Dictionary) -> void:
@@ -103,6 +108,7 @@ func _apply_world_state(message: Dictionary) -> void:
     var event = message.get("event", {})
     if typeof(event) == TYPE_DICTIONARY:
         last_action = str(event.get("action", "evento do mundo")); last_event_id = str(event.get("event_id", "-"))
+        _direct_from_event(event)
     var delta = message.get("delta", {})
     if typeof(delta) == TYPE_DICTIONARY: last_delta_id = str(delta.get("delta_id", "-"))
     var narration = world.get("narration", {})
@@ -146,6 +152,53 @@ func _reconcile_entities(entities) -> Dictionary:
         if not seen.has(entity_id):
             var visual = entity_nodes[entity_id]; entity_nodes.erase(entity_id); visual.queue_free(); result["removed"] += 1
     return result
+
+func _first_entity_id_by_type(entity_type: String) -> String:
+    var entities = world.get("entities", [])
+    if typeof(entities) != TYPE_ARRAY: return ""
+    for entity in entities:
+        if typeof(entity) == TYPE_DICTIONARY and str(entity.get("type", "")) == entity_type:
+            return str(entity.get("id", ""))
+    return ""
+
+func _last_entity_id_by_type(entity_type: String) -> String:
+    var entities = world.get("entities", [])
+    if typeof(entities) != TYPE_ARRAY: return ""
+    for i in range(entities.size() - 1, -1, -1):
+        var entity = entities[i]
+        if typeof(entity) == TYPE_DICTIONARY and str(entity.get("type", "")) == entity_type:
+            return str(entity.get("id", ""))
+    return ""
+
+func _direct_from_event(event: Dictionary) -> void:
+    var action := str(event.get("action", ""))
+    var next_focus := ""
+    match action:
+        "move_tree": next_focus = _first_entity_id_by_type("tree")
+        "toggle_fire": next_focus = _first_entity_id_by_type("campfire")
+        "spawn_person": next_focus = _last_entity_id_by_type("human")
+        _:
+            if action == "reset": director_focus_entity_id = ""; director_focus_until_ms = 0
+            return
+    if next_focus.is_empty() or not entity_nodes.has(next_focus): return
+    director_focus_entity_id = next_focus
+    director_focus_until_ms = Time.get_ticks_msec() + DIRECTOR_FOCUS_MS
+
+func _update_director_layout() -> void:
+    var active := not director_focus_entity_id.is_empty() and Time.get_ticks_msec() < director_focus_until_ms and entity_nodes.has(director_focus_entity_id)
+    if not active:
+        if director_focus_until_ms != 0 and Time.get_ticks_msec() >= director_focus_until_ms:
+            director_focus_entity_id = ""; director_focus_until_ms = 0
+        for visual in entity_nodes.values(): visual.restore_default_presentation(1.0)
+        return
+    var focus = entity_nodes[director_focus_entity_id]
+    var focus_default: Vector2 = focus.world_to_portrait(focus.world_position)
+    var camera_shift := (DIRECTOR_STAGE_CENTER - focus_default) * 0.18
+    for entity_id in entity_nodes.keys():
+        var visual = entity_nodes[entity_id]
+        var base: Vector2 = visual.world_to_portrait(visual.world_position)
+        var emphasis := 1.16 if entity_id == director_focus_entity_id else 0.94
+        visual.set_presentation_target(base + camera_shift, emphasis)
 
 func _panel_style(fill: Color, border: Color, radius: int = 18) -> StyleBoxFlat:
     var style := StyleBoxFlat.new(); style.bg_color = fill; style.border_color = border; style.set_border_width_all(1)
@@ -205,7 +258,6 @@ func _draw_narration(font: Font, v: Vector2) -> void:
     draw_multiline_string(font,r.position+Vector2(20,59),narration_text,HORIZONTAL_ALIGNMENT_CENTER,r.size.x-40,20,-1,Color.WHITE)
 
 func _draw_safe_guides(v: Vector2) -> void:
-    # Only visible in browser debug mode when ?guides=1; native broadcaster remains clean.
     if not OS.has_feature("web"): return
     var guides = JavaScriptBridge.eval("new URLSearchParams(window.location.search).get('guides')")
     if str(guides) != "1": return
@@ -218,7 +270,6 @@ func _draw() -> void:
     if typeof(environment) == TYPE_DICTIONARY: period = str(environment.get("period","day"))
     var night := period == "night"
     _draw_sky(v,night); _draw_landscape(v,night)
-    # portrait vignette
     draw_rect(Rect2(0,0,v.x,28),Color(0,0,0,0.15)); draw_rect(Rect2(0,v.y-34,v.x,34),Color(0,0,0,0.24)); draw_rect(Rect2(0,0,20,v.y),Color(0,0,0,0.10)); draw_rect(Rect2(v.x-20,0,20,v.y),Color(0,0,0,0.10))
     var font := ThemeDB.fallback_font
     _draw_brand(font,v); _draw_audience(font,v); _draw_narration(font,v); _draw_safe_guides(v)
