@@ -31,47 +31,82 @@ curl -fsS http://127.0.0.1:8092/health >/dev/null || {
   exit 1
 }
 
-# Recover from backups accidentally created inside sites-enabled by older installer versions.
-# Any regular file matching this exact installer backup pattern would be parsed by nginx as
-# another server block, causing "duplicate default server".
+# Recover stale backups accidentally left in sites-enabled by older installer versions.
 while IFS= read -r stale_backup; do
   [[ -n "$stale_backup" ]] || continue
   mv "$stale_backup" "$NGINX_BACKUP_DIR/$(basename "$stale_backup")"
 done < <(find /etc/nginx/sites-enabled -maxdepth 1 -type f -name 'live-infinita.before-audio.*' -print 2>/dev/null)
 
-NGINX_ENTRY=$(grep -RIl --include='*.conf' 'server_name[[:space:]].*live\.etbra\.com\.br' /etc/nginx/sites-enabled /etc/nginx/conf.d 2>/dev/null | head -n1 || true)
-if [[ -z "$NGINX_ENTRY" ]]; then
-  NGINX_ENTRY=$(grep -RIl 'server_name[[:space:]].*live\.etbra\.com\.br' /etc/nginx/sites-enabled /etc/nginx/conf.d 2>/dev/null | head -n1 || true)
-fi
+NGINX_ENTRY=$(grep -RIl 'server_name[[:space:]].*live\.etbra\.com\.br' /etc/nginx/sites-enabled /etc/nginx/conf.d 2>/dev/null | head -n1 || true)
 [[ -n "$NGINX_ENTRY" ]] || { echo 'Não encontrei o vhost live.etbra.com.br no nginx.'; exit 1; }
 NGINX_CONF=$(readlink -f "$NGINX_ENTRY")
 [[ -f "$NGINX_CONF" ]] || { echo "Vhost nginx inválido: $NGINX_ENTRY"; exit 1; }
 
-if ! grep -q 'location /audio/' "$NGINX_CONF"; then
-  backup="$NGINX_BACKUP_DIR/$(basename "$NGINX_CONF").before-audio.$(date +%s)"
-  cp -p "$NGINX_CONF" "$backup"
-  python3 - "$NGINX_CONF" <<'PY'
+backup="$NGINX_BACKUP_DIR/$(basename "$NGINX_CONF").before-audio.$(date +%s)"
+cp -p "$NGINX_CONF" "$backup"
+
+# Add /audio/ to every server{} block for live.etbra.com.br, including the Certbot HTTPS block.
+python3 - "$NGINX_CONF" <<'PY'
 from pathlib import Path
 import sys
-p=Path(sys.argv[1])
-s=p.read_text()
-needle='    location / {\n'
-block='''    location /audio/ {\n        proxy_pass http://127.0.0.1:8092/;\n        proxy_http_version 1.1;\n        proxy_buffering off;\n        proxy_cache off;\n        proxy_read_timeout 3600s;\n        add_header Cache-Control "no-store" always;\n    }\n\n'''
-if needle not in s:
-    raise SystemExit('Não encontrei location / { para inserir a rota de áudio')
-s=s.replace(needle, block+needle, 1)
+
+p = Path(sys.argv[1])
+s = p.read_text()
+block = '''    location /audio/ {\n        proxy_pass http://127.0.0.1:8092/;\n        proxy_http_version 1.1;\n        proxy_buffering off;\n        proxy_cache off;\n        proxy_read_timeout 3600s;\n        add_header Cache-Control "no-store" always;\n    }\n\n'''
+
+def server_ranges(text: str):
+    out = []
+    pos = 0
+    while True:
+        start = text.find('server {', pos)
+        if start < 0:
+            return out
+        brace = text.find('{', start)
+        depth = 0
+        i = brace
+        while i < len(text):
+            if text[i] == '{':
+                depth += 1
+            elif text[i] == '}':
+                depth -= 1
+                if depth == 0:
+                    out.append((start, i + 1))
+                    pos = i + 1
+                    break
+            i += 1
+        else:
+            raise SystemExit('Bloco server nginx sem fechamento')
+
+ranges = server_ranges(s)
+replacements = []
+for start, end in ranges:
+    chunk = s[start:end]
+    if 'server_name live.etbra.com.br;' not in chunk:
+        continue
+    if 'location /audio/' in chunk:
+        continue
+    # Insert before the first location in this server block; if absent, before closing brace.
+    rel = chunk.find('    location ')
+    if rel < 0:
+        insert_at = end - 1
+    else:
+        insert_at = start + rel
+    replacements.append(insert_at)
+
+for insert_at in reversed(replacements):
+    s = s[:insert_at] + block + s[insert_at:]
+
 p.write_text(s)
+print(f'Rotas /audio/ adicionadas em {len(replacements)} bloco(s) de live.etbra.com.br')
 PY
-  if ! nginx -t; then
-    cp -p "$backup" "$NGINX_CONF"
-    nginx -t || true
-    echo 'Configuração nginx restaurada após falha.' >&2
-    exit 1
-  fi
-  systemctl reload nginx
-else
-  nginx -t
+
+if ! nginx -t; then
+  cp -p "$backup" "$NGINX_CONF"
+  nginx -t || true
+  echo 'Configuração nginx restaurada após falha.' >&2
+  exit 1
 fi
+systemctl reload nginx
 
 bash "$SOURCE_DIR/deploy/install-godot-web.sh"
 
