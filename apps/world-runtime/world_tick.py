@@ -35,6 +35,7 @@ class WorldTickRunner:
                 "clock": before.as_dict(),
                 "events": [],
                 "conditional_events": [],
+                "plan_replanning": [],
                 "plan_arbitration": {
                     "preemptions": [],
                     "resumptions": [],
@@ -74,6 +75,22 @@ class WorldTickRunner:
                     "last_plan_id": row.get("last_plan_id"),
                 })
 
+        # Replanning is a distinct deterministic phase. A stale plan is rebuilt
+        # from the original semantic intent and current authoritative state
+        # before priority arbitration. This means the new revision may execute
+        # its first step later in the same logical tick.
+        replan_results: list[dict[str, Any]] = []
+        replan_all = getattr(self.scheduler, "replan_all", None)
+        if callable(replan_all):
+            for row in replan_all():
+                replan_results.append({
+                    "plan_id": row.get("plan_id"),
+                    "status": row.get("status"),
+                    "plan_revision": row.get("plan_revision", 0),
+                    "next_step_index": row.get("next_step_index", 0),
+                    "last_error": row.get("last_error"),
+                })
+
         arbitration = self.plan_arbiter.reconcile()
         results: list[dict[str, Any]] = []
         for record in arbitration.get("runnable", []):
@@ -85,6 +102,7 @@ class WorldTickRunner:
                 "plan_id": plan_id,
                 "actor_entity_id": result.get("actor_entity_id"),
                 "priority": result.get("priority", 0),
+                "plan_revision": result.get("plan_revision", 0),
                 "status": result.get("status"),
                 "next_step_index": result.get("next_step_index"),
                 "last_world_event_id": result.get("last_world_event_id"),
@@ -96,6 +114,7 @@ class WorldTickRunner:
             "clock": after.as_dict(),
             "events": event_results,
             "conditional_events": conditional_results,
+            "plan_replanning": replan_results,
             "plan_arbitration": {
                 "preemptions": arbitration.get("preemptions", []),
                 "resumptions": arbitration.get("resumptions", []),
