@@ -81,10 +81,22 @@ class MonitorContractTest(unittest.TestCase):
         self.assertIn('PREFETCH_WARN_RATE = 0.70', js)
         self.assertIn('PREFETCH_MIN_PROMOTIONS = 10', js)
         self.assertIn('ALERT_HISTORY_MAX = 40', js)
-        self.assertIn('ALERT_DEDUP_MS = 15000', js)
         self.assertIn('while (alertHistory.length > ALERT_HISTORY_MAX)', js)
         self.assertIn('alertHistory.length = 0', js)
-        self.assertIn('lastAlertAt.clear()', js)
+
+    def test_alert_cooldown_escalation_and_filters(self):
+        html = INDEX.read_text(encoding="utf-8")
+        js = JS.read_text(encoding="utf-8")
+        self.assertIn('ALERT_WARN_COOLDOWN_MS = 60000', js)
+        self.assertIn('ALERT_CRITICAL_COOLDOWN_MS = 20000', js)
+        self.assertIn("previous.level === 'warn' && level === 'critical'", js)
+        self.assertIn('data-alert-level="all"', html)
+        self.assertIn('data-alert-level="critical"', html)
+        self.assertIn('data-alert-kind="hot"', html)
+        self.assertIn('data-alert-kind="warm"', html)
+        self.assertIn('data-alert-kind="prefetch"', html)
+        self.assertIn("alertHistory.filter(alertMatches)", js)
+        self.assertIn('lastAlertState.clear()', js)
 
 
 if __name__ == "__main__":
