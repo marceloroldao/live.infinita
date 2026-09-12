@@ -41,5 +41,7 @@ systemctl stop live-infinita-broadcaster.service >/dev/null 2>&1 || true
 
 echo 'Broadcaster preparado, mas DESABILITADO.'
 echo "Configuração futura: $ENV_FILE"
-echo 'Antes de habilitar, valide: sudo -u liveinfinita env $(grep -v "^#" /etc/live-infinita/broadcaster.env | xargs) /opt/live.infinita/.venv/bin/python /opt/live.infinita/apps/broadcaster/broadcaster.py --dry-run'
+echo 'Para validar depois sem transmitir, use:'
+echo '  sudo systemctl show live-infinita-broadcaster.service --property=EnvironmentFiles'
+echo '  sudo -u liveinfinita /opt/live.infinita/.venv/bin/python /opt/live.infinita/apps/broadcaster/broadcaster.py --probe'
 echo 'Nenhuma transmissão externa foi iniciada.'
