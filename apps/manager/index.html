@@ -4,7 +4,7 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#080a0f">
   <title>Live Infinita — Manager</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23080a0f'/%3E%3Cpath d='M14 33c7-14 15-14 22 0s15 14 22 0' fill='none' stroke='%23b7ff44' stroke-width='7' stroke-linecap='round'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/visibility.css">
+  <link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/monitoring.css"><link rel="stylesheet" href="/visibility.css">
 </head>
 <body>
   <div class="ambient" aria-hidden="true"></div>
@@ -19,16 +19,41 @@
   <div id="manager-view" class="app-shell" hidden>
     <aside class="sidebar">
       <a class="brand" href="/" aria-label="Live Infinita Manager"><span class="brand-symbol">∞</span><span>LIVE<br>INFINITA</span></a>
-      <nav aria-label="Navegação principal"><a class="nav-link active" href="#integracoes"><span>◫</span> Integrações</a><a class="nav-link" href="/godot/"><span>◇</span> Godot <b>↗</b></a><a class="nav-link" href="/gdscript/"><span>⌁</span> GDScript <b>↗</b></a></nav>
+      <nav aria-label="Navegação principal"><a class="nav-link active" data-page="overview" href="#overview"><span>⌂</span> Visão geral</a><a class="nav-link" data-page="integracoes" href="#integracoes"><span>◫</span> Integrações</a><a class="nav-link" href="/godot/"><span>◇</span> Godot <b>↗</b></a><a class="nav-link" href="/gdscript/"><span>⌁</span> GDScript <b>↗</b></a></nav>
       <button id="logout" class="logout" type="button"><span>↪</span> Sair</button>
     </aside>
-    <main class="workspace" id="integracoes">
+    <main class="workspace">
+      <section id="overview" class="manager-page">
+        <header class="topbar"><div><p class="eyebrow">CENTRO DE CONTROLE</p><h1>Visão geral</h1></div><span id="system-state" class="system-status"><i></i> Sistema online</span></header>
+        <section class="monitor-hero"><div><p class="eyebrow green">LIVE AGORA</p><h2 id="live-title">Monitorando a Live Infinita</h2><p id="live-detail">Carregando o estado dos serviços...</p></div><div class="live-pulse"><span></span><b id="tiktok-live-state">VERIFICANDO</b></div></section>
+        <div class="metric-grid">
+          <article class="metric"><span>Runtime</span><strong id="runtime-value">—</strong><small id="runtime-detail">aguardando</small></article>
+          <article class="metric"><span>TikTok</span><strong id="tiktok-value">—</strong><small id="tiktok-detail">aguardando</small></article>
+          <article class="metric"><span>OpenAI</span><strong id="monitor-openai-value">—</strong><small id="monitor-openai-detail">aguardando</small></article>
+          <article class="metric"><span>WebSocket</span><strong id="websocket-value">—</strong><small>telas conectadas</small></article>
+        </div>
+        <div class="monitor-grid">
+          <section class="monitor-card audience-card"><div class="section-title"><div><p class="eyebrow">AUDIÊNCIA</p><h2>Movimento da live</h2></div><span id="audience-total" class="total-pill">0 eventos</span></div><div class="audience-metrics"><div><strong id="joins-value">0</strong><span>Entradas</span></div><div><strong id="likes-value">0</strong><span>Curtidas</span></div><div><strong id="gifts-value">0</strong><span>Presentes</span></div><div><strong id="actors-value">0</strong><span>Atores</span></div></div></section>
+          <section class="monitor-card world-card"><div class="section-title"><div><p class="eyebrow">MUNDO</p><h2>Estado atual</h2></div><span id="replay-state" class="badge">Verificando</span></div><dl><div><dt>Versão</dt><dd id="world-version">—</dd></div><div><dt>Sequência</dt><dd id="world-sequence">—</dd></div><div><dt>Entidades</dt><dd id="world-entities">—</dd></div><div><dt>Período</dt><dd id="world-period">—</dd></div></dl></section>
+          <section class="monitor-card activity-card"><div class="section-title"><div><p class="eyebrow">TEMPO REAL</p><h2>Atividade recente</h2></div><span id="last-update">—</span></div><ol id="activity-list" class="activity-list"><li class="empty">Aguardando eventos...</li></ol></section>
+          <section class="monitor-card logs-card">
+            <div class="section-title"><div><p class="eyebrow">SERVIDOR</p><h2>Logs em tempo real</h2></div><div class="log-actions"><button id="logs-refresh" class="secondary compact" type="button">Atualizar agora</button><button id="logs-pause" class="secondary compact" type="button">Pausar</button></div></div>
+            <div class="logs-grid">
+              <article class="log-console"><header><div><span class="log-dot"></span><strong>TikTok Bridge</strong></div><small>live-infinita-tiktok</small></header><pre id="tiktok-log">Carregando journal...</pre></article>
+              <article class="log-console"><header><div><span class="log-dot audio"></span><strong>Narrador / Server Audio</strong></div><small>live-infinita-audio</small></header><pre id="audio-log">Carregando journal...</pre></article>
+            </div>
+            <p class="log-note">Equivalente aos journals do shell, com acesso protegido e sanitização de segredos. Atualização automática a cada 3 segundos.</p>
+          </section>
+        </div>
+      </section>
+      <section id="integracoes" class="manager-page" hidden>
       <header class="topbar"><div><p class="eyebrow">CENTRO DE CONTROLE</p><h1>Integrações</h1></div><span class="system-status"><i></i> Sistema online</span></header>
       <section class="hero"><div><p class="eyebrow green">CONEXÕES</p><h2>Alimente o seu mundo.</h2><p>Conecte os serviços que dão inteligência e audiência à Live Infinita.</p></div><div class="hero-orbit" aria-hidden="true"><span>∞</span></div></section>
       <div class="integration-grid">
         <section class="integration-card"><div class="card-heading"><div class="service-icon openai">AI</div><div><h2>OpenAI</h2><p>Inteligência do mundo</p></div><span id="openai-state" class="badge">Não configurado</span></div><label for="openai-key">API key</label><input id="openai-key" type="password" autocomplete="off" placeholder="Cole sua API key"><label for="openai-model">Modelo</label><input id="openai-model" value="gpt-5-mini"><div class="actions"><button class="primary" data-save="openai">Salvar alterações</button><button class="secondary" id="test-openai">Testar</button></div><button class="remove" data-clear="openai_api_key">Remover chave</button></section>
         <section class="integration-card"><div class="card-heading"><div class="service-icon tiktok">♪</div><div><h2>TikTok Live</h2><p>Audiência em tempo real</p></div><span id="tiktok-state" class="badge">Não configurado</span></div><label for="tiktok-user">Usuário da live</label><input id="tiktok-user" placeholder="@usuario"><label for="tiktok-key">Chave Euler Stream <small>opcional</small></label><input id="tiktok-key" type="password" autocomplete="off" placeholder="Deixe vazio para manter a atual"><div class="actions"><button class="primary" data-save="tiktok">Salvar alterações</button></div><button class="remove" data-clear="tiktok_sign_api_key">Remover chave</button></section>
-      </div><p id="message" class="toast" role="status"></p>
+      </div>
+      </section><p id="message" class="toast" role="status"></p>
     </main>
   </div>
   <script src="/app.js"></script>

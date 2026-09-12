@@ -30,6 +30,7 @@ AUDIENCE_PROPOSALS_FILE = DATA_DIR / "audience-proposals.jsonl"
 ACTOR_OBSERVATIONS_FILE = DATA_DIR / "actor-observations.jsonl"
 ACTOR_BINDINGS_FILE = DATA_DIR / "actor-bindings.jsonl"
 INTEGRATIONS_FILE = DATA_DIR / "integrations.json"
+TIKTOK_STATUS_FILE = DATA_DIR / "tiktok-status.json"
 OPERATOR_TOKEN = os.environ.get("LIVE_INFINITA_OPERATOR_TOKEN", "")
 SESSION_COOKIE = "live_infinita_session"
 SESSION_MAX_AGE = 60 * 60 * 12
@@ -47,7 +48,7 @@ from store import ActorStore  # noqa: E402
 from bindings import ActorBindingStore, BindingConflict  # noqa: E402
 from settings import IntegrationStore  # noqa: E402
 
-app = FastAPI(title="Live Infinita MVP-011", version="0.12.0")
+app = FastAPI(title="Live Infinita MVP-012", version="0.13.0")
 clients: set[WebSocket] = set()
 world_lock = asyncio.Lock()
 audience_lock = asyncio.Lock()
@@ -58,6 +59,8 @@ aggregator = AudienceAggregator()
 actors = ActorStore(ACTOR_OBSERVATIONS_FILE)
 bindings = ActorBindingStore(ACTOR_BINDINGS_FILE)
 integrations = IntegrationStore(INTEGRATIONS_FILE)
+APP_STARTED_AT = time.time()
+openai_monitor: dict[str, Any] = {"state": "not_tested", "checked_at_unix": None, "latency_ms": None}
 
 
 @app.middleware("http")
@@ -191,6 +194,41 @@ def append_jsonl(path: Path, record: dict[str, Any]) -> None:
         fh.write(json.dumps(record, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n")
 
 
+def read_tiktok_status() -> dict[str, Any]:
+    if not TIKTOK_STATUS_FILE.exists():
+        return {"state": "not_started", "updated_at_unix": None}
+    try:
+        with TIKTOK_STATUS_FILE.open(encoding="utf-8") as fh:
+            value = json.load(fh)
+        return value if isinstance(value, dict) else {"state": "unknown", "updated_at_unix": None}
+    except (OSError, ValueError):
+        return {"state": "unknown", "updated_at_unix": None}
+
+
+def monitor_activity(limit: int = 30) -> list[dict[str, Any]]:
+    activity: list[dict[str, Any]] = []
+    for row in read_jsonl(AUDIENCE_EVENTS_FILE)[-limit:]:
+        actor = row.get("actor") or {}
+        activity.append({
+            "channel": "audience",
+            "kind": row.get("kind", "event"),
+            "source": row.get("source", "unknown"),
+            "actor": actor.get("display_name") or actor.get("actor_id") or "Participante",
+            "at_unix": row.get("received_at_unix"),
+        })
+    for row in engine.read_jsonl(engine.events_file)[-limit:]:
+        context = row.get("context") or {}
+        activity.append({
+            "channel": "world",
+            "kind": row.get("action") or row.get("type") or "world_event",
+            "source": row.get("source", "unknown"),
+            "actor": context.get("display_name") or context.get("actor_id") or "Sistema",
+            "at_unix": row.get("committed_at_unix") or context.get("observed_at_unix"),
+        })
+    activity.sort(key=lambda item: float(item.get("at_unix") or 0), reverse=True)
+    return activity[:limit]
+
+
 def current_proposals() -> list[dict[str, Any]]:
     latest: dict[str, dict[str, Any]] = {}
     order: list[str] = []
@@ -321,8 +359,8 @@ async def health() -> JSONResponse:
     return JSONResponse({
         "ok": True,
         "service": "live-infinita",
-        "mvp": "011",
-        "version": "0.12.0",
+        "mvp": "012",
+        "version": "0.13.0",
         "replay_ok": verification["ok"],
         "state_hash": verification["current_hash"],
         "pipeline": ["real-source-bridge", "actor-state", "audience-side-channel", "audience-aggregator", "proposal-gate", "intent", "validator", "runtime"],
@@ -422,6 +460,42 @@ async def get_integrations() -> JSONResponse:
     return JSONResponse(integrations.public_status())
 
 
+@app.get("/api/manage/monitor", dependencies=[Depends(require_operator)])
+async def get_monitor() -> JSONResponse:
+    now = time.time()
+    world = engine.load_world()
+    audience_events = read_jsonl(AUDIENCE_EVENTS_FILE)
+    event_counts = {kind: sum(1 for row in audience_events if row.get("kind") == kind)
+                    for kind in ("join", "like", "gift")}
+    integration_status = integrations.public_status()
+    tiktok = read_tiktok_status()
+    tiktok_updated = tiktok.get("updated_at_unix")
+    if isinstance(tiktok_updated, (int, float)):
+        tiktok["age_seconds"] = max(0, round(now - tiktok_updated))
+        tiktok["stale"] = now - tiktok_updated > 90
+    else:
+        tiktok["age_seconds"] = None
+        tiktok["stale"] = True
+    return JSONResponse({
+        "generated_at_unix": now,
+        "runtime": {"state": "online", "uptime_seconds": round(now - APP_STARTED_AT)},
+        "tiktok": {**tiktok, "configured": integration_status["tiktok"]["configured"],
+                   "unique_id": integration_status["tiktok"]["unique_id"]},
+        "openai": {**openai_monitor, "configured": integration_status["openai"]["configured"],
+                   "model": integration_status["openai"]["model"]},
+        "world": {
+            "version": world.get("version"), "sequence": world.get("sequence"),
+            "entities": len(world.get("entities", [])),
+            "period": (world.get("environment") or {}).get("period"),
+            "replay_ok": engine.verify_replay()["ok"],
+        },
+        "websocket": {"clients": len(clients)},
+        "audience": {"total": len(audience_events), **event_counts},
+        "actors": {"total": len(actors.actors()), "bound": len(bindings.current())},
+        "activity": monitor_activity(),
+    })
+
+
 @app.post("/api/manage/login")
 async def manager_login(request: LoginRequest) -> JSONResponse:
     if not OPERATOR_TOKEN:
@@ -456,6 +530,7 @@ async def update_integrations(request: IntegrationUpdate) -> JSONResponse:
 
 @app.post("/api/manage/integrations/openai/test", dependencies=[Depends(require_operator)])
 async def test_openai_integration() -> JSONResponse:
+    started_at = time.perf_counter()
     config = integrations.load()
     api_key = str(config.get("openai_api_key") or "")
     if not api_key:
@@ -470,13 +545,19 @@ async def test_openai_integration() -> JSONResponse:
     try:
         payload = await asyncio.to_thread(fetch_models)
     except urllib.error.HTTPError as exc:
+        openai_monitor.update(state="error", checked_at_unix=time.time(),
+                              latency_ms=round((time.perf_counter() - started_at) * 1000))
         if exc.code in {401, 403}:
             raise HTTPException(status_code=422, detail="chave OpenAI recusada") from exc
         raise HTTPException(status_code=502, detail=f"OpenAI indisponível (HTTP {exc.code})") from exc
     except (OSError, ValueError) as exc:
+        openai_monitor.update(state="error", checked_at_unix=time.time(),
+                              latency_ms=round((time.perf_counter() - started_at) * 1000))
         raise HTTPException(status_code=502, detail="não foi possível consultar a OpenAI") from exc
     models = payload.get("data", []) if isinstance(payload, dict) else []
     selected = config.get("openai_model", "gpt-5-mini")
+    openai_monitor.update(state="ok", checked_at_unix=time.time(),
+                          latency_ms=round((time.perf_counter() - started_at) * 1000))
     return JSONResponse({"ok": True, "models_available": len(models),
                          "selected_model": selected,
                          "selected_model_available": any(item.get("id") == selected for item in models)})
