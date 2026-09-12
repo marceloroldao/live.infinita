@@ -50,12 +50,8 @@ class FileRegionColdStore:
             payload = json.load(fh)
         if int(payload.get("version", 0)) != self.MANIFEST_VERSION:
             raise ValueError("unsupported cold-store manifest version")
-        self._entity_region = {
-            str(k): str(v) for k, v in dict(payload.get("entity_region", {})).items()
-        }
-        self._region_counts = {
-            str(k): int(v) for k, v in dict(payload.get("region_counts", {})).items()
-        }
+        self._entity_region = {str(k): str(v) for k, v in dict(payload.get("entity_region", {})).items()}
+        self._region_counts = {str(k): int(v) for k, v in dict(payload.get("region_counts", {})).items()}
 
     def _save_manifest(self) -> None:
         self._atomic_write_json(
@@ -110,6 +106,60 @@ class FileRegionColdStore:
             rows.extend(self.load_region(region_id))
         return rows
 
+    def _write_region_rows(self, region_id: str, rows: list[dict[str, Any]]) -> None:
+        rows = [deepcopy(row) for row in rows]
+        rows.sort(key=lambda row: str(row.get("id", "")))
+        path = self._region_file(region_id)
+        if rows:
+            self._atomic_write_json(path, rows)
+            self._region_counts[region_id] = len(rows)
+        else:
+            if path.exists():
+                path.unlink()
+            self._region_counts.pop(region_id, None)
+
+    def upsert(self, entity: dict[str, Any]) -> set[str]:
+        value = deepcopy(entity)
+        entity_id = str(value.get("id", "")).strip()
+        region_id = str(value.get("region_id", "")).strip()
+        if not entity_id:
+            raise ValueError("entity id is required")
+        if not region_id:
+            raise ValueError("entity region_id is required")
+
+        previous_region = self._entity_region.get(entity_id)
+        touched: set[str] = {region_id}
+        if previous_region:
+            touched.add(previous_region)
+
+        if previous_region and previous_region != region_id:
+            previous_rows = [row for row in self.load_region(previous_region) if str(row.get("id", "")) != entity_id]
+            self._write_region_rows(previous_region, previous_rows)
+
+        rows = self.load_region(region_id)
+        replaced = False
+        for index, row in enumerate(rows):
+            if str(row.get("id", "")) == entity_id:
+                rows[index] = value
+                replaced = True
+                break
+        if not replaced:
+            rows.append(value)
+        self._write_region_rows(region_id, rows)
+        self._entity_region[entity_id] = region_id
+        self._save_manifest()
+        return touched
+
+    def remove(self, entity_id: str) -> set[str]:
+        entity_id = str(entity_id).strip()
+        region_id = self._entity_region.pop(entity_id, None)
+        if region_id is None:
+            return set()
+        rows = [row for row in self.load_region(region_id) if str(row.get("id", "")) != entity_id]
+        self._write_region_rows(region_id, rows)
+        self._save_manifest()
+        return {region_id}
+
     def get_entity(self, entity_id: str) -> dict[str, Any] | None:
         region_id = self._entity_region.get(entity_id)
         if region_id is None:
@@ -137,12 +187,7 @@ class FileRegionColdStore:
 
 
 class ColdRegionCandidateCache:
-    """Bounded LRU cache over cold region payloads.
-
-    The cache deliberately holds full payloads for only a small number of
-    regions. This is the bridge between persistent cold storage and hot/warm
-    spatial resolution.
-    """
+    """Bounded LRU cache over cold region payloads."""
 
     def __init__(self, store: FileRegionColdStore, max_regions: int = 4) -> None:
         if max_regions < 1:
@@ -182,21 +227,16 @@ class ColdRegionCandidateCache:
             "hits_total": self.hits_total,
         }
 
+    def invalidate(self, region_ids: Iterable[str]) -> None:
+        for region_id in set(str(value) for value in region_ids if str(value)):
+            self._cache.pop(region_id, None)
+
     def clear(self) -> None:
         self._cache.clear()
 
 
-def externalize_world_entities(
-    world: dict[str, Any],
-    store: FileRegionColdStore,
-) -> dict[str, Any]:
-    """Persist full entity payloads and return a cold-backed world envelope.
-
-    The returned world intentionally contains no full entity list. Existing
-    runtime migration can keep using the original world until the cold-backed
-    SpatialSession path is enabled.
-    """
-
+def externalize_world_entities(world: dict[str, Any], store: FileRegionColdStore) -> dict[str, Any]:
+    """Persist full entity payloads and return a cold-backed world envelope."""
     rows = [row for row in world.get("entities", []) if isinstance(row, dict)]
     store.replace_all(rows)
     result = deepcopy(world)
