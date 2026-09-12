@@ -67,8 +67,12 @@
 
         <section class="card alerts-card">
           <div class="section-head"><div><span class="eyebrow">ALERTAS</span><h2>Saúde espacial</h2></div><span class="thresholds">HOT 80/96 · WARM 160/192 · PREFETCH ≥70%</span></div>
+          <div class="alert-filters" aria-label="Filtros de alertas">
+            <div><span>Severidade</span><button type="button" class="filter active" data-alert-level="all">Todos</button><button type="button" class="filter" data-alert-level="warn">Warning</button><button type="button" class="filter" data-alert-level="critical">Critical</button></div>
+            <div><span>Origem</span><button type="button" class="filter active" data-alert-kind="all">Todos</button><button type="button" class="filter" data-alert-kind="hot">HOT</button><button type="button" class="filter" data-alert-kind="warm">WARM</button><button type="button" class="filter" data-alert-kind="prefetch">Prefetch</button></div>
+          </div>
           <ul id="alert-history" class="alert-list"><li class="alert-empty">Nenhum alerta espacial nesta sessão.</li></ul>
-          <p class="history-note">Máximo de 40 ocorrências, somente na memória desta aba.</p>
+          <p class="history-note">Warning: cooldown 60 s. Critical: cooldown 20 s. Escalada warn→critical é imediata. Máximo de 40 ocorrências nesta aba.</p>
         </section>
 
         <section class="card counters-card">
