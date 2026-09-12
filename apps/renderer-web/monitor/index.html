@@ -38,6 +38,7 @@
             <div class="status"><span id="tiktok-dot" class="dot muted"></span><div><small>TikTok</small><strong id="tiktok-state">—</strong></div></div>
             <div class="status"><span id="openai-dot" class="dot muted"></span><div><small>OpenAI</small><strong id="openai-state">—</strong></div></div>
             <div class="status"><span class="dot info"></span><div><small>Formato</small><strong>720×1280 · 30 fps</strong></div></div>
+            <div class="status"><span id="spatial-alert-dot" class="dot muted"></span><div><small>Spatial</small><strong id="spatial-alert-state">AGUARDANDO</strong></div></div>
           </div>
         </section>
 
@@ -62,6 +63,12 @@
           </svg>
           <div class="history-legend"><span><i class="legend-hot"></i>HOT</span><span><i class="legend-warm"></i>WARM</span><span id="history-hit">Prefetch —</span></div>
           <p class="history-note">Buffer local limitado; ao fechar a aba, o histórico é descartado.</p>
+        </section>
+
+        <section class="card alerts-card">
+          <div class="section-head"><div><span class="eyebrow">ALERTAS</span><h2>Saúde espacial</h2></div><span class="thresholds">HOT 80/96 · WARM 160/192 · PREFETCH ≥70%</span></div>
+          <ul id="alert-history" class="alert-list"><li class="alert-empty">Nenhum alerta espacial nesta sessão.</li></ul>
+          <p class="history-note">Máximo de 40 ocorrências, somente na memória desta aba.</p>
         </section>
 
         <section class="card counters-card">
