@@ -1,6 +1,7 @@
 extends Node2D
 
 const EntityVisual = preload("res://entity_visual.gd")
+const WS_RECONNECT_MAX_MS := 30000
 
 var socket := WebSocketPeer.new()
 var world: Dictionary = {}
@@ -14,6 +15,8 @@ var last_event_id := "-"
 var last_delta_id := "-"
 var narration_text := "A Live Infinita está começando."
 var audio_label := "Áudio local: Piper + ambiente procedural · clique ATIVAR ÁUDIO"
+var ws_reconnect_attempt := 0
+var ws_reconnect_at_ms := 0
 
 func _ready() -> void:
     _connect_websocket()
@@ -61,13 +64,17 @@ func _install_browser_audio_bridge() -> void:
   };
   btn.addEventListener('click', start);
 
+  let reconnectTimer = null;
   const reconnect = () => {
-    if (!window.__liveInfinitaAudioActive) return;
-    setTimeout(async () => {
+    if (!window.__liveInfinitaAudioActive || reconnectTimer !== null) return;
+    reconnectTimer = setTimeout(async () => {
+      reconnectTimer = null;
       try {
         audio.src = '/audio/live.mp3?ts=' + Date.now();
         await audio.play();
-      } catch (_) {}
+      } catch (_) {
+        reconnect();
+      }
     }, 1200);
   };
   audio.addEventListener('ended', reconnect);
@@ -77,17 +84,39 @@ func _install_browser_audio_bridge() -> void:
 """
     JavaScriptBridge.eval(script)
 
-func _connect_websocket() -> void:
-    var url := "ws://127.0.0.1:8080/ws"
+func _websocket_url() -> String:
     if OS.has_feature("web"):
         var protocol = JavaScriptBridge.eval("window.location.protocol")
         var host = JavaScriptBridge.eval("window.location.host")
         var ws_scheme := "wss://" if str(protocol) == "https:" else "ws://"
-        url = ws_scheme + str(host) + "/ws"
-    var err := socket.connect_to_url(url)
+        return ws_scheme + str(host) + "/ws"
+    return "ws://127.0.0.1:8080/ws"
+
+func _connect_websocket() -> void:
+    connection_state = "conectando"
+    var err := socket.connect_to_url(_websocket_url())
     if err != OK:
         connection_state = "erro de conexão"
         last_message = "WebSocket error=%s" % err
+        _schedule_websocket_reconnect()
+    queue_redraw()
+
+func _schedule_websocket_reconnect() -> void:
+    if ws_reconnect_at_ms != 0:
+        return
+    var exponent := min(ws_reconnect_attempt, 5)
+    var delay_ms := min(WS_RECONNECT_MAX_MS, int(1000.0 * pow(2.0, float(exponent))))
+    ws_reconnect_attempt += 1
+    ws_reconnect_at_ms = Time.get_ticks_msec() + delay_ms
+    last_message = "Reconectando World State em %.1fs" % (float(delay_ms) / 1000.0)
+    queue_redraw()
+
+func _maybe_reconnect_websocket() -> void:
+    if ws_reconnect_at_ms == 0 or Time.get_ticks_msec() < ws_reconnect_at_ms:
+        return
+    ws_reconnect_at_ms = 0
+    socket = WebSocketPeer.new()
+    _connect_websocket()
 
 func _process(_delta: float) -> void:
     socket.poll()
@@ -95,6 +124,8 @@ func _process(_delta: float) -> void:
     if state == WebSocketPeer.STATE_OPEN:
         if connection_state != "conectado":
             connection_state = "conectado"
+            ws_reconnect_attempt = 0
+            ws_reconnect_at_ms = 0
             queue_redraw()
         while socket.get_available_packet_count() > 0:
             var text := socket.get_packet().get_string_from_utf8()
@@ -108,8 +139,11 @@ func _process(_delta: float) -> void:
             elif msg_type == "audience_event" and typeof(msg.get("event")) == TYPE_DICTIONARY:
                 _apply_audience_event(msg["event"])
     elif state == WebSocketPeer.STATE_CLOSED:
-        connection_state = "desconectado"
-        queue_redraw()
+        if connection_state != "desconectado":
+            connection_state = "desconectado"
+            _schedule_websocket_reconnect()
+            queue_redraw()
+        _maybe_reconnect_websocket()
 
 func _apply_world_state(message: Dictionary) -> void:
     var next_world: Dictionary = message.get("world", {})
