@@ -68,7 +68,7 @@ class FakePlanScheduler:
         self.tick_calls = []
         self._counter = 0
 
-    def schedule(self, *, intent, principal, proposer_id, proposal_id=None, idempotency_key=None):
+    def schedule(self, *, intent, principal, proposer_id, proposal_id=None, idempotency_key=None, priority=0):
         for row in self.ledger.rows:
             if idempotency_key and row.get("idempotency_key") == idempotency_key:
                 return dict(row)
@@ -80,6 +80,7 @@ class FakePlanScheduler:
             "principal": dict(principal),
             "proposer_id": proposer_id,
             "idempotency_key": idempotency_key,
+            "priority": int(priority),
             "status": "planned",
             "next_step_index": 0,
         }
