@@ -13,57 +13,58 @@
   const audioButton = $('audio');
   const preview = $('preview');
 
-  function authHeaders() {
-    return operatorToken ? { Authorization: `Bearer ${operatorToken}` } : {};
-  }
-
   async function getJSON(url, options = {}) {
     const response = await fetch(url, { cache: 'no-store', ...options });
     if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
     return response.json();
   }
 
-  function dot(id, state) {
-    const node = $(id);
-    node.className = `dot ${state}`;
-  }
-
-  function text(id, value) {
-    $(id).textContent = String(value ?? '—');
-  }
-
+  function dot(id, state) { $(id).className = `dot ${state}`; }
+  function text(id, value) { $(id).textContent = String(value ?? '—'); }
   function status(id, dotId, ok, yes, no = 'Indisponível') {
     text(id, ok ? yes : no);
     dot(dotId, ok ? 'good' : 'bad');
   }
-
-  function setMaster(state, level) {
-    text('master-state', state);
-    dot('master-dot', level);
-  }
+  function setMaster(state, level) { text('master-state', state); dot('master-dot', level); }
 
   async function validateOperator(token) {
     return getJSON('/api/manage/integrations', { headers: { Authorization: `Bearer ${token}` } });
   }
 
+  function broadcasterView(payload) {
+    if (!payload || typeof payload !== 'object') return { live: false, label: 'PARADO', level: 'muted' };
+    const updated = Number(payload.updated_at_unix || 0);
+    const age = Date.now() / 1000 - updated;
+    if (!Number.isFinite(age) || age > 5) return { live: false, label: 'PARADO', level: 'muted' };
+    if (payload.state === 'live' && payload.mode === 'live') return { live: true, label: 'TRANSMITINDO', level: 'good' };
+    if (payload.state === 'probing') return { live: false, label: 'PROBE', level: 'warn' };
+    if (payload.state === 'error') return { live: false, label: 'ERRO', level: 'bad' };
+    return { live: false, label: String(payload.state || 'PARADO').toUpperCase(), level: 'muted' };
+  }
+
   async function refreshTelemetry() {
     if (!operatorToken) return;
 
-    const [healthResult, worldResult, replayResult, audioResult] = await Promise.allSettled([
+    const [healthResult, worldResult, replayResult, audioResult, broadcasterResult] = await Promise.allSettled([
       getJSON('/api/health'),
       getJSON('/api/world'),
       getJSON('/api/replay/verify'),
       getJSON('/audio/health'),
+      getJSON('/broadcast-status.json'),
     ]);
 
     const health = healthResult.status === 'fulfilled' ? healthResult.value : null;
     const world = worldResult.status === 'fulfilled' ? worldResult.value : null;
     const replay = replayResult.status === 'fulfilled' ? replayResult.value : null;
     const audioHealth = audioResult.status === 'fulfilled' ? audioResult.value : null;
+    const broadcaster = broadcasterResult.status === 'fulfilled' ? broadcasterResult.value : null;
+    const broadcast = broadcasterView(broadcaster);
 
     status('runtime-state', 'runtime-dot', Boolean(health?.ok), 'ONLINE');
     status('replay-state', 'replay-dot', Boolean(replay?.ok), 'ÍNTEGRO', 'FALHA');
     status('audio-state', 'audio-dot', Boolean(audioHealth?.ok), 'ONLINE');
+    text('broadcaster-state', broadcast.label);
+    dot('broadcaster-dot', broadcast.level);
 
     const tiktokConfigured = Boolean(health?.integrations?.tiktok);
     text('tiktok-state', tiktokConfigured ? 'CONFIGURADO' : 'NÃO CONFIG.');
@@ -88,7 +89,8 @@
     }
 
     const coreReady = Boolean(health?.ok && replay?.ok && audioHealth?.ok);
-    if (coreReady) setMaster('PRONTO', 'good');
+    if (broadcast.live && coreReady) setMaster('LIVE', 'good');
+    else if (coreReady) setMaster('PRONTO', 'good');
     else if (health?.ok) setMaster('DEGRADADO', 'warn');
     else setMaster('OFFLINE', 'bad');
 
@@ -97,10 +99,7 @@
 
   async function unlock() {
     const token = $('operator').value.trim();
-    if (!token) {
-      unlockMessage.textContent = 'Informe a chave do operador.';
-      return;
-    }
+    if (!token) { unlockMessage.textContent = 'Informe a chave do operador.'; return; }
     $('unlock').disabled = true;
     unlockMessage.textContent = 'Validando…';
     try {
@@ -148,16 +147,12 @@
       try {
         audio.src = `/audio/live.mp3?ts=${Date.now()}`;
         await audio.play();
-      } catch (_) {
-        restartAudioIfNeeded();
-      }
+      } catch (_) { restartAudioIfNeeded(); }
     }, 1200);
   }
 
   $('unlock').addEventListener('click', unlock);
-  $('operator').addEventListener('keydown', (event) => {
-    if (event.key === 'Enter') unlock();
-  });
+  $('operator').addEventListener('keydown', (event) => { if (event.key === 'Enter') unlock(); });
   $('refresh').addEventListener('click', async () => {
     preview.src = `/godot/?capture=1&ts=${Date.now()}`;
     await refreshTelemetry();
