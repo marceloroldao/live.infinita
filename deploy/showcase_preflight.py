@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+GODOT_BIN = Path("/opt/live-infinita-godot/engine/Godot_v4.7.2-stable_linux.x86_64")
 
 
 @dataclass(frozen=True)
@@ -25,17 +26,20 @@ def source_checks(root: Path = ROOT) -> list[Check]:
         "apps/world-runtime/main.py",
         "apps/audio-service/server_audio.py",
         "apps/audio-web-bridge/audio_web_bridge.py",
+        "apps/headless-renderer/headless_renderer.py",
         "apps/broadcaster/broadcaster.py",
         "apps/renderer-godot/project.godot",
         "apps/renderer-godot/main.tscn",
         "apps/renderer-godot/main.gd",
         "deploy/install-server-audio.sh",
         "deploy/install-browser-audio.sh",
+        "deploy/install-headless-renderer.sh",
         "deploy/nginx_audio_patch.py",
         "deploy/install-godot-web.sh",
         "deploy/install-live-showcase.sh",
         "deploy/live-infinita-audio.service",
         "deploy/live-infinita-audio-web.service",
+        "deploy/live-infinita-renderer.service",
     ]
     checks = [
         Check(f"source:{path}", (root / path).is_file(), "arquivo obrigatório")
@@ -56,13 +60,23 @@ def source_checks(root: Path = ROOT) -> list[Check]:
             Check("installer:replay", "/api/replay/verify" in text, "replay verificado"),
         ])
 
+    renderer = root / "apps/headless-renderer/headless_renderer.py"
+    if renderer.is_file():
+        text = renderer.read_text(encoding="utf-8")
+        checks.extend([
+            Check("renderer:xvfb", "x11grab" in text and "Xvfb" in text, "captura por framebuffer virtual"),
+            Check("renderer:godot-native", "--display-driver" in text and "x11" in text, "Godot nativo no X11"),
+            Check("renderer:video-bus", "udp://127.0.0.1:5600" in text, "bus de vídeo local"),
+        ])
+
     broadcaster = root / "apps/broadcaster/broadcaster.py"
     if broadcaster.is_file():
         text = broadcaster.read_text(encoding="utf-8")
         checks.extend([
             Check("broadcaster:dry-run", "--dry-run" in text, "modo seguro sem transmissão"),
             Check("broadcaster:redaction", "redact_url" in text, "stream key mascarada em logs"),
-            Check("broadcaster:audio-bus", "LIVE_INFINITA_AUDIO_INPUT" in text, "bus de áudio configurável"),
+            Check("broadcaster:audio-bus", "udp://127.0.0.1:5500" in text, "bus de áudio local"),
+            Check("broadcaster:video-bus", "udp://127.0.0.1:5600" in text, "bus de vídeo local"),
         ])
     return checks
 
@@ -70,6 +84,11 @@ def source_checks(root: Path = ROOT) -> list[Check]:
 def _command_check(command: str) -> Check:
     resolved = shutil.which(command)
     return Check(f"host:command:{command}", resolved is not None, resolved or "não encontrado")
+
+
+def _path_check(name: str, path: Path, executable: bool = False) -> Check:
+    ok = path.is_file() and (not executable or bool(path.stat().st_mode & 0o111))
+    return Check(name, ok, str(path))
 
 
 def _service_check(service: str) -> Check:
@@ -98,11 +117,13 @@ def _json_endpoint(name: str, url: str, required_key: str) -> Check:
 
 
 def host_checks() -> list[Check]:
-    checks = [_command_check(cmd) for cmd in ("python3", "ffmpeg", "nginx", "curl", "systemctl")]
+    checks = [_command_check(cmd) for cmd in ("python3", "ffmpeg", "nginx", "curl", "systemctl", "Xvfb")]
     checks.extend([
+        _path_check("host:godot-native", GODOT_BIN, executable=True),
         _service_check("live-infinita.service"),
         _service_check("live-infinita-audio.service"),
         _service_check("live-infinita-audio-web.service"),
+        _service_check("live-infinita-renderer.service"),
         _json_endpoint("host:runtime-health", "http://127.0.0.1:8080/api/health", "ok"),
         _json_endpoint("host:replay", "http://127.0.0.1:8080/api/replay/verify", "ok"),
         _json_endpoint("host:audio-web-health", "http://127.0.0.1:8092/health", "ok"),
