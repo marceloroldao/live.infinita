@@ -53,6 +53,17 @@
           <dl><div><dt>Promoções previstas</dt><dd id="spatial-predicted">—</dd></div><div><dt>Promoções inesperadas</dt><dd id="spatial-unexpected">—</dd></div><div><dt>Transições ativas</dt><dd id="spatial-transitions">—</dd></div><div><dt>Cold</dt><dd id="spatial-cold">—</dd></div></dl>
         </section>
 
+        <section class="card history-card">
+          <div class="section-head"><div><span class="eyebrow">HISTÓRICO</span><h2>Janela espacial</h2></div><span id="history-window">0 min</span></div>
+          <svg id="spatial-history" viewBox="0 0 600 180" role="img" aria-label="Histórico de entidades hot e warm">
+            <path id="history-grid" d="M0 45H600 M0 90H600 M0 135H600" />
+            <polyline id="history-hot" points="" />
+            <polyline id="history-warm" points="" />
+          </svg>
+          <div class="history-legend"><span><i class="legend-hot"></i>HOT</span><span><i class="legend-warm"></i>WARM</span><span id="history-hit">Prefetch —</span></div>
+          <p class="history-note">Buffer local limitado; ao fechar a aba, o histórico é descartado.</p>
+        </section>
+
         <section class="card counters-card">
           <span class="eyebrow">AUDIÊNCIA</span><h2>Atividade</h2>
           <div class="counters"><div><strong id="audience-events">—</strong><span>eventos</span></div><div><strong id="actors">—</strong><span>atores</span></div><div><strong id="proposals">—</strong><span>propostas</span></div></div>
