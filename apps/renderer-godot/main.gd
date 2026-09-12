@@ -14,9 +14,10 @@ var last_action := "aguardando evento"
 var last_event_id := "-"
 var last_delta_id := "-"
 var narration_text := "A Live Infinita está começando."
-var audio_label := "Áudio local: Piper + ambiente procedural · clique ATIVAR ÁUDIO"
+var audio_label := "Áudio local · narrador e ambiente procedural"
 var ws_reconnect_attempt := 0
 var ws_reconnect_at_ms := 0
+var visual_time := 0.0
 
 func _ready() -> void:
     _connect_websocket()
@@ -123,7 +124,8 @@ func _maybe_reconnect_websocket() -> void:
     socket = WebSocketPeer.new()
     _connect_websocket()
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+    visual_time += delta
     socket.poll()
     var state := socket.get_ready_state()
     if state == WebSocketPeer.STATE_OPEN:
@@ -150,6 +152,8 @@ func _process(_delta: float) -> void:
         _maybe_reconnect_websocket()
     else:
         _maybe_reconnect_websocket()
+    # Subtle atmospheric motion keeps the broadcast alive even without events.
+    queue_redraw()
 
 func _apply_world_state(message: Dictionary) -> void:
     var next_world: Dictionary = message.get("world", {})
@@ -188,17 +192,13 @@ func _apply_audience_event(event: Dictionary) -> void:
 
     var line := ""
     match kind:
-        "join":
-            line = "%s entrou na live" % name
-        "like":
-            line = "%s curtiu a live" % name
-        "gift":
-            line = "%s enviou um presente" % name
-        _:
-            line = "%s interagiu com a live" % name
+        "join": line = "%s entrou" % name
+        "like": line = "%s curtiu" % name
+        "gift": line = "%s enviou um presente" % name
+        _: line = "%s interagiu" % name
 
     audience_feed.push_front(line)
-    while audience_feed.size() > 7:
+    while audience_feed.size() > 5:
         audience_feed.pop_back()
     queue_redraw()
 
@@ -224,10 +224,8 @@ func _reconcile_entities(entities) -> Dictionary:
                 result["added"] += 1
             else:
                 var visual = entity_nodes[entity_id]
-                if visual.apply_entity(entity):
-                    result["updated"] += 1
-                else:
-                    result["unchanged"] += 1
+                if visual.apply_entity(entity): result["updated"] += 1
+                else: result["unchanged"] += 1
 
     var known_ids := entity_nodes.keys().duplicate()
     for entity_id in known_ids:
@@ -236,51 +234,144 @@ func _reconcile_entities(entities) -> Dictionary:
             entity_nodes.erase(entity_id)
             visual.queue_free()
             result["removed"] += 1
-
     return result
 
-func _draw_panel(rect: Rect2, border: Color) -> void:
-    draw_rect(rect, Color(0.025, 0.04, 0.065, 0.88), true)
-    draw_rect(rect, border, false, 2.0)
+func _rounded_panel(rect: Rect2, border: Color, fill_alpha: float = 0.72) -> void:
+    draw_style_box(_panel_style(Color(0.025, 0.045, 0.07, fill_alpha), border), rect)
+
+func _panel_style(fill: Color, border: Color) -> StyleBoxFlat:
+    var style := StyleBoxFlat.new()
+    style.bg_color = fill
+    style.border_color = border
+    style.set_border_width_all(1)
+    style.corner_radius_top_left = 14
+    style.corner_radius_top_right = 14
+    style.corner_radius_bottom_left = 14
+    style.corner_radius_bottom_right = 14
+    style.shadow_color = Color(0, 0, 0, 0.22)
+    style.shadow_size = 10
+    return style
+
+func _draw_sky(viewport: Vector2, night: bool) -> void:
+    var top := Color("#08121f") if night else Color("#76b9dc")
+    var bottom := Color("#24425b") if night else Color("#d4e6d5")
+    var bands := 12
+    for i in range(bands):
+        var t := float(i) / float(bands - 1)
+        var c := top.lerp(bottom, t)
+        draw_rect(Rect2(0, viewport.y * t * 0.62, viewport.x, viewport.y * 0.62 / bands + 2), c)
+
+    if night:
+        for i in range(24):
+            var x := fmod(float(i * 149 + 61), viewport.x - 80.0) + 40.0
+            var y := fmod(float(i * 83 + 29), viewport.y * 0.42) + 24.0
+            var twinkle := 0.48 + 0.35 * sin(visual_time * 1.6 + i)
+            draw_circle(Vector2(x, y), 1.2 + float(i % 3) * 0.35, Color(0.92, 0.95, 1.0, twinkle))
+        draw_circle(Vector2(viewport.x - 125, 96), 39, Color(0.95, 0.94, 0.79, 0.10))
+        draw_circle(Vector2(viewport.x - 125, 96), 29, Color("#f2edc8"))
+    else:
+        draw_circle(Vector2(viewport.x - 125, 96), 56, Color(1.0, 0.77, 0.30, 0.10))
+        draw_circle(Vector2(viewport.x - 125, 96), 33, Color("#f8c75e"))
+        # slow clouds
+        for i in range(3):
+            var cloud_x := fmod(110.0 + i * 410.0 + visual_time * (5.0 + i), viewport.x + 220.0) - 110.0
+            var cloud_y := 95.0 + i * 52.0
+            draw_circle(Vector2(cloud_x, cloud_y), 24, Color(1, 1, 1, 0.23))
+            draw_circle(Vector2(cloud_x + 27, cloud_y + 3), 19, Color(1, 1, 1, 0.21))
+            draw_circle(Vector2(cloud_x - 24, cloud_y + 7), 17, Color(1, 1, 1, 0.18))
+
+func _draw_landscape(viewport: Vector2, night: bool) -> void:
+    var horizon := viewport.y * 0.51
+    var far := Color("#183040") if night else Color("#6f917b")
+    var mid := Color("#16342f") if night else Color("#4f7958")
+    var ground := Color("#102b25") if night else Color("#345c3b")
+
+    var far_hills := PackedVector2Array([Vector2(0, horizon + 45)])
+    for i in range(9):
+        far_hills.append(Vector2(float(i) * viewport.x / 8.0, horizon - 18.0 - sin(float(i) * 1.1) * 42.0))
+    far_hills.append(Vector2(viewport.x, viewport.y))
+    far_hills.append(Vector2(0, viewport.y))
+    draw_colored_polygon(far_hills, far)
+
+    var mid_hills := PackedVector2Array([Vector2(0, horizon + 80)])
+    for i in range(8):
+        mid_hills.append(Vector2(float(i) * viewport.x / 7.0, horizon + 25.0 - cos(float(i) * 1.32) * 34.0))
+    mid_hills.append(Vector2(viewport.x, viewport.y))
+    mid_hills.append(Vector2(0, viewport.y))
+    draw_colored_polygon(mid_hills, mid)
+
+    draw_rect(Rect2(0, horizon + 72, viewport.x, viewport.y - horizon - 72), ground)
+    # foreground diorama lip
+    draw_colored_polygon(PackedVector2Array([
+        Vector2(0, viewport.y * 0.82), Vector2(viewport.x, viewport.y * 0.77),
+        Vector2(viewport.x, viewport.y), Vector2(0, viewport.y)
+    ]), Color("#0d211d") if night else Color("#294b33"))
+
+func _draw_vignette(viewport: Vector2) -> void:
+    var edge := 28.0
+    draw_rect(Rect2(0, 0, viewport.x, edge), Color(0, 0, 0, 0.16))
+    draw_rect(Rect2(0, viewport.y - edge, viewport.x, edge), Color(0, 0, 0, 0.24))
+    draw_rect(Rect2(0, 0, edge, viewport.y), Color(0, 0, 0, 0.10))
+    draw_rect(Rect2(viewport.x - edge, 0, edge, viewport.y), Color(0, 0, 0, 0.10))
+
+func _connection_color() -> Color:
+    if connection_state == "conectado": return Color("#75e6a5")
+    if connection_state == "conectando": return Color("#ffd66b")
+    return Color("#ff806f")
+
+func _draw_brand(font: Font, viewport: Vector2) -> void:
+    draw_circle(Vector2(42, 40), 13, Color(0.36, 0.84, 0.96, 0.16))
+    draw_circle(Vector2(42, 40), 6, Color("#77d9ef"))
+    draw_string(font, Vector2(64, 46), "LIVE INFINITA", HORIZONTAL_ALIGNMENT_LEFT, -1, 21, Color.WHITE)
+    draw_string(font, Vector2(64, 65), "um mundo que continua", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(0.82, 0.90, 0.93, 0.82))
+
+    var live_rect := Rect2(viewport.x - 132, 25, 104, 34)
+    draw_style_box(_panel_style(Color(0.35, 0.05, 0.08, 0.78), Color(1.0, 0.25, 0.34, 0.55)), live_rect)
+    draw_circle(Vector2(live_rect.position.x + 17, live_rect.position.y + 17), 4.5, Color("#ff4055"))
+    draw_string(font, Vector2(live_rect.position.x + 31, live_rect.position.y + 23), "AO VIVO", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color.WHITE)
+
+func _draw_audience(font: Font, viewport: Vector2) -> void:
+    if audience_feed.is_empty(): return
+    var width := 285.0
+    var height := 48.0 + audience_feed.size() * 23.0
+    var rect := Rect2(viewport.x - width - 28, 82, width, height)
+    _rounded_panel(rect, Color(0.76, 0.48, 0.76, 0.38), 0.54)
+    draw_string(font, rect.position + Vector2(16, 25), "AGORA NA LIVE", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(0.93, 0.80, 0.94, 0.9))
+    var y := rect.position.y + 49
+    for i in range(audience_feed.size()):
+        var alpha := 1.0 - float(i) * 0.12
+        draw_circle(Vector2(rect.position.x + 18, y - 5), 3, Color(0.97, 0.63, 0.79, alpha))
+        draw_string(font, Vector2(rect.position.x + 29, y), audience_feed[i], HORIZONTAL_ALIGNMENT_LEFT, width - 45, 13, Color(1, 1, 1, alpha))
+        y += 23
+
+func _draw_narration(font: Font, viewport: Vector2) -> void:
+    var width := min(880.0, viewport.x - 180.0)
+    var rect := Rect2((viewport.x - width) * 0.5, viewport.y - 116, width, 78)
+    _rounded_panel(rect, Color(0.93, 0.72, 0.32, 0.42), 0.66)
+    draw_string(font, rect.position + Vector2(20, 24), "NARRADOR", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("#f5d47c"))
+    draw_string(font, rect.position + Vector2(20, 53), narration_text, HORIZONTAL_ALIGNMENT_CENTER, rect.size.x - 40, 18, Color.WHITE)
+
+func _draw_operator_status(font: Font, viewport: Vector2) -> void:
+    # deliberately discreet: useful while developing, not the protagonist of the broadcast
+    var rect := Rect2(28, viewport.y - 29, 430, 19)
+    var status := "%s  ·  %s  ·  seq %s" % [connection_state, last_action, world.get("sequence", "-")]
+    draw_circle(Vector2(rect.position.x + 5, rect.position.y + 7), 3.5, _connection_color())
+    draw_string(font, Vector2(rect.position.x + 16, rect.position.y + 12), status, HORIZONTAL_ALIGNMENT_LEFT, rect.size.x - 16, 10, Color(0.86, 0.91, 0.92, 0.62))
 
 func _draw() -> void:
     var viewport := get_viewport_rect().size
-    var period := str(world.get("environment", {}).get("period", "day"))
-    var sky := Color("#132039") if period == "night" else Color("#8dd7ff")
-    var ground := Color("#173d2d") if period == "night" else Color("#65a35b")
-    draw_rect(Rect2(Vector2.ZERO, viewport), sky)
-    draw_rect(Rect2(0, viewport.y * 0.56, viewport.x, viewport.y * 0.44), ground)
+    var environment = world.get("environment", {})
+    var period := "day"
+    if typeof(environment) == TYPE_DICTIONARY:
+        period = str(environment.get("period", "day"))
+    var night := period == "night"
 
-    if period == "night":
-        draw_circle(Vector2(viewport.x - 110, 90), 34, Color("#f4efc8"))
-    else:
-        draw_circle(Vector2(viewport.x - 110, 90), 38, Color("#ffd34f"))
+    _draw_sky(viewport, night)
+    _draw_landscape(viewport, night)
+    _draw_vignette(viewport)
 
     var font := ThemeDB.fallback_font
-
-    var state_panel := Rect2(20, 20, 420, 182)
-    _draw_panel(state_panel, Color(0.45, 0.82, 1.0, 0.85))
-    draw_string(font, Vector2(38, 50), "LIVE INFINITA · MUNDO", HORIZONTAL_ALIGNMENT_LEFT, -1, 22, Color.WHITE)
-    draw_string(font, Vector2(38, 78), "WebSocket: %s" % connection_state, HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color("#b9dcff"))
-    draw_string(font, Vector2(38, 103), last_message, HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Color("#d5d9de"))
-    draw_string(font, Vector2(38, 128), "Construção: %s" % last_action, HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Color("#c9f7cf"))
-    draw_string(font, Vector2(38, 153), "Event %s · Delta %s" % [last_event_id, last_delta_id], HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color("#b7c0ca"))
-    draw_string(font, Vector2(38, 178), "Entidades +%s ~%s -%s =%s" % [last_reconcile["added"], last_reconcile["updated"], last_reconcile["removed"], last_reconcile["unchanged"]], HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color("#f1d18a"))
-
-    var feed_w := 330.0
-    var feed_panel := Rect2(viewport.x - feed_w - 20, 20, feed_w, 228)
-    _draw_panel(feed_panel, Color(0.95, 0.53, 0.74, 0.9))
-    draw_string(font, Vector2(feed_panel.position.x + 18, 50), "AO VIVO · AUDIÊNCIA", HORIZONTAL_ALIGNMENT_LEFT, -1, 20, Color.WHITE)
-    if audience_feed.is_empty():
-        draw_string(font, Vector2(feed_panel.position.x + 18, 82), "Aguardando participantes...", HORIZONTAL_ALIGNMENT_LEFT, feed_w - 36, 14, Color("#c8ced7"))
-    else:
-        var y := 82.0
-        for line in audience_feed:
-            draw_string(font, Vector2(feed_panel.position.x + 18, y), "• " + line, HORIZONTAL_ALIGNMENT_LEFT, feed_w - 36, 14, Color("#f4edf2"))
-            y += 23.0
-
-    var narration_panel := Rect2(90, viewport.y - 112, viewport.x - 180, 82)
-    _draw_panel(narration_panel, Color(0.95, 0.78, 0.36, 0.9))
-    draw_string(font, Vector2(112, viewport.y - 84), "NARRATIVA", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color("#f8d878"))
-    draw_string(font, Vector2(112, viewport.y - 56), narration_text, HORIZONTAL_ALIGNMENT_CENTER, viewport.x - 224, 19, Color.WHITE)
-    draw_string(font, Vector2(112, viewport.y - 35), audio_label, HORIZONTAL_ALIGNMENT_RIGHT, viewport.x - 224, 11, Color("#aeb8c4"))
+    _draw_brand(font, viewport)
+    _draw_audience(font, viewport)
+    _draw_narration(font, viewport)
+    _draw_operator_status(font, viewport)
