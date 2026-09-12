@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 import time
 import uuid
 from copy import deepcopy
@@ -16,19 +17,31 @@ class ConditionalEventError(ValueError):
 
 
 class ConditionalEventScheduler:
-    """Evaluate state predicates once per logical tick and fire guarded mutations.
+    """Evaluate deterministic state predicates once per logical tick.
 
-    Supported condition kinds v1:
+    Supported condition kinds v2:
       entity_in_region
       world_equals
       entity_property_equals
+      all
+      any
+      not
+      nobody_near_entity
 
-    Default trigger mode is edge: false -> true. level mode may repeat while true,
-    but only after cooldown_ticks. All effects still pass MutationGate.
+    A condition may also require `sustain_ticks`, meaning its raw predicate must
+    remain true continuously for that many logical ticks before becoming true.
     """
 
     TERMINAL = frozenset({"completed", "cancelled", "failed"})
-    SUPPORTED = frozenset({"entity_in_region", "world_equals", "entity_property_equals"})
+    SUPPORTED = frozenset({
+        "entity_in_region",
+        "world_equals",
+        "entity_property_equals",
+        "all",
+        "any",
+        "not",
+        "nobody_near_entity",
+    })
 
     def __init__(self, path: Path, guarded_mutations: GuardedMutationService) -> None:
         self.path = Path(path)
@@ -81,6 +94,33 @@ class ConditionalEventScheduler:
         MutationPrincipal.from_dict(result)
         return result
 
+    def _validate_condition(self, condition: dict[str, Any]) -> None:
+        if not isinstance(condition, dict):
+            raise ConditionalEventError("condition must be an object")
+        kind = str(condition.get("kind") or "").strip().lower()
+        if kind not in self.SUPPORTED:
+            raise ConditionalEventError(f"unsupported condition kind: {kind}")
+        sustain = int(condition.get("sustain_ticks", 0) or 0)
+        if sustain < 0:
+            raise ConditionalEventError("sustain_ticks must be >= 0")
+        if kind in {"all", "any"}:
+            conditions = condition.get("conditions")
+            if not isinstance(conditions, list) or not conditions:
+                raise ConditionalEventError(f"{kind} requires non-empty conditions")
+            for child in conditions:
+                self._validate_condition(child)
+        elif kind == "not":
+            child = condition.get("condition")
+            if not isinstance(child, dict):
+                raise ConditionalEventError("not requires condition")
+            self._validate_condition(child)
+        elif kind == "nobody_near_entity":
+            if not str(condition.get("anchor_entity_id") or "").strip():
+                raise ConditionalEventError("nobody_near_entity requires anchor_entity_id")
+            radius = float(condition.get("radius", 0) or 0)
+            if radius <= 0:
+                raise ConditionalEventError("nobody_near_entity radius must be positive")
+
     def register(
         self,
         *,
@@ -94,9 +134,7 @@ class ConditionalEventScheduler:
         metadata: dict[str, Any] | None = None,
         idempotency_key: str | None = None,
     ) -> dict[str, Any]:
-        kind = str(condition.get("kind") or "").strip().lower()
-        if kind not in self.SUPPORTED:
-            raise ConditionalEventError(f"unsupported condition kind: {kind}")
+        self._validate_condition(condition)
         trigger_mode = str(trigger_mode or "edge").strip().lower()
         if trigger_mode not in {"edge", "level"}:
             raise ConditionalEventError("trigger_mode must be edge or level")
@@ -113,7 +151,7 @@ class ConditionalEventScheduler:
 
         now = time.time()
         row = {
-            "conditional_schema": "conditional_world_event_v1",
+            "conditional_schema": "conditional_world_event_v2",
             "conditional_event_id": f"cev_{int(now * 1000)}_{uuid.uuid4().hex[:10]}",
             "status": "active",
             "condition": deepcopy(condition),
@@ -126,6 +164,8 @@ class ConditionalEventScheduler:
             "metadata": deepcopy(metadata or {}),
             "idempotency_key": key,
             "last_condition_value": False,
+            "last_raw_condition_value": False,
+            "true_since_tick": None,
             "last_evaluated_tick": None,
             "last_fired_tick": None,
             "fire_count": 0,
@@ -168,6 +208,25 @@ class ConditionalEventScheduler:
         entities = world.get("entities") if isinstance(world.get("entities"), list) else []
         return next((row for row in entities if isinstance(row, dict) and row.get("id") == entity_id), None)
 
+    def _region_entities(self, region_id: str) -> list[dict[str, Any]]:
+        engine = self.guarded.engine
+        cold_store = getattr(engine, "cold_store", None)
+        if cold_store is not None and hasattr(cold_store, "load_region"):
+            return cold_store.load_region(region_id)
+        world = engine.load_world()
+        entities = world.get("entities") if isinstance(world.get("entities"), list) else []
+        return [row for row in entities if isinstance(row, dict) and str(row.get("region_id") or "") == region_id]
+
+    @staticmethod
+    def _position(entity: dict[str, Any]) -> tuple[float, float] | None:
+        position = entity.get("position")
+        if not isinstance(position, dict):
+            return None
+        try:
+            return float(position["x"]), float(position["y"])
+        except (KeyError, TypeError, ValueError):
+            return None
+
     def evaluate_condition(self, condition: dict[str, Any]) -> bool:
         kind = str(condition.get("kind") or "").strip().lower()
         if kind == "entity_in_region":
@@ -191,7 +250,58 @@ class ConditionalEventScheduler:
             entity = self._entity(entity_id)
             return bool(entity is not None and self._nested(entity, path) == condition.get("value"))
 
+        if kind in {"all", "any"}:
+            children = [self.evaluate_condition(dict(child)) for child in condition.get("conditions", [])]
+            return all(children) if kind == "all" else any(children)
+
+        if kind == "not":
+            return not self.evaluate_condition(dict(condition.get("condition") or {}))
+
+        if kind == "nobody_near_entity":
+            anchor_id = str(condition.get("anchor_entity_id") or "").strip()
+            anchor = self._entity(anchor_id)
+            if anchor is None:
+                return False
+            anchor_pos = self._position(anchor)
+            region_id = str(anchor.get("region_id") or "").strip()
+            if anchor_pos is None or not region_id:
+                return False
+            radius = float(condition.get("radius", 0))
+            radius_sq = radius * radius
+            exclude_ids = {str(v) for v in condition.get("exclude_entity_ids", []) if str(v)}
+            exclude_ids.add(anchor_id)
+            allowed_types = {str(v) for v in condition.get("entity_types", []) if str(v)}
+            ax, ay = anchor_pos
+            for entity in self._region_entities(region_id):
+                entity_id = str(entity.get("id") or "")
+                if entity_id in exclude_ids:
+                    continue
+                if allowed_types and str(entity.get("type") or "") not in allowed_types:
+                    continue
+                position = self._position(entity)
+                if position is None:
+                    continue
+                dx = position[0] - ax
+                dy = position[1] - ay
+                if dx * dx + dy * dy <= radius_sq:
+                    return False
+            return True
+
         raise ConditionalEventError(f"unsupported condition kind: {kind}")
+
+    @staticmethod
+    def _sustained_value(row: dict[str, Any], raw_value: bool, tick: int) -> tuple[bool, int | None]:
+        condition = row.get("condition") if isinstance(row.get("condition"), dict) else {}
+        sustain_ticks = int(condition.get("sustain_ticks", 0) or 0)
+        if not raw_value:
+            return False, None
+        previous_raw = bool(row.get("last_raw_condition_value", False))
+        true_since = row.get("true_since_tick")
+        if not previous_raw or true_since is None:
+            true_since = tick
+        if sustain_ticks <= 1:
+            return True, int(true_since)
+        return tick - int(true_since) + 1 >= sustain_ticks, int(true_since)
 
     def evaluate_tick(self, tick: int) -> list[dict[str, Any]]:
         tick = int(tick)
@@ -203,7 +313,8 @@ class ConditionalEventScheduler:
         for row in active:
             updated = deepcopy(row)
             try:
-                value = self.evaluate_condition(dict(row.get("condition") or {}))
+                raw_value = self.evaluate_condition(dict(row.get("condition") or {}))
+                value, true_since = self._sustained_value(row, raw_value, tick)
             except Exception as exc:
                 updated["status"] = "failed"
                 updated["last_error"] = str(exc)[:1000]
@@ -220,6 +331,8 @@ class ConditionalEventScheduler:
             trigger_mode = str(row.get("trigger_mode") or "edge")
             should_fire = value and cooldown_ok and (trigger_mode == "level" or not previous)
 
+            updated["last_raw_condition_value"] = raw_value
+            updated["true_since_tick"] = true_since
             updated["last_condition_value"] = value
             updated["last_evaluated_tick"] = tick
             updated["updated_at_unix"] = time.time()
@@ -232,6 +345,7 @@ class ConditionalEventScheduler:
                     context={
                         "conditional_event_id": conditional_id,
                         "condition": deepcopy(row.get("condition") or {}),
+                        "true_since_tick": true_since,
                         "fired_at_tick": tick,
                         "conditional_metadata": deepcopy(row.get("metadata") or {}),
                     },
