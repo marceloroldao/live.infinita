@@ -1,0 +1,157 @@
+from __future__ import annotations
+
+from copy import deepcopy
+from typing import Any
+
+from packages.spatial import (
+    AgentIntentResolver,
+    DeterministicIntentPlanner,
+    IntentPlan,
+    MutationPrincipal,
+    PlanStep,
+)
+from mutation_gate_service import GuardedMutationService
+from plan_ledger import PlanLedger
+
+
+class PlanScheduler:
+    """Execute at most one authoritative plan step per tick."""
+
+    def __init__(
+        self,
+        ledger: PlanLedger,
+        planner: DeterministicIntentPlanner,
+        resolver: AgentIntentResolver,
+        guarded_mutations: GuardedMutationService,
+    ) -> None:
+        self.ledger = ledger
+        self.planner = planner
+        self.resolver = resolver
+        self.guarded = guarded_mutations
+
+    @staticmethod
+    def _principal(value: dict[str, Any]) -> MutationPrincipal:
+        return MutationPrincipal.from_dict(value)
+
+    @staticmethod
+    def _rehydrate_plan(value: dict[str, Any]) -> IntentPlan:
+        steps: list[PlanStep] = []
+        for raw in value.get("steps", []):
+            steps.append(PlanStep(
+                int(raw["step_index"]),
+                str(raw["kind"]),
+                deepcopy(raw["intent"]),
+                raw.get("expected_region_id"),
+                raw.get("goal_region_id"),
+            ))
+        return IntentPlan(
+            str(value.get("intent_type") or ""),
+            value.get("actor_entity_id"),
+            value.get("source_region_id"),
+            value.get("goal_region_id"),
+            tuple(str(v) for v in value.get("region_path", [])),
+            tuple(steps),
+        )
+
+    def schedule(
+        self,
+        *,
+        intent: dict[str, Any],
+        principal: MutationPrincipal | dict[str, Any],
+        proposer_id: str,
+        proposal_id: str | None = None,
+        idempotency_key: str | None = None,
+    ) -> dict[str, Any]:
+        if isinstance(principal, MutationPrincipal):
+            principal_dict = {
+                "source": principal.source,
+                "actor_id": principal.actor_id,
+                "authority": principal.authority,
+                "subject_entity_id": principal.subject_entity_id,
+            }
+        else:
+            principal_dict = dict(principal)
+            MutationPrincipal.from_dict(principal_dict)
+        plan = self.planner.plan(intent)
+        return self.ledger.create(
+            proposal_id=proposal_id,
+            proposer_id=proposer_id,
+            principal=principal_dict,
+            intent=intent,
+            plan=plan.as_dict(),
+            idempotency_key=idempotency_key,
+        )
+
+    def tick(self, plan_id: str) -> dict[str, Any]:
+        record = self.ledger.get(plan_id)
+        if record is None:
+            raise KeyError("plan not found")
+        status = str(record.get("status") or "")
+        if status in self.ledger.TERMINAL:
+            return record
+        if status in {"waiting", "replanning"}:
+            return record
+        if status == "planned":
+            record = self.ledger.transition(plan_id, "running")
+
+        plan = self._rehydrate_plan(record["plan"])
+        index = int(record.get("next_step_index", 0))
+        if index >= len(plan.steps):
+            return self.ledger.transition(plan_id, "completed")
+
+        try:
+            step = self.planner.revalidate_step(plan, index)
+        except ValueError as exc:
+            return self.ledger.transition(plan_id, "replanning", last_error=str(exc))
+
+        try:
+            resolved = self.resolver.resolve(step.intent)
+        except ValueError as exc:
+            return self.ledger.transition(plan_id, "failed", last_error=str(exc))
+
+        principal = self._principal(record["principal"])
+        result = self.guarded.commit(
+            list(resolved.operations),
+            principal=principal,
+            context={
+                "plan_id": plan_id,
+                "proposal_id": record.get("proposal_id"),
+                "intent_plan": {
+                    "intent_type": plan.intent_type,
+                    "step_index": index,
+                    "total_steps": len(plan.steps),
+                    "step_kind": step.kind,
+                    "goal_region_id": plan.goal_region_id,
+                    "region_path": list(plan.region_path),
+                },
+            },
+            narration=f"plan {plan_id} step {index + 1}/{len(plan.steps)}: {resolved.rationale}",
+        )
+        audit = result.get("audit") or {}
+        decision_id = str(audit.get("mutation_decision_id") or "").strip() or None
+        if not result.get("ok"):
+            reason = str((result.get("decision") or {}).get("reason") or "mutation rejected")
+            return self.ledger.transition(
+                plan_id,
+                "failed",
+                last_error=reason,
+                last_mutation_decision_id=decision_id,
+            )
+
+        event = result.get("event") or {}
+        world = result.get("world") or {}
+        event_id = str(event.get("event_id") or "").strip() or None
+        state_hash = str(world.get("state_hash") or "").strip() or None
+        return self.ledger.mark_step_completed(
+            plan_id,
+            step_index=index,
+            mutation_decision_id=decision_id,
+            world_event_id=event_id,
+            state_hash=state_hash,
+        )
+
+    def tick_all(self) -> list[dict[str, Any]]:
+        results: list[dict[str, Any]] = []
+        for record in self.ledger.active():
+            results.append(self.tick(str(record["plan_id"])))
+        return results
