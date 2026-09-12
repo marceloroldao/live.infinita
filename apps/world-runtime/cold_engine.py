@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from packages.spatial import FileRegionColdStore, externalize_world_entities
+from packages.spatial import ColdEntityMutator, FileRegionColdStore, externalize_world_entities
 
 
 class ColdAuthoritativeWorldEngine:
@@ -14,8 +14,8 @@ class ColdAuthoritativeWorldEngine:
 
     The resident world document contains region/environment metadata plus a
     cold-entity envelope, but no full entity list. Entity operations are applied
-    directly to FileRegionColdStore. State integrity uses a deterministic delta
-    hash chain so commits do not require rehydrating the universe.
+    through the generic ColdEntityMutator. State integrity uses a deterministic
+    delta hash chain so commits do not require rehydrating the universe.
     """
 
     def __init__(self, bootstrap_file: Path, data_dir: Path, cold_store: FileRegionColdStore) -> None:
@@ -25,6 +25,7 @@ class ColdAuthoritativeWorldEngine:
         self.events_file = self.data_dir / "events.jsonl"
         self.deltas_file = self.data_dir / "deltas.jsonl"
         self.cold_store = cold_store
+        self.mutator = ColdEntityMutator(cold_store)
         self.data_dir.mkdir(parents=True, exist_ok=True)
         if not self.world_file.exists():
             bootstrap = self._load_json(self.bootstrap_file)
@@ -111,7 +112,7 @@ class ColdAuthoritativeWorldEngine:
                 region_id = self.cold_store.entity_region("tree_01") or self.cold_store.entity_region("fire_01")
                 if not region_id:
                     raise ValueError("região de spawn não encontrada")
-                operations.append({"op": "append_entity", "value": {
+                operations.append({"op": "create", "entity": {
                     "id": "person_01", "type": "human", "region_id": region_id,
                     "position": {"x": 650, "y": 320}, "scale": 1.0,
                     "properties": {"label": "Visitante"},
@@ -124,18 +125,23 @@ class ColdAuthoritativeWorldEngine:
             if tree is None:
                 raise ValueError("tree_01 não existe")
             x = int(tree.get("position", {}).get("x", 220))
-            operations.append({"op": "set", "path": ["entities", "tree_01", "position", "x"], "value": 360 if x < 300 else 220})
+            operations.append({
+                "op": "set", "entity_id": "tree_01", "path": ["position", "x"],
+                "value": 360 if x < 300 else 220,
+            })
             narration = "A árvore muda de posição no estado do mundo."
         elif action == "toggle_fire":
             fire = self._entity("fire_01")
             if fire is None:
                 raise ValueError("fire_01 não existe")
             lit = not bool(fire.get("properties", {}).get("lit", True))
-            operations.append({"op": "set", "path": ["entities", "fire_01", "properties", "lit"], "value": lit})
+            operations.append({
+                "op": "set", "entity_id": "fire_01", "path": ["properties", "lit"], "value": lit,
+            })
             narration = "A fogueira se acende." if lit else "A fogueira se apaga."
         elif action in {"set_day", "set_night"}:
             period = "day" if action == "set_day" else "night"
-            operations.append({"op": "set", "path": ["environment", "period"], "value": period})
+            operations.append({"op": "set_world", "path": ["environment", "period"], "value": period})
             narration = "A luz do dia retorna à clareira." if period == "day" else "A noite cai sobre a clareira."
         elif action == "reset":
             operations.append({"op": "replace_world_from_bootstrap"})
@@ -156,6 +162,8 @@ class ColdAuthoritativeWorldEngine:
 
     @staticmethod
     def _set_nested(target: dict[str, Any], keys: list[Any], value: Any) -> None:
+        if not keys:
+            raise ValueError("caminho inválido")
         cursor: Any = target
         for key in keys[:-1]:
             if not isinstance(cursor, dict):
@@ -165,37 +173,11 @@ class ColdAuthoritativeWorldEngine:
             raise ValueError("caminho inválido")
         cursor[keys[-1]] = copy.deepcopy(value)
 
-    def _apply_entity_operation(self, operation: dict[str, Any]) -> None:
-        op = operation.get("op")
-        if op == "append_entity":
-            value = operation.get("value")
-            if not isinstance(value, dict):
-                raise ValueError("append_entity sem payload")
-            self.cold_store.upsert(value)
-            return
-        path = operation.get("path", [])
-        if not (isinstance(path, list) and len(path) >= 2 and path[0] == "entities"):
-            raise ValueError("operação de entidade inválida")
-        entity_id = str(path[1])
-        if op == "remove":
-            self.cold_store.remove(entity_id)
-            return
-        if op != "set":
-            raise ValueError(f"operação cold desconhecida: {op}")
-        entity = self._entity(entity_id)
-        if entity is None:
-            raise ValueError(f"entidade ausente: {entity_id}")
-        if len(path) < 3:
-            raise ValueError("set de entidade requer subcaminho")
-        self._set_nested(entity, path[2:], operation.get("value"))
-        self.cold_store.upsert(entity)
-
     def apply_delta(self, world: dict[str, Any], delta: dict[str, Any], *, mutate_store: bool = True) -> dict[str, Any]:
         result = copy.deepcopy(world)
         previous_hash = str(world.get("state_hash", ""))
         for operation in delta.get("operations", []):
             op = operation.get("op")
-            path = operation.get("path", [])
             if op == "replace_world_from_bootstrap":
                 bootstrap = self._load_json(self.bootstrap_file)
                 if mutate_store:
@@ -205,12 +187,12 @@ class ColdAuthoritativeWorldEngine:
                     result["entities"] = []
                     result["cold_entities"] = copy.deepcopy(world.get("cold_entities", {}))
                 continue
-            if op == "append_entity" or (isinstance(path, list) and path and path[0] == "entities"):
+            if op in {"create", "set", "move", "remove", "link", "unlink"}:
                 if mutate_store:
-                    self._apply_entity_operation(operation)
+                    self.mutator.apply(operation)
                 continue
-            if op == "set":
-                self._set_nested(result, list(path), operation.get("value"))
+            if op == "set_world":
+                self._set_nested(result, list(operation.get("path", [])), operation.get("value"))
                 continue
             raise ValueError(f"operação desconhecida: {op}")
 
@@ -229,15 +211,61 @@ class ColdAuthoritativeWorldEngine:
         result["state_hash"] = self._next_hash(previous_hash, delta)
         return result
 
-    def commit_action(self, action: str, source: str = "runtime", context: dict[str, Any] | None = None) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+    def _commit_delta(self, event: dict[str, Any], delta: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
         world = self.load_world()
-        event, delta = self.propose(world, action, source=source, context=context)
         new_world = self.apply_delta(world, delta, mutate_store=True)
         delta["result_hash"] = new_world["state_hash"]
         self._append_jsonl(self.events_file, event)
         self._append_jsonl(self.deltas_file, delta)
         self._save_json(self.world_file, new_world)
         return event, delta, new_world
+
+    def commit_action(self, action: str, source: str = "runtime", context: dict[str, Any] | None = None) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+        world = self.load_world()
+        event, delta = self.propose(world, action, source=source, context=context)
+        return self._commit_delta(event, delta)
+
+    def commit_operations(
+        self,
+        operations: list[dict[str, Any]],
+        *,
+        source: str = "runtime",
+        context: dict[str, Any] | None = None,
+        narration: str = "",
+    ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+        """Commit canonical generic operations without adding a named action."""
+        world = self.load_world()
+        sequence = int(world.get("sequence", 0)) + 1
+        normalized: list[dict[str, Any]] = []
+        for operation in operations:
+            op = str(operation.get("op") or "").strip().lower()
+            if op in {"create", "set", "move", "remove", "link", "unlink"}:
+                normalized.append(self.mutator.normalize(operation))
+            elif op == "set_world":
+                path = operation.get("path")
+                if not isinstance(path, list) or not path:
+                    raise ValueError("set_world path is required")
+                normalized.append({"op": "set_world", "path": [str(v) for v in path], "value": copy.deepcopy(operation.get("value"))})
+            else:
+                raise ValueError(f"unsupported generic operation: {op}")
+        event = {
+            "event_id": f"evt_{sequence:06d}",
+            "sequence": sequence,
+            "type": "generic_mutation",
+            "action": "generic_operations",
+            "source": source,
+            "context": context or {},
+        }
+        delta = {
+            "delta_id": f"delta_{sequence:06d}",
+            "event_id": event["event_id"],
+            "sequence": sequence,
+            "from_version": int(world.get("version", 0)),
+            "to_version": int(world.get("version", 0)) + 1,
+            "operations": normalized,
+            "narration": narration,
+        }
+        return self._commit_delta(event, delta)
 
     def replay_hash(self) -> str:
         bootstrap = self._load_json(self.bootstrap_file)
