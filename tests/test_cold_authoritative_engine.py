@@ -61,7 +61,10 @@ class ColdAuthoritativeWorldEngineTest(unittest.TestCase):
         _, delta1, world1 = self.engine.commit_action("move_tree")
         self.assertEqual(world1["entities"], [])
         self.assertEqual(self.store.get_entity("tree_01")["position"]["x"], 360)
-        self.assertEqual(delta1["operations"][0]["path"], ["entities", "tree_01", "position", "x"])
+        op = delta1["operations"][0]
+        self.assertEqual(op["op"], "set")
+        self.assertEqual(op["entity_id"], "tree_01")
+        self.assertEqual(op["path"], ["position", "x"])
 
         _, _, world2 = self.engine.commit_action("toggle_fire")
         self.assertFalse(self.store.get_entity("fire_01")["properties"]["lit"])
