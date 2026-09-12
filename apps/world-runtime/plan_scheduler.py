@@ -63,6 +63,7 @@ class PlanScheduler:
         proposer_id: str,
         proposal_id: str | None = None,
         idempotency_key: str | None = None,
+        priority: int = 0,
     ) -> dict[str, Any]:
         if isinstance(principal, MutationPrincipal):
             principal_dict = {
@@ -82,6 +83,8 @@ class PlanScheduler:
             intent=intent,
             plan=plan.as_dict(),
             idempotency_key=idempotency_key,
+            priority=int(priority),
+            actor_entity_id=plan.actor_entity_id,
         )
 
     def _reject_proposal(self, record: dict[str, Any], reason: str) -> None:
@@ -156,6 +159,7 @@ class PlanScheduler:
             context={
                 "plan_id": plan_id,
                 "proposal_id": record.get("proposal_id"),
+                "plan_priority": int(record.get("priority", 0)),
                 "intent_plan": {
                     "intent_type": plan.intent_type,
                     "step_index": index,
