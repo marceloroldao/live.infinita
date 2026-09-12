@@ -10,7 +10,7 @@ from plan_ledger import PlanLedger
 class PlanArbiter:
     """Deterministic per-actor priority arbiter for persistent plans.
 
-    At most one non-terminal plan per actor is runnable. Higher priority wins;
+    At most one executable plan per actor is runnable. Higher priority wins;
     ties are resolved by creation time then plan_id. Preempted plans are kept in
     `waiting` and can resume when the dominating plan becomes terminal.
     """
@@ -39,13 +39,23 @@ class PlanArbiter:
 
     @classmethod
     def _rank(cls, record: dict[str, Any]) -> tuple[int, float, str]:
-        # Higher priority first; for equal priority keep oldest plan first.
         return (-cls._priority(record), float(record.get("created_at_unix", 0.0)), str(record.get("plan_id") or ""))
+
+    @staticmethod
+    def _participates(record: dict[str, Any]) -> bool:
+        status = str(record.get("status") or "")
+        if status in {"planned", "running"}:
+            return True
+        return status == "waiting" and str(record.get("waiting_reason") or "") == "preempted"
 
     def reconcile(self) -> dict[str, Any]:
         groups: dict[str, list[dict[str, Any]]] = defaultdict(list)
         unowned: list[dict[str, Any]] = []
+        blocked: list[dict[str, Any]] = []
         for record in self.ledger.active():
+            if not self._participates(record):
+                blocked.append(record)
+                continue
             actor = self.actor_id(record)
             if actor:
                 groups[actor].append(record)
@@ -60,8 +70,7 @@ class PlanArbiter:
             rows = sorted(groups[actor], key=self._rank)
             winner = rows[0]
             winner_id = str(winner.get("plan_id") or "")
-            winner_status = str(winner.get("status") or "")
-            if winner_status == "waiting" and str(winner.get("waiting_reason") or "") == "preempted":
+            if str(winner.get("status") or "") == "waiting":
                 winner = self.ledger.transition(
                     winner_id,
                     "running",
@@ -76,11 +85,9 @@ class PlanArbiter:
                 loser_id = str(loser.get("plan_id") or "")
                 status = str(loser.get("status") or "")
                 if status in {"planned", "running"}:
-                    # planned cannot transition directly to waiting in v1 ledger;
-                    # first establish it as running, then persist the preemption.
                     if status == "planned":
                         loser = self.ledger.transition(loser_id, "running")
-                    loser = self.ledger.transition(
+                    self.ledger.transition(
                         loser_id,
                         "waiting",
                         waiting_reason="preempted",
@@ -93,11 +100,11 @@ class PlanArbiter:
                         "preempted_by_plan_id": winner_id,
                     })
 
-        # Plans with no actor do not conflict and remain runnable.
         runnable.extend(unowned)
         runnable = sorted(runnable, key=lambda row: str(row.get("plan_id") or ""))
         return {
             "runnable": [deepcopy(row) for row in runnable],
+            "blocked": [deepcopy(row) for row in blocked],
             "preemptions": preemptions,
             "resumptions": resumptions,
         }
