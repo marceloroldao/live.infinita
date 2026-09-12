@@ -51,7 +51,7 @@ func _process(delta: float) -> void:
     var uniform := scale.x
     uniform = lerpf(uniform, target_presentation_scale, min(1.0, delta * 3.2))
     scale = Vector2.ONE * uniform
-    if entity_type == "campfire" and bool(entity_data.get("properties", {}).get("lit", false)):
+    if entity_type == "tree" or entity_type == "campfire":
         queue_redraw()
 
 func _shadow(radius_x: float, radius_y: float, offset_y: float = 44.0) -> void:
@@ -66,16 +66,33 @@ func _draw_tree(s: float) -> void:
         Vector2(11, -4) * s, Vector2(18, 72) * s
     ]), PackedColorArray([Color("#4b2d20"), Color("#68402a"), Color("#74492e"), Color("#4b2d20")]))
     draw_line(Vector2(-4, 4) * s, Vector2(-6, 60) * s, Color(0.82, 0.58, 0.38, 0.22), 3.0 * s)
+
+    var sway := sin(visual_time * 0.8 + float(abs(entity_id.hash()) % 17)) * 4.0 * s
     var dark := Color("#173d30")
     var mid := Color("#255b3d")
     var light := Color("#3d7750")
-    draw_circle(Vector2(-31, -23) * s, 39 * s, dark)
-    draw_circle(Vector2(30, -21) * s, 42 * s, dark)
-    draw_circle(Vector2(0, -50) * s, 48 * s, mid)
-    draw_circle(Vector2(-42, -4) * s, 31 * s, mid)
-    draw_circle(Vector2(42, -2) * s, 32 * s, mid)
-    draw_circle(Vector2(-13, -61) * s, 28 * s, light)
-    draw_circle(Vector2(17, -43) * s, 25 * s, Color(0.30, 0.52, 0.32, 0.72))
+    draw_circle((Vector2(-31, -23) * s) + Vector2(sway * 0.55, 0), 39 * s, dark)
+    draw_circle((Vector2(30, -21) * s) + Vector2(sway * 0.75, 0), 42 * s, dark)
+    draw_circle((Vector2(0, -50) * s) + Vector2(sway, 0), 48 * s, mid)
+    draw_circle((Vector2(-42, -4) * s) + Vector2(sway * 0.45, 0), 31 * s, mid)
+    draw_circle((Vector2(42, -2) * s) + Vector2(sway * 0.60, 0), 32 * s, mid)
+    draw_circle((Vector2(-13, -61) * s) + Vector2(sway * 1.12, 0), 28 * s, light)
+    draw_circle((Vector2(17, -43) * s) + Vector2(sway * 0.92, 0), 25 * s, Color(0.30, 0.52, 0.32, 0.72))
+
+func _draw_smoke_and_embers(s: float) -> void:
+    for i in range(5):
+        var phase := fmod(visual_time * (0.18 + i * 0.015) + float(i) * 0.19, 1.0)
+        var rise := phase * 118.0
+        var drift := sin(visual_time * 0.65 + i * 1.7) * (8.0 + rise * 0.09)
+        var alpha := (1.0 - phase) * 0.16
+        var radius := (10.0 + phase * 20.0) * s
+        draw_circle(Vector2(drift, -58.0 - rise) * s, radius, Color(0.78, 0.80, 0.78, alpha))
+    for i in range(7):
+        var phase := fmod(visual_time * (0.55 + i * 0.025) + float(i) * 0.13, 1.0)
+        var ex := sin(visual_time * 2.2 + i * 2.1) * (10.0 + phase * 18.0)
+        var ey := -32.0 - phase * 72.0
+        var alpha := (1.0 - phase) * 0.75
+        draw_circle(Vector2(ex, ey) * s, (1.4 + float(i % 3) * 0.5) * s, Color(1.0, 0.58, 0.16, alpha))
 
 func _draw_fire(s: float) -> void:
     _shadow(40.0 * s, 15.0 * s, 25.0 * s)
@@ -85,6 +102,8 @@ func _draw_fire(s: float) -> void:
     if not lit:
         draw_circle(Vector2.ZERO, 4 * s, Color(0.12, 0.10, 0.09, 0.7))
         return
+
+    _draw_smoke_and_embers(s)
     var pulse := 1.0 + sin(visual_time * 8.0) * 0.06
     var flicker := sin(visual_time * 13.0) * 4.0
     draw_circle(Vector2(0, -18) * s, 66 * s * pulse, Color(1.0, 0.45, 0.12, 0.075))
