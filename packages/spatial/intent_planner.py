@@ -4,7 +4,6 @@ from copy import deepcopy
 from dataclasses import dataclass
 from typing import Any
 
-from .agent_intent import AgentIntentError
 from .cold_store import FileRegionColdStore
 from .regions import RegionCatalog
 
@@ -54,9 +53,9 @@ class IntentPlan:
 class DeterministicIntentPlanner:
     """Expand semantic intents into deterministic, revalidatable steps.
 
-    v1 only decomposes movement intents across region topology. Non-movement
-    intents remain one semantic step and are still resolved by AgentIntentResolver
-    immediately before execution. The planner never mutates world state.
+    v1 decomposes movement intents across explicit region topology. Non-movement
+    intents remain one semantic step and are resolved immediately before execution.
+    Planning never mutates world state and never grants authority.
     """
 
     def __init__(self, store: FileRegionColdStore, regions: RegionCatalog) -> None:
@@ -83,31 +82,12 @@ class DeterministicIntentPlanner:
         return region
 
     def _path(self, source: str, goal: str) -> tuple[str, ...]:
-        if source == goal:
-            return (source,)
         self._region(source)
         self._region(goal)
-        queue: list[str] = [source]
-        parent: dict[str, str | None] = {source: None}
-        cursor = 0
-        while cursor < len(queue):
-            current = queue[cursor]
-            cursor += 1
-            region = self._region(current)
-            for neighbor in sorted(region.neighbors):
-                if neighbor in parent or self.regions.get(neighbor) is None:
-                    continue
-                parent[neighbor] = current
-                if neighbor == goal:
-                    route = [goal]
-                    node = current
-                    while node is not None:
-                        route.append(node)
-                        node = parent[node]
-                    route.reverse()
-                    return tuple(route)
-                queue.append(neighbor)
-        raise IntentPlanError(f"no region path: {source} -> {goal}")
+        route = self.regions.route(source, goal)
+        if not route:
+            raise IntentPlanError(f"no region path: {source} -> {goal}")
+        return tuple(route)
 
     def plan(self, intent: dict[str, Any]) -> IntentPlan:
         if not isinstance(intent, dict):
@@ -146,7 +126,7 @@ class DeterministicIntentPlanner:
             waypoint = {
                 "intent": "move_to_position",
                 "actor_entity_id": actor_id,
-                "position": {"x": float(region.center["x"]), "y": float(region.center["y"])},
+                "position": {"x": float(region.center[0]), "y": float(region.center[1])},
                 "region_id": region_id,
             }
             steps.append(PlanStep(len(steps), "region_waypoint", waypoint, previous_region, region_id))
