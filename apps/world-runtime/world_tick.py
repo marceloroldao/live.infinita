@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from conditional_event_scheduler import ConditionalEventScheduler
+from plan_arbiter import PlanArbiter
 from plan_scheduler import PlanScheduler
 from simulation_clock import SimulationClock
 from world_event_scheduler import WorldEventScheduler
@@ -17,11 +18,13 @@ class WorldTickRunner:
         scheduler: PlanScheduler,
         event_scheduler: WorldEventScheduler | None = None,
         conditional_event_scheduler: ConditionalEventScheduler | None = None,
+        plan_arbiter: PlanArbiter | None = None,
     ) -> None:
         self.clock = clock
         self.scheduler = scheduler
         self.event_scheduler = event_scheduler
         self.conditional_event_scheduler = conditional_event_scheduler
+        self.plan_arbiter = plan_arbiter or PlanArbiter(scheduler.ledger)
 
     def tick(self) -> dict[str, Any]:
         before = self.clock.state()
@@ -31,12 +34,12 @@ class WorldTickRunner:
                 "clock": before.as_dict(),
                 "events": [],
                 "conditional_events": [],
+                "plan_arbitration": {"preemptions": [], "resumptions": []},
                 "plans": [],
             }
 
         after = self.clock.advance()
 
-        # Time-scheduled global events fire first.
         event_results: list[dict[str, Any]] = []
         if self.event_scheduler is not None:
             for row in self.event_scheduler.fire_due(after.tick):
@@ -49,11 +52,6 @@ class WorldTickRunner:
                     "last_mutation_decision_id": row.get("last_mutation_decision_id"),
                 })
 
-        # Conditional rules are evaluated after scheduled events. A rule may
-        # either commit a guarded mutation or create an approved proposal + plan
-        # through ConditionalPlanDispatcher. Because plans are enumerated only
-        # after this stage, a newly created plan may execute its first step later
-        # in the same logical tick.
         conditional_results: list[dict[str, Any]] = []
         if self.conditional_event_scheduler is not None:
             for row in self.conditional_event_scheduler.evaluate_tick(after.tick):
@@ -70,18 +68,17 @@ class WorldTickRunner:
                     "last_plan_id": row.get("last_plan_id"),
                 })
 
-        active = sorted(
-            self.scheduler.ledger.active(),
-            key=lambda row: str(row.get("plan_id") or ""),
-        )
+        arbitration = self.plan_arbiter.reconcile()
         results: list[dict[str, Any]] = []
-        for record in active:
+        for record in arbitration.get("runnable", []):
             plan_id = str(record.get("plan_id") or "").strip()
             if not plan_id:
                 continue
             result = self.scheduler.tick(plan_id)
             results.append({
                 "plan_id": plan_id,
+                "actor_entity_id": result.get("actor_entity_id"),
+                "priority": result.get("priority", 0),
                 "status": result.get("status"),
                 "next_step_index": result.get("next_step_index"),
                 "last_world_event_id": result.get("last_world_event_id"),
@@ -93,5 +90,9 @@ class WorldTickRunner:
             "clock": after.as_dict(),
             "events": event_results,
             "conditional_events": conditional_results,
+            "plan_arbitration": {
+                "preemptions": arbitration.get("preemptions", []),
+                "resumptions": arbitration.get("resumptions", []),
+            },
             "plans": results,
         }
