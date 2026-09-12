@@ -78,7 +78,10 @@ def _install_cold_mutation_gate() -> None:
         return
 
     engine = core.engine
-    guarded = GuardedMutationService(engine)
+    guarded = GuardedMutationService(
+        engine,
+        decision_log_file=core.DATA_DIR / "mutation-decisions.jsonl",
+    )
 
     def guarded_commit_action(
         action: str,
