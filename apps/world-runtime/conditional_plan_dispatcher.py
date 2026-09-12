@@ -33,6 +33,7 @@ class ConditionalPlanDispatcher:
         conditional_event_id = str(conditional_event_id or "").strip()
         if not conditional_event_id:
             raise ValueError("conditional_event_id is required")
+        metadata = deepcopy(metadata or {})
         proposer_id = f"conditional:{conditional_event_id}"
         idem = f"conditional-intent:{conditional_event_id}:{int(fire_index)}"
         proposal = self.proposal_ledger.propose(
@@ -44,7 +45,7 @@ class ConditionalPlanDispatcher:
                 "conditional_event_id": conditional_event_id,
                 "fired_at_tick": int(tick),
                 "fire_index": int(fire_index),
-                **deepcopy(metadata or {}),
+                **metadata,
             },
             idempotency_key=idem,
         )
@@ -58,11 +59,13 @@ class ConditionalPlanDispatcher:
         elif status not in {"approved", "committed"}:
             raise ValueError(f"conditional proposal is not schedulable: {status}")
 
+        priority = int(metadata.get("plan_priority", 0) or 0)
         plan = self.plan_scheduler.schedule(
             intent=deepcopy(intent),
             principal=deepcopy(principal),
             proposer_id=proposer_id,
             proposal_id=str(proposal["proposal_id"]),
             idempotency_key=f"conditional-plan:{proposal['proposal_id']}",
+            priority=priority,
         )
         return {"proposal": proposal, "plan": plan}
