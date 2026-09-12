@@ -12,6 +12,7 @@ NGINX_BACKUP_DIR=/var/backups/live-infinita-nginx
 [[ -x "$INSTALL_DIR/.venv/bin/python" ]] || { echo "Runtime não instalado em $INSTALL_DIR"; exit 1; }
 [[ -f "$SOURCE_DIR/apps/audio-web-bridge/audio_web_bridge.py" ]] || { echo 'audio_web_bridge.py ausente'; exit 1; }
 [[ -f "$SOURCE_DIR/deploy/nginx_audio_patch.py" ]] || { echo 'nginx_audio_patch.py ausente'; exit 1; }
+[[ -f "$SOURCE_DIR/deploy/nginx_monitor_patch.py" ]] || { echo 'nginx_monitor_patch.py ausente'; exit 1; }
 systemctl is-active --quiet live-infinita-audio || { echo 'live-infinita-audio precisa estar ativo'; exit 1; }
 
 mkdir -p "$BRIDGE_DIR" "$NGINX_BACKUP_DIR"
@@ -32,7 +33,6 @@ curl -fsS http://127.0.0.1:8092/health >/dev/null || {
   exit 1
 }
 
-# Recover stale backups accidentally left in sites-enabled by older installer versions.
 while IFS= read -r stale_backup; do
   [[ -n "$stale_backup" ]] || continue
   mv "$stale_backup" "$NGINX_BACKUP_DIR/$(basename "$stale_backup")"
@@ -46,10 +46,14 @@ NGINX_CONF=$(readlink -f "$NGINX_ENTRY")
 backup="$NGINX_BACKUP_DIR/$(basename "$NGINX_CONF").before-audio.$(date +%s)"
 cp -p "$NGINX_CONF" "$backup"
 
-# Patch all HTTP/HTTPS server blocks that include the Live Infinita hostname.
 if ! python3 "$SOURCE_DIR/deploy/nginx_audio_patch.py" "$NGINX_CONF" live.etbra.com.br; then
   cp -p "$backup" "$NGINX_CONF"
-  echo 'Configuração nginx restaurada após falha no patch.' >&2
+  echo 'Configuração nginx restaurada após falha no patch de áudio.' >&2
+  exit 1
+fi
+if ! python3 "$SOURCE_DIR/deploy/nginx_monitor_patch.py" "$NGINX_CONF" live.etbra.com.br; then
+  cp -p "$backup" "$NGINX_CONF"
+  echo 'Configuração nginx restaurada após falha no patch do monitor.' >&2
   exit 1
 fi
 
@@ -64,9 +68,8 @@ systemctl reload nginx
 bash "$SOURCE_DIR/deploy/install-godot-web.sh"
 
 echo
-echo 'Browser Audio instalado.'
-echo 'Relay:  systemctl status live-infinita-audio-web --no-pager'
-echo 'Health: curl -s http://127.0.0.1:8092/health'
-echo 'Web:    https://live.etbra.com.br/audio/live.mp3'
-echo 'Godot:  https://live.etbra.com.br/godot/'
-echo 'No Edge, clique uma vez em ATIVAR ÁUDIO DA LIVE.'
+echo 'Browser Audio + Live Monitor instalados.'
+echo 'Relay:   systemctl status live-infinita-audio-web --no-pager'
+echo 'Health:  curl -s http://127.0.0.1:8092/health'
+echo 'Monitor: https://live.etbra.com.br/monitor/'
+echo 'Godot:   https://live.etbra.com.br/godot/'
