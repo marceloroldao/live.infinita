@@ -11,6 +11,7 @@ import main as core
 from cold_engine import ColdAuthoritativeWorldEngine
 from mutation_gate_service import GuardedMutationService
 from packages.spatial import FileRegionColdStore, MutationPrincipal
+from proposal_ledger_runtime import install_runtime_proposal_ledger
 from spatial_session import SpatialSession
 
 app = core.app
@@ -111,6 +112,7 @@ def _install_cold_mutation_gate() -> None:
 
 cold_store = _configure_authoritative_engine()
 _install_cold_mutation_gate()
+proposal_ledger = install_runtime_proposal_ledger(core, core.DATA_DIR)
 spatial_session = SpatialSession(cold_store=cold_store) if cold_store is not None else SpatialSession()
 session_views: dict[WebSocket, dict[str, Any]] = {}
 
