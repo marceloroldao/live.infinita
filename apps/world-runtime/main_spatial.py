@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from copy import deepcopy
 from typing import Any
 
 from fastapi import WebSocket, WebSocketDisconnect
@@ -72,17 +71,3 @@ def _replace_world_websocket_route() -> None:
 # so replacing this symbol keeps REST/API logic untouched while making delivery observer-local.
 core.broadcast = spatial_broadcast
 _replace_world_websocket_route()
-
-
-@app.get("/api/spatial/status")
-async def spatial_status() -> dict[str, Any]:
-    return {
-        "ok": True,
-        "delivery_mode": "local_world_slice",
-        "sessions": len(session_views),
-        "policy": deepcopy(spatial_session.resolver.resolve(
-            observer={"position": {"x": 0, "y": 0}},
-            entities=[],
-        )["policy"]),
-        "world_mutated": False,
-    }
