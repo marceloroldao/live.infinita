@@ -24,7 +24,8 @@ class WorldTickRunner:
         self.scheduler = scheduler
         self.event_scheduler = event_scheduler
         self.conditional_event_scheduler = conditional_event_scheduler
-        self.plan_arbiter = plan_arbiter or PlanArbiter(scheduler.ledger)
+        resume_evaluator = getattr(scheduler, "assess_resume", None)
+        self.plan_arbiter = plan_arbiter or PlanArbiter(scheduler.ledger, resume_evaluator=resume_evaluator)
 
     def tick(self) -> dict[str, Any]:
         before = self.clock.state()
@@ -34,7 +35,12 @@ class WorldTickRunner:
                 "clock": before.as_dict(),
                 "events": [],
                 "conditional_events": [],
-                "plan_arbitration": {"preemptions": [], "resumptions": []},
+                "plan_arbitration": {
+                    "preemptions": [],
+                    "resumptions": [],
+                    "replans": [],
+                    "cancellations": [],
+                },
                 "plans": [],
             }
 
@@ -93,6 +99,8 @@ class WorldTickRunner:
             "plan_arbitration": {
                 "preemptions": arbitration.get("preemptions", []),
                 "resumptions": arbitration.get("resumptions", []),
+                "replans": arbitration.get("replans", []),
+                "cancellations": arbitration.get("cancellations", []),
             },
             "plans": results,
         }
