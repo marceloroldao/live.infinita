@@ -25,11 +25,7 @@ class Region:
 
 
 class RegionCatalog:
-    """Small deterministic catalog for persistent world-region metadata.
-
-    The catalog stores region identity/topology, not rendered scene state. It can
-    later be backed by Memoria.ia/DBR without changing SpatialResolver.
-    """
+    """Deterministic persistent world-region metadata catalog."""
 
     def __init__(self, regions: list[Region] | None = None) -> None:
         self._regions: dict[str, Region] = {}
@@ -45,6 +41,9 @@ class RegionCatalog:
 
     def get(self, region_id: str) -> Region | None:
         return self._regions.get(region_id)
+
+    def size(self) -> int:
+        return len(self._regions)
 
     def all(self) -> list[Region]:
         return [self._regions[key] for key in sorted(self._regions)]
