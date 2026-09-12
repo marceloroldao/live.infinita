@@ -46,6 +46,7 @@ class LiveSoakTest(unittest.TestCase):
             )
 
             accepted = 0
+            last_world = None
             commands = ("noite", "dia", "fogueira")
             for i in range(500):
                 normalized, _proposed, validation = pipeline.process({
@@ -57,7 +58,7 @@ class LiveSoakTest(unittest.TestCase):
                 })
                 if not validation.accepted:
                     continue
-                engine.commit_action(
+                _event, _delta, last_world = engine.commit_action(
                     validation.action,
                     source=normalized.source,
                     context={
@@ -69,11 +70,12 @@ class LiveSoakTest(unittest.TestCase):
                 accepted += 1
 
             self.assertEqual(accepted, 500)
-            world = engine.world
-            self.assertGreaterEqual(world["sequence"], 500)
+            self.assertIsNotNone(last_world)
+            assert last_world is not None
+            self.assertGreaterEqual(last_world["sequence"], 500)
             verification = engine.verify_replay()
             self.assertTrue(verification["ok"], verification)
-            self.assertEqual(verification["replayed_state_hash"], world["state_hash"])
+            self.assertEqual(verification["replayed_state_hash"], last_world["state_hash"])
 
 
 if __name__ == "__main__":
