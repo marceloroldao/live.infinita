@@ -16,7 +16,7 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-24.04
-    timeout-minutes: 12
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -49,3 +49,16 @@ jobs:
             echo "bash -n $script"
             bash -n "$script"
           done < <(find deploy -maxdepth 1 -type f -name '*.sh' -print0)
+
+      - name: Validate Godot project and GDScript
+        shell: bash
+        run: |
+          set -euo pipefail
+          GODOT_VERSION=4.7.2
+          GODOT_TAG="${GODOT_VERSION}-stable"
+          ZIP="Godot_v${GODOT_TAG}_linux.x86_64.zip"
+          curl -fsSL "https://github.com/godotengine/godot/releases/download/${GODOT_TAG}/${ZIP}" -o "/tmp/${ZIP}"
+          unzip -q "/tmp/${ZIP}" -d /tmp/godot
+          GODOT_BIN="$(find /tmp/godot -maxdepth 1 -type f -name 'Godot_v*_linux.x86_64' | head -n1)"
+          chmod +x "$GODOT_BIN"
+          "$GODOT_BIN" --headless --editor --quit --path apps/renderer-godot
