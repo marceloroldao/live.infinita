@@ -23,11 +23,13 @@ class PlanScheduler:
         planner: DeterministicIntentPlanner,
         resolver: AgentIntentResolver,
         guarded_mutations: GuardedMutationService,
+        proposal_ledger: Any | None = None,
     ) -> None:
         self.ledger = ledger
         self.planner = planner
         self.resolver = resolver
         self.guarded = guarded_mutations
+        self.proposal_ledger = proposal_ledger
 
     @staticmethod
     def _principal(value: dict[str, Any]) -> MutationPrincipal:
@@ -82,12 +84,46 @@ class PlanScheduler:
             idempotency_key=idempotency_key,
         )
 
+    def _reject_proposal(self, record: dict[str, Any], reason: str) -> None:
+        if self.proposal_ledger is None:
+            return
+        proposal_id = str(record.get("proposal_id") or "").strip()
+        if not proposal_id:
+            return
+        proposal = self.proposal_ledger.get(proposal_id)
+        if proposal is not None and proposal.get("status") == "approved":
+            self.proposal_ledger.reject(proposal_id, decided_by="plan_scheduler", reason=reason)
+
+    def _commit_proposal_if_complete(self, record: dict[str, Any]) -> None:
+        if self.proposal_ledger is None or record.get("status") != "completed":
+            return
+        proposal_id = str(record.get("proposal_id") or "").strip()
+        if not proposal_id:
+            return
+        proposal = self.proposal_ledger.get(proposal_id)
+        if proposal is None or proposal.get("status") != "approved":
+            return
+        completed = list(record.get("completed_steps") or [])
+        if not completed:
+            return
+        last = completed[-1]
+        decision_id = str(last.get("mutation_decision_id") or "").strip()
+        event_id = str(last.get("world_event_id") or "").strip()
+        if decision_id and event_id:
+            self.proposal_ledger.commit(
+                proposal_id,
+                decided_by="plan_scheduler",
+                mutation_decision_id=decision_id,
+                world_event_id=event_id,
+            )
+
     def tick(self, plan_id: str) -> dict[str, Any]:
         record = self.ledger.get(plan_id)
         if record is None:
             raise KeyError("plan not found")
         status = str(record.get("status") or "")
         if status in self.ledger.TERMINAL:
+            self._commit_proposal_if_complete(record)
             return record
         if status in {"waiting", "replanning"}:
             return record
@@ -97,7 +133,9 @@ class PlanScheduler:
         plan = self._rehydrate_plan(record["plan"])
         index = int(record.get("next_step_index", 0))
         if index >= len(plan.steps):
-            return self.ledger.transition(plan_id, "completed")
+            record = self.ledger.transition(plan_id, "completed")
+            self._commit_proposal_if_complete(record)
+            return record
 
         try:
             step = self.planner.revalidate_step(plan, index)
@@ -107,7 +145,9 @@ class PlanScheduler:
         try:
             resolved = self.resolver.resolve(step.intent)
         except ValueError as exc:
-            return self.ledger.transition(plan_id, "failed", last_error=str(exc))
+            failed = self.ledger.transition(plan_id, "failed", last_error=str(exc))
+            self._reject_proposal(failed, str(exc))
+            return failed
 
         principal = self._principal(record["principal"])
         result = self.guarded.commit(
@@ -131,24 +171,28 @@ class PlanScheduler:
         decision_id = str(audit.get("mutation_decision_id") or "").strip() or None
         if not result.get("ok"):
             reason = str((result.get("decision") or {}).get("reason") or "mutation rejected")
-            return self.ledger.transition(
+            failed = self.ledger.transition(
                 plan_id,
                 "failed",
                 last_error=reason,
                 last_mutation_decision_id=decision_id,
             )
+            self._reject_proposal(failed, reason)
+            return failed
 
         event = result.get("event") or {}
         world = result.get("world") or {}
         event_id = str(event.get("event_id") or "").strip() or None
         state_hash = str(world.get("state_hash") or "").strip() or None
-        return self.ledger.mark_step_completed(
+        updated = self.ledger.mark_step_completed(
             plan_id,
             step_index=index,
             mutation_decision_id=decision_id,
             world_event_id=event_id,
             state_hash=state_hash,
         )
+        self._commit_proposal_if_complete(updated)
+        return updated
 
     def tick_all(self) -> list[dict[str, Any]]:
         results: list[dict[str, Any]] = []
