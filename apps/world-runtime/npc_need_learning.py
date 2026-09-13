@@ -121,7 +121,6 @@ class NpcNeedLearning:
             "target_entity_id": target_entity_id,
             "satisfaction": reward,
             "context": canonical_context,
-            # v1 compatibility aliases remain the global values.
             "count_after": global_count,
             "mean_satisfaction_after": global_mean,
             "global_count_after": global_count,
@@ -149,10 +148,11 @@ class NpcNeedLearning:
     def rank_targets(self, npc_id: str, need: str, target_ids: list[str],
                      context: dict[str, Any] | None = None) -> list[dict[str, Any]]:
         rows: list[dict[str, Any]] = []
+        normalized_need = str(need).strip().lower()
         canonical_context = self.canonical_context(context)
         for target_id in sorted({str(v).strip() for v in target_ids if str(v).strip()}):
-            global_stat = self.stats(npc_id, need, target_id) or {"count": 0, "mean_satisfaction": 0.0}
-            contextual_stat = self.contextual_stats(npc_id, need, target_id, canonical_context) or {"count": 0, "mean_satisfaction": 0.0}
+            global_stat = self.stats(npc_id, normalized_need, target_id) or {"count": 0, "mean_satisfaction": 0.0}
+            contextual_stat = self.contextual_stats(npc_id, normalized_need, target_id, canonical_context) or {"count": 0, "mean_satisfaction": 0.0}
             global_count = int(global_stat.get("count", 0))
             global_mean = float(global_stat.get("mean_satisfaction", 0.0))
             context_count = int(contextual_stat.get("count", 0))
@@ -161,9 +161,9 @@ class NpcNeedLearning:
             use_context = context_count >= self.contextual_min_samples
             effective_mean = context_mean if use_context else global_mean
             rows.append({
+                "need": normalized_need,
                 "target_entity_id": target_id,
                 "context": canonical_context,
-                # v1 compatibility aliases remain global evidence.
                 "count": global_count,
                 "mean_satisfaction": global_mean,
                 "context_count": context_count,
