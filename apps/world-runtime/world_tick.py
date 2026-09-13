@@ -20,12 +20,14 @@ class WorldTickRunner:
         conditional_event_scheduler: ConditionalEventScheduler | None = None,
         plan_arbiter: PlanArbiter | None = None,
         npc_need_scheduler: Any | None = None,
+        npc_need_dynamics: Any | None = None,
     ) -> None:
         self.clock = clock
         self.scheduler = scheduler
         self.event_scheduler = event_scheduler
         self.conditional_event_scheduler = conditional_event_scheduler
         self.npc_need_scheduler = npc_need_scheduler
+        self.npc_need_dynamics = npc_need_dynamics
         resume_evaluator = getattr(scheduler, "assess_resume", None)
         self.plan_arbiter = plan_arbiter or PlanArbiter(scheduler.ledger, resume_evaluator=resume_evaluator)
 
@@ -37,6 +39,7 @@ class WorldTickRunner:
                 "clock": before.as_dict(),
                 "events": [],
                 "conditional_events": [],
+                "npc_need_dynamics": [],
                 "npc_needs": [],
                 "plan_replanning": [],
                 "plan_arbitration": {
@@ -78,6 +81,19 @@ class WorldTickRunner:
                     "last_plan_id": row.get("last_plan_id"),
                 })
 
+        # Need dynamics are compact internal state, separate from full cold entity
+        # payloads. They evolve first; utility evaluation below observes the new
+        # values in the same logical tick.
+        need_dynamics_results: list[dict[str, Any]] = []
+        if self.npc_need_dynamics is not None:
+            for row in self.npc_need_dynamics.advance_tick(after.tick):
+                need_dynamics_results.append({
+                    "npc_id": row.get("npc_id"),
+                    "tick": row.get("tick"),
+                    "before": row.get("before"),
+                    "after": row.get("after"),
+                })
+
         # Internal needs are another proposal source. They never mutate the world
         # directly; they may create semantic intent plans that participate in the
         # same priority arbitration as all other plans later in this tick.
@@ -89,6 +105,7 @@ class WorldTickRunner:
                     "need": row.get("need"),
                     "severity": row.get("severity"),
                     "priority": row.get("priority"),
+                    "utility": row.get("utility"),
                     "status": row.get("status"),
                     "proposal_id": row.get("proposal_id"),
                     "plan_id": row.get("plan_id"),
@@ -133,6 +150,7 @@ class WorldTickRunner:
             "clock": after.as_dict(),
             "events": event_results,
             "conditional_events": conditional_results,
+            "npc_need_dynamics": need_dynamics_results,
             "npc_needs": need_results,
             "plan_replanning": replan_results,
             "plan_arbitration": {
