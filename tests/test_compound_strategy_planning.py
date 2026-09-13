@@ -45,6 +45,25 @@ class CompoundStrategyPlanningTest(unittest.TestCase):
         self.assertEqual([row["strategy_kind"] for row in rows], ["direct", "via_shelter"])
         self.assertEqual(rows[1]["intent"]["via_entity_ids"], ["shelter"])
 
+    def test_high_risk_chooses_via_shelter_and_low_risk_goes_direct(self) -> None:
+        high, high_rank = self.catalog.choose(
+            actor_entity_id="npc", need="energy", target_entity_id="home",
+            actor_properties={"strategy_shelter_entity_id": "shelter"},
+            context={"danger_level": 0.9},
+        )
+        low, _ = self.catalog.choose(
+            actor_entity_id="npc", need="energy", target_entity_id="home",
+            actor_properties={"strategy_shelter_entity_id": "shelter"},
+            context={"danger_level": 0.1},
+        )
+        self.assertIsNotNone(high)
+        self.assertIsNotNone(low)
+        self.assertEqual(high["strategy_kind"], "via_shelter")
+        self.assertEqual(high["intent"]["intent"], "move_via_entities")
+        self.assertTrue(high_rank[0]["selected"])
+        self.assertEqual(low["strategy_kind"], "direct")
+        self.assertEqual(low["intent"]["intent"], "move_to_entity")
+
     def test_compound_intent_expands_via_target_then_final_target(self) -> None:
         plan = self.planner.plan({
             "intent": "move_via_entities",
