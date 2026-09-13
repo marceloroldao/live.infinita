@@ -25,8 +25,8 @@ def _world(region="r1", tick=1, version=1):
             },
         },
         "relations": {
-            "rel_near": {
-                "relation_id": "rel_near",
+            "rel_001": {
+                "relation_id": "rel_001",
                 "subject": "nova",
                 "predicate": "near",
                 "object": "fire",
@@ -55,7 +55,7 @@ def test_projection_is_deterministic():
 def test_semantic_predicate_does_not_become_core_address():
     addresses = observer_state_addresses(_world(), "nova")
     assert not any("near" in item for item in addresses)
-    assert "live:relation:rel_near" in addresses
+    assert "live:relation:rel_001" in addresses
 
 
 def test_frame_is_deterministic_under_proposal_order():
