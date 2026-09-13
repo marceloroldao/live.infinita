@@ -18,6 +18,7 @@ from npc_need_horizon import NpcNeedHorizon
 from npc_need_learning import NpcNeedLearning
 from npc_need_outcomes import NpcNeedOutcomeProcessor
 from npc_need_scheduler import NpcNeedScheduler
+from npc_reordering_need_scheduler import NpcReorderingNeedScheduler
 from npc_strategy_compiler import NpcStrategyCompiler
 from npc_strategy_executor import NpcStrategyExecutor
 from npc_strategy_experience import NpcStrategyExperience
@@ -119,7 +120,7 @@ def build_npc_cognitive_stack(
     )
     strategy_compiler = NpcStrategyCompiler()
     strategy_executor = NpcStrategyExecutor(root / "npc-strategy-executions.jsonl", plan_scheduler)
-    need_scheduler = NpcNeedScheduler(
+    need_scheduler = NpcReorderingNeedScheduler(
         root / "npc-need-scheduler.jsonl",
         proposal_ledger,
         plan_scheduler,
