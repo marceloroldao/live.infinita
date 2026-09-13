@@ -8,6 +8,28 @@
     "biome": "forest",
     "danger_level": 0.05
   },
+  "simulation": {
+    "scheduled_events": [
+      {
+        "id": "night-cycle",
+        "due_tick": 12,
+        "recurrence_every_ticks": 24,
+        "operations": [
+          {"op": "set_world", "path": ["environment", "period"], "value": "night"}
+        ],
+        "narration": "A luz diminui e a noite toma a floresta."
+      },
+      {
+        "id": "day-cycle",
+        "due_tick": 24,
+        "recurrence_every_ticks": 24,
+        "operations": [
+          {"op": "set_world", "path": ["environment", "period"], "value": "day"}
+        ],
+        "narration": "A manhã retorna e a floresta volta a clarear."
+      }
+    ]
+  },
   "regions": [
     {
       "id": "clearing",
