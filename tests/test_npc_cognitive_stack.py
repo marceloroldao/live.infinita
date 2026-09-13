@@ -89,6 +89,7 @@ class NpcCognitiveStackTest(unittest.TestCase):
             self.assertIs(stack.strategy_value.strategy_experience_provider, stack.strategy_experience)
             self.assertIs(stack.need_outcomes.strategy_experience_provider, stack.strategy_experience)
             self.assertIs(stack.composite_strategy_outcomes.strategy_experience_provider, stack.strategy_experience)
+            self.assertIs(stack.composite_strategy_outcomes.episodic_memory_provider, stack.episodic_memory)
 
             kwargs = stack.world_tick_kwargs()
             self.assertIs(kwargs["npc_need_scheduler"], stack.need_scheduler)
@@ -97,7 +98,7 @@ class NpcCognitiveStackTest(unittest.TestCase):
             self.assertIs(kwargs["npc_strategy_executor"], stack.strategy_executor)
             self.assertIs(kwargs["npc_composite_strategy_outcomes"], stack.composite_strategy_outcomes)
 
-    def test_strategy_experience_persists_across_stack_rebuild(self):
+    def test_strategy_experience_and_episodes_persist_across_stack_rebuild(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
             scheduler = FakePlanScheduler()
@@ -122,6 +123,18 @@ class NpcCognitiveStackTest(unittest.TestCase):
                 replans=0,
                 observed_risk=0.2,
             )
+            first.episodic_memory.remember(
+                episode_id="episode-1",
+                npc_id="npc",
+                logical_tick=7,
+                need="energy",
+                target_entity_id="bed",
+                strategy_id="direct",
+                context=ctx,
+                satisfaction=0.4,
+                elapsed_ticks=3,
+                observed_risk=0.2,
+            )
 
             second = build_npc_cognitive_stack(
                 data_dir=root,
@@ -134,6 +147,8 @@ class NpcCognitiveStackTest(unittest.TestCase):
             self.assertIsNotNone(stats)
             self.assertEqual(stats["count"], 1)
             self.assertAlmostEqual(stats["mean_satisfaction"], 0.4)
+            recalled = second.episodic_memory.recall("npc", need="energy", context=ctx)
+            self.assertEqual([row["episode_id"] for row in recalled], ["episode-1"])
 
     def test_builder_fails_closed_without_required_scheduler_contract(self):
         with tempfile.TemporaryDirectory() as tmpdir:
