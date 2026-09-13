@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from cold_engine import ColdAuthoritativeWorldEngine
+from conditional_event_scheduler import ConditionalEventScheduler
 from mutation_gate_service import GuardedMutationService
 from npc_cognitive_stack import NpcCognitiveStack, build_npc_cognitive_stack
 from plan_ledger import PlanLedger
@@ -37,6 +38,7 @@ class AutonomousWorldRuntime:
     resolver: AgentIntentResolver
     scheduler: PlanScheduler
     event_scheduler: WorldEventScheduler
+    conditional_event_scheduler: ConditionalEventScheduler
     cognition: NpcCognitiveStack
     clock: SimulationClock
     world_tick: WorldTickRunner
@@ -101,15 +103,20 @@ def _bootstrap_world(bootstrap_file: Path) -> dict[str, Any]:
     return value
 
 
+def _simulation_block(bootstrap_world: dict[str, Any]) -> dict[str, Any]:
+    simulation = bootstrap_world.get("simulation")
+    if simulation is None:
+        return {}
+    if not isinstance(simulation, dict):
+        raise ValueError("simulation must be an object")
+    return simulation
+
+
 def _install_bootstrap_schedules(
     bootstrap_world: dict[str, Any],
     event_scheduler: WorldEventScheduler,
 ) -> None:
-    simulation = bootstrap_world.get("simulation")
-    if simulation is None:
-        return
-    if not isinstance(simulation, dict):
-        raise ValueError("simulation must be an object")
+    simulation = _simulation_block(bootstrap_world)
     raw_events = simulation.get("scheduled_events", [])
     if not isinstance(raw_events, list):
         raise ValueError("simulation.scheduled_events must be a list")
@@ -159,6 +166,58 @@ def _install_bootstrap_schedules(
         )
 
 
+def _install_bootstrap_conditionals(
+    bootstrap_world: dict[str, Any],
+    conditional_scheduler: ConditionalEventScheduler,
+) -> None:
+    simulation = _simulation_block(bootstrap_world)
+    raw_events = simulation.get("conditional_events", [])
+    if not isinstance(raw_events, list):
+        raise ValueError("simulation.conditional_events must be a list")
+
+    world_id = str(bootstrap_world.get("world_id") or "world").strip() or "world"
+    principal = {
+        "source": "world_condition",
+        "actor_id": "world",
+        "authority": "system",
+        "subject_entity_id": None,
+    }
+    seen_ids: set[str] = set()
+    for raw in raw_events:
+        if not isinstance(raw, dict):
+            raise ValueError("conditional event entries must be objects")
+        event_id = str(raw.get("id") or "").strip()
+        if not event_id:
+            raise ValueError("conditional event id is required")
+        if event_id in seen_ids:
+            raise ValueError(f"duplicate conditional event id: {event_id}")
+        seen_ids.add(event_id)
+        condition = raw.get("condition")
+        operations = raw.get("operations")
+        if not isinstance(condition, dict):
+            raise ValueError(f"conditional event {event_id} requires condition")
+        if not isinstance(operations, list) or not operations or not all(isinstance(row, dict) for row in operations):
+            raise ValueError(f"conditional event {event_id} requires non-empty operations")
+        try:
+            cooldown_ticks = int(raw.get("cooldown_ticks", 0))
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"conditional event {event_id} cooldown_ticks must be an integer") from exc
+        conditional_scheduler.register(
+            condition=condition,
+            principal=principal,
+            operations=operations,
+            trigger_mode=str(raw.get("trigger_mode") or "edge"),
+            cooldown_ticks=cooldown_ticks,
+            one_shot=bool(raw.get("one_shot", False)),
+            narration=str(raw.get("narration") or ""),
+            metadata={
+                "bootstrap_world_id": world_id,
+                "bootstrap_conditional_id": event_id,
+            },
+            idempotency_key=f"bootstrap-conditional-event:{world_id}:{event_id}",
+        )
+
+
 def build_authoritative_autonomous_runtime(
     *,
     bootstrap_file: Path,
@@ -195,7 +254,9 @@ def build_authoritative_autonomous_runtime(
     resolver = AgentIntentResolver(store)
     scheduler = PlanScheduler(plans, planner, resolver, guarded, proposal_ledger=proposals)
     event_scheduler = WorldEventScheduler(root / "world-event-schedule.jsonl", guarded)
+    conditional_event_scheduler = ConditionalEventScheduler(root / "conditional-world-events.jsonl", guarded)
     _install_bootstrap_schedules(bootstrap_value, event_scheduler)
+    _install_bootstrap_conditionals(bootstrap_value, conditional_event_scheduler)
     world_provider = engine.load_world
     cognition = build_npc_cognitive_stack(
         data_dir=root,
@@ -209,6 +270,7 @@ def build_authoritative_autonomous_runtime(
         clock,
         scheduler,
         event_scheduler=event_scheduler,
+        conditional_event_scheduler=conditional_event_scheduler,
         **cognition.world_tick_kwargs(),
     )
 
@@ -223,6 +285,7 @@ def build_authoritative_autonomous_runtime(
         resolver=resolver,
         scheduler=scheduler,
         event_scheduler=event_scheduler,
+        conditional_event_scheduler=conditional_event_scheduler,
         cognition=cognition,
         clock=clock,
         world_tick=world_tick,
