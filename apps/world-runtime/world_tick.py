@@ -84,9 +84,6 @@ class WorldTickRunner:
                     "last_plan_id": row.get("last_plan_id"),
                 })
 
-        # Need dynamics are compact internal state, separate from full cold entity
-        # payloads. They evolve first; utility evaluation below observes the new
-        # values in the same logical tick.
         need_dynamics_results: list[dict[str, Any]] = []
         if self.npc_need_dynamics is not None:
             for row in self.npc_need_dynamics.advance_tick(after.tick):
@@ -97,9 +94,6 @@ class WorldTickRunner:
                     "after": row.get("after"),
                 })
 
-        # Internal needs are another proposal source. They never mutate the world
-        # directly; they may create semantic intent plans that participate in the
-        # same priority arbitration as all other plans later in this tick.
         need_results: list[dict[str, Any]] = []
         if self.npc_need_scheduler is not None:
             for row in self.npc_need_scheduler.evaluate_tick(after.tick):
@@ -114,10 +108,6 @@ class WorldTickRunner:
                     "plan_id": row.get("plan_id"),
                 })
 
-        # Replanning is a distinct deterministic phase. A stale plan is rebuilt
-        # from the original semantic intent and current authoritative state
-        # before priority arbitration. This means the new revision may execute
-        # its first step later in the same logical tick.
         replan_results: list[dict[str, Any]] = []
         replan_all = getattr(self.scheduler, "replan_all", None)
         if callable(replan_all):
@@ -136,7 +126,7 @@ class WorldTickRunner:
             plan_id = str(record.get("plan_id") or "").strip()
             if not plan_id:
                 continue
-            result = self.scheduler.tick(plan_id)
+            result = self.scheduler.tick(plan_id, logical_tick=after.tick)
             results.append({
                 "plan_id": plan_id,
                 "actor_entity_id": result.get("actor_entity_id"),
@@ -144,12 +134,14 @@ class WorldTickRunner:
                 "plan_revision": result.get("plan_revision", 0),
                 "status": result.get("status"),
                 "next_step_index": result.get("next_step_index"),
+                "started_logical_tick": result.get("started_logical_tick"),
+                "completed_logical_tick": result.get("completed_logical_tick"),
+                "preemption_count": result.get("preemption_count", 0),
+                "replan_count": result.get("replan_count", 0),
                 "last_world_event_id": result.get("last_world_event_id"),
                 "last_mutation_decision_id": result.get("last_mutation_decision_id"),
             })
 
-        # Outcomes are evaluated after authoritative plan execution, so only an
-        # actually completed need-driven plan can satisfy internal state.
         outcome_results: list[dict[str, Any]] = []
         if self.npc_need_outcomes is not None:
             for row in self.npc_need_outcomes.process_completed():
@@ -163,6 +155,7 @@ class WorldTickRunner:
                     "before": outcome.get("before"),
                     "after": outcome.get("after"),
                     "amount": outcome.get("amount"),
+                    "strategy_experience": row.get("strategy_experience"),
                 })
 
         return {
