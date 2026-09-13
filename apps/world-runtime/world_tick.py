@@ -23,6 +23,7 @@ class WorldTickRunner:
         npc_need_scheduler: Any | None = None,
         npc_need_dynamics: Any | None = None,
         npc_need_outcomes: Any | None = None,
+        npc_strategy_executor: Any | None = None,
     ) -> None:
         self.clock = clock
         self.scheduler = scheduler
@@ -31,6 +32,7 @@ class WorldTickRunner:
         self.npc_need_scheduler = npc_need_scheduler
         self.npc_need_dynamics = npc_need_dynamics
         self.npc_need_outcomes = npc_need_outcomes
+        self.npc_strategy_executor = npc_strategy_executor
         resume_evaluator = getattr(scheduler, "assess_resume", None)
         self.plan_arbiter = plan_arbiter or PlanArbiter(scheduler.ledger, resume_evaluator=resume_evaluator)
 
@@ -54,6 +56,7 @@ class WorldTickRunner:
                 "conditional_events": [],
                 "npc_need_dynamics": [],
                 "npc_needs": [],
+                "npc_strategies": [],
                 "plan_replanning": [],
                 "plan_arbitration": {
                     "preemptions": [],
@@ -119,6 +122,22 @@ class WorldTickRunner:
                     "plan_id": row.get("plan_id"),
                 })
 
+        # Composite strategies advance before plan arbitration. A move phase may
+        # create a normal child plan, which then participates in arbitration in
+        # this same logical tick. wait_ticks consumes only the logical clock.
+        strategy_results: list[dict[str, Any]] = []
+        if self.npc_strategy_executor is not None:
+            for row in self.npc_strategy_executor.tick_all(logical_tick=after.tick):
+                strategy_results.append({
+                    "strategy_execution_id": row.get("strategy_execution_id"),
+                    "strategy_id": (row.get("strategy_plan") or {}).get("strategy_id") if isinstance(row.get("strategy_plan"), dict) else None,
+                    "status": row.get("status"),
+                    "phase_index": row.get("phase_index"),
+                    "child_plan_id": row.get("child_plan_id"),
+                    "wait_started_tick": row.get("wait_started_tick"),
+                    "last_error": row.get("last_error"),
+                })
+
         replan_results: list[dict[str, Any]] = []
         replan_all = getattr(self.scheduler, "replan_all", None)
         if callable(replan_all):
@@ -176,6 +195,7 @@ class WorldTickRunner:
             "conditional_events": conditional_results,
             "npc_need_dynamics": need_dynamics_results,
             "npc_needs": need_results,
+            "npc_strategies": strategy_results,
             "plan_replanning": replan_results,
             "plan_arbitration": {
                 "preemptions": arbitration.get("preemptions", []),
