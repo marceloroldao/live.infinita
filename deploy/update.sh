@@ -83,6 +83,33 @@ else
   warn "Usuário de serviço '$SERVICE_USER' não existe; ownership não alterado."
 fi
 
+# Reexporta a cena Godot Web já instalada. O instalador completo continua sendo necessário
+# apenas na primeira instalação da engine/templates.
+VISUAL_EXPORT="skipped"
+VISUAL_FAIL=0
+if [[ -f "$INSTALL_DIR/deploy/export-godot-web.sh" ]]; then
+  if find /opt/live-infinita-godot/engine -maxdepth 1 -type f -name 'Godot_v*_linux.x86_64' -perm -u+x -print -quit 2>/dev/null | grep -q .; then
+    info 'Reexportando cenário Godot Web atual...'
+    if sudo env \
+      LIVE_INFINITA_SOURCE_SHA="$SOURCE_SHA" \
+      INSTALL_DIR="$INSTALL_DIR" \
+      bash "$INSTALL_DIR/deploy/export-godot-web.sh"; then
+      VISUAL_EXPORT="ok"
+      ok "Godot Web publicado a partir do commit $SOURCE_SHA"
+    else
+      VISUAL_EXPORT="failed"
+      VISUAL_FAIL=1
+      fail 'Falha ao reexportar o Godot Web.'
+    fi
+  else
+    VISUAL_EXPORT="engine-missing"
+    warn 'Engine Godot instalada não encontrada; mantendo export web existente.'
+    warn "Primeira instalação: sudo bash $INSTALL_DIR/deploy/install-godot-web.sh"
+  fi
+else
+  warn 'Script de export Godot Web ausente; mantendo export existente.'
+fi
+
 # Apenas units presentes no repositório são considerados gerenciados por este deploy.
 MANAGED_SERVICES=()
 UPDATED_UNITS=0
@@ -106,7 +133,6 @@ mapfile -t INSTALLED_SERVICES < <(
     | sort -u || true
 )
 
-# Mostra units legados instalados no servidor, mas não deixa que eles invalidem o release atual.
 LEGACY_SERVICES=()
 for svc in "${INSTALLED_SERVICES[@]}"; do
   managed=0
@@ -125,7 +151,6 @@ if ((${#MANAGED_SERVICES[@]})); then
     enabled="$(systemctl is-enabled "$svc" 2>/dev/null || true)"
     state="$(systemctl is-active "$svc" 2>/dev/null || true)"
 
-    # static normalmente é helper/oneshot acionado por .path/.timer; não reinicia diretamente.
     if [[ "$enabled" == static ]]; then
       info "$svc = helper static; restart direto ignorado."
       continue
@@ -213,7 +238,10 @@ check_http 'Runtime' 'http://127.0.0.1:8080/api/health' 1 25
 check_http 'Replay' 'http://127.0.0.1:8080/api/replay/verify' 0 10
 check_http 'Áudio web' 'http://127.0.0.1:8092/health' 0 20
 check_http 'Nginx local' 'http://127.0.0.1/' 1 15
-check_http 'Godot público' 'https://live.etbra.com.br/godot/' 0 10
+check_http 'Godot público' 'https://live.etbra.com.br/godot/' 1 10
+if [[ "$VISUAL_EXPORT" == ok ]]; then
+  check_http 'Godot build' 'https://live.etbra.com.br/godot/build.json' 1 10
+fi
 
 printf '\n== Portas em escuta ==\n'
 ss -ltnp 2>/dev/null | grep -E ':(80|443|8080|8092|8765|3000|5600|5500)\b' || true
@@ -222,13 +250,14 @@ printf '\n== Resumo ==\n'
 printf 'Source commit : %s\n' "$SOURCE_SHA"
 printf 'Branch        : %s\n' "$(git branch --show-current)"
 printf 'Produção      : %s\n' "$INSTALL_DIR"
+printf 'Godot export  : %s\n' "$VISUAL_EXPORT"
 printf 'Serviços OK   : %d\n' "$ACTIVE"
 printf 'Inativos      : %d\n' "$INACTIVE"
 printf 'Legados       : %d\n' "${#LEGACY_SERVICES[@]}"
 printf 'Falhas svc    : %d\n' "$FAIL"
 printf 'Falhas HTTP   : %d\n' "$HTTP_FAIL"
 
-if ((FAIL || HTTP_FAIL)); then
+if ((VISUAL_FAIL || FAIL || HTTP_FAIL)); then
   printf '\nDEPLOY CONCLUÍDO COM FALHAS\n'
   printf 'Runtime: sudo journalctl -u live-infinita -n 80 --no-pager\n'
   printf 'Áudio:   sudo journalctl -u live-infinita-audio-web -n 80 --no-pager\n'
@@ -237,4 +266,5 @@ fi
 
 printf '\nDEPLOY OK\n'
 printf 'Visual: https://live.etbra.com.br/godot/\n'
+printf 'Build:  https://live.etbra.com.br/godot/build.json\n'
 printf 'Monitor/gerência: https://live.etbra.com.br/manage/\n'
