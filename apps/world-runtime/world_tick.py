@@ -19,11 +19,13 @@ class WorldTickRunner:
         event_scheduler: WorldEventScheduler | None = None,
         conditional_event_scheduler: ConditionalEventScheduler | None = None,
         plan_arbiter: PlanArbiter | None = None,
+        npc_need_scheduler: Any | None = None,
     ) -> None:
         self.clock = clock
         self.scheduler = scheduler
         self.event_scheduler = event_scheduler
         self.conditional_event_scheduler = conditional_event_scheduler
+        self.npc_need_scheduler = npc_need_scheduler
         resume_evaluator = getattr(scheduler, "assess_resume", None)
         self.plan_arbiter = plan_arbiter or PlanArbiter(scheduler.ledger, resume_evaluator=resume_evaluator)
 
@@ -35,6 +37,7 @@ class WorldTickRunner:
                 "clock": before.as_dict(),
                 "events": [],
                 "conditional_events": [],
+                "npc_needs": [],
                 "plan_replanning": [],
                 "plan_arbitration": {
                     "preemptions": [],
@@ -73,6 +76,22 @@ class WorldTickRunner:
                     "last_mutation_decision_id": row.get("last_mutation_decision_id"),
                     "last_proposal_id": row.get("last_proposal_id"),
                     "last_plan_id": row.get("last_plan_id"),
+                })
+
+        # Internal needs are another proposal source. They never mutate the world
+        # directly; they may create semantic intent plans that participate in the
+        # same priority arbitration as all other plans later in this tick.
+        need_results: list[dict[str, Any]] = []
+        if self.npc_need_scheduler is not None:
+            for row in self.npc_need_scheduler.evaluate_tick(after.tick):
+                need_results.append({
+                    "npc_id": row.get("npc_id"),
+                    "need": row.get("need"),
+                    "severity": row.get("severity"),
+                    "priority": row.get("priority"),
+                    "status": row.get("status"),
+                    "proposal_id": row.get("proposal_id"),
+                    "plan_id": row.get("plan_id"),
                 })
 
         # Replanning is a distinct deterministic phase. A stale plan is rebuilt
@@ -114,6 +133,7 @@ class WorldTickRunner:
             "clock": after.as_dict(),
             "events": event_results,
             "conditional_events": conditional_results,
+            "npc_needs": need_results,
             "plan_replanning": replan_results,
             "plan_arbitration": {
                 "preemptions": arbitration.get("preemptions", []),
