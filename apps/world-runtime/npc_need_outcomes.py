@@ -131,6 +131,11 @@ class NpcNeedOutcomeProcessor:
             if not plan_id or plan_id in processed or str(record.get("status") or "") != "completed":
                 continue
             intent = record.get("intent") if isinstance(record.get("intent"), dict) else {}
+            # Composite strategy waypoints may carry the originating need for
+            # provenance, but only the terminal phase may satisfy/learn it.
+            # Legacy intents omit this flag and remain eligible by default.
+            if intent.get("need_outcome_eligible") is False:
+                continue
             need = str(intent.get("need") or "").strip().lower()
             npc_id = str(record.get("actor_entity_id") or intent.get("actor_entity_id") or "").strip()
             if need not in self.satisfaction or not npc_id:
@@ -148,6 +153,8 @@ class NpcNeedOutcomeProcessor:
                     "plan_revision": int(record.get("plan_revision", 0)),
                     "completed_steps": len(record.get("completed_steps") or []),
                     "target_entity_id": intent.get("target_entity_id"),
+                    "strategy_id": intent.get("strategy_id"),
+                    "strategy_phase_index": intent.get("strategy_phase_index"),
                     "started_logical_tick": record.get("started_logical_tick"),
                     "completed_logical_tick": record.get("completed_logical_tick"),
                     "preemption_count": int(record.get("preemption_count", 0)),
@@ -163,12 +170,14 @@ class NpcNeedOutcomeProcessor:
                 outcome_id=outcome_id,
             )
             row = {
-                "need_outcome_schema": "npc_need_outcome_audit_v3",
+                "need_outcome_schema": "npc_need_outcome_audit_v4",
                 "plan_id": plan_id,
                 "proposal_id": record.get("proposal_id"),
                 "npc_id": npc_id,
                 "need": need,
                 "target_entity_id": intent.get("target_entity_id"),
+                "strategy_id": intent.get("strategy_id"),
+                "strategy_phase_index": intent.get("strategy_phase_index"),
                 "status": "applied",
                 "outcome": deepcopy(outcome),
                 "learning": deepcopy(learning),
