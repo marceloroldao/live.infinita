@@ -26,13 +26,18 @@ class NovAutonomousScenarioTest(unittest.TestCase):
                 tick_duration_ms=500,
             )
 
-            initial = runtime.cognition.need_dynamics.get_needs("nov")
-            self.assertGreaterEqual(initial["energy"], 0.85)
-            self.assertEqual(runtime.store.get_entity("nov")["region_id"], "clearing")
+            nov_before = runtime.store.get_entity("nov")
+            self.assertIsNotNone(nov_before)
+            initial_energy = float(nov_before["properties"]["needs"]["energy"])
+            self.assertGreaterEqual(initial_energy, 0.85)
+            self.assertEqual(nov_before["region_id"], "clearing")
             self.assertEqual(runtime.clock.state().tick, 0)
+            self.assertIsNone(runtime.cognition.need_dynamics.get_needs("nov"))
 
             first = runtime.world_tick.tick()
             self.assertEqual(first["clock"]["tick"], 1)
+            dynamic_after_first = runtime.cognition.need_dynamics.get_needs("nov")
+            self.assertIsNotNone(dynamic_after_first)
             self.assertEqual(len(first["npc_needs"]), 1)
             self.assertEqual(first["npc_needs"][0]["npc_id"], "nov")
             self.assertEqual(first["npc_needs"][0]["need"], "energy")
@@ -55,7 +60,8 @@ class NovAutonomousScenarioTest(unittest.TestCase):
             self.assertTrue(any(row.get("need") == "energy" for row in outcomes))
 
             after = runtime.cognition.need_dynamics.get_needs("nov")
-            self.assertLess(after["energy"], initial["energy"])
+            self.assertIsNotNone(after)
+            self.assertLess(after["energy"], initial_energy)
             self.assertGreater(runtime.clock.state().tick, 1)
 
     def test_bootstrap_keeps_autonomy_explicit_to_nov(self):
