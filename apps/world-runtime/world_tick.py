@@ -24,6 +24,7 @@ class WorldTickRunner:
         npc_need_dynamics: Any | None = None,
         npc_need_outcomes: Any | None = None,
         npc_strategy_executor: Any | None = None,
+        npc_composite_strategy_outcomes: Any | None = None,
     ) -> None:
         self.clock = clock
         self.scheduler = scheduler
@@ -33,6 +34,7 @@ class WorldTickRunner:
         self.npc_need_dynamics = npc_need_dynamics
         self.npc_need_outcomes = npc_need_outcomes
         self.npc_strategy_executor = npc_strategy_executor
+        self.npc_composite_strategy_outcomes = npc_composite_strategy_outcomes
         resume_evaluator = getattr(scheduler, "assess_resume", None)
         self.plan_arbiter = plan_arbiter or PlanArbiter(scheduler.ledger, resume_evaluator=resume_evaluator)
 
@@ -66,6 +68,7 @@ class WorldTickRunner:
                 },
                 "plans": [],
                 "npc_need_outcomes": [],
+                "npc_composite_strategy_outcomes": [],
             }
 
         after = self.clock.advance()
@@ -120,11 +123,9 @@ class WorldTickRunner:
                     "status": row.get("status"),
                     "proposal_id": row.get("proposal_id"),
                     "plan_id": row.get("plan_id"),
+                    "strategy_execution_id": row.get("strategy_execution_id"),
                 })
 
-        # Composite strategies advance before plan arbitration. A move phase may
-        # create a normal child plan, which then participates in arbitration in
-        # this same logical tick. wait_ticks consumes only the logical clock.
         strategy_results: list[dict[str, Any]] = []
         if self.npc_strategy_executor is not None:
             for row in self.npc_strategy_executor.tick_all(logical_tick=after.tick):
@@ -188,6 +189,23 @@ class WorldTickRunner:
                     "strategy_experience": row.get("strategy_experience"),
                 })
 
+        composite_outcome_results: list[dict[str, Any]] = []
+        if self.npc_composite_strategy_outcomes is not None:
+            for row in self.npc_composite_strategy_outcomes.process_completed():
+                composite_outcome_results.append({
+                    "strategy_execution_id": row.get("strategy_execution_id"),
+                    "strategy_id": row.get("strategy_id"),
+                    "terminal_plan_id": row.get("terminal_plan_id"),
+                    "npc_id": row.get("npc_id"),
+                    "need": row.get("need"),
+                    "target_entity_id": row.get("target_entity_id"),
+                    "satisfaction": row.get("satisfaction"),
+                    "elapsed_ticks": row.get("elapsed_ticks"),
+                    "preemptions": row.get("preemptions"),
+                    "replans": row.get("replans"),
+                    "observed_risk": row.get("observed_risk"),
+                })
+
         return {
             "advanced": True,
             "clock": after.as_dict(),
@@ -205,4 +223,5 @@ class WorldTickRunner:
             },
             "plans": results,
             "npc_need_outcomes": outcome_results,
+            "npc_composite_strategy_outcomes": composite_outcome_results,
         }
