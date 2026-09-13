@@ -10,8 +10,8 @@ class NpcNeedOutcomeProcessor:
     """Apply deterministic internal satisfaction after need-driven plans complete.
 
     This is not authoritative world replay. It updates compact NPC need state,
-    need-outcome learning, optional empirical strategy-cost learning and concrete
-    episodic memory exactly once per completed plan.
+    statistical learning, concrete episodic memory and optional evidence-weighted
+    beliefs exactly once per completed plan.
     """
 
     DEFAULT_SATISFACTION = {
@@ -31,6 +31,7 @@ class NpcNeedOutcomeProcessor:
         learning_provider: Any | None = None,
         strategy_experience_provider: Any | None = None,
         episodic_memory_provider: Any | None = None,
+        belief_provider: Any | None = None,
     ) -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -39,6 +40,7 @@ class NpcNeedOutcomeProcessor:
         self.learning_provider = learning_provider
         self.strategy_experience_provider = strategy_experience_provider
         self.episodic_memory_provider = episodic_memory_provider
+        self.belief_provider = belief_provider
         self.satisfaction = dict(self.DEFAULT_SATISFACTION)
         for key, value in dict(satisfaction or {}).items():
             if key in self.satisfaction:
@@ -173,6 +175,12 @@ class NpcNeedOutcomeProcessor:
             },
         )
 
+    def _derive_belief(self, episode: dict[str, Any] | None) -> dict[str, Any] | None:
+        observer = getattr(self.belief_provider, "observe_episode", None)
+        if not callable(observer) or not isinstance(episode, dict):
+            return None
+        return observer(episode)
+
     def process_completed(self) -> list[dict[str, Any]]:
         processed = self._processed_ids()
         results: list[dict[str, Any]] = []
@@ -217,8 +225,9 @@ class NpcNeedOutcomeProcessor:
                 outcome_id=outcome_id,
             )
             episode = self._remember_episode(record, outcome, npc_id=npc_id, need=need, plan_id=plan_id)
+            belief = self._derive_belief(episode)
             row = {
-                "need_outcome_schema": "npc_need_outcome_audit_v5",
+                "need_outcome_schema": "npc_need_outcome_audit_v6",
                 "plan_id": plan_id,
                 "proposal_id": record.get("proposal_id"),
                 "npc_id": npc_id,
@@ -231,6 +240,7 @@ class NpcNeedOutcomeProcessor:
                 "learning": deepcopy(learning),
                 "strategy_experience": deepcopy(strategy_experience),
                 "episode_id": episode.get("episode_id") if isinstance(episode, dict) else None,
+                "belief": deepcopy(belief),
             }
             self._append(row)
             processed.add(plan_id)
