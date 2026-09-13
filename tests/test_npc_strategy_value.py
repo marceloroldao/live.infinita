@@ -60,6 +60,16 @@ class FakeEpisodes:
         return [dict(row) for row in self.rows if row.get("npc_id") == npc_id]
 
 
+class FakeBeliefs:
+    def __init__(self, rows):
+        self.rows = rows
+
+    def risk_belief(self, npc_id, context):
+        key = (npc_id, context.get("region_id"), context.get("period"), context.get("weather", ""))
+        row = self.rows.get(key)
+        return dict(row) if row else None
+
+
 class NpcStrategyValueTest(unittest.TestCase):
     def test_safer_nearer_target_can_beat_higher_predicted_satisfaction(self):
         value = NpcStrategyValue(FakePlanner(), travel_weight=0.20, risk_weight=0.50, route_hops_scale=4)
@@ -142,6 +152,30 @@ class NpcStrategyValueTest(unittest.TestCase):
         self.assertGreater(near["episodic_bias"], 0.0)
         self.assertEqual(far["episodic_evidence_count"], 0)
         self.assertEqual(far["episodic_bias"], 0.0)
+
+    def test_belief_blends_only_heuristic_risk(self):
+        beliefs = FakeBeliefs({
+            ("npc", "r1", "night", "clear"): {"mean_risk": 0.8, "confidence": 0.75, "count": 4},
+        })
+        value = NpcStrategyValue(
+            FakePlanner(),
+            travel_weight=0.0,
+            risk_weight=1.0,
+            belief_weight=0.5,
+            belief_provider=beliefs,
+        )
+        rankings = [{"target_entity_id": "near", "need": "energy", "effective_mean_satisfaction": 0.8, "exploring": False, "context_count": 4}]
+        _, valued = value.choose(
+            actor_entity_id="npc",
+            rankings=rankings,
+            context={"period": "night", "weather": "clear", "danger_level": 0.0},
+        )
+        row = valued[0]
+        self.assertEqual(row["cost_source"], "heuristic+belief")
+        self.assertAlmostEqual(row["belief_blend"], 0.375)
+        self.assertGreater(row["risk"], row["heuristic_risk"])
+        self.assertLess(row["risk"], 0.8)
+        self.assertEqual(row["belief"]["count"], 4)
 
 
 if __name__ == "__main__":
