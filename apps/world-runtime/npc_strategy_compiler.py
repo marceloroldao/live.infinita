@@ -11,9 +11,9 @@ class NpcStrategyCompileError(ValueError):
 class NpcStrategyCompiler:
     """Compile a chosen composite strategy into deterministic semantic phases.
 
-    Compilation grants no authority and performs no world mutation. The output is
-    an immutable-by-convention strategy plan that later execution layers may feed
-    through the normal intent planner and Mutation Gate.
+    Compilation grants no authority and performs no world mutation. Only the
+    terminal movement phase is eligible to satisfy the originating need; earlier
+    waypoints remain causal strategy phases but cannot trigger need outcomes.
     """
 
     ALLOWED_PHASES = frozenset({"move_to_entity", "wait_ticks"})
@@ -36,12 +36,14 @@ class NpcStrategyCompiler:
             raise NpcStrategyCompileError("actor, need, target, strategy_id and phases are required")
 
         phases: list[dict[str, Any]] = []
+        last_index = len(raw_phases) - 1
         for index, raw in enumerate(raw_phases):
             if not isinstance(raw, dict):
                 raise NpcStrategyCompileError(f"phase {index} must be an object")
             kind = str(raw.get("kind") or "").strip().lower()
             if kind not in self.ALLOWED_PHASES:
                 raise NpcStrategyCompileError(f"unsupported strategy phase: {kind!r}")
+            outcome_eligible = index == last_index and kind == "move_to_entity"
             if kind == "move_to_entity":
                 phase_target = str(raw.get("target_entity_id") or "").strip()
                 if not phase_target:
@@ -51,6 +53,7 @@ class NpcStrategyCompiler:
                     "actor_entity_id": actor,
                     "target_entity_id": phase_target,
                     "need": need_name,
+                    "need_outcome_eligible": outcome_eligible,
                     "learning_context": deepcopy(context or {}),
                     "strategy_id": strategy_id,
                     "strategy_phase_index": index,
@@ -64,6 +67,7 @@ class NpcStrategyCompiler:
                     "actor_entity_id": actor,
                     "ticks": ticks,
                     "need": need_name,
+                    "need_outcome_eligible": False,
                     "learning_context": deepcopy(context or {}),
                     "strategy_id": strategy_id,
                     "strategy_phase_index": index,
