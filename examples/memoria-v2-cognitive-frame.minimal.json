@@ -3,30 +3,32 @@
   "tick_id": 42,
   "observer_id": "agent:nova",
   "state_addresses": [
-    "entity:agent:nova",
-    "region:r1",
-    "source:s1"
+    "live:entity:agent:nova",
+    "live:region:r1",
+    "live:source:s1"
   ],
   "available_interventions": [
     {
-      "intervention_address": "action:a1",
+      "intervention_address": "live:intervention:a1",
       "proposal_id": "proposal-0001"
     },
     {
-      "intervention_address": "action:a2",
+      "intervention_address": "live:intervention:a2",
       "proposal_id": "proposal-0002"
     }
   ],
   "candidate_outcomes": [
     {
       "candidate_id": "candidate-x",
-      "consequence_addresses": ["effect:x"],
-      "next_state_addresses": ["entity:agent:nova", "region:r1", "effect:x"]
+      "proposal_id": "proposal-0001",
+      "consequence_addresses": ["live:effect:x"],
+      "next_state_addresses": ["live:entity:agent:nova", "live:region:r1", "live:effect:x"]
     },
     {
       "candidate_id": "candidate-y",
-      "consequence_addresses": ["effect:y"],
-      "next_state_addresses": ["entity:agent:nova", "region:r1", "effect:y"]
+      "proposal_id": "proposal-0002",
+      "consequence_addresses": ["live:effect:y"],
+      "next_state_addresses": ["live:entity:agent:nova", "live:region:r1", "live:effect:y"]
     }
   ],
   "provenance": {
