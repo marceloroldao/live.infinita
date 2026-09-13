@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from npc_belief_model import NpcBeliefModel
+from npc_causal_forecast import NpcCausalForecast
 from npc_causal_model import NpcCausalModel
 from npc_composite_strategy import NpcCompositeStrategy
 from npc_composite_strategy_outcomes import NpcCompositeStrategyOutcomeProcessor
@@ -29,6 +30,7 @@ class NpcCognitiveStack:
     episodic_memory: NpcEpisodicMemory
     belief_model: NpcBeliefModel
     causal_model: NpcCausalModel
+    causal_forecast: NpcCausalForecast
     strategy_value: NpcStrategyValue
     composite_strategy: NpcCompositeStrategy
     strategy_compiler: NpcStrategyCompiler
@@ -85,13 +87,18 @@ def build_npc_cognitive_stack(
     episodic_memory = NpcEpisodicMemory(root / "npc-episodes.jsonl")
     belief_model = NpcBeliefModel(root / "npc-beliefs.json", entity_provider=store)
     causal_model = NpcCausalModel(root / "npc-causal-hypotheses.json", world_provider=world_provider)
+    causal_forecast = NpcCausalForecast(causal_model, root / "world-event-schedule.jsonl")
     strategy_value = NpcStrategyValue(
         planner,
         strategy_experience_provider=strategy_experience,
         episodic_memory_provider=episodic_memory,
         belief_provider=belief_model,
     )
-    composite_strategy = NpcCompositeStrategy(planner, strategy_experience_provider=strategy_experience)
+    composite_strategy = NpcCompositeStrategy(
+        planner,
+        strategy_experience_provider=strategy_experience,
+        causal_forecast_provider=causal_forecast,
+    )
     strategy_compiler = NpcStrategyCompiler()
     strategy_executor = NpcStrategyExecutor(root / "npc-strategy-executions.jsonl", plan_scheduler)
     need_scheduler = NpcNeedScheduler(
@@ -133,6 +140,7 @@ def build_npc_cognitive_stack(
         episodic_memory=episodic_memory,
         belief_model=belief_model,
         causal_model=causal_model,
+        causal_forecast=causal_forecast,
         strategy_value=strategy_value,
         composite_strategy=composite_strategy,
         strategy_compiler=strategy_compiler,
