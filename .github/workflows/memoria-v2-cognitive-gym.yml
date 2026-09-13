@@ -7,6 +7,7 @@ on:
       - 'apps/world-runtime/test_memoria_v2_adapter.py'
       - 'apps/world-runtime/scenario_nova_r1_r2.py'
       - 'apps/world-runtime/test_scenario_nova_r1_r2.py'
+      - 'apps/world-runtime/test_memoria_v2_crossrepo.py'
       - 'schemas/memoria-v2-cognitive-frame.schema.json'
       - 'examples/memoria-v2-cognitive-frame.minimal.json'
       - 'docs/MEMORIA_V2_COGNITIVE_GYM.md'
@@ -17,7 +18,8 @@ jobs:
   adapter-contract:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Live.Infinita
+        uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -36,3 +38,27 @@ jobs:
           Draft202012Validator(schema).validate(example)
           print('schema fixture: OK')
           PY
+
+  cross-repo-memoria-v2:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Live.Infinita
+        uses: actions/checkout@v4
+        with:
+          path: live-infinita
+      - name: Checkout Memoria.ia V2 experimental branch
+        uses: actions/checkout@v4
+        with:
+          repository: marceloroldao/memoria.ia
+          ref: experiment/address-trajectory-v2
+          path: memoria-ia
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install test dependency
+        run: python -m pip install pytest
+      - name: Run Live -> Memoria.ia V2 cross-repo gym
+        env:
+          PYTHONPATH: ${{ github.workspace }}/memoria-ia/src:${{ github.workspace }}/live-infinita/apps/world-runtime
+        working-directory: live-infinita/apps/world-runtime
+        run: python -m pytest -q test_memoria_v2_crossrepo.py
