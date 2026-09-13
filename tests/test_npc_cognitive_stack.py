@@ -88,8 +88,9 @@ class NpcCognitiveStackTest(unittest.TestCase):
             self.assertIs(stack.composite_strategy.strategy_experience_provider, stack.strategy_experience)
             self.assertIs(stack.strategy_value.strategy_experience_provider, stack.strategy_experience)
             self.assertIs(stack.need_outcomes.strategy_experience_provider, stack.strategy_experience)
+            self.assertIs(stack.need_outcomes.episodic_memory_provider, stack.episodic_memory)
             self.assertIs(stack.composite_strategy_outcomes.strategy_experience_provider, stack.strategy_experience)
-            self.assertIs(stack.composite_strategy_outcomes.episodic_memory_provider, stack.episodic_memory)
+            self.assertIsNone(stack.composite_strategy_outcomes.episodic_memory_provider)
 
             kwargs = stack.world_tick_kwargs()
             self.assertIs(kwargs["npc_need_scheduler"], stack.need_scheduler)
