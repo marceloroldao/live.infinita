@@ -25,6 +25,7 @@ class WorldTickRunner:
         npc_need_outcomes: Any | None = None,
         npc_strategy_executor: Any | None = None,
         npc_composite_strategy_outcomes: Any | None = None,
+        npc_causal_model: Any | None = None,
     ) -> None:
         self.clock = clock
         self.scheduler = scheduler
@@ -35,6 +36,7 @@ class WorldTickRunner:
         self.npc_need_outcomes = npc_need_outcomes
         self.npc_strategy_executor = npc_strategy_executor
         self.npc_composite_strategy_outcomes = npc_composite_strategy_outcomes
+        self.npc_causal_model = npc_causal_model
         resume_evaluator = getattr(scheduler, "assess_resume", None)
         self.plan_arbiter = plan_arbiter or PlanArbiter(scheduler.ledger, resume_evaluator=resume_evaluator)
 
@@ -48,6 +50,13 @@ class WorldTickRunner:
             return tick_fn(plan_id, logical_tick=logical_tick)
         return tick_fn(plan_id)
 
+    def _causal_snapshot(self) -> dict[str, Any] | None:
+        snapshot = getattr(self.npc_causal_model, "snapshot", None)
+        if not callable(snapshot):
+            return None
+        value = snapshot()
+        return value if isinstance(value, dict) else None
+
     def tick(self) -> dict[str, Any]:
         before = self.clock.state()
         if before.paused:
@@ -56,6 +65,7 @@ class WorldTickRunner:
                 "clock": before.as_dict(),
                 "events": [],
                 "conditional_events": [],
+                "causal_observations": [],
                 "npc_need_dynamics": [],
                 "npc_needs": [],
                 "npc_strategies": [],
@@ -72,6 +82,7 @@ class WorldTickRunner:
             }
 
         after = self.clock.advance()
+        causal_before = self._causal_snapshot()
 
         event_results: list[dict[str, Any]] = []
         if self.event_scheduler is not None:
@@ -100,6 +111,32 @@ class WorldTickRunner:
                     "last_proposal_id": row.get("last_proposal_id"),
                     "last_plan_id": row.get("last_plan_id"),
                 })
+
+        causal_results: list[dict[str, Any]] = []
+        if self.npc_causal_model is not None and causal_before is not None:
+            causal_after = self._causal_snapshot()
+            observer = getattr(self.npc_causal_model, "observe_environment_transition", None)
+            if callable(observer) and causal_after is not None:
+                relation = observer(
+                    observation_id=f"world-tick:{after.tick}",
+                    logical_tick=after.tick,
+                    before=causal_before,
+                    after=causal_after,
+                    source_events=event_results + conditional_results,
+                )
+                if isinstance(relation, dict):
+                    causal_results.append({
+                        "hypothesis_type": relation.get("hypothesis_type"),
+                        "cause": relation.get("cause"),
+                        "effect": relation.get("effect"),
+                        "count": relation.get("count"),
+                        "support_count": relation.get("support_count"),
+                        "counter_count": relation.get("counter_count"),
+                        "neutral_count": relation.get("neutral_count"),
+                        "mean_effect_delta": relation.get("mean_effect_delta"),
+                        "confidence": relation.get("confidence"),
+                        "status": relation.get("status"),
+                    })
 
         need_dynamics_results: list[dict[str, Any]] = []
         if self.npc_need_dynamics is not None:
@@ -211,6 +248,7 @@ class WorldTickRunner:
             "clock": after.as_dict(),
             "events": event_results,
             "conditional_events": conditional_results,
+            "causal_observations": causal_results,
             "npc_need_dynamics": need_dynamics_results,
             "npc_needs": need_results,
             "npc_strategies": strategy_results,
