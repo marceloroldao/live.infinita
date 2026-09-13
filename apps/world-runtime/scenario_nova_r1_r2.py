@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from copy import deepcopy
 from dataclasses import dataclass
 
 from memoria_v2_adapter import (
@@ -59,10 +58,24 @@ def _proposal(step: ScenarioStep) -> dict:
     }
 
 
+def _effect_id(expected_consequence: str) -> str:
+    return expected_consequence.replace(":", "_")
+
+
 def _after_for(step: ScenarioStep) -> dict:
     after = _world(step.region_id, tick=step.tick_id + 1, version=step.tick_id + 1)
-    after["entities"]["nova"].setdefault("components", {})["cognitive_probe"] = {
-        "outcome": step.expected_consequence
+    effect_id = _effect_id(step.expected_consequence)
+    after["entities"][effect_id] = {
+        "entity_id": effect_id,
+        "status": "active",
+        "components": {"transform": {"region_id": step.region_id}},
+    }
+    after["relations"][f"rel_{effect_id}"] = {
+        "relation_id": f"rel_{effect_id}",
+        "subject": "nova",
+        "predicate": "observes",
+        "object": effect_id,
+        "status": "active",
     }
     return after
 
@@ -70,7 +83,7 @@ def _after_for(step: ScenarioStep) -> dict:
 def build_scenario_frames() -> tuple[dict, ...]:
     """Build deterministic Live.Infinita frames for an R1->R2->R1 regime scenario.
 
-    This module only validates the Live side of the bridge. It does not emulate the
+    This module validates the Live side of the bridge only. It does not emulate the
     Memoria.ia cognitive engine. Each step produces a world-derived payload that can
     be consumed by `make_live_request()` on the V2 side.
     """
@@ -87,21 +100,6 @@ def build_scenario_frames() -> tuple[dict, ...]:
     for step in steps:
         before = _world(step.region_id, tick=step.tick_id, version=step.tick_id)
         after = _after_for(step)
-        # The structural transition uses a stable outcome entity address rather than
-        # any semantic interpretation by the cognitive core.
-        after["entities"]["effect"] = {
-            "entity_id": step.expected_consequence,
-            "status": "active",
-            "components": {"transform": {"region_id": step.region_id}},
-        }
-        after["relations"]["rel_effect"] = {
-            "relation_id": "rel_effect",
-            "subject": "nova",
-            "predicate": "observes",
-            "object": "effect",
-            "status": "active",
-        }
-
         proposal = _proposal(step)
         candidate = candidate_from_transition(
             candidate_id=f"c-{step.proposal_id}",
