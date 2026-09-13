@@ -12,7 +12,8 @@ class NpcNeedOutcomeProcessor:
     This is not authoritative world replay. It updates the compact NPC need state
     exactly once per completed plan and writes an audit trail for observability.
     When a learning provider is present, the actually achieved reduction is also
-    recorded against the selected target exactly once per outcome id.
+    recorded against the selected target exactly once per outcome id, using the
+    decision-time learning context captured in the semantic intent.
     """
 
     DEFAULT_SATISFACTION = {
@@ -75,15 +76,21 @@ class NpcNeedOutcomeProcessor:
         before = float(outcome.get("before", 0.0))
         after = float(outcome.get("after", before))
         achieved = min(1.0, max(0.0, before - after))
-        return observer(
-            outcome_id=str(outcome.get("outcome_id") or f"plan-completed:{plan_id}:{need}"),
-            npc_id=npc_id,
-            need=need,
-            target_entity_id=target_id,
-            satisfaction=achieved,
-            plan_id=plan_id,
-            proposal_id=str(record.get("proposal_id") or "").strip() or None,
-        )
+        kwargs = {
+            "outcome_id": str(outcome.get("outcome_id") or f"plan-completed:{plan_id}:{need}"),
+            "npc_id": npc_id,
+            "need": need,
+            "target_entity_id": target_id,
+            "satisfaction": achieved,
+            "plan_id": plan_id,
+            "proposal_id": str(record.get("proposal_id") or "").strip() or None,
+        }
+        context = intent.get("learning_context") if isinstance(intent.get("learning_context"), dict) else None
+        try:
+            return observer(**kwargs, context=deepcopy(context))
+        except TypeError:
+            # Backward-compatible adapter for v1 learning providers.
+            return observer(**kwargs)
 
     def process_completed(self) -> list[dict[str, Any]]:
         processed = self._processed_ids()
@@ -110,16 +117,18 @@ class NpcNeedOutcomeProcessor:
                     "plan_revision": int(record.get("plan_revision", 0)),
                     "completed_steps": len(record.get("completed_steps") or []),
                     "target_entity_id": intent.get("target_entity_id"),
+                    "learning_context": deepcopy(intent.get("learning_context")),
                 },
             )
             learning = self._learn(record, outcome, npc_id=npc_id, need=need, plan_id=plan_id)
             row = {
-                "need_outcome_schema": "npc_need_outcome_audit_v2",
+                "need_outcome_schema": "npc_need_outcome_audit_v3",
                 "plan_id": plan_id,
                 "proposal_id": record.get("proposal_id"),
                 "npc_id": npc_id,
                 "need": need,
                 "target_entity_id": intent.get("target_entity_id"),
+                "learning_context": deepcopy(intent.get("learning_context")),
                 "status": "applied",
                 "outcome": deepcopy(outcome),
                 "learning": deepcopy(learning),
