@@ -40,6 +40,7 @@ class NpcNeedScheduler:
         learning_provider: Any | None = None,
         world_provider: Any | None = None,
         strategy_provider: Any | None = None,
+        compound_strategy_provider: Any | None = None,
     ) -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -52,6 +53,7 @@ class NpcNeedScheduler:
         self.learning_provider = learning_provider
         self.world_provider = world_provider
         self.strategy_provider = strategy_provider
+        self.compound_strategy_provider = compound_strategy_provider
 
     def history(self) -> list[dict[str, Any]]:
         if not self.path.exists():
@@ -165,34 +167,42 @@ class NpcNeedScheduler:
                 candidate = chooser(npc_id, need, candidates, context=context)
                 if candidate in candidates:
                     selected = str(candidate)
-
         if self.strategy_provider is not None and ranking:
             strategy_choose = getattr(self.strategy_provider, "choose", None)
             if callable(strategy_choose):
-                strategy_selected, strategy_ranking = strategy_choose(
-                    actor_entity_id=npc_id,
-                    rankings=ranking,
-                    context=context,
-                )
+                strategy_selected, strategy_ranking = strategy_choose(actor_entity_id=npc_id, rankings=ranking, context=context)
                 if strategy_selected in candidates:
                     selected = str(strategy_selected)
                     ranking = strategy_ranking
-
         if selected in candidates:
             return selected, ranking
         return candidates[0], ranking
 
-    def _intent_for(self, entity: dict[str, Any], need: str, context: dict[str, Any]) -> tuple[dict[str, Any] | None, list[dict[str, Any]] | None]:
-        target_id, ranking = self._select_target(entity, need, context)
+    def _intent_for(self, entity: dict[str, Any], need: str, context: dict[str, Any]) -> tuple[dict[str, Any] | None, list[dict[str, Any]] | None, dict[str, Any] | None, list[dict[str, Any]] | None]:
+        target_id, target_ranking = self._select_target(entity, need, context)
         if not target_id:
-            return None, ranking
-        return {
+            return None, target_ranking, None, None
+        base_intent = {
             "intent": "move_to_entity",
             "actor_entity_id": str(entity.get("id") or ""),
             "target_entity_id": target_id,
             "need": need,
             "learning_context": deepcopy(context),
-        }, ranking
+        }
+        if self.compound_strategy_provider is not None:
+            chooser = getattr(self.compound_strategy_provider, "choose", None)
+            if callable(chooser):
+                props = entity.get("properties") if isinstance(entity.get("properties"), dict) else {}
+                selected, strategy_ranking = chooser(
+                    actor_entity_id=str(entity.get("id") or ""),
+                    need=need,
+                    target_entity_id=target_id,
+                    actor_properties=props,
+                    context=context,
+                )
+                if isinstance(selected, dict) and isinstance(selected.get("intent"), dict):
+                    return deepcopy(selected["intent"]), target_ranking, deepcopy(selected), deepcopy(strategy_ranking)
+        return base_intent, target_ranking, {"strategy_id": "direct", "strategy_kind": "direct"}, None
 
     def evaluate_tick(self, tick: int) -> list[dict[str, Any]]:
         tick = int(tick)
@@ -202,10 +212,7 @@ class NpcNeedScheduler:
             if entity is None:
                 continue
             values = self._need_values(entity)
-            candidates = [
-                (name, value, self.DEFAULT_PRIORITIES[name], value * self.DEFAULT_PRIORITIES[name])
-                for name, value in values.items() if value >= self.threshold
-            ]
+            candidates = [(name, value, self.DEFAULT_PRIORITIES[name], value * self.DEFAULT_PRIORITIES[name]) for name, value in values.items() if value >= self.threshold]
             if not candidates:
                 continue
             candidates.sort(key=lambda item: (-item[3], -item[2], item[0]))
@@ -216,28 +223,22 @@ class NpcNeedScheduler:
                 continue
 
             context = self._context_for(entity)
-            intent, target_ranking = self._intent_for(entity, need, context)
+            intent, target_ranking, strategy, strategy_ranking = self._intent_for(entity, need, context)
             if intent is None:
                 row = {
-                    "need_schema": "npc_need_v4",
-                    "npc_id": npc_id,
-                    "need": need,
-                    "severity": severity,
-                    "priority": priority,
-                    "utility": utility,
-                    "tick": tick,
-                    "status": "no_target",
-                    "learning_context": deepcopy(context),
-                    "target_ranking": target_ranking,
-                    "proposal_id": None,
-                    "plan_id": None,
-                    "created_at_unix": time.time(),
+                    "need_schema": "npc_need_v5",
+                    "npc_id": npc_id, "need": need, "severity": severity, "priority": priority,
+                    "utility": utility, "tick": tick, "status": "no_target",
+                    "learning_context": deepcopy(context), "target_ranking": target_ranking,
+                    "strategy": strategy, "strategy_ranking": strategy_ranking,
+                    "proposal_id": None, "plan_id": None, "created_at_unix": time.time(),
                 }
                 self._append(row)
                 results.append(row)
                 continue
 
             selected_target_id = str(intent.get("target_entity_id") or "")
+            strategy_id = str((strategy or {}).get("strategy_id") or "direct")
             idem = f"npc-need:{npc_id}:{need}:{tick // max(1, self.cooldown_ticks or 1)}"
             proposal = self.proposals.propose(
                 origin="npc_need",
@@ -245,14 +246,11 @@ class NpcNeedScheduler:
                 proposal_kind="agent_intent",
                 payload={"intent": deepcopy(intent)},
                 metadata={
-                    "need": need,
-                    "severity": severity,
-                    "utility": utility,
-                    "tick": tick,
-                    "plan_priority": priority,
-                    "selected_target_entity_id": selected_target_id,
-                    "learning_context": deepcopy(context),
-                    "target_ranking": deepcopy(target_ranking),
+                    "need": need, "severity": severity, "utility": utility, "tick": tick,
+                    "plan_priority": priority, "selected_target_entity_id": selected_target_id,
+                    "learning_context": deepcopy(context), "target_ranking": deepcopy(target_ranking),
+                    "strategy_id": strategy_id, "strategy": deepcopy(strategy),
+                    "strategy_ranking": deepcopy(strategy_ranking),
                 },
                 idempotency_key=idem,
             )
@@ -260,7 +258,7 @@ class NpcNeedScheduler:
                 proposal = self.proposals.approve(
                     str(proposal["proposal_id"]),
                     decided_by=f"need_policy:{need}",
-                    reason=f"deterministic need threshold reached: {severity:.3f}; utility={utility:.3f}",
+                    reason=f"deterministic need threshold reached: {severity:.3f}; utility={utility:.3f}; strategy={strategy_id}",
                 )
             plan = self.plans.schedule(
                 intent=deepcopy(intent),
@@ -271,19 +269,13 @@ class NpcNeedScheduler:
                 priority=priority,
             )
             row = {
-                "need_schema": "npc_need_v4",
-                "npc_id": npc_id,
-                "need": need,
-                "severity": severity,
-                "priority": priority,
-                "utility": utility,
-                "tick": tick,
-                "status": "scheduled",
-                "selected_target_entity_id": selected_target_id,
-                "learning_context": deepcopy(context),
-                "target_ranking": deepcopy(target_ranking),
-                "proposal_id": proposal.get("proposal_id"),
-                "plan_id": plan.get("plan_id"),
+                "need_schema": "npc_need_v5",
+                "npc_id": npc_id, "need": need, "severity": severity, "priority": priority,
+                "utility": utility, "tick": tick, "status": "scheduled",
+                "selected_target_entity_id": selected_target_id, "learning_context": deepcopy(context),
+                "target_ranking": deepcopy(target_ranking), "strategy_id": strategy_id,
+                "strategy": deepcopy(strategy), "strategy_ranking": deepcopy(strategy_ranking),
+                "proposal_id": proposal.get("proposal_id"), "plan_id": plan.get("plan_id"),
                 "created_at_unix": time.time(),
             }
             self._append(row)
