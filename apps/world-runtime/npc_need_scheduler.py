@@ -116,18 +116,27 @@ class NpcNeedScheduler:
                 continue
             values = self._need_values(entity)
             candidates = [
-                (name, value, self.DEFAULT_PRIORITIES[name])
+                (name, value, self.DEFAULT_PRIORITIES[name], value * self.DEFAULT_PRIORITIES[name])
                 for name, value in values.items()
                 if value >= self.threshold
             ]
             if not candidates:
                 continue
-            # Deterministic winner: severity first, then policy priority, then name.
-            candidates.sort(key=lambda item: (-item[1], -item[2], item[0]))
-            need, severity, priority = candidates[0]
+            # Deterministic utility: physiological/policy weight * current severity.
+            # Ties resolve by policy priority and finally by stable need name.
+            candidates.sort(key=lambda item: (-item[3], -item[2], item[0]))
+            need, severity, priority, utility = candidates[0]
             last_tick = self._last_tick(npc_id, need)
             if last_tick is not None and tick - last_tick < self.cooldown_ticks:
-                results.append({"npc_id": npc_id, "need": need, "status": "cooldown", "tick": tick})
+                results.append({
+                    "npc_id": npc_id,
+                    "need": need,
+                    "severity": severity,
+                    "priority": priority,
+                    "utility": utility,
+                    "status": "cooldown",
+                    "tick": tick,
+                })
                 continue
 
             intent = self._intent_for(entity, need)
@@ -138,6 +147,7 @@ class NpcNeedScheduler:
                     "need": need,
                     "severity": severity,
                     "priority": priority,
+                    "utility": utility,
                     "tick": tick,
                     "status": "no_target",
                     "proposal_id": None,
@@ -154,14 +164,20 @@ class NpcNeedScheduler:
                 proposer_id=f"npc:{npc_id}",
                 proposal_kind="agent_intent",
                 payload={"intent": deepcopy(intent)},
-                metadata={"need": need, "severity": severity, "tick": tick, "plan_priority": priority},
+                metadata={
+                    "need": need,
+                    "severity": severity,
+                    "utility": utility,
+                    "tick": tick,
+                    "plan_priority": priority,
+                },
                 idempotency_key=idem,
             )
             if proposal.get("status") == "proposed":
                 proposal = self.proposals.approve(
                     str(proposal["proposal_id"]),
                     decided_by=f"need_policy:{need}",
-                    reason=f"deterministic need threshold reached: {severity:.3f}",
+                    reason=f"deterministic need threshold reached: {severity:.3f}; utility={utility:.3f}",
                 )
             plan = self.plans.schedule(
                 intent=deepcopy(intent),
@@ -182,6 +198,7 @@ class NpcNeedScheduler:
                 "need": need,
                 "severity": severity,
                 "priority": priority,
+                "utility": utility,
                 "tick": tick,
                 "status": "scheduled",
                 "proposal_id": proposal.get("proposal_id"),
