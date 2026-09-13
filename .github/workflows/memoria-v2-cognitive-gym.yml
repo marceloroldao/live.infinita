@@ -12,6 +12,8 @@ on:
       - 'apps/world-runtime/test_active_curiosity_crossrepo.py'
       - 'apps/world-runtime/closed_loop_runtime.py'
       - 'apps/world-runtime/test_closed_loop_crossrepo.py'
+      - 'apps/world-runtime/scenario_continuous_closed_loop.py'
+      - 'apps/world-runtime/test_continuous_closed_loop_crossrepo.py'
       - 'schemas/memoria-v2-cognitive-frame.schema.json'
       - 'examples/memoria-v2-cognitive-frame.minimal.json'
       - 'docs/MEMORIA_V2_COGNITIVE_GYM.md'
@@ -65,4 +67,9 @@ jobs:
         env:
           PYTHONPATH: ${{ github.workspace }}/memoria-ia/src:${{ github.workspace }}/live-infinita/apps/world-runtime
         working-directory: live-infinita/apps/world-runtime
-        run: python -m pytest -q test_memoria_v2_crossrepo.py test_active_curiosity_crossrepo.py test_closed_loop_crossrepo.py
+        run: >-
+          python -m pytest -q
+          test_memoria_v2_crossrepo.py
+          test_active_curiosity_crossrepo.py
+          test_closed_loop_crossrepo.py
+          test_continuous_closed_loop_crossrepo.py
