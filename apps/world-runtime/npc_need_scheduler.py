@@ -273,13 +273,16 @@ class NpcNeedScheduler:
             shelter_entity_ids=self._strategy_shelters(entity),
             wait_ticks=wait_ticks,
         )
-        selected, ranking = choose_fn(
-            candidates,
-            actor_entity_id=str(entity.get("id") or ""),
-            need=need,
-            target_entity_id=target_id,
-            context=deepcopy(context),
-        )
+        try:
+            selected, ranking = choose_fn(
+                candidates,
+                actor_entity_id=str(entity.get("id") or ""),
+                need=need,
+                target_entity_id=target_id,
+                context=deepcopy(context),
+            )
+        except TypeError:
+            selected, ranking = choose_fn(candidates)
         if not isinstance(selected, dict):
             return None, deepcopy(ranking), None
         compiled = compile_fn(
