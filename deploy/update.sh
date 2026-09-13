@@ -6,6 +6,7 @@ SOURCE_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 INSTALL_DIR="${INSTALL_DIR:-/opt/live.infinita}"
 SERVICE_USER="${SERVICE_USER:-liveinfinita}"
 DATA_DIR="${DATA_DIR:-/var/lib/live-infinita}"
+READY_TIMEOUT="${READY_TIMEOUT:-25}"
 
 ok(){ printf '[ OK ] %s\n' "$*"; }
 warn(){ printf '[WARN] %s\n' "$*"; }
@@ -20,7 +21,6 @@ printf 'Data   : %s\n\n' "$(date -Is 2>/dev/null || date)"
 
 cd "$SOURCE_DIR"
 
-# Bloqueia apenas alterações rastreadas. Artefatos locais/untracked do servidor não impedem deploy.
 if [[ -n "$(git status --porcelain --untracked-files=no)" ]]; then
   fail 'Existem alterações rastreadas locais. Abortando para não sobrescrever nada.'
   git status --short
@@ -37,7 +37,6 @@ git pull --ff-only origin "$BRANCH"
 SOURCE_SHA="$(git rev-parse --short HEAD)"
 ok "Código-fonte atualizado em $SOURCE_SHA"
 
-# Produção roda em /opt/live.infinita, não diretamente no checkout do operador.
 if ! command -v rsync >/dev/null 2>&1; then
   info 'rsync não encontrado; instalando.'
   sudo apt-get update
@@ -56,7 +55,6 @@ sudo rsync -a --delete \
   "$SOURCE_DIR/" "$INSTALL_DIR/"
 ok 'Código de produção sincronizado.'
 
-# Ambiente virtual obrigatório: evita PEP 668 e coincide com ExecStart dos units systemd.
 if [[ ! -x "$INSTALL_DIR/.venv/bin/python" ]]; then
   info "Criando virtualenv em $INSTALL_DIR/.venv"
   if ! sudo python3 -m venv "$INSTALL_DIR/.venv"; then
@@ -68,7 +66,6 @@ if [[ ! -x "$INSTALL_DIR/.venv/bin/python" ]]; then
 fi
 
 sudo "$INSTALL_DIR/.venv/bin/python" -m pip install --disable-pip-version-check -U pip
-
 mapfile -t REQUIREMENTS < <(find "$INSTALL_DIR/apps" "$INSTALL_DIR/tests" -name requirements.txt -type f 2>/dev/null | sort -u || true)
 if ((${#REQUIREMENTS[@]})); then
   for req in "${REQUIREMENTS[@]}"; do
@@ -80,14 +77,14 @@ else
   warn 'Nenhum requirements.txt encontrado.'
 fi
 
-# Garante ownership consistente com os serviços, sem tocar /etc.
 if id -u "$SERVICE_USER" >/dev/null 2>&1; then
   sudo chown -R "$SERVICE_USER:$SERVICE_USER" "$INSTALL_DIR" "$DATA_DIR"
 else
   warn "Usuário de serviço '$SERVICE_USER' não existe; ownership não alterado."
 fi
 
-# Atualiza apenas units que já estão instalados. Não habilita serviços novos automaticamente.
+# Apenas units presentes no repositório são considerados gerenciados por este deploy.
+MANAGED_SERVICES=()
 UPDATED_UNITS=0
 shopt -s nullglob
 for unit_src in "$INSTALL_DIR"/deploy/live-infinita*.service "$INSTALL_DIR"/deploy/live-infinita*.path; do
@@ -95,23 +92,46 @@ for unit_src in "$INSTALL_DIR"/deploy/live-infinita*.service "$INSTALL_DIR"/depl
   if [[ -e "/etc/systemd/system/$unit" ]]; then
     sudo install -m 0644 "$unit_src" "/etc/systemd/system/$unit"
     UPDATED_UNITS=$((UPDATED_UNITS+1))
+    [[ "$unit" == *.service ]] && MANAGED_SERVICES+=("$unit")
   fi
 done
 shopt -u nullglob
 sudo systemctl daemon-reload
 ok "$UPDATED_UNITS unit(s) systemd instalado(s) foram atualizados."
 
-mapfile -t SERVICES < <(
+mapfile -t INSTALLED_SERVICES < <(
   systemctl list-unit-files --type=service --no-legend 2>/dev/null \
     | awk '{print $1}' \
     | grep -E '^live-infinita.*\.service$' \
     | sort -u || true
 )
 
-if ((${#SERVICES[@]})); then
-  for svc in "${SERVICES[@]}"; do
-    # Não liga serviço que está propositalmente desabilitado/inativo (ex.: broadcaster).
-    if systemctl is-active --quiet "$svc" || systemctl is-enabled --quiet "$svc" 2>/dev/null; then
+# Mostra units legados instalados no servidor, mas não deixa que eles invalidem o release atual.
+LEGACY_SERVICES=()
+for svc in "${INSTALLED_SERVICES[@]}"; do
+  managed=0
+  for known in "${MANAGED_SERVICES[@]}"; do
+    [[ "$svc" == "$known" ]] && managed=1 && break
+  done
+  ((managed == 0)) && LEGACY_SERVICES+=("$svc")
+done
+
+if ((${#LEGACY_SERVICES[@]})); then
+  warn "Serviços legados/não versionados detectados: ${LEGACY_SERVICES[*]}"
+fi
+
+if ((${#MANAGED_SERVICES[@]})); then
+  for svc in "${MANAGED_SERVICES[@]}"; do
+    enabled="$(systemctl is-enabled "$svc" 2>/dev/null || true)"
+    state="$(systemctl is-active "$svc" 2>/dev/null || true)"
+
+    # static normalmente é helper/oneshot acionado por .path/.timer; não reinicia diretamente.
+    if [[ "$enabled" == static ]]; then
+      info "$svc = helper static; restart direto ignorado."
+      continue
+    fi
+
+    if [[ "$state" == active || "$enabled" == enabled ]]; then
       info "reiniciando $svc"
       sudo systemctl restart "$svc" || true
     else
@@ -119,54 +139,84 @@ if ((${#SERVICES[@]})); then
     fi
   done
 else
-  warn 'Nenhum serviço live-infinita*.service instalado.'
+  warn 'Nenhum serviço versionado Live.infinita está instalado.'
 fi
 
-printf '\n== Status dos serviços ==\n'
+wait_service_active(){
+  local svc="$1" timeout="${2:-$READY_TIMEOUT}" i state
+  for ((i=0; i<timeout; i++)); do
+    state="$(systemctl is-active "$svc" 2>/dev/null || true)"
+    [[ "$state" == active ]] && return 0
+    sleep 1
+  done
+  return 1
+}
+
+printf '\n== Status dos serviços gerenciados ==\n'
 FAIL=0
 ACTIVE=0
 INACTIVE=0
-if ((${#SERVICES[@]})); then
-  for svc in "${SERVICES[@]}"; do
+for svc in "${MANAGED_SERVICES[@]}"; do
+  enabled="$(systemctl is-enabled "$svc" 2>/dev/null || true)"
+
+  if [[ "$enabled" == static ]]; then
+    info "$svc = static/helper"
+    INACTIVE=$((INACTIVE+1))
+    continue
+  fi
+
+  if [[ "$enabled" == enabled ]]; then
+    if wait_service_active "$svc"; then
+      ok "$svc = active (enabled)"
+      ACTIVE=$((ACTIVE+1))
+    else
+      state="$(systemctl is-active "$svc" 2>/dev/null || true)"
+      fail "$svc = ${state:-unknown} (enabled)"
+      FAIL=$((FAIL+1))
+    fi
+  else
     state="$(systemctl is-active "$svc" 2>/dev/null || true)"
-    enabled="$(systemctl is-enabled "$svc" 2>/dev/null || true)"
     if [[ "$state" == active ]]; then
       ok "$svc = active ($enabled)"
       ACTIVE=$((ACTIVE+1))
-    elif [[ "$enabled" == enabled ]]; then
-      fail "$svc = ${state:-unknown} (enabled)"
-      FAIL=$((FAIL+1))
     else
       info "$svc = ${state:-unknown} ($enabled)"
       INACTIVE=$((INACTIVE+1))
     fi
-  done
-fi
+  fi
+done
 
-printf '\n== Portas em escuta ==\n'
-ss -ltnp 2>/dev/null | grep -E ':(80|443|8080|8092|8765|3000|5600|5500)\b' || true
-
-printf '\n== Health checks ==\n'
-HTTP_FAIL=0
 check_http(){
-  local label="$1" url="$2" required="${3:-0}" code
-  code="$(curl -k -sS -m 8 -o /dev/null -w '%{http_code}' "$url" 2>/dev/null || true)"
-  [[ -n "$code" ]] || code=000
-  if [[ "$code" =~ ^2[0-9][0-9]$|^3[0-9][0-9]$ ]]; then
-    ok "$label -> $code $url"
-  elif [[ "$required" == 1 ]]; then
+  local label="$1" url="$2" required="${3:-0}" timeout="${4:-$READY_TIMEOUT}" code i
+  for ((i=0; i<timeout; i++)); do
+    code="$(curl -k -sS -m 4 -o /dev/null -w '%{http_code}' "$url" 2>/dev/null || true)"
+    [[ -n "$code" ]] || code=000
+    if [[ "$code" =~ ^2[0-9][0-9]$|^3[0-9][0-9]$ ]]; then
+      ok "$label -> $code $url"
+      return 0
+    fi
+    sleep 1
+  done
+
+  if [[ "$required" == 1 ]]; then
     fail "$label -> $code $url"
     HTTP_FAIL=$((HTTP_FAIL+1))
   else
     warn "$label -> $code $url"
   fi
+  return 0
 }
 
-check_http 'Runtime' 'http://127.0.0.1:8080/api/health' 1
-check_http 'Replay' 'http://127.0.0.1:8080/api/replay/verify' 0
-check_http 'Áudio' 'http://127.0.0.1:8092/health' 0
-check_http 'Nginx local' 'http://127.0.0.1/' 1
-check_http 'Godot público' 'https://live.etbra.com.br/godot/' 0
+printf '\n== Health checks com readiness ==\n'
+HTTP_FAIL=0
+check_http 'Runtime' 'http://127.0.0.1:8080/api/health' 1 25
+check_http 'Replay' 'http://127.0.0.1:8080/api/replay/verify' 0 10
+check_http 'Áudio web' 'http://127.0.0.1:8092/health' 0 20
+check_http 'Nginx local' 'http://127.0.0.1/' 1 15
+check_http 'Godot público' 'https://live.etbra.com.br/godot/' 0 10
+
+printf '\n== Portas em escuta ==\n'
+ss -ltnp 2>/dev/null | grep -E ':(80|443|8080|8092|8765|3000|5600|5500)\b' || true
 
 printf '\n== Resumo ==\n'
 printf 'Source commit : %s\n' "$SOURCE_SHA"
@@ -174,12 +224,14 @@ printf 'Branch        : %s\n' "$(git branch --show-current)"
 printf 'Produção      : %s\n' "$INSTALL_DIR"
 printf 'Serviços OK   : %d\n' "$ACTIVE"
 printf 'Inativos      : %d\n' "$INACTIVE"
+printf 'Legados       : %d\n' "${#LEGACY_SERVICES[@]}"
 printf 'Falhas svc    : %d\n' "$FAIL"
 printf 'Falhas HTTP   : %d\n' "$HTTP_FAIL"
 
 if ((FAIL || HTTP_FAIL)); then
   printf '\nDEPLOY CONCLUÍDO COM FALHAS\n'
-  printf 'Diagnóstico: sudo journalctl -u live-infinita -n 80 --no-pager\n'
+  printf 'Runtime: sudo journalctl -u live-infinita -n 80 --no-pager\n'
+  printf 'Áudio:   sudo journalctl -u live-infinita-audio-web -n 80 --no-pager\n'
   exit 1
 fi
 
