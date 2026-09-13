@@ -8,6 +8,7 @@ sys.path.insert(0, str(ROOT / "apps" / "world-runtime"))
 sys.path.insert(0, str(ROOT))
 
 from npc_composite_strategy import NpcCompositeStrategy
+from npc_strategy_experience import NpcStrategyExperience
 from packages.spatial import FileRegionColdStore, Region, RegionCatalog
 
 
@@ -30,10 +31,10 @@ class NpcCompositeStrategyTest(unittest.TestCase):
 
         class Planner:
             pass
-        planner = Planner()
-        planner.store = self.store
-        planner.regions = self.regions
-        self.strategy = NpcCompositeStrategy(planner, wait_penalty_per_tick=0.03)
+        self.planner = Planner()
+        self.planner.store = self.store
+        self.planner.regions = self.regions
+        self.strategy = NpcCompositeStrategy(self.planner, wait_penalty_per_tick=0.03)
 
     def tearDown(self):
         self.tmp.cleanup()
@@ -82,6 +83,64 @@ class NpcCompositeStrategyTest(unittest.TestCase):
         self.assertIsNotNone(chosen)
         self.assertEqual(chosen["strategy_id"], "via_shelter:shelter")
         self.assertEqual(ranked[0]["strategy_id"], "via_shelter:shelter")
+
+    def test_empirical_strategy_evidence_can_reverse_heuristic_choice(self):
+        ctx = {"period": "night", "weather": "storm", "region_id": "r0", "danger_level": 0.9}
+        experience = NpcStrategyExperience(Path(self.tmp.name) / "experience.json", min_samples=2)
+        empirical = NpcCompositeStrategy(
+            self.planner,
+            wait_penalty_per_tick=0.03,
+            strategy_experience_provider=experience,
+        )
+        rows = empirical.candidates(
+            actor_entity_id="npc",
+            target_entity_id="goal",
+            predicted_satisfaction=0.8,
+            context=ctx,
+            shelter_entity_ids=["shelter"],
+            wait_ticks=0,
+        )
+        heuristic, _ = empirical.choose(
+            rows,
+            actor_entity_id="npc",
+            need="safety",
+            target_entity_id="goal",
+            context=ctx,
+            travel_weight=0.05,
+            risk_weight=0.1,
+        )
+        self.assertEqual(heuristic["strategy_id"], "direct")
+
+        for index in range(2):
+            experience.observe_strategy(
+                outcome_id=f"d{index}", npc_id="npc", need="safety", target_entity_id="goal",
+                strategy_id="direct", context=ctx, satisfaction=0.5, elapsed_ticks=3,
+                preemptions=0, replans=0, observed_risk=0.95,
+            )
+            experience.observe_strategy(
+                outcome_id=f"s{index}", npc_id="npc", need="safety", target_entity_id="goal",
+                strategy_id="via_shelter:shelter", context=ctx, satisfaction=0.5, elapsed_ticks=6,
+                preemptions=0, replans=0, observed_risk=0.05,
+            )
+
+        chosen, ranked = empirical.choose(
+            rows,
+            actor_entity_id="npc",
+            need="safety",
+            target_entity_id="goal",
+            context=ctx,
+            travel_weight=0.05,
+            risk_weight=0.8,
+            elapsed_ticks_scale=10,
+        )
+        self.assertEqual(chosen["strategy_id"], "via_shelter:shelter")
+        by_id = {row["strategy_id"]: row for row in ranked}
+        self.assertEqual(by_id["direct"]["cost_source"], "empirical")
+        self.assertEqual(by_id["via_shelter:shelter"]["cost_source"], "empirical")
+        self.assertGreater(
+            by_id["via_shelter:shelter"]["expected_value"],
+            by_id["direct"]["expected_value"],
+        )
 
     def test_missing_entities_fail_closed_to_no_candidates(self):
         self.assertEqual(
