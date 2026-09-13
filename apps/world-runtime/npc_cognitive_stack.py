@@ -115,7 +115,6 @@ def build_npc_cognitive_stack(
         ledger,
         need_outcomes,
         strategy_experience,
-        episodic_memory_provider=episodic_memory,
     )
 
     return NpcCognitiveStack(
