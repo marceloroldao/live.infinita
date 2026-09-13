@@ -5,15 +5,16 @@ from typing import Any
 
 
 class NpcCompoundStrategyCatalog:
-    """Build deterministic compound alternatives for need-driven movement.
+    """Build and choose deterministic compound alternatives for need-driven movement.
 
     This layer does not mutate world state and does not execute plans. It only
     describes semantically explicit strategy alternatives. Every resulting plan
     still passes through the ordinary planner, scheduler, arbiter and Mutation Gate.
     """
 
-    def __init__(self, store: Any) -> None:
+    def __init__(self, store: Any, *, high_risk_threshold: float = 0.67) -> None:
         self.store = store
+        self.high_risk_threshold = min(1.0, max(0.0, float(high_risk_threshold)))
 
     def _entity_exists(self, entity_id: str) -> bool:
         getter = getattr(self.store, "get_entity", None)
@@ -64,6 +65,44 @@ class NpcCompoundStrategyCatalog:
             })
         return rows
 
+    def choose(
+        self,
+        *,
+        actor_entity_id: str,
+        need: str,
+        target_entity_id: str,
+        actor_properties: dict[str, Any] | None = None,
+        context: dict[str, Any] | None = None,
+    ) -> tuple[dict[str, Any] | None, list[dict[str, Any]]]:
+        rows = self.alternatives(
+            actor_entity_id=actor_entity_id,
+            need=need,
+            target_entity_id=target_entity_id,
+            actor_properties=actor_properties,
+            context=context,
+        )
+        if not rows:
+            return None, []
+        raw_context = context if isinstance(context, dict) else {}
+        try:
+            danger = min(1.0, max(0.0, float(raw_context.get("danger_level", 0.0))))
+        except (TypeError, ValueError):
+            danger = 0.0
+        preferred_kind = "via_shelter" if danger >= self.high_risk_threshold else "direct"
+        selected = next((row for row in rows if row.get("strategy_kind") == preferred_kind), rows[0])
+        ranked = []
+        for row in rows:
+            copy = deepcopy(row)
+            copy["selected"] = row.get("strategy_id") == selected.get("strategy_id")
+            copy["selection_reason"] = (
+                f"danger={danger:.3f} >= {self.high_risk_threshold:.3f}"
+                if preferred_kind == "via_shelter"
+                else f"danger={danger:.3f} < {self.high_risk_threshold:.3f}"
+            )
+            ranked.append(copy)
+        ranked.sort(key=lambda row: (0 if row.get("selected") else 1, str(row.get("strategy_id") or "")))
+        return deepcopy(selected), ranked
+
     @staticmethod
     def attach_value(
         alternatives: list[dict[str, Any]],
@@ -71,12 +110,6 @@ class NpcCompoundStrategyCatalog:
         direct_value: float,
         shelter_risk_relief: float = 0.15,
     ) -> list[dict[str, Any]]:
-        """Provide a minimal deterministic baseline score for strategy choice.
-
-        Learned/empirical strategy value can replace this later. For now the
-        direct path keeps the supplied target value and a shelter path receives a
-        bounded safety bonus so the catalog can be tested independently.
-        """
         rows: list[dict[str, Any]] = []
         for raw in alternatives:
             row = deepcopy(raw)
