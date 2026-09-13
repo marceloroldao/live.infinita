@@ -86,7 +86,7 @@ class PlanLedger:
         now = time.time()
         actor = str(actor_entity_id or intent.get("actor_entity_id") or principal.get("subject_entity_id") or "").strip() or None
         row = {
-            "plan_schema": "intent_plan_v3",
+            "plan_schema": "intent_plan_v4",
             "plan_id": f"plan_{int(now * 1000)}_{uuid.uuid4().hex[:10]}",
             "proposal_id": str(proposal_id or "").strip() or None,
             "proposer_id": str(proposer_id or "").strip(),
@@ -102,6 +102,10 @@ class PlanLedger:
             "completed_steps": [],
             "waiting_reason": None,
             "preempted_by_plan_id": None,
+            "preemption_count": 0,
+            "replan_count": 0,
+            "started_logical_tick": None,
+            "completed_logical_tick": None,
             "idempotency_key": str(idempotency_key or "").strip() or None,
             "last_error": None,
             "created_at_unix": now,
@@ -148,6 +152,7 @@ class PlanLedger:
             plan=deepcopy(plan),
             plan_revision=revision + 1,
             plan_revision_history=history,
+            replan_count=int(current.get("replan_count", 0)) + 1,
             next_step_index=0,
             waiting_reason=None,
             preempted_by_plan_id=None,
@@ -162,6 +167,7 @@ class PlanLedger:
         mutation_decision_id: str | None,
         world_event_id: str | None,
         state_hash: str | None,
+        logical_tick: int | None = None,
     ) -> dict[str, Any]:
         current = self.get(plan_id)
         if current is None:
@@ -170,23 +176,29 @@ class PlanLedger:
         if step_index != expected:
             raise PlanLedgerError(f"step out of order: {step_index} != {expected}")
         completed = list(current.get("completed_steps") or [])
-        completed.append({
+        step_row = {
             "plan_revision": int(current.get("plan_revision", 0)),
             "step_index": step_index,
             "mutation_decision_id": mutation_decision_id,
             "world_event_id": world_event_id,
             "state_hash": state_hash,
-        })
+        }
+        if logical_tick is not None:
+            step_row["logical_tick"] = int(logical_tick)
+        completed.append(step_row)
         plan = current.get("plan") if isinstance(current.get("plan"), dict) else {}
         steps = plan.get("steps") if isinstance(plan.get("steps"), list) else []
         next_index = step_index + 1
         status = "completed" if next_index >= len(steps) else "running"
-        return self.transition(
-            plan_id,
-            status,
-            next_step_index=next_index,
-            completed_steps=completed,
-            waiting_reason=None,
-            preempted_by_plan_id=None,
-            last_error=None,
-        )
+        updates: dict[str, Any] = {
+            "next_step_index": next_index,
+            "completed_steps": completed,
+            "waiting_reason": None,
+            "preempted_by_plan_id": None,
+            "last_error": None,
+        }
+        if current.get("started_logical_tick") is None and logical_tick is not None:
+            updates["started_logical_tick"] = int(logical_tick)
+        if status == "completed" and logical_tick is not None:
+            updates["completed_logical_tick"] = int(logical_tick)
+        return self.transition(plan_id, status, **updates)
