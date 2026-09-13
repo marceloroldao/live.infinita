@@ -10,7 +10,9 @@ from npc_causal_forecast import NpcCausalForecast
 from npc_causal_model import NpcCausalModel
 from npc_composite_strategy import NpcCompositeStrategy
 from npc_composite_strategy_outcomes import NpcCompositeStrategyOutcomeProcessor
+from npc_confidence_strategy import NpcConfidenceStrategy
 from npc_counterfactual_simulator import NpcCounterfactualSimulator
+from npc_decision_confidence import NpcDecisionConfidence
 from npc_episodic_memory import NpcEpisodicMemory
 from npc_goal_sequence import NpcGoalSequence
 from npc_horizon_strategy import NpcHorizonStrategy
@@ -39,9 +41,11 @@ class NpcCognitiveStack:
     counterfactual_simulator: NpcCounterfactualSimulator
     need_horizon: NpcNeedHorizon
     goal_sequence: NpcGoalSequence
+    decision_confidence: NpcDecisionConfidence
     strategy_value: NpcStrategyValue
     base_composite_strategy: NpcCompositeStrategy
-    composite_strategy: NpcHorizonStrategy
+    horizon_strategy: NpcHorizonStrategy
+    composite_strategy: NpcConfidenceStrategy
     strategy_compiler: NpcStrategyCompiler
     strategy_executor: NpcStrategyExecutor
     need_scheduler: NpcNeedScheduler
@@ -100,6 +104,7 @@ def build_npc_cognitive_stack(
     counterfactual_simulator = NpcCounterfactualSimulator(causal_forecast)
     need_horizon = NpcNeedHorizon(urgency_threshold=need_threshold)
     goal_sequence = NpcGoalSequence()
+    decision_confidence = NpcDecisionConfidence()
     strategy_value = NpcStrategyValue(
         planner,
         strategy_experience_provider=strategy_experience,
@@ -113,11 +118,12 @@ def build_npc_cognitive_stack(
         counterfactual_provider=counterfactual_simulator,
         need_state_provider=need_dynamics,
     )
-    composite_strategy = NpcHorizonStrategy(
+    horizon_strategy = NpcHorizonStrategy(
         base_composite_strategy,
         need_horizon,
         goal_sequence_provider=goal_sequence,
     )
+    composite_strategy = NpcConfidenceStrategy(horizon_strategy, decision_confidence)
     strategy_compiler = NpcStrategyCompiler()
     strategy_executor = NpcStrategyExecutor(root / "npc-strategy-executions.jsonl", plan_scheduler)
     need_scheduler = NpcAuditedReorderingNeedScheduler(
@@ -163,8 +169,10 @@ def build_npc_cognitive_stack(
         counterfactual_simulator=counterfactual_simulator,
         need_horizon=need_horizon,
         goal_sequence=goal_sequence,
+        decision_confidence=decision_confidence,
         strategy_value=strategy_value,
         base_composite_strategy=base_composite_strategy,
+        horizon_strategy=horizon_strategy,
         composite_strategy=composite_strategy,
         strategy_compiler=strategy_compiler,
         strategy_executor=strategy_executor,
