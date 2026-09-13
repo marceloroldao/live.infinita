@@ -1,0 +1,37 @@
+{
+  "frame_id": "frame-000001",
+  "tick_id": 42,
+  "observer_id": "agent:nova",
+  "state_addresses": [
+    "entity:agent:nova",
+    "region:r1",
+    "source:s1"
+  ],
+  "available_interventions": [
+    {
+      "intervention_address": "action:a1",
+      "proposal_id": "proposal-0001"
+    },
+    {
+      "intervention_address": "action:a2",
+      "proposal_id": "proposal-0002"
+    }
+  ],
+  "candidate_outcomes": [
+    {
+      "candidate_id": "candidate-x",
+      "consequence_addresses": ["effect:x"],
+      "next_state_addresses": ["entity:agent:nova", "region:r1", "effect:x"]
+    },
+    {
+      "candidate_id": "candidate-y",
+      "consequence_addresses": ["effect:y"],
+      "next_state_addresses": ["entity:agent:nova", "region:r1", "effect:y"]
+    }
+  ],
+  "provenance": {
+    "world_version": 42,
+    "snapshot_id": "snapshot-0040",
+    "event_ids": ["event-0041", "event-0042"]
+  }
+}
