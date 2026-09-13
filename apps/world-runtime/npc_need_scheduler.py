@@ -41,6 +41,9 @@ class NpcNeedScheduler:
         world_provider: Any | None = None,
         strategy_provider: Any | None = None,
         compound_strategy_provider: Any | None = None,
+        composite_strategy_provider: Any | None = None,
+        strategy_compiler: Any | None = None,
+        strategy_executor: Any | None = None,
     ) -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -54,6 +57,9 @@ class NpcNeedScheduler:
         self.world_provider = world_provider
         self.strategy_provider = strategy_provider
         self.compound_strategy_provider = compound_strategy_provider
+        self.composite_strategy_provider = composite_strategy_provider
+        self.strategy_compiler = strategy_compiler
+        self.strategy_executor = strategy_executor
 
     def history(self) -> list[dict[str, Any]]:
         if not self.path.exists():
@@ -189,7 +195,10 @@ class NpcNeedScheduler:
             "need": need,
             "learning_context": deepcopy(context),
         }
-        if self.compound_strategy_provider is not None:
+        # Legacy compound provider remains supported while the new composite
+        # executor is introduced. It is used only when the composite stack is
+        # not fully configured.
+        if not self._composite_enabled() and self.compound_strategy_provider is not None:
             chooser = getattr(self.compound_strategy_provider, "choose", None)
             if callable(chooser):
                 props = entity.get("properties") if isinstance(entity.get("properties"), dict) else {}
@@ -203,6 +212,81 @@ class NpcNeedScheduler:
                 if isinstance(selected, dict) and isinstance(selected.get("intent"), dict):
                     return deepcopy(selected["intent"]), target_ranking, deepcopy(selected), deepcopy(strategy_ranking)
         return base_intent, target_ranking, {"strategy_id": "direct", "strategy_kind": "direct"}, None
+
+    def _composite_enabled(self) -> bool:
+        return (
+            self.composite_strategy_provider is not None
+            and self.strategy_compiler is not None
+            and self.strategy_executor is not None
+        )
+
+    @staticmethod
+    def _predicted_satisfaction(target_ranking: list[dict[str, Any]] | None, target_id: str, fallback: float) -> float:
+        for row in target_ranking or []:
+            if str(row.get("target_entity_id") or "") != target_id:
+                continue
+            for field in ("effective_mean_satisfaction", "predicted_satisfaction", "mean_satisfaction"):
+                try:
+                    if row.get(field) is not None:
+                        return min(1.0, max(0.0, float(row[field])))
+                except (TypeError, ValueError):
+                    pass
+        return min(1.0, max(0.0, float(fallback)))
+
+    @staticmethod
+    def _strategy_shelters(entity: dict[str, Any]) -> list[str]:
+        props = entity.get("properties") if isinstance(entity.get("properties"), dict) else {}
+        values: list[str] = []
+        plural = props.get("strategy_shelter_entity_ids")
+        if isinstance(plural, list):
+            values.extend(str(value).strip() for value in plural if str(value).strip())
+        singular = str(props.get("strategy_shelter_entity_id") or "").strip()
+        if singular:
+            values.append(singular)
+        return sorted(set(values))
+
+    def _choose_composite(
+        self,
+        *,
+        entity: dict[str, Any],
+        need: str,
+        target_id: str,
+        context: dict[str, Any],
+        target_ranking: list[dict[str, Any]] | None,
+        severity: float,
+    ) -> tuple[dict[str, Any] | None, list[dict[str, Any]] | None, dict[str, Any] | None]:
+        if not self._composite_enabled():
+            return None, None, None
+        generator = self.composite_strategy_provider
+        candidates_fn = getattr(generator, "candidates", None)
+        choose_fn = getattr(generator, "choose", None)
+        compile_fn = getattr(self.strategy_compiler, "compile", None)
+        if not callable(candidates_fn) or not callable(choose_fn) or not callable(compile_fn):
+            return None, None, None
+        props = entity.get("properties") if isinstance(entity.get("properties"), dict) else {}
+        try:
+            wait_ticks = max(0, int(props.get("strategy_wait_ticks", 3)))
+        except (TypeError, ValueError):
+            wait_ticks = 3
+        candidates = candidates_fn(
+            actor_entity_id=str(entity.get("id") or ""),
+            target_entity_id=target_id,
+            predicted_satisfaction=self._predicted_satisfaction(target_ranking, target_id, severity),
+            context=deepcopy(context),
+            shelter_entity_ids=self._strategy_shelters(entity),
+            wait_ticks=wait_ticks,
+        )
+        selected, ranking = choose_fn(candidates)
+        if not isinstance(selected, dict):
+            return None, deepcopy(ranking), None
+        compiled = compile_fn(
+            actor_entity_id=str(entity.get("id") or ""),
+            need=need,
+            target_entity_id=target_id,
+            strategy=deepcopy(selected),
+            context=deepcopy(context),
+        )
+        return deepcopy(selected), deepcopy(ranking), deepcopy(compiled)
 
     def evaluate_tick(self, tick: int) -> list[dict[str, Any]]:
         tick = int(tick)
@@ -226,31 +310,58 @@ class NpcNeedScheduler:
             intent, target_ranking, strategy, strategy_ranking = self._intent_for(entity, need, context)
             if intent is None:
                 row = {
-                    "need_schema": "npc_need_v5",
+                    "need_schema": "npc_need_v6",
                     "npc_id": npc_id, "need": need, "severity": severity, "priority": priority,
                     "utility": utility, "tick": tick, "status": "no_target",
                     "learning_context": deepcopy(context), "target_ranking": target_ranking,
                     "strategy": strategy, "strategy_ranking": strategy_ranking,
-                    "proposal_id": None, "plan_id": None, "created_at_unix": time.time(),
+                    "proposal_id": None, "plan_id": None, "strategy_execution_id": None,
+                    "created_at_unix": time.time(),
                 }
                 self._append(row)
                 results.append(row)
                 continue
 
             selected_target_id = str(intent.get("target_entity_id") or "")
+            if not selected_target_id:
+                selected_target_id = str((strategy or {}).get("target_entity_id") or "")
+            composite_plan = None
+            if selected_target_id and self._composite_enabled():
+                chosen, composite_ranking, compiled = self._choose_composite(
+                    entity=entity,
+                    need=need,
+                    target_id=selected_target_id,
+                    context=context,
+                    target_ranking=target_ranking,
+                    severity=severity,
+                )
+                if chosen is not None:
+                    strategy = chosen
+                    strategy_ranking = composite_ranking
+                    composite_plan = compiled
+
             strategy_id = str((strategy or {}).get("strategy_id") or "direct")
+            goal_intent = {
+                "intent": "move_to_entity",
+                "actor_entity_id": npc_id,
+                "target_entity_id": selected_target_id,
+                "need": need,
+                "learning_context": deepcopy(context),
+                "strategy_id": strategy_id,
+            }
             idem = f"npc-need:{npc_id}:{need}:{tick // max(1, self.cooldown_ticks or 1)}"
             proposal = self.proposals.propose(
                 origin="npc_need",
                 proposer_id=f"npc:{npc_id}",
                 proposal_kind="agent_intent",
-                payload={"intent": deepcopy(intent)},
+                payload={"intent": deepcopy(goal_intent)},
                 metadata={
                     "need": need, "severity": severity, "utility": utility, "tick": tick,
                     "plan_priority": priority, "selected_target_entity_id": selected_target_id,
                     "learning_context": deepcopy(context), "target_ranking": deepcopy(target_ranking),
                     "strategy_id": strategy_id, "strategy": deepcopy(strategy),
                     "strategy_ranking": deepcopy(strategy_ranking),
+                    "strategy_plan": deepcopy(composite_plan),
                 },
                 idempotency_key=idem,
             )
@@ -260,22 +371,43 @@ class NpcNeedScheduler:
                     decided_by=f"need_policy:{need}",
                     reason=f"deterministic need threshold reached: {severity:.3f}; utility={utility:.3f}; strategy={strategy_id}",
                 )
-            plan = self.plans.schedule(
-                intent=deepcopy(intent),
-                principal={"source": "npc_need", "actor_id": npc_id, "authority": "entity_agent", "subject_entity_id": npc_id},
-                proposer_id=f"npc:{npc_id}",
-                proposal_id=str(proposal["proposal_id"]),
-                idempotency_key=f"npc-need-plan:{proposal['proposal_id']}",
-                priority=priority,
-            )
+
+            principal = {"source": "npc_need", "actor_id": npc_id, "authority": "entity_agent", "subject_entity_id": npc_id}
+            plan_id = None
+            strategy_execution_id = None
+            if composite_plan is not None:
+                start_fn = getattr(self.strategy_executor, "start", None)
+                if callable(start_fn):
+                    execution = start_fn(
+                        deepcopy(composite_plan),
+                        principal=principal,
+                        proposer_id=f"npc:{npc_id}",
+                        proposal_id=str(proposal["proposal_id"]),
+                        priority=priority,
+                        idempotency_key=f"npc-need-strategy:{proposal['proposal_id']}",
+                    )
+                    strategy_execution_id = execution.get("strategy_execution_id")
+            if strategy_execution_id is None:
+                plan = self.plans.schedule(
+                    intent=deepcopy(intent),
+                    principal=principal,
+                    proposer_id=f"npc:{npc_id}",
+                    proposal_id=str(proposal["proposal_id"]),
+                    idempotency_key=f"npc-need-plan:{proposal['proposal_id']}",
+                    priority=priority,
+                )
+                plan_id = plan.get("plan_id")
+
             row = {
-                "need_schema": "npc_need_v5",
+                "need_schema": "npc_need_v6",
                 "npc_id": npc_id, "need": need, "severity": severity, "priority": priority,
                 "utility": utility, "tick": tick, "status": "scheduled",
                 "selected_target_entity_id": selected_target_id, "learning_context": deepcopy(context),
                 "target_ranking": deepcopy(target_ranking), "strategy_id": strategy_id,
                 "strategy": deepcopy(strategy), "strategy_ranking": deepcopy(strategy_ranking),
-                "proposal_id": proposal.get("proposal_id"), "plan_id": plan.get("plan_id"),
+                "strategy_plan": deepcopy(composite_plan),
+                "proposal_id": proposal.get("proposal_id"), "plan_id": plan_id,
+                "strategy_execution_id": strategy_execution_id,
                 "created_at_unix": time.time(),
             }
             self._append(row)
