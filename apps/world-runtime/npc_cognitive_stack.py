@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from npc_belief_model import NpcBeliefModel
+from npc_causal_model import NpcCausalModel
 from npc_composite_strategy import NpcCompositeStrategy
 from npc_composite_strategy_outcomes import NpcCompositeStrategyOutcomeProcessor
 from npc_episodic_memory import NpcEpisodicMemory
@@ -27,6 +28,7 @@ class NpcCognitiveStack:
     strategy_experience: NpcStrategyExperience
     episodic_memory: NpcEpisodicMemory
     belief_model: NpcBeliefModel
+    causal_model: NpcCausalModel
     strategy_value: NpcStrategyValue
     composite_strategy: NpcCompositeStrategy
     strategy_compiler: NpcStrategyCompiler
@@ -42,6 +44,7 @@ class NpcCognitiveStack:
             "npc_need_outcomes": self.need_outcomes,
             "npc_strategy_executor": self.strategy_executor,
             "npc_composite_strategy_outcomes": self.composite_strategy_outcomes,
+            "npc_causal_model": self.causal_model,
         }
 
 
@@ -81,6 +84,7 @@ def build_npc_cognitive_stack(
     strategy_experience = NpcStrategyExperience(root / "npc-strategy-experience.json", min_samples=strategy_min_samples)
     episodic_memory = NpcEpisodicMemory(root / "npc-episodes.jsonl")
     belief_model = NpcBeliefModel(root / "npc-beliefs.json", entity_provider=store)
+    causal_model = NpcCausalModel(root / "npc-causal-hypotheses.json", world_provider=world_provider)
     strategy_value = NpcStrategyValue(
         planner,
         strategy_experience_provider=strategy_experience,
@@ -128,6 +132,7 @@ def build_npc_cognitive_stack(
         strategy_experience=strategy_experience,
         episodic_memory=episodic_memory,
         belief_model=belief_model,
+        causal_model=causal_model,
         strategy_value=strategy_value,
         composite_strategy=composite_strategy,
         strategy_compiler=strategy_compiler,
