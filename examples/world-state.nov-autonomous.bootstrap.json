@@ -35,9 +35,11 @@
       {
         "id": "campfire-on-at-night",
         "condition": {
-          "kind": "world_equals",
-          "path": ["environment", "period"],
-          "value": "night"
+          "kind": "all",
+          "conditions": [
+            {"kind": "world_equals", "path": ["environment", "period"], "value": "night"},
+            {"kind": "entity_property_equals", "entity_id": "campfire", "path": ["properties", "lit"], "value": false}
+          ]
         },
         "trigger_mode": "edge",
         "operations": [
@@ -48,9 +50,11 @@
       {
         "id": "campfire-off-at-day",
         "condition": {
-          "kind": "world_equals",
-          "path": ["environment", "period"],
-          "value": "day"
+          "kind": "all",
+          "conditions": [
+            {"kind": "world_equals", "path": ["environment", "period"], "value": "day"},
+            {"kind": "entity_property_equals", "entity_id": "campfire", "path": ["properties", "lit"], "value": true}
+          ]
         },
         "trigger_mode": "edge",
         "operations": [
