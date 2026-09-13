@@ -1,0 +1,36 @@
+name: memoria-v2 cognitive gym
+
+on:
+  pull_request:
+    paths:
+      - 'apps/world-runtime/memoria_v2_adapter.py'
+      - 'apps/world-runtime/test_memoria_v2_adapter.py'
+      - 'schemas/memoria-v2-cognitive-frame.schema.json'
+      - 'examples/memoria-v2-cognitive-frame.minimal.json'
+      - 'docs/MEMORIA_V2_COGNITIVE_GYM.md'
+      - '.github/workflows/memoria-v2-cognitive-gym.yml'
+  workflow_dispatch:
+
+jobs:
+  adapter-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install test dependencies
+        run: python -m pip install pytest jsonschema
+      - name: Run adapter tests
+        working-directory: apps/world-runtime
+        run: python -m pytest -q test_memoria_v2_adapter.py
+      - name: Validate cognitive frame example against schema
+        run: |
+          python - <<'PY'
+          import json
+          from jsonschema import Draft202012Validator
+          schema = json.load(open('schemas/memoria-v2-cognitive-frame.schema.json', encoding='utf-8'))
+          example = json.load(open('examples/memoria-v2-cognitive-frame.minimal.json', encoding='utf-8'))
+          Draft202012Validator(schema).validate(example)
+          print('schema fixture: OK')
+          PY
