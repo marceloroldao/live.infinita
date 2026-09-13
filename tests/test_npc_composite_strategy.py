@@ -26,7 +26,7 @@ class NpcCompositeStrategyTest(unittest.TestCase):
             {"id": "goal", "type": "place", "region_id": "r2", "position": {"x": 20, "y": 0}, "properties": {"risk_level": 0.8}},
             {"id": "shelter", "type": "place", "region_id": "r1", "position": {"x": 10, "y": 0}, "properties": {"risk_level": 0.05}},
         ]:
-            self.store.put_entity(entity)
+            self.store.upsert(entity)
 
         class Planner:
             pass
