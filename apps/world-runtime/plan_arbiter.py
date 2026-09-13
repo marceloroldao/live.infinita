@@ -172,6 +172,7 @@ class PlanArbiter:
                         "waiting",
                         waiting_reason="preempted",
                         preempted_by_plan_id=winner_id,
+                        preemption_count=int(latest.get("preemption_count", 0)) + 1,
                         last_error=None,
                     )
                     preemptions.append({
