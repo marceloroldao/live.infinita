@@ -11,7 +11,8 @@ class NpcCompositeStrategyOutcomeProcessor:
 
     A composite strategy is eligible only after its terminal movement child has a
     need outcome. Intermediate waypoints and waiting phases never create success
-    evidence on their own.
+    evidence on their own. Concrete episodes are persisted separately from the
+    statistical strategy aggregates when an episodic-memory provider is supplied.
     """
 
     def __init__(
@@ -21,6 +22,7 @@ class NpcCompositeStrategyOutcomeProcessor:
         plan_ledger: Any,
         need_outcomes: Any,
         strategy_experience_provider: Any,
+        episodic_memory_provider: Any | None = None,
     ) -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -28,6 +30,7 @@ class NpcCompositeStrategyOutcomeProcessor:
         self.plan_ledger = plan_ledger
         self.need_outcomes = need_outcomes
         self.strategy_experience_provider = strategy_experience_provider
+        self.episodic_memory_provider = episodic_memory_provider
 
     def history(self) -> list[dict[str, Any]]:
         if not self.path.exists():
@@ -115,6 +118,7 @@ class NpcCompositeStrategyOutcomeProcessor:
         if not callable(current) or not callable(observer):
             return []
 
+        remember = getattr(self.episodic_memory_provider, "remember", None)
         results: list[dict[str, Any]] = []
         for execution in current():
             if not isinstance(execution, dict) or execution.get("status") != "completed":
@@ -141,12 +145,16 @@ class NpcCompositeStrategyOutcomeProcessor:
             except (TypeError, ValueError):
                 risk = 0.0
 
+            npc_id = str(plan.get("actor_entity_id") or execution.get("principal", {}).get("actor_id") or "")
+            need = str(plan.get("need") or outcome_row.get("need") or "")
+            target_entity_id = str(plan.get("target_entity_id") or outcome_row.get("target_entity_id") or "")
+            strategy_id = str(plan.get("strategy_id") or "direct")
             learned = observer(
                 outcome_id=f"composite:{execution_id}",
-                npc_id=str(plan.get("actor_entity_id") or execution.get("principal", {}).get("actor_id") or ""),
-                need=str(plan.get("need") or outcome_row.get("need") or ""),
-                target_entity_id=str(plan.get("target_entity_id") or outcome_row.get("target_entity_id") or ""),
-                strategy_id=str(plan.get("strategy_id") or "direct"),
+                npc_id=npc_id,
+                need=need,
+                target_entity_id=target_entity_id,
+                strategy_id=strategy_id,
                 context=deepcopy(context),
                 satisfaction=satisfaction,
                 elapsed_ticks=elapsed,
@@ -156,6 +164,32 @@ class NpcCompositeStrategyOutcomeProcessor:
                 strategy_execution_id=execution_id,
                 terminal_plan_id=terminal_plan_id,
             )
+
+            terminal_plan = self._plan(terminal_plan_id) or {}
+            logical_tick = terminal_plan.get("completed_logical_tick")
+            episode = None
+            if callable(remember):
+                episode = remember(
+                    episode_id=f"strategy:{execution_id}",
+                    npc_id=npc_id,
+                    logical_tick=int(logical_tick) if logical_tick is not None else None,
+                    need=need,
+                    target_entity_id=target_entity_id,
+                    strategy_id=strategy_id,
+                    context=deepcopy(context),
+                    satisfaction=satisfaction,
+                    elapsed_ticks=elapsed,
+                    preemptions=preemptions,
+                    replans=replans,
+                    observed_risk=risk,
+                    source={
+                        "kind": "composite_strategy_outcome",
+                        "strategy_execution_id": execution_id,
+                        "terminal_plan_id": terminal_plan_id,
+                        "proposal_id": outcome_row.get("proposal_id"),
+                    },
+                )
+
             audit = {
                 "composite_strategy_outcome_schema": "npc_composite_strategy_outcome_v1",
                 "strategy_execution_id": execution_id,
@@ -170,6 +204,7 @@ class NpcCompositeStrategyOutcomeProcessor:
                 "replans": replans,
                 "observed_risk": risk,
                 "learning": deepcopy(learned),
+                "episode_id": episode.get("episode_id") if isinstance(episode, dict) else None,
             }
             self._append(audit)
             processed.add(execution_id)
