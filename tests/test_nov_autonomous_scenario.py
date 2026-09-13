@@ -104,7 +104,7 @@ class NovAutonomousScenarioTest(unittest.TestCase):
             self.assertIsNotNone(runtime.store.get_entity("bed_nov"))
             self.assertIsNotNone(runtime.store.get_entity("ancient_tree"))
 
-    def test_day_night_schedule_and_campfire_reactions_are_persistent(self):
+    def test_day_night_schedule_campfire_and_causal_hypotheses_are_persistent(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
             runtime = self.build(root)
@@ -135,10 +135,19 @@ class NovAutonomousScenarioTest(unittest.TestCase):
             self.assertEqual(environment["period"], "night")
             self.assertAlmostEqual(float(environment["danger_level"]), 0.35)
             self.assertEqual(len(result["events"]), 1)
+            self.assertEqual(len(result["causal_observations"]), 1)
+            self.assertEqual(result["causal_observations"][0]["support_count"], 1)
             self.assertTrue(reopened.store.get_entity("campfire")["properties"]["lit"])
             self.assertTrue(any(row.get("fire_count") == 1 for row in result["conditional_events"]))
             after_night = reopened.cognition.need_dynamics.get_needs("nov")
             self.assertGreater(after_night["safety"], before_night["safety"])
+
+            night_hypothesis = reopened.cognition.causal_model.hypothesis(
+                from_period="day", to_period="night", expected_direction="increase"
+            )
+            self.assertIsNotNone(night_hypothesis)
+            self.assertEqual(night_hypothesis["status"], "provisional")
+            self.assertEqual(night_hypothesis["support_count"], 1)
 
             for _ in range(11):
                 reopened.world_tick.tick()
@@ -149,9 +158,16 @@ class NovAutonomousScenarioTest(unittest.TestCase):
             self.assertEqual(environment["period"], "day")
             self.assertAlmostEqual(float(environment["danger_level"]), 0.05)
             self.assertEqual(len(result["events"]), 1)
+            self.assertEqual(len(result["causal_observations"]), 1)
             self.assertFalse(reopened.store.get_entity("campfire")["properties"]["lit"])
             after_day = reopened.cognition.need_dynamics.get_needs("nov")
             self.assertLess(after_day["safety"], before_day["safety"])
+
+            day_hypothesis = reopened.cognition.causal_model.hypothesis(
+                from_period="night", to_period="day", expected_direction="decrease"
+            )
+            self.assertIsNotNone(day_hypothesis)
+            self.assertEqual(day_hypothesis["support_count"], 1)
 
             current = {
                 row["metadata"]["bootstrap_schedule_id"]: row
@@ -168,6 +184,9 @@ class NovAutonomousScenarioTest(unittest.TestCase):
             }
             self.assertEqual(conditional_current["campfire-on-at-night"]["fire_count"], 1)
             self.assertEqual(conditional_current["campfire-off-at-day"]["fire_count"], 1)
+
+            persisted = self.build(root)
+            self.assertEqual(len(persisted.cognition.causal_model.hypotheses()), 2)
 
 
 if __name__ == "__main__":
