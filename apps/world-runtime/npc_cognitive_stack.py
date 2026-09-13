@@ -131,6 +131,7 @@ def build_npc_cognitive_stack(
         need_dynamics,
         learning_provider=need_learning,
         strategy_experience_provider=strategy_experience,
+        episodic_memory_provider=episodic_memory,
     )
     composite_strategy_outcomes = NpcCompositeStrategyOutcomeProcessor(
         root / "npc-composite-strategy-outcomes.jsonl",
@@ -138,7 +139,6 @@ def build_npc_cognitive_stack(
         ledger,
         need_outcomes,
         strategy_experience,
-        episodic_memory_provider=episodic_memory,
     )
 
     return NpcCognitiveStack(
