@@ -11,6 +11,7 @@ class RuntimeActionRule:
     rule_id: str
     action: str
     target: str | None
+    possible_consequence_addresses: tuple[str, ...]
     consequence_address: str
 
 
@@ -32,10 +33,15 @@ def _rules(world: dict[str, Any], actor_id: str) -> tuple[RuntimeActionRule, ...
         rule_id = str(raw.get("rule_id") or "")
         action = str(raw.get("action") or "")
         consequence = str(raw.get("consequence_address") or "")
+        possible = tuple(
+            str(item)
+            for item in (raw.get("possible_consequence_addresses") or (consequence,))
+            if str(item)
+        )
         target = raw.get("target")
-        if not rule_id or not action or not consequence:
+        if not rule_id or not action or not consequence or not possible or consequence not in possible:
             continue
-        parsed.append(RuntimeActionRule(rule_id, action, target, consequence))
+        parsed.append(RuntimeActionRule(rule_id, action, target, possible, consequence))
     parsed.sort(key=lambda item: item.rule_id)
     return tuple(parsed)
 
@@ -76,6 +82,11 @@ def _rule_for_proposal(world: dict[str, Any], proposal: dict[str, Any]) -> Runti
         if rule.rule_id == rule_id and rule.action == proposal.get("action") and rule.target == proposal.get("target"):
             return rule
     raise ValueError("proposal is not valid for the current world state")
+
+
+def possible_action_outcomes(world: dict[str, Any], proposal: dict[str, Any]) -> tuple[tuple[str, ...], ...]:
+    rule = _rule_for_proposal(world, proposal)
+    return tuple((address,) for address in rule.possible_consequence_addresses)
 
 
 def simulate_action_outcome(world: dict[str, Any], proposal: dict[str, Any]) -> tuple[str, ...]:
@@ -177,5 +188,5 @@ def execute_validated_action(world: dict[str, Any], proposal: dict[str, Any]) ->
     )
 
 
-def offered_outcomes(world: dict[str, Any], proposals: Iterable[dict[str, Any]]) -> dict[str, tuple[str, ...]]:
-    return {proposal["proposal_id"]: simulate_action_outcome(world, proposal) for proposal in proposals}
+def offered_outcomes(world: dict[str, Any], proposals: Iterable[dict[str, Any]]) -> dict[str, tuple[tuple[str, ...], ...]]:
+    return {proposal["proposal_id"]: possible_action_outcomes(world, proposal) for proposal in proposals}
