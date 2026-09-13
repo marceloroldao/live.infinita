@@ -11,6 +11,8 @@ class NpcNeedOutcomeProcessor:
 
     This is not authoritative world replay. It updates the compact NPC need state
     exactly once per completed plan and writes an audit trail for observability.
+    When a learning provider is present, the actually achieved reduction is also
+    recorded against the selected target exactly once per outcome id.
     """
 
     DEFAULT_SATISFACTION = {
@@ -27,11 +29,13 @@ class NpcNeedOutcomeProcessor:
         need_dynamics: Any,
         *,
         satisfaction: dict[str, float] | None = None,
+        learning_provider: Any | None = None,
     ) -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.plan_ledger = plan_ledger
         self.need_dynamics = need_dynamics
+        self.learning_provider = learning_provider
         self.satisfaction = dict(self.DEFAULT_SATISFACTION)
         for key, value in dict(satisfaction or {}).items():
             if key in self.satisfaction:
@@ -58,6 +62,29 @@ class NpcNeedOutcomeProcessor:
     def _processed_ids(self) -> set[str]:
         return {str(row.get("plan_id")) for row in self.history() if row.get("plan_id")}
 
+    def _learn(self, record: dict[str, Any], outcome: dict[str, Any], *, npc_id: str, need: str, plan_id: str) -> dict[str, Any] | None:
+        if self.learning_provider is None:
+            return None
+        observer = getattr(self.learning_provider, "observe", None)
+        if not callable(observer):
+            return None
+        intent = record.get("intent") if isinstance(record.get("intent"), dict) else {}
+        target_id = str(intent.get("target_entity_id") or "").strip()
+        if not target_id:
+            return None
+        before = float(outcome.get("before", 0.0))
+        after = float(outcome.get("after", before))
+        achieved = min(1.0, max(0.0, before - after))
+        return observer(
+            outcome_id=str(outcome.get("outcome_id") or f"plan-completed:{plan_id}:{need}"),
+            npc_id=npc_id,
+            need=need,
+            target_entity_id=target_id,
+            satisfaction=achieved,
+            plan_id=plan_id,
+            proposal_id=str(record.get("proposal_id") or "").strip() or None,
+        )
+
     def process_completed(self) -> list[dict[str, Any]]:
         processed = self._processed_ids()
         results: list[dict[str, Any]] = []
@@ -82,16 +109,20 @@ class NpcNeedOutcomeProcessor:
                     "proposal_id": record.get("proposal_id"),
                     "plan_revision": int(record.get("plan_revision", 0)),
                     "completed_steps": len(record.get("completed_steps") or []),
+                    "target_entity_id": intent.get("target_entity_id"),
                 },
             )
+            learning = self._learn(record, outcome, npc_id=npc_id, need=need, plan_id=plan_id)
             row = {
-                "need_outcome_schema": "npc_need_outcome_audit_v1",
+                "need_outcome_schema": "npc_need_outcome_audit_v2",
                 "plan_id": plan_id,
                 "proposal_id": record.get("proposal_id"),
                 "npc_id": npc_id,
                 "need": need,
+                "target_entity_id": intent.get("target_entity_id"),
                 "status": "applied",
                 "outcome": deepcopy(outcome),
+                "learning": deepcopy(learning),
             }
             self._append(row)
             processed.add(plan_id)
