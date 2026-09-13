@@ -11,28 +11,15 @@ from proposal_ledger import ProposalLedger
 
 
 class NpcNeedScheduler:
-    """Turn bounded NPC internal needs into semantic intent proposals.
+    """Turn bounded NPC internal needs into semantic intent proposals."""
 
-    This component never mutates world state directly. It reads explicit NPC ids,
-    scores configured needs, emits at most one dominant need per NPC per tick,
-    records the decision append-only, and schedules the resulting semantic intent.
-    Every plan step still passes through the normal Mutation Gate.
-    """
-
-    DEFAULT_PRIORITIES = {
-        "safety": 1000,
-        "energy": 700,
-        "social": 400,
-        "curiosity": 200,
-    }
-
+    DEFAULT_PRIORITIES = {"safety": 1000, "energy": 700, "social": 400, "curiosity": 200}
     TARGET_FIELDS = {
         "safety": "safety_target_entity_id",
         "energy": "rest_target_entity_id",
         "social": "social_target_entity_id",
         "curiosity": "curiosity_target_entity_id",
     }
-
     TARGET_LIST_FIELDS = {
         "safety": "safety_target_entity_ids",
         "energy": "rest_target_entity_ids",
@@ -52,6 +39,7 @@ class NpcNeedScheduler:
         need_state_provider: Any | None = None,
         learning_provider: Any | None = None,
         world_provider: Any | None = None,
+        strategy_provider: Any | None = None,
     ) -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -63,6 +51,7 @@ class NpcNeedScheduler:
         self.need_state_provider = need_state_provider
         self.learning_provider = learning_provider
         self.world_provider = world_provider
+        self.strategy_provider = strategy_provider
 
     def history(self) -> list[dict[str, Any]]:
         if not self.path.exists():
@@ -160,32 +149,40 @@ class NpcNeedScheduler:
             values.append(singular)
         return sorted({target_id for target_id in values if self._entity(target_id) is not None})
 
-    def _select_target(
-        self,
-        entity: dict[str, Any],
-        need: str,
-        context: dict[str, Any],
-    ) -> tuple[str | None, list[dict[str, Any]] | None]:
+    def _select_target(self, entity: dict[str, Any], need: str, context: dict[str, Any]) -> tuple[str | None, list[dict[str, Any]] | None]:
         candidates = self._candidate_targets(entity, need)
         if not candidates:
             return None, None
         npc_id = str(entity.get("id") or "")
+        ranking: list[dict[str, Any]] | None = None
+        selected: str | None = None
         if self.learning_provider is not None:
             chooser = getattr(self.learning_provider, "choose_target", None)
             ranker = getattr(self.learning_provider, "rank_targets", None)
+            if callable(ranker):
+                ranking = ranker(npc_id, need, candidates, context=context)
             if callable(chooser):
-                selected = chooser(npc_id, need, candidates, context=context)
-                ranking = ranker(npc_id, need, candidates, context=context) if callable(ranker) else None
-                if selected in candidates:
-                    return str(selected), ranking
-        return candidates[0], None
+                candidate = chooser(npc_id, need, candidates, context=context)
+                if candidate in candidates:
+                    selected = str(candidate)
 
-    def _intent_for(
-        self,
-        entity: dict[str, Any],
-        need: str,
-        context: dict[str, Any],
-    ) -> tuple[dict[str, Any] | None, list[dict[str, Any]] | None]:
+        if self.strategy_provider is not None and ranking:
+            strategy_choose = getattr(self.strategy_provider, "choose", None)
+            if callable(strategy_choose):
+                strategy_selected, strategy_ranking = strategy_choose(
+                    actor_entity_id=npc_id,
+                    rankings=ranking,
+                    context=context,
+                )
+                if strategy_selected in candidates:
+                    selected = str(strategy_selected)
+                    ranking = strategy_ranking
+
+        if selected in candidates:
+            return selected, ranking
+        return candidates[0], ranking
+
+    def _intent_for(self, entity: dict[str, Any], need: str, context: dict[str, Any]) -> tuple[dict[str, Any] | None, list[dict[str, Any]] | None]:
         target_id, ranking = self._select_target(entity, need, context)
         if not target_id:
             return None, ranking
@@ -207,8 +204,7 @@ class NpcNeedScheduler:
             values = self._need_values(entity)
             candidates = [
                 (name, value, self.DEFAULT_PRIORITIES[name], value * self.DEFAULT_PRIORITIES[name])
-                for name, value in values.items()
-                if value >= self.threshold
+                for name, value in values.items() if value >= self.threshold
             ]
             if not candidates:
                 continue
@@ -223,7 +219,7 @@ class NpcNeedScheduler:
             intent, target_ranking = self._intent_for(entity, need, context)
             if intent is None:
                 row = {
-                    "need_schema": "npc_need_v3",
+                    "need_schema": "npc_need_v4",
                     "npc_id": npc_id,
                     "need": need,
                     "severity": severity,
@@ -268,19 +264,14 @@ class NpcNeedScheduler:
                 )
             plan = self.plans.schedule(
                 intent=deepcopy(intent),
-                principal={
-                    "source": "npc_need",
-                    "actor_id": npc_id,
-                    "authority": "entity_agent",
-                    "subject_entity_id": npc_id,
-                },
+                principal={"source": "npc_need", "actor_id": npc_id, "authority": "entity_agent", "subject_entity_id": npc_id},
                 proposer_id=f"npc:{npc_id}",
                 proposal_id=str(proposal["proposal_id"]),
                 idempotency_key=f"npc-need-plan:{proposal['proposal_id']}",
                 priority=priority,
             )
             row = {
-                "need_schema": "npc_need_v3",
+                "need_schema": "npc_need_v4",
                 "npc_id": npc_id,
                 "need": need,
                 "severity": severity,
