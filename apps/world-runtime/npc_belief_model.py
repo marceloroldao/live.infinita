@@ -14,11 +14,19 @@ class NpcBeliefModel:
     repeated observations. Episodes remain the provenance source of every update.
     """
 
-    def __init__(self, path: Path, *, prior_strength: float = 3.0, evidence_limit: int = 12) -> None:
+    def __init__(
+        self,
+        path: Path,
+        *,
+        prior_strength: float = 3.0,
+        evidence_limit: int = 12,
+        entity_provider: Any | None = None,
+    ) -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.prior_strength = max(0.1, float(prior_strength))
         self.evidence_limit = max(1, int(evidence_limit))
+        self.entity_provider = entity_provider
 
     def _load(self) -> dict[str, Any]:
         if not self.path.exists():
@@ -56,12 +64,28 @@ class NpcBeliefModel:
         ctx = cls._context(context)
         return "|".join((str(npc_id).strip(), ctx["region_id"], ctx["period"], ctx["weather"]))
 
+    def _entity(self, entity_id: str) -> dict[str, Any] | None:
+        provider = self.entity_provider
+        getter = getattr(provider, "get_entity", None) if provider is not None else None
+        value = getter(entity_id) if callable(getter) else None
+        return value if isinstance(value, dict) else None
+
+    def _experienced_context(self, episode: dict[str, Any]) -> dict[str, str]:
+        context = self._context(episode.get("context") if isinstance(episode.get("context"), dict) else {})
+        target_id = str(episode.get("target_entity_id") or "").strip()
+        target = self._entity(target_id) if target_id else None
+        if target is not None:
+            target_region = str(target.get("region_id") or "").strip()
+            if target_region:
+                context["region_id"] = target_region
+        return context
+
     def observe_episode(self, episode: dict[str, Any]) -> dict[str, Any] | None:
         if not isinstance(episode, dict):
             return None
         episode_id = str(episode.get("episode_id") or "").strip()
         npc_id = str(episode.get("npc_id") or "").strip()
-        context = episode.get("context") if isinstance(episode.get("context"), dict) else {}
+        context = self._experienced_context(episode)
         region_id = str(context.get("region_id") or "").strip()
         if not episode_id or not npc_id or not region_id:
             return None
