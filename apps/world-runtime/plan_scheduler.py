@@ -88,24 +88,20 @@ class PlanScheduler:
         )
 
     def assess_resume(self, record: dict[str, Any]) -> dict[str, str]:
-        """Classify a preempted plan before it becomes runnable again."""
         try:
             plan = self._rehydrate_plan(dict(record.get("plan") or {}))
             index = int(record.get("next_step_index", 0))
             if index >= len(plan.steps):
                 return {"action": "resume", "reason": "plan already at terminal cursor"}
-
             original_intent = dict(record.get("intent") or {})
             try:
                 fresh = self.planner.plan(original_intent)
             except ValueError as exc:
                 return {"action": "cancel", "reason": f"goal invalid after preemption: {exc}"}
-
             try:
                 self.planner.revalidate_step(plan, index)
             except ValueError as exc:
                 return {"action": "replan", "reason": str(exc)}
-
             if plan.goal_region_id != fresh.goal_region_id:
                 return {
                     "action": "replan",
@@ -176,7 +172,7 @@ class PlanScheduler:
         )
         return [self.replan(str(row["plan_id"])) for row in rows]
 
-    def tick(self, plan_id: str) -> dict[str, Any]:
+    def tick(self, plan_id: str, logical_tick: int | None = None) -> dict[str, Any]:
         record = self.ledger.get(plan_id)
         if record is None:
             raise KeyError("plan not found")
@@ -191,12 +187,16 @@ class PlanScheduler:
             if str(record.get("status") or "") in self.ledger.TERMINAL:
                 return record
         if str(record.get("status") or "") == "planned":
-            record = self.ledger.transition(plan_id, "running")
+            updates: dict[str, Any] = {}
+            if logical_tick is not None and record.get("started_logical_tick") is None:
+                updates["started_logical_tick"] = int(logical_tick)
+            record = self.ledger.transition(plan_id, "running", **updates)
 
         plan = self._rehydrate_plan(record["plan"])
         index = int(record.get("next_step_index", 0))
         if index >= len(plan.steps):
-            record = self.ledger.transition(plan_id, "completed")
+            updates = {"completed_logical_tick": int(logical_tick)} if logical_tick is not None else {}
+            record = self.ledger.transition(plan_id, "completed", **updates)
             self._commit_proposal_if_complete(record)
             return record
 
@@ -221,6 +221,7 @@ class PlanScheduler:
                 "proposal_id": record.get("proposal_id"),
                 "plan_priority": int(record.get("priority", 0)),
                 "plan_revision": int(record.get("plan_revision", 0)),
+                "logical_tick": int(logical_tick) if logical_tick is not None else None,
                 "intent_plan": {
                     "intent_type": plan.intent_type,
                     "step_index": index,
@@ -255,12 +256,13 @@ class PlanScheduler:
             mutation_decision_id=decision_id,
             world_event_id=event_id,
             state_hash=state_hash,
+            logical_tick=logical_tick,
         )
         self._commit_proposal_if_complete(updated)
         return updated
 
-    def tick_all(self) -> list[dict[str, Any]]:
+    def tick_all(self, logical_tick: int | None = None) -> list[dict[str, Any]]:
         results: list[dict[str, Any]] = []
         for record in self.ledger.active():
-            results.append(self.tick(str(record["plan_id"])))
+            results.append(self.tick(str(record["plan_id"]), logical_tick=logical_tick))
         return results
