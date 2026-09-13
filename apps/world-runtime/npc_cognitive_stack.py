@@ -19,11 +19,7 @@ from npc_strategy_value import NpcStrategyValue
 
 @dataclass(frozen=True)
 class NpcCognitiveStack:
-    """Explicit composition root for deterministic NPC cognition.
-
-    The stack owns cognitive persistence but receives authoritative planning and
-    proposal services from the runtime. It performs no process startup by itself.
-    """
+    """Explicit composition root for deterministic NPC cognition."""
 
     need_dynamics: NpcNeedDynamics
     need_learning: NpcNeedLearning
@@ -38,7 +34,6 @@ class NpcCognitiveStack:
     composite_strategy_outcomes: NpcCompositeStrategyOutcomeProcessor
 
     def world_tick_kwargs(self) -> dict[str, Any]:
-        """Return the optional cognition dependencies accepted by WorldTickRunner."""
         return {
             "npc_need_scheduler": self.need_scheduler,
             "npc_need_dynamics": self.need_dynamics,
@@ -61,12 +56,6 @@ def build_npc_cognitive_stack(
     contextual_min_samples: int = 2,
     strategy_min_samples: int = 2,
 ) -> NpcCognitiveStack:
-    """Build the complete NPC cognition graph without starting a tick driver.
-
-    Fail closed when the supplied PlanScheduler does not expose the planner/store
-    contract required by need dynamics and strategy evaluation.
-    """
-
     root = Path(data_dir)
     root.mkdir(parents=True, exist_ok=True)
     ids = sorted({str(value).strip() for value in npc_ids if str(value).strip()})
@@ -81,35 +70,22 @@ def build_npc_cognitive_stack(
     if ledger is None:
         raise ValueError("plan_scheduler.ledger is required")
 
-    need_dynamics = NpcNeedDynamics(
-        root / "npc-need-state.json",
-        store,
-        npc_ids=ids,
-        world_provider=world_provider,
-    )
+    need_dynamics = NpcNeedDynamics(root / "npc-need-state.json", store, npc_ids=ids, world_provider=world_provider)
     need_learning = NpcNeedLearning(
         root / "npc-need-learning.json",
         exploration_samples=target_exploration_samples,
         contextual_min_samples=contextual_min_samples,
     )
-    strategy_experience = NpcStrategyExperience(
-        root / "npc-strategy-experience.json",
-        min_samples=strategy_min_samples,
-    )
+    strategy_experience = NpcStrategyExperience(root / "npc-strategy-experience.json", min_samples=strategy_min_samples)
     episodic_memory = NpcEpisodicMemory(root / "npc-episodes.jsonl")
     strategy_value = NpcStrategyValue(
         planner,
         strategy_experience_provider=strategy_experience,
+        episodic_memory_provider=episodic_memory,
     )
-    composite_strategy = NpcCompositeStrategy(
-        planner,
-        strategy_experience_provider=strategy_experience,
-    )
+    composite_strategy = NpcCompositeStrategy(planner, strategy_experience_provider=strategy_experience)
     strategy_compiler = NpcStrategyCompiler()
-    strategy_executor = NpcStrategyExecutor(
-        root / "npc-strategy-executions.jsonl",
-        plan_scheduler,
-    )
+    strategy_executor = NpcStrategyExecutor(root / "npc-strategy-executions.jsonl", plan_scheduler)
     need_scheduler = NpcNeedScheduler(
         root / "npc-need-scheduler.jsonl",
         proposal_ledger,
@@ -139,6 +115,7 @@ def build_npc_cognitive_stack(
         ledger,
         need_outcomes,
         strategy_experience,
+        episodic_memory_provider=episodic_memory,
     )
 
     return NpcCognitiveStack(
