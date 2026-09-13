@@ -24,9 +24,10 @@ class NovAutonomousScenarioTest(unittest.TestCase):
             tick_duration_ms=500,
         )
 
-    def test_nov_generates_energy_goal_and_reaches_rest_target_without_external_input(self):
+    def test_nov_generates_energy_goal_reaches_rest_and_remembers_it(self):
         with tempfile.TemporaryDirectory() as tmpdir:
-            runtime = self.build(Path(tmpdir))
+            root = Path(tmpdir)
+            runtime = self.build(root)
 
             nov_before = runtime.store.get_entity("nov")
             self.assertIsNotNone(nov_before)
@@ -35,6 +36,7 @@ class NovAutonomousScenarioTest(unittest.TestCase):
             self.assertEqual(nov_before["region_id"], "clearing")
             self.assertEqual(runtime.clock.state().tick, 0)
             self.assertIsNone(runtime.cognition.need_dynamics.get_needs("nov"))
+            self.assertEqual(runtime.cognition.episodic_memory.history(), [])
 
             first = runtime.world_tick.tick()
             self.assertEqual(first["clock"]["tick"], 1)
@@ -69,6 +71,24 @@ class NovAutonomousScenarioTest(unittest.TestCase):
             self.assertIsNotNone(after)
             self.assertLess(after["energy"], initial_energy)
             self.assertGreater(runtime.clock.state().tick, 1)
+
+            episodes = runtime.cognition.episodic_memory.recall(
+                "nov", need="energy", target_entity_id="bed_nov", limit=5
+            )
+            self.assertTrue(episodes)
+            episode = episodes[0]
+            self.assertEqual(episode["need"], "energy")
+            self.assertEqual(episode["target_entity_id"], "bed_nov")
+            self.assertIn(episode["strategy_id"], {"direct", "via_shelter", "wait_then_direct"})
+            self.assertGreater(float(episode["outcome"]["satisfaction"]), 0.0)
+            self.assertIsNotNone(episode["logical_tick"])
+            self.assertEqual(episode["source"]["kind"], "composite_strategy_outcome")
+
+            reopened = self.build(root)
+            persisted = reopened.cognition.episodic_memory.recall(
+                "nov", need="energy", target_entity_id="bed_nov", limit=5
+            )
+            self.assertEqual([row["episode_id"] for row in persisted], [row["episode_id"] for row in episodes])
 
     def test_bootstrap_keeps_autonomy_explicit_to_nov(self):
         with tempfile.TemporaryDirectory() as tmpdir:
