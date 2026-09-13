@@ -112,7 +112,11 @@ def build_npc_cognitive_stack(
         counterfactual_provider=counterfactual_simulator,
         need_state_provider=need_dynamics,
     )
-    composite_strategy = NpcHorizonStrategy(base_composite_strategy, need_horizon)
+    composite_strategy = NpcHorizonStrategy(
+        base_composite_strategy,
+        need_horizon,
+        goal_sequence_provider=goal_sequence,
+    )
     strategy_compiler = NpcStrategyCompiler()
     strategy_executor = NpcStrategyExecutor(root / "npc-strategy-executions.jsonl", plan_scheduler)
     need_scheduler = NpcNeedScheduler(
