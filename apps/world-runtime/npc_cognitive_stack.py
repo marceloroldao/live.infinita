@@ -6,6 +6,7 @@ from typing import Any
 
 from npc_composite_strategy import NpcCompositeStrategy
 from npc_composite_strategy_outcomes import NpcCompositeStrategyOutcomeProcessor
+from npc_episodic_memory import NpcEpisodicMemory
 from npc_need_dynamics import NpcNeedDynamics
 from npc_need_learning import NpcNeedLearning
 from npc_need_outcomes import NpcNeedOutcomeProcessor
@@ -27,6 +28,7 @@ class NpcCognitiveStack:
     need_dynamics: NpcNeedDynamics
     need_learning: NpcNeedLearning
     strategy_experience: NpcStrategyExperience
+    episodic_memory: NpcEpisodicMemory
     strategy_value: NpcStrategyValue
     composite_strategy: NpcCompositeStrategy
     strategy_compiler: NpcStrategyCompiler
@@ -94,6 +96,7 @@ def build_npc_cognitive_stack(
         root / "npc-strategy-experience.json",
         min_samples=strategy_min_samples,
     )
+    episodic_memory = NpcEpisodicMemory(root / "npc-episodes.jsonl")
     strategy_value = NpcStrategyValue(
         planner,
         strategy_experience_provider=strategy_experience,
@@ -135,12 +138,14 @@ def build_npc_cognitive_stack(
         ledger,
         need_outcomes,
         strategy_experience,
+        episodic_memory_provider=episodic_memory,
     )
 
     return NpcCognitiveStack(
         need_dynamics=need_dynamics,
         need_learning=need_learning,
         strategy_experience=strategy_experience,
+        episodic_memory=episodic_memory,
         strategy_value=strategy_value,
         composite_strategy=composite_strategy,
         strategy_compiler=strategy_compiler,
