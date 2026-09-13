@@ -49,7 +49,6 @@
           "social": 0.10,
           "curiosity": 0.74
         },
-        "rest_target_entity_ids": ["bed_nov", "campfire"],
         "rest_target_entity_id": "bed_nov",
         "safety_target_entity_id": "shelter_marker",
         "curiosity_target_entity_id": "ancient_tree",
