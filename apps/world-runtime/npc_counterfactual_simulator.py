@@ -9,9 +9,26 @@ class NpcCounterfactualSimulator:
 
     This is not authoritative simulation: no world state is cloned or mutated.
     The simulator advances only compact variables relevant to strategy comparison
-    (logical tick, period transition exposure and risk) and returns an explainable
-    trace that can be audited alongside the chosen strategy.
+    (logical tick, period transition exposure, risk and internal need pressure)
+    and returns an explainable trace that can be audited alongside the choice.
+
+    Need projection is deliberately conservative: imagined arrival never applies
+    satisfaction. Only real completed outcomes may satisfy a need. Counterfactuals
+    estimate the internal cost accumulated while a strategy is being executed.
     """
+
+    DEFAULT_NEED_RATES = {
+        "safety": -0.0030,
+        "energy": 0.0020,
+        "social": 0.0015,
+        "curiosity": 0.0010,
+    }
+    NEED_WEIGHTS = {
+        "safety": 1.0,
+        "energy": 0.70,
+        "social": 0.40,
+        "curiosity": 0.20,
+    }
 
     def __init__(self, causal_forecast_provider: Any | None = None, *, max_steps: int = 16) -> None:
         self.causal_forecast_provider = causal_forecast_provider
@@ -47,6 +64,36 @@ class NpcCounterfactualSimulator:
             return 0.20
         return 0.0
 
+    @classmethod
+    def _initial_needs(cls, context: dict[str, Any]) -> dict[str, float]:
+        raw = context.get("needs") if isinstance(context.get("needs"), dict) else {}
+        result: dict[str, float] = {}
+        for name in cls.DEFAULT_NEED_RATES:
+            try:
+                result[name] = cls._clamp(float(raw.get(name, 0.0)))
+            except (TypeError, ValueError):
+                result[name] = 0.0
+        return result
+
+    @classmethod
+    def _advance_needs(cls, needs: dict[str, float], *, effective_risk: float, ticks: int) -> dict[str, float]:
+        projected = dict(needs)
+        for _ in range(max(0, int(ticks))):
+            projected["safety"] = cls._clamp(
+                projected["safety"] + cls.DEFAULT_NEED_RATES["safety"] + cls._clamp(effective_risk) * 0.020
+            )
+            projected["energy"] = cls._clamp(projected["energy"] + cls.DEFAULT_NEED_RATES["energy"])
+            projected["social"] = cls._clamp(projected["social"] + cls.DEFAULT_NEED_RATES["social"])
+            projected["curiosity"] = cls._clamp(projected["curiosity"] + cls.DEFAULT_NEED_RATES["curiosity"])
+        return projected
+
+    @classmethod
+    def _need_cost(cls, start: dict[str, float], end: dict[str, float]) -> float:
+        burden = 0.0
+        for name, weight in cls.NEED_WEIGHTS.items():
+            burden += weight * max(0.0, cls._clamp(end.get(name, 0.0)) - cls._clamp(start.get(name, 0.0)))
+        return cls._clamp(burden / max(1.0, sum(cls.NEED_WEIGHTS.values())))
+
     def simulate(
         self,
         *,
@@ -69,6 +116,8 @@ class NpcCounterfactualSimulator:
         if not phases:
             phases = [{"kind": "estimated", "estimated_ticks": max(0, int(fallback_estimated_ticks))}]
 
+        start_needs = self._initial_needs(ctx)
+        needs = dict(start_needs)
         trace: list[dict[str, Any]] = []
         total_ticks = 0
         peak_risk = risk
@@ -100,6 +149,8 @@ class NpcCounterfactualSimulator:
                 next_period = str(forecast.get("to_period") or period)
 
             effective_risk = self._clamp(projected_risk * (1.0 - protection))
+            needs_before = dict(needs)
+            needs = self._advance_needs(needs, effective_risk=effective_risk, ticks=duration)
             peak_risk = max(peak_risk, effective_risk)
             cumulative_risk += effective_risk * max(1, duration)
             observed_steps += max(1, duration)
@@ -114,6 +165,8 @@ class NpcCounterfactualSimulator:
                 "projected_risk": projected_risk,
                 "protection": protection,
                 "effective_risk": effective_risk,
+                "needs_before": needs_before,
+                "needs_after": dict(needs),
                 "causal_forecast": forecast,
             })
             total_ticks += duration
@@ -122,7 +175,7 @@ class NpcCounterfactualSimulator:
 
         mean_risk = self._clamp(cumulative_risk / max(1, observed_steps))
         return {
-            "counterfactual_schema": "npc_counterfactual_v1",
+            "counterfactual_schema": "npc_counterfactual_v2",
             "strategy_id": strategy_id,
             "start_tick": tick,
             "end_tick": tick + total_ticks,
@@ -132,6 +185,9 @@ class NpcCounterfactualSimulator:
             "start_risk": self._clamp(float(ctx.get("danger_level", 0.0) or 0.0)),
             "mean_effective_risk": mean_risk,
             "peak_effective_risk": self._clamp(peak_risk),
+            "start_needs": start_needs,
+            "end_needs": dict(needs),
+            "projected_need_cost": self._need_cost(start_needs, needs),
             "trace": trace,
             "mutates_world": False,
         }
