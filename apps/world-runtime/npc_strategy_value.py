@@ -10,6 +10,8 @@ class NpcStrategyValue:
     Predicted satisfaction comes from need learning. Travel/risk cost starts as
     topology heuristics and may be replaced by empirical execution-cost evidence
     once a strategy experience provider has enough samples for the same context.
+    Concrete episodic memories can add a bounded context-sensitive bias before
+    aggregate statistics are mature; they never override exploration ordering.
     """
 
     def __init__(
@@ -19,17 +21,23 @@ class NpcStrategyValue:
         travel_weight: float = 0.12,
         risk_weight: float = 0.35,
         interruption_weight: float = 0.08,
+        episodic_weight: float = 0.15,
+        episodic_limit: int = 3,
         route_hops_scale: int = 8,
         elapsed_ticks_scale: int = 20,
         strategy_experience_provider: Any | None = None,
+        episodic_memory_provider: Any | None = None,
     ) -> None:
         self.planner = planner
         self.travel_weight = max(0.0, float(travel_weight))
         self.risk_weight = max(0.0, float(risk_weight))
         self.interruption_weight = max(0.0, float(interruption_weight))
+        self.episodic_weight = max(0.0, float(episodic_weight))
+        self.episodic_limit = max(0, int(episodic_limit))
         self.route_hops_scale = max(1, int(route_hops_scale))
         self.elapsed_ticks_scale = max(1, int(elapsed_ticks_scale))
         self.strategy_experience_provider = strategy_experience_provider
+        self.episodic_memory_provider = episodic_memory_provider
 
     @staticmethod
     def _clamp(value: float) -> float:
@@ -75,6 +83,48 @@ class NpcStrategyValue:
             return None
         return row
 
+    def _episodic_signal(
+        self,
+        actor_id: str,
+        need: str,
+        target_id: str,
+        context: dict[str, Any] | None,
+    ) -> tuple[float, list[dict[str, Any]]]:
+        provider = self.episodic_memory_provider
+        recall = getattr(provider, "recall", None) if provider is not None else None
+        if not callable(recall) or self.episodic_limit <= 0 or not need or not target_id:
+            return 0.0, []
+        rows = recall(
+            actor_id,
+            need=need,
+            target_entity_id=target_id,
+            context=context,
+            limit=self.episodic_limit,
+        )
+        relevant = [
+            deepcopy(row)
+            for row in rows
+            if isinstance(row, dict)
+            and str(row.get("need") or "").strip().lower() == need
+            and str(row.get("target_entity_id") or "").strip() == target_id
+        ]
+        if not relevant:
+            return 0.0, []
+
+        signals: list[float] = []
+        for row in relevant:
+            outcome = row.get("outcome") if isinstance(row.get("outcome"), dict) else {}
+            try:
+                satisfaction = self._clamp(float(outcome.get("satisfaction", 0.0)))
+            except (TypeError, ValueError):
+                satisfaction = 0.0
+            try:
+                risk = self._clamp(float(outcome.get("observed_risk", 0.0)))
+            except (TypeError, ValueError):
+                risk = 0.0
+            signals.append(max(-1.0, min(1.0, satisfaction - risk)))
+        return sum(signals) / len(signals), relevant
+
     def evaluate(
         self,
         *,
@@ -99,6 +149,7 @@ class NpcStrategyValue:
             if not need:
                 need = str(raw.get("learning_need") or "").strip().lower()
             empirical = self._experience(actor_entity_id, need, target_id, context) if need else None
+            episodic_signal, episodes = self._episodic_signal(actor_entity_id, need, target_id, context)
 
             if empirical is not None:
                 elapsed = max(0.0, float(empirical.get("mean_elapsed_ticks", 0.0)))
@@ -117,7 +168,8 @@ class NpcStrategyValue:
             travel_penalty = self.travel_weight * travel_cost
             risk_penalty = self.risk_weight * risk
             interruption_penalty = self.interruption_weight * interruptions
-            expected = predicted - travel_penalty - risk_penalty - interruption_penalty
+            episodic_bias = self.episodic_weight * episodic_signal
+            expected = predicted - travel_penalty - risk_penalty - interruption_penalty + episodic_bias
             row.update({
                 "route_hops": hops,
                 "travel_cost": travel_cost,
@@ -128,6 +180,10 @@ class NpcStrategyValue:
                 "travel_penalty": travel_penalty,
                 "risk_penalty": risk_penalty,
                 "interruption_penalty": interruption_penalty,
+                "episodic_signal": episodic_signal,
+                "episodic_bias": episodic_bias,
+                "episodic_evidence_count": len(episodes),
+                "episodic_evidence": episodes,
                 "cost_source": cost_source,
                 "strategy_experience": deepcopy(empirical),
             })
