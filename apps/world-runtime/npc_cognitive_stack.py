@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from npc_audited_reordering_need_scheduler import NpcAuditedReorderingNeedScheduler
 from npc_belief_model import NpcBeliefModel
 from npc_causal_forecast import NpcCausalForecast
 from npc_causal_model import NpcCausalModel
@@ -18,7 +19,6 @@ from npc_need_horizon import NpcNeedHorizon
 from npc_need_learning import NpcNeedLearning
 from npc_need_outcomes import NpcNeedOutcomeProcessor
 from npc_need_scheduler import NpcNeedScheduler
-from npc_reordering_need_scheduler import NpcReorderingNeedScheduler
 from npc_strategy_compiler import NpcStrategyCompiler
 from npc_strategy_executor import NpcStrategyExecutor
 from npc_strategy_experience import NpcStrategyExperience
@@ -120,7 +120,7 @@ def build_npc_cognitive_stack(
     )
     strategy_compiler = NpcStrategyCompiler()
     strategy_executor = NpcStrategyExecutor(root / "npc-strategy-executions.jsonl", plan_scheduler)
-    need_scheduler = NpcReorderingNeedScheduler(
+    need_scheduler = NpcAuditedReorderingNeedScheduler(
         root / "npc-need-scheduler.jsonl",
         proposal_ledger,
         plan_scheduler,
