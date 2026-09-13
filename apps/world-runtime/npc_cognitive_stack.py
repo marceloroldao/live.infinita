@@ -9,6 +9,7 @@ from npc_causal_forecast import NpcCausalForecast
 from npc_causal_model import NpcCausalModel
 from npc_composite_strategy import NpcCompositeStrategy
 from npc_composite_strategy_outcomes import NpcCompositeStrategyOutcomeProcessor
+from npc_counterfactual_simulator import NpcCounterfactualSimulator
 from npc_episodic_memory import NpcEpisodicMemory
 from npc_need_dynamics import NpcNeedDynamics
 from npc_need_learning import NpcNeedLearning
@@ -31,6 +32,7 @@ class NpcCognitiveStack:
     belief_model: NpcBeliefModel
     causal_model: NpcCausalModel
     causal_forecast: NpcCausalForecast
+    counterfactual_simulator: NpcCounterfactualSimulator
     strategy_value: NpcStrategyValue
     composite_strategy: NpcCompositeStrategy
     strategy_compiler: NpcStrategyCompiler
@@ -88,6 +90,7 @@ def build_npc_cognitive_stack(
     belief_model = NpcBeliefModel(root / "npc-beliefs.json", entity_provider=store)
     causal_model = NpcCausalModel(root / "npc-causal-hypotheses.json", world_provider=world_provider)
     causal_forecast = NpcCausalForecast(causal_model, root / "world-event-schedule.jsonl")
+    counterfactual_simulator = NpcCounterfactualSimulator(causal_forecast)
     strategy_value = NpcStrategyValue(
         planner,
         strategy_experience_provider=strategy_experience,
@@ -98,6 +101,7 @@ def build_npc_cognitive_stack(
         planner,
         strategy_experience_provider=strategy_experience,
         causal_forecast_provider=causal_forecast,
+        counterfactual_provider=counterfactual_simulator,
     )
     strategy_compiler = NpcStrategyCompiler()
     strategy_executor = NpcStrategyExecutor(root / "npc-strategy-executions.jsonl", plan_scheduler)
@@ -141,6 +145,7 @@ def build_npc_cognitive_stack(
         belief_model=belief_model,
         causal_model=causal_model,
         causal_forecast=causal_forecast,
+        counterfactual_simulator=counterfactual_simulator,
         strategy_value=strategy_value,
         composite_strategy=composite_strategy,
         strategy_compiler=strategy_compiler,
