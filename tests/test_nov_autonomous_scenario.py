@@ -95,21 +95,31 @@ class NovAutonomousScenarioTest(unittest.TestCase):
             reopened = self.build(root)
             self.assertEqual(len(reopened.event_scheduler.current()), 2)
 
-            for _ in range(12):
-                result = reopened.world_tick.tick()
+            for _ in range(11):
+                reopened.world_tick.tick()
+            before_night = reopened.cognition.need_dynamics.get_needs("nov")
+            self.assertIsNotNone(before_night)
+
+            result = reopened.world_tick.tick()
             self.assertEqual(result["clock"]["tick"], 12)
             environment = reopened.engine.load_world()["environment"]
             self.assertEqual(environment["period"], "night")
             self.assertAlmostEqual(float(environment["danger_level"]), 0.35)
             self.assertEqual(len(result["events"]), 1)
+            after_night = reopened.cognition.need_dynamics.get_needs("nov")
+            self.assertGreater(after_night["safety"], before_night["safety"])
 
-            for _ in range(12):
-                result = reopened.world_tick.tick()
+            for _ in range(11):
+                reopened.world_tick.tick()
+            before_day = reopened.cognition.need_dynamics.get_needs("nov")
+            result = reopened.world_tick.tick()
             self.assertEqual(result["clock"]["tick"], 24)
             environment = reopened.engine.load_world()["environment"]
             self.assertEqual(environment["period"], "day")
             self.assertAlmostEqual(float(environment["danger_level"]), 0.05)
             self.assertEqual(len(result["events"]), 1)
+            after_day = reopened.cognition.need_dynamics.get_needs("nov")
+            self.assertLess(after_day["safety"], before_day["safety"])
 
             current = {
                 row["metadata"]["bootstrap_schedule_id"]: row
