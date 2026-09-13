@@ -24,6 +24,18 @@ class NpcHorizonStrategy:
         self.horizon_provider = horizon_provider
         self.future_need_weight = min(1.0, max(0.0, float(future_need_weight)))
 
+    @property
+    def strategy_experience_provider(self) -> Any:
+        return getattr(self.base_strategy, "strategy_experience_provider", None)
+
+    @property
+    def planner(self) -> Any:
+        return getattr(self.base_strategy, "planner", None)
+
+    @property
+    def counterfactual_provider(self) -> Any:
+        return getattr(self.base_strategy, "counterfactual_provider", None)
+
     def candidates(self, **kwargs: Any) -> list[dict[str, Any]]:
         fn = getattr(self.base_strategy, "candidates", None)
         if not callable(fn):
