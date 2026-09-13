@@ -6,6 +6,7 @@ from closed_loop_runtime import (
     execute_validated_action,
     generate_valid_actions,
     possible_action_outcomes,
+    pre_action_cognitive_world,
 )
 from memoria_v2_adapter import intervention_from_proposal, observer_state_addresses
 from scenario_continuous_closed_loop import apply_regime_shift, build_continuous_world
@@ -15,20 +16,20 @@ def _probe(world):
     return next(item for item in generate_valid_actions(world, "nova") if item["action"] == "probe")
 
 
-def _candidate_triplets(world, proposal):
-    state = observer_state_addresses(world, "nova")
+def _candidate_triplets(cognitive_world, authoritative_world, proposal):
+    state = observer_state_addresses(cognitive_world, "nova")
     next_state = state
     values = []
-    for index, outcome in enumerate(possible_action_outcomes(world, proposal)):
+    for index, outcome in enumerate(possible_action_outcomes(authoritative_world, proposal)):
         values.append((f"candidate-{index}", outcome, next_state))
     return tuple(values)
 
 
-def _actual_candidate_id(world, proposal):
+def _actual_candidate_id(cognitive_world, authoritative_world, proposal):
     rule_id = proposal["parameters"]["rule_id"]
-    rule = next(item for item in world["rules"]["actions"] if item["rule_id"] == rule_id)
+    rule = next(item for item in authoritative_world["rules"]["actions"] if item["rule_id"] == rule_id)
     actual = (rule["consequence_address"],)
-    candidates = _candidate_triplets(world, proposal)
+    candidates = _candidate_triplets(cognitive_world, authoritative_world, proposal)
     return next(cid for cid, consequence, _ in candidates if consequence == actual)
 
 
@@ -49,38 +50,66 @@ def test_runtime_keeps_only_current_observation_relation_active():
     assert len(world["deltas"]) == 4
 
 
+def test_pre_action_projection_hides_prior_runtime_observation_without_mutating_history():
+    world = build_continuous_world()
+    execution = execute_validated_action(world, _probe(world))
+    world = execution.world
+
+    assert len([
+        relation for relation in world["relations"].values()
+        if relation.get("status") == "active"
+        and (relation.get("source") or {}).get("type") == "world-runtime"
+    ]) == 1
+
+    projected = pre_action_cognitive_world(world, "nova")
+    assert len([
+        relation for relation in projected["relations"].values()
+        if relation.get("status") == "active"
+        and (relation.get("source") or {}).get("type") == "world-runtime"
+    ]) == 0
+
+    assert projected["current_tick"] == world["current_tick"]
+    assert projected["current_version"] == world["current_version"]
+    assert projected["events"] == world["events"]
+    assert projected["deltas"] == world["deltas"]
+
+
 def test_v2_tracks_multitick_regime_shift_without_future_leakage():
     world = build_continuous_world()
     gym = SituatedLiveCognitiveGymV2(min_independent_episodes=2, min_contiguous_support=2)
 
     observed = []
     steps = []
+    context_keys = []
     for index in range(4):
         if index == 2:
             world = apply_regime_shift(world)
 
         proposal = _probe(world)
         intervention = intervention_from_proposal(proposal)
-        state = observer_state_addresses(world, "nova")
+        cognitive_world = pre_action_cognitive_world(world, "nova")
+        state = observer_state_addresses(cognitive_world, "nova")
         request = make_live_request(
             frame_id=f"frame-{world['current_tick']}",
             state_addresses=state,
             intervention_id=proposal["proposal_id"],
             intervention_address=intervention.intervention_address,
-            candidates=_candidate_triplets(world, proposal),
+            candidates=_candidate_triplets(cognitive_world, world, proposal),
             provenance="live.infinita.closed-loop",
         )
-        actual_id = _actual_candidate_id(world, proposal)
+        actual_id = _actual_candidate_id(cognitive_world, world, proposal)
 
-        # Prediction/gym step happens before the world mutation for this tick.
+        # Prediction/gym step happens before the authoritative world mutation for this tick.
         step = gym.step(request, actual_candidate_id=actual_id, learn=True)
         steps.append(step)
+        context_keys.append(step.context_key)
 
         execution = execute_validated_action(world, proposal)
         observed.append(execution.consequence_address)
         world = execution.world
 
     assert observed == ["live:effect:x", "live:effect:x", "live:effect:y", "live:effect:y"]
+    assert len(set(context_keys)) == 1
 
     # Two contiguous X observations establish X; first Y challenges but does not switch;
     # second Y establishes the new active regime. No recency weight is involved.
