@@ -21,6 +21,7 @@ class WorldTickRunner:
         plan_arbiter: PlanArbiter | None = None,
         npc_need_scheduler: Any | None = None,
         npc_need_dynamics: Any | None = None,
+        npc_need_outcomes: Any | None = None,
     ) -> None:
         self.clock = clock
         self.scheduler = scheduler
@@ -28,6 +29,7 @@ class WorldTickRunner:
         self.conditional_event_scheduler = conditional_event_scheduler
         self.npc_need_scheduler = npc_need_scheduler
         self.npc_need_dynamics = npc_need_dynamics
+        self.npc_need_outcomes = npc_need_outcomes
         resume_evaluator = getattr(scheduler, "assess_resume", None)
         self.plan_arbiter = plan_arbiter or PlanArbiter(scheduler.ledger, resume_evaluator=resume_evaluator)
 
@@ -49,6 +51,7 @@ class WorldTickRunner:
                     "cancellations": [],
                 },
                 "plans": [],
+                "npc_need_outcomes": [],
             }
 
         after = self.clock.advance()
@@ -145,6 +148,23 @@ class WorldTickRunner:
                 "last_mutation_decision_id": result.get("last_mutation_decision_id"),
             })
 
+        # Outcomes are evaluated after authoritative plan execution, so only an
+        # actually completed need-driven plan can satisfy internal state.
+        outcome_results: list[dict[str, Any]] = []
+        if self.npc_need_outcomes is not None:
+            for row in self.npc_need_outcomes.process_completed():
+                outcome = row.get("outcome") if isinstance(row.get("outcome"), dict) else {}
+                outcome_results.append({
+                    "plan_id": row.get("plan_id"),
+                    "proposal_id": row.get("proposal_id"),
+                    "npc_id": row.get("npc_id"),
+                    "need": row.get("need"),
+                    "status": row.get("status"),
+                    "before": outcome.get("before"),
+                    "after": outcome.get("after"),
+                    "amount": outcome.get("amount"),
+                })
+
         return {
             "advanced": True,
             "clock": after.as_dict(),
@@ -160,4 +180,5 @@ class WorldTickRunner:
                 "cancellations": arbitration.get("cancellations", []),
             },
             "plans": results,
+            "npc_need_outcomes": outcome_results,
         }
