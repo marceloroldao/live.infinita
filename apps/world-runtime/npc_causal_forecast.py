@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import json
 from copy import deepcopy
+from pathlib import Path
 from typing import Any
 
 
@@ -10,18 +12,22 @@ class NpcCausalForecast:
     A forecast is not a fact and never mutates the world. It is available only
     when a scheduled period transition is expected to occur during a candidate
     strategy and a matching causal hypothesis has enough confidence.
+
+    The forecast reads the append-only world-event schedule ledger directly. This
+    keeps cognition independent from the live scheduler process while preserving
+    the same persisted source of truth.
     """
 
     def __init__(
         self,
         causal_model: Any,
-        event_scheduler: Any,
+        schedule_path: Path,
         *,
         min_confidence: float = 0.15,
         max_blend: float = 0.35,
     ) -> None:
         self.causal_model = causal_model
-        self.event_scheduler = event_scheduler
+        self.schedule_path = Path(schedule_path)
         self.min_confidence = min(1.0, max(0.0, float(min_confidence)))
         self.max_blend = min(1.0, max(0.0, float(max_blend)))
 
@@ -40,13 +46,34 @@ class NpcCausalForecast:
                 return value or None
         return None
 
+    def _current_schedule(self) -> list[dict[str, Any]]:
+        if not self.schedule_path.exists():
+            return []
+        latest: dict[str, dict[str, Any]] = {}
+        order: list[str] = []
+        with self.schedule_path.open("r", encoding="utf-8") as fh:
+            for line in fh:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    row = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if not isinstance(row, dict):
+                    continue
+                event_id = str(row.get("scheduled_event_id") or "").strip()
+                if not event_id:
+                    continue
+                if event_id not in latest:
+                    order.append(event_id)
+                latest[event_id] = row
+        return [latest[event_id] for event_id in order]
+
     def next_period_transition(self, *, logical_tick: int, current_period: str) -> dict[str, Any] | None:
-        current = getattr(self.event_scheduler, "current", None)
-        if not callable(current):
-            return None
         candidates: list[dict[str, Any]] = []
-        for row in current():
-            if not isinstance(row, dict) or row.get("status") != "scheduled":
+        for row in self._current_schedule():
+            if row.get("status") != "scheduled":
                 continue
             try:
                 due_tick = int(row.get("due_tick", -1))
