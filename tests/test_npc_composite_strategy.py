@@ -17,9 +17,9 @@ class NpcCompositeStrategyTest(unittest.TestCase):
         root = Path(self.tmp.name)
         self.store = FileRegionColdStore(root / "cold")
         self.regions = RegionCatalog([
-            Region("r0", (0.0, 0.0), 5.0, ("r1",)),
-            Region("r1", (10.0, 0.0), 5.0, ("r0", "r2")),
-            Region("r2", (20.0, 0.0), 5.0, ("r1",)),
+            Region("r0", (0.0, 0.0), 5.0, neighbors=("r1",)),
+            Region("r1", (10.0, 0.0), 5.0, neighbors=("r0", "r2")),
+            Region("r2", (20.0, 0.0), 5.0, neighbors=("r1",)),
         ])
         for entity in [
             {"id": "npc", "type": "human", "region_id": "r0", "position": {"x": 0, "y": 0}, "properties": {}},
@@ -75,7 +75,6 @@ class NpcCompositeStrategyTest(unittest.TestCase):
             shelter_entity_ids=["shelter"],
             wait_ticks=0,
         )
-        # Override the composite estimate to model a protected corridor after shelter.
         for row in rows:
             if row["strategy_id"] == "via_shelter:shelter":
                 row["estimated_risk"] = 0.1
