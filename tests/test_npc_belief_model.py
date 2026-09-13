@@ -12,12 +12,20 @@ for value in (str(ROOT), str(RUNTIME)):
 from npc_belief_model import NpcBeliefModel
 
 
+class FakeStore:
+    def get_entity(self, entity_id):
+        if entity_id == "ancient_tree":
+            return {"id": entity_id, "region_id": "deep_forest"}
+        return None
+
+
 class NpcBeliefModelTest(unittest.TestCase):
-    def episode(self, episode_id, risk, *, npc_id="nov", region="deep_forest", period="night"):
+    def episode(self, episode_id, risk, *, npc_id="nov", region="deep_forest", period="night", target=""):
         return {
             "episode_id": episode_id,
             "npc_id": npc_id,
             "logical_tick": 10,
+            "target_entity_id": target,
             "context": {"region_id": region, "period": period, "weather": "clear"},
             "outcome": {"observed_risk": risk},
         }
@@ -65,6 +73,16 @@ class NpcBeliefModelTest(unittest.TestCase):
             self.assertAlmostEqual(night["mean_risk"], 0.9)
             self.assertAlmostEqual(day["mean_risk"], 0.1)
             self.assertAlmostEqual(other["mean_risk"], 0.2)
+
+    def test_target_region_overrides_decision_origin_region(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            model = NpcBeliefModel(Path(tmpdir) / "beliefs.json", entity_provider=FakeStore())
+            model.observe_episode(self.episode("forest-trip", 0.75, region="clearing", target="ancient_tree"))
+            forest = model.risk_belief("nov", {"region_id": "deep_forest", "period": "night", "weather": "clear"})
+            clearing = model.risk_belief("nov", {"region_id": "clearing", "period": "night", "weather": "clear"})
+            self.assertIsNotNone(forest)
+            self.assertAlmostEqual(forest["mean_risk"], 0.75)
+            self.assertIsNone(clearing)
 
 
 if __name__ == "__main__":
