@@ -7,11 +7,9 @@ from typing import Any
 class NpcStrategyValue:
     """Deterministic expected-value overlay for learned NPC target rankings.
 
-    Predicted satisfaction comes from need learning. Travel/risk cost starts as
-    topology heuristics and may be replaced by empirical execution-cost evidence
-    once a strategy experience provider has enough samples for the same context.
-    Concrete episodic memories can add a bounded context-sensitive bias before
-    aggregate statistics are mature; they never override exploration ordering.
+    Statistical experience remains primary. Episodic memory adds a bounded bias,
+    while derived beliefs may only blend heuristic risk before empirical strategy
+    evidence is mature. Exploration ordering is never overridden by these signals.
     """
 
     def __init__(
@@ -22,22 +20,26 @@ class NpcStrategyValue:
         risk_weight: float = 0.35,
         interruption_weight: float = 0.08,
         episodic_weight: float = 0.15,
+        belief_weight: float = 0.25,
         episodic_limit: int = 3,
         route_hops_scale: int = 8,
         elapsed_ticks_scale: int = 20,
         strategy_experience_provider: Any | None = None,
         episodic_memory_provider: Any | None = None,
+        belief_provider: Any | None = None,
     ) -> None:
         self.planner = planner
         self.travel_weight = max(0.0, float(travel_weight))
         self.risk_weight = max(0.0, float(risk_weight))
         self.interruption_weight = max(0.0, float(interruption_weight))
         self.episodic_weight = max(0.0, float(episodic_weight))
+        self.belief_weight = min(1.0, max(0.0, float(belief_weight)))
         self.episodic_limit = max(0, int(episodic_limit))
         self.route_hops_scale = max(1, int(route_hops_scale))
         self.elapsed_ticks_scale = max(1, int(elapsed_ticks_scale))
         self.strategy_experience_provider = strategy_experience_provider
         self.episodic_memory_provider = episodic_memory_provider
+        self.belief_provider = belief_provider
 
     @staticmethod
     def _clamp(value: float) -> float:
@@ -110,7 +112,6 @@ class NpcStrategyValue:
         ]
         if not relevant:
             return 0.0, []
-
         signals: list[float] = []
         for row in relevant:
             outcome = row.get("outcome") if isinstance(row.get("outcome"), dict) else {}
@@ -124,6 +125,21 @@ class NpcStrategyValue:
                 risk = 0.0
             signals.append(max(-1.0, min(1.0, satisfaction - risk)))
         return sum(signals) / len(signals), relevant
+
+    def _belief_signal(
+        self,
+        actor_id: str,
+        target: dict[str, Any] | None,
+        context: dict[str, Any] | None,
+    ) -> dict[str, Any] | None:
+        provider = self.belief_provider
+        getter = getattr(provider, "risk_belief", None) if provider is not None else None
+        if not callable(getter) or target is None:
+            return None
+        belief_context = dict(context or {})
+        belief_context["region_id"] = str(target.get("region_id") or "").strip()
+        row = getter(actor_id, belief_context)
+        return deepcopy(row) if isinstance(row, dict) else None
 
     def evaluate(
         self,
@@ -150,6 +166,7 @@ class NpcStrategyValue:
                 need = str(raw.get("learning_need") or "").strip().lower()
             empirical = self._experience(actor_entity_id, need, target_id, context) if need else None
             episodic_signal, episodes = self._episodic_signal(actor_entity_id, need, target_id, context)
+            belief = self._belief_signal(actor_entity_id, target, context)
 
             if empirical is not None:
                 elapsed = max(0.0, float(empirical.get("mean_elapsed_ticks", 0.0)))
@@ -159,11 +176,20 @@ class NpcStrategyValue:
                     (float(empirical.get("mean_preemptions", 0.0)) + float(empirical.get("mean_replans", 0.0))) / 4.0
                 )
                 cost_source = "empirical"
+                belief_blend = 0.0
             else:
                 travel_cost = heuristic_travel
                 risk = heuristic_risk
                 interruptions = 0.0
                 cost_source = "heuristic"
+                belief_blend = 0.0
+                if belief is not None:
+                    confidence = self._clamp(float(belief.get("confidence", 0.0)))
+                    believed_risk = self._clamp(float(belief.get("mean_risk", heuristic_risk)))
+                    belief_blend = self.belief_weight * confidence
+                    risk = self._clamp((1.0 - belief_blend) * heuristic_risk + belief_blend * believed_risk)
+                    if belief_blend > 0.0:
+                        cost_source = "heuristic+belief"
 
             travel_penalty = self.travel_weight * travel_cost
             risk_penalty = self.risk_weight * risk
@@ -174,6 +200,7 @@ class NpcStrategyValue:
                 "route_hops": hops,
                 "travel_cost": travel_cost,
                 "risk": risk,
+                "heuristic_risk": heuristic_risk,
                 "interruption_cost": interruptions,
                 "predicted_satisfaction": predicted,
                 "expected_value": expected,
@@ -184,6 +211,8 @@ class NpcStrategyValue:
                 "episodic_bias": episodic_bias,
                 "episodic_evidence_count": len(episodes),
                 "episodic_evidence": episodes,
+                "belief_blend": belief_blend,
+                "belief": deepcopy(belief),
                 "cost_source": cost_source,
                 "strategy_experience": deepcopy(empirical),
             })
