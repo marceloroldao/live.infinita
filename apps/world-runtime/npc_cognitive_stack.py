@@ -11,6 +11,7 @@ from npc_composite_strategy import NpcCompositeStrategy
 from npc_composite_strategy_outcomes import NpcCompositeStrategyOutcomeProcessor
 from npc_counterfactual_simulator import NpcCounterfactualSimulator
 from npc_episodic_memory import NpcEpisodicMemory
+from npc_goal_sequence import NpcGoalSequence
 from npc_horizon_strategy import NpcHorizonStrategy
 from npc_need_dynamics import NpcNeedDynamics
 from npc_need_horizon import NpcNeedHorizon
@@ -36,6 +37,7 @@ class NpcCognitiveStack:
     causal_forecast: NpcCausalForecast
     counterfactual_simulator: NpcCounterfactualSimulator
     need_horizon: NpcNeedHorizon
+    goal_sequence: NpcGoalSequence
     strategy_value: NpcStrategyValue
     base_composite_strategy: NpcCompositeStrategy
     composite_strategy: NpcHorizonStrategy
@@ -96,6 +98,7 @@ def build_npc_cognitive_stack(
     causal_forecast = NpcCausalForecast(causal_model, root / "world-event-schedule.jsonl")
     counterfactual_simulator = NpcCounterfactualSimulator(causal_forecast)
     need_horizon = NpcNeedHorizon(urgency_threshold=need_threshold)
+    goal_sequence = NpcGoalSequence()
     strategy_value = NpcStrategyValue(
         planner,
         strategy_experience_provider=strategy_experience,
@@ -154,6 +157,7 @@ def build_npc_cognitive_stack(
         causal_forecast=causal_forecast,
         counterfactual_simulator=counterfactual_simulator,
         need_horizon=need_horizon,
+        goal_sequence=goal_sequence,
         strategy_value=strategy_value,
         base_composite_strategy=base_composite_strategy,
         composite_strategy=composite_strategy,
