@@ -15,18 +15,20 @@
         "due_tick": 12,
         "recurrence_every_ticks": 24,
         "operations": [
-          {"op": "set_world", "path": ["environment", "period"], "value": "night"}
+          {"op": "set_world", "path": ["environment", "period"], "value": "night"},
+          {"op": "set_world", "path": ["environment", "danger_level"], "value": 0.35}
         ],
-        "narration": "A luz diminui e a noite toma a floresta."
+        "narration": "A luz diminui e a noite torna a floresta mais arriscada."
       },
       {
         "id": "day-cycle",
         "due_tick": 24,
         "recurrence_every_ticks": 24,
         "operations": [
-          {"op": "set_world", "path": ["environment", "period"], "value": "day"}
+          {"op": "set_world", "path": ["environment", "period"], "value": "day"},
+          {"op": "set_world", "path": ["environment", "danger_level"], "value": 0.05}
         ],
-        "narration": "A manhã retorna e a floresta volta a clarear."
+        "narration": "A manhã retorna e o risco ambiental da floresta diminui."
       }
     ]
   },
