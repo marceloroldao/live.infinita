@@ -10,8 +10,8 @@ class NpcNeedOutcomeProcessor:
     """Apply deterministic internal satisfaction after need-driven plans complete.
 
     This is not authoritative world replay. It updates compact NPC need state,
-    need-outcome learning and optional empirical strategy-cost learning exactly
-    once per completed plan.
+    need-outcome learning, optional empirical strategy-cost learning and concrete
+    episodic memory exactly once per completed plan.
     """
 
     DEFAULT_SATISFACTION = {
@@ -30,6 +30,7 @@ class NpcNeedOutcomeProcessor:
         satisfaction: dict[str, float] | None = None,
         learning_provider: Any | None = None,
         strategy_experience_provider: Any | None = None,
+        episodic_memory_provider: Any | None = None,
     ) -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -37,6 +38,7 @@ class NpcNeedOutcomeProcessor:
         self.need_dynamics = need_dynamics
         self.learning_provider = learning_provider
         self.strategy_experience_provider = strategy_experience_provider
+        self.episodic_memory_provider = episodic_memory_provider
         self.satisfaction = dict(self.DEFAULT_SATISFACTION)
         for key, value in dict(satisfaction or {}).items():
             if key in self.satisfaction:
@@ -123,6 +125,54 @@ class NpcNeedOutcomeProcessor:
             plan_id=plan_id,
         )
 
+    def _remember_episode(
+        self,
+        record: dict[str, Any],
+        outcome: dict[str, Any],
+        *,
+        npc_id: str,
+        need: str,
+        plan_id: str,
+    ) -> dict[str, Any] | None:
+        remember = getattr(self.episodic_memory_provider, "remember", None)
+        if not callable(remember):
+            return None
+        intent = record.get("intent") if isinstance(record.get("intent"), dict) else {}
+        target_id = str(intent.get("target_entity_id") or "").strip()
+        if not target_id:
+            return None
+        before = float(outcome.get("before", 0.0))
+        after = float(outcome.get("after", before))
+        achieved = min(1.0, max(0.0, before - after))
+        started = record.get("started_logical_tick")
+        completed = record.get("completed_logical_tick")
+        elapsed = max(1, int(completed) - int(started) + 1) if started is not None and completed is not None else 0
+        context = intent.get("learning_context") if isinstance(intent.get("learning_context"), dict) else {}
+        try:
+            risk = min(1.0, max(0.0, float(context.get("danger_level", 0.0))))
+        except (TypeError, ValueError):
+            risk = 0.0
+        return remember(
+            episode_id=f"plan:{plan_id}",
+            npc_id=npc_id,
+            logical_tick=int(completed) if completed is not None else None,
+            need=need,
+            target_entity_id=target_id,
+            strategy_id=str(intent.get("strategy_id") or "direct"),
+            context=deepcopy(context),
+            satisfaction=achieved,
+            elapsed_ticks=elapsed,
+            preemptions=int(record.get("preemption_count", 0)),
+            replans=int(record.get("replan_count", 0)),
+            observed_risk=risk,
+            source={
+                "kind": "need_outcome",
+                "plan_id": plan_id,
+                "proposal_id": record.get("proposal_id"),
+                "plan_revision": int(record.get("plan_revision", 0)),
+            },
+        )
+
     def process_completed(self) -> list[dict[str, Any]]:
         processed = self._processed_ids()
         results: list[dict[str, Any]] = []
@@ -131,9 +181,6 @@ class NpcNeedOutcomeProcessor:
             if not plan_id or plan_id in processed or str(record.get("status") or "") != "completed":
                 continue
             intent = record.get("intent") if isinstance(record.get("intent"), dict) else {}
-            # Composite strategy waypoints may carry the originating need for
-            # provenance, but only the terminal phase may satisfy/learn it.
-            # Legacy intents omit this flag and remain eligible by default.
             if intent.get("need_outcome_eligible") is False:
                 continue
             need = str(intent.get("need") or "").strip().lower()
@@ -169,8 +216,9 @@ class NpcNeedOutcomeProcessor:
                 plan_id=plan_id,
                 outcome_id=outcome_id,
             )
+            episode = self._remember_episode(record, outcome, npc_id=npc_id, need=need, plan_id=plan_id)
             row = {
-                "need_outcome_schema": "npc_need_outcome_audit_v4",
+                "need_outcome_schema": "npc_need_outcome_audit_v5",
                 "plan_id": plan_id,
                 "proposal_id": record.get("proposal_id"),
                 "npc_id": npc_id,
@@ -182,6 +230,7 @@ class NpcNeedOutcomeProcessor:
                 "outcome": deepcopy(outcome),
                 "learning": deepcopy(learning),
                 "strategy_experience": deepcopy(strategy_experience),
+                "episode_id": episode.get("episode_id") if isinstance(episode, dict) else None,
             }
             self._append(row)
             processed.add(plan_id)
