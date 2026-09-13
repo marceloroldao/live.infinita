@@ -47,7 +47,7 @@ class NpcNeedDynamics:
 
     def _load(self) -> dict[str, Any]:
         if not self.path.exists():
-            return {"schema": "npc_need_state_v1", "last_tick": 0, "npcs": {}}
+            return {"schema": "npc_need_state_v1", "last_tick": 0, "npcs": {}, "applied_outcomes": {}}
         with self.path.open("r", encoding="utf-8") as fh:
             value = json.load(fh)
         if not isinstance(value, dict):
@@ -55,6 +55,7 @@ class NpcNeedDynamics:
         value.setdefault("schema", "npc_need_state_v1")
         value.setdefault("last_tick", 0)
         value.setdefault("npcs", {})
+        value.setdefault("applied_outcomes", {})
         return value
 
     def _save(self) -> None:
@@ -82,6 +83,17 @@ class NpcNeedDynamics:
                 result[name] = 0.0
         return result
 
+    def _ensure_npc_row(self, npc_id: str) -> dict[str, Any] | None:
+        entity = self._entity(npc_id)
+        if entity is None:
+            return None
+        npcs = self._state.setdefault("npcs", {})
+        current = npcs.get(npc_id) if isinstance(npcs.get(npc_id), dict) else None
+        if current is None:
+            current = {"needs": self._initial_needs(entity), "last_tick": int(self._state.get("last_tick", 0))}
+            npcs[npc_id] = current
+        return current
+
     def get_needs(self, npc_id: str) -> dict[str, float] | None:
         row = dict(self._state.get("npcs", {})).get(str(npc_id))
         if not isinstance(row, dict):
@@ -91,6 +103,50 @@ class NpcNeedDynamics:
 
     def snapshot(self) -> dict[str, Any]:
         return deepcopy(self._state)
+
+    def satisfy(
+        self,
+        npc_id: str,
+        need: str,
+        amount: float,
+        *,
+        outcome_id: str,
+        metadata: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Reduce one need exactly once for a durable outcome id."""
+        npc_id = str(npc_id or "").strip()
+        need = str(need or "").strip().lower()
+        outcome_id = str(outcome_id or "").strip()
+        if need not in self.DEFAULT_RATES:
+            raise ValueError(f"unknown need: {need}")
+        if not npc_id:
+            raise ValueError("npc_id is required")
+        if not outcome_id:
+            raise ValueError("outcome_id is required")
+        applied = self._state.setdefault("applied_outcomes", {})
+        if outcome_id in applied:
+            return deepcopy(applied[outcome_id])
+        row = self._ensure_npc_row(npc_id)
+        if row is None:
+            raise ValueError(f"NPC not found: {npc_id}")
+        needs = row.setdefault("needs", {})
+        before = self._clamp(needs.get(need, 0.0))
+        reduction = max(0.0, float(amount))
+        after = self._clamp(before - reduction)
+        needs[need] = after
+        result = {
+            "outcome_schema": "npc_need_outcome_v1",
+            "outcome_id": outcome_id,
+            "npc_id": npc_id,
+            "need": need,
+            "amount": reduction,
+            "before": before,
+            "after": after,
+            "metadata": deepcopy(metadata or {}),
+        }
+        applied[outcome_id] = deepcopy(result)
+        self._save()
+        return result
 
     def _same_region(self, entity: dict[str, Any], target_field: str) -> bool:
         props = entity.get("properties") if isinstance(entity.get("properties"), dict) else {}
