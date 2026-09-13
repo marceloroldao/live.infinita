@@ -195,9 +195,6 @@ class NpcNeedScheduler:
             "need": need,
             "learning_context": deepcopy(context),
         }
-        # Legacy compound provider remains supported while the new composite
-        # executor is introduced. It is used only when the composite stack is
-        # not fully configured.
         if not self._composite_enabled() and self.compound_strategy_provider is not None:
             chooser = getattr(self.compound_strategy_provider, "choose", None)
             if callable(chooser):
@@ -276,7 +273,13 @@ class NpcNeedScheduler:
             shelter_entity_ids=self._strategy_shelters(entity),
             wait_ticks=wait_ticks,
         )
-        selected, ranking = choose_fn(candidates)
+        selected, ranking = choose_fn(
+            candidates,
+            actor_entity_id=str(entity.get("id") or ""),
+            need=need,
+            target_entity_id=target_id,
+            context=deepcopy(context),
+        )
         if not isinstance(selected, dict):
             return None, deepcopy(ranking), None
         compiled = compile_fn(
