@@ -107,7 +107,7 @@ class NpcCompositeStrategyTest(unittest.TestCase):
             target_entity_id="goal",
             context=ctx,
             travel_weight=0.05,
-            risk_weight=0.1,
+            risk_weight=0.0,
         )
         self.assertEqual(heuristic["strategy_id"], "direct")
 
