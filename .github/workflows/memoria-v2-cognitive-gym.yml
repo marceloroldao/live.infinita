@@ -8,6 +8,8 @@ on:
       - 'apps/world-runtime/scenario_nova_r1_r2.py'
       - 'apps/world-runtime/test_scenario_nova_r1_r2.py'
       - 'apps/world-runtime/test_memoria_v2_crossrepo.py'
+      - 'apps/world-runtime/scenario_active_curiosity.py'
+      - 'apps/world-runtime/test_active_curiosity_crossrepo.py'
       - 'schemas/memoria-v2-cognitive-frame.schema.json'
       - 'examples/memoria-v2-cognitive-frame.minimal.json'
       - 'docs/MEMORIA_V2_COGNITIVE_GYM.md'
@@ -61,4 +63,4 @@ jobs:
         env:
           PYTHONPATH: ${{ github.workspace }}/memoria-ia/src:${{ github.workspace }}/live-infinita/apps/world-runtime
         working-directory: live-infinita/apps/world-runtime
-        run: python -m pytest -q test_memoria_v2_crossrepo.py
+        run: python -m pytest -q test_memoria_v2_crossrepo.py test_active_curiosity_crossrepo.py
