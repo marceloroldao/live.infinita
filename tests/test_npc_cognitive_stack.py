@@ -101,8 +101,9 @@ class NpcCognitiveStackTest(unittest.TestCase):
             self.assertIs(kwargs["npc_need_outcomes"], stack.need_outcomes)
             self.assertIs(kwargs["npc_strategy_executor"], stack.strategy_executor)
             self.assertIs(kwargs["npc_composite_strategy_outcomes"], stack.composite_strategy_outcomes)
+            self.assertIs(kwargs["npc_causal_model"], stack.causal_model)
 
-    def test_strategy_experience_and_episodes_persist_across_stack_rebuild(self):
+    def test_strategy_experience_episodes_beliefs_and_causal_hypotheses_persist_across_stack_rebuild(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
             scheduler = FakePlanScheduler()
@@ -140,6 +141,12 @@ class NpcCognitiveStackTest(unittest.TestCase):
                 observed_risk=0.2,
             )
             first.belief_model.observe_episode(episode)
+            first.causal_model.observe_environment_transition(
+                observation_id="tick-12",
+                logical_tick=12,
+                before={"period": "day", "weather": "clear", "danger_level": 0.05},
+                after={"period": "night", "weather": "clear", "danger_level": 0.35},
+            )
 
             second = build_npc_cognitive_stack(
                 data_dir=root,
@@ -158,6 +165,10 @@ class NpcCognitiveStackTest(unittest.TestCase):
             self.assertIsNotNone(belief)
             self.assertEqual(belief["count"], 1)
             self.assertAlmostEqual(belief["mean_risk"], 0.2)
+            causal = second.causal_model.hypothesis(from_period="day", to_period="night", expected_direction="increase")
+            self.assertIsNotNone(causal)
+            self.assertEqual(causal["count"], 1)
+            self.assertEqual(causal["support_count"], 1)
 
     def test_builder_fails_closed_without_required_scheduler_contract(self):
         with tempfile.TemporaryDirectory() as tmpdir:
