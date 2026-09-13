@@ -107,6 +107,26 @@ def _active_runtime_observation_relations(world: dict[str, Any], actor_id: str) 
     return tuple(sorted(relation_ids))
 
 
+def pre_action_cognitive_world(world: dict[str, Any], actor_id: str) -> dict[str, Any]:
+    """Return a non-authoritative pre-action projection for the next cognition step.
+
+    The authoritative World State retains the most recent runtime observation and its
+    complete Event/Delta history.  For the next prediction only, observation relations
+    produced by the previous action are hidden so a transient sensory result does not
+    become part of the situated context identity for the next action.
+
+    This function never changes tick/version, never deletes history and never mutates
+    the supplied world object.
+    """
+    projected = deepcopy(world)
+    relations = projected.get("relations") or {}
+    for relation_id in _active_runtime_observation_relations(world, actor_id):
+        relation = relations.get(relation_id)
+        if isinstance(relation, dict):
+            relation["status"] = "inactive"
+    return projected
+
+
 def execute_validated_action(world: dict[str, Any], proposal: dict[str, Any]) -> RuntimeExecution:
     rule = _rule_for_proposal(world, proposal)
     before_version = int(world.get("current_version", 0))
