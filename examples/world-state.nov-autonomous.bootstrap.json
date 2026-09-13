@@ -30,6 +30,34 @@
         ],
         "narration": "A manhã retorna e o risco ambiental da floresta diminui."
       }
+    ],
+    "conditional_events": [
+      {
+        "id": "campfire-on-at-night",
+        "condition": {
+          "kind": "world_equals",
+          "path": ["environment", "period"],
+          "value": "night"
+        },
+        "trigger_mode": "edge",
+        "operations": [
+          {"op": "set", "entity_id": "campfire", "path": ["properties", "lit"], "value": true}
+        ],
+        "narration": "A fogueira é acesa quando a noite chega."
+      },
+      {
+        "id": "campfire-off-at-day",
+        "condition": {
+          "kind": "world_equals",
+          "path": ["environment", "period"],
+          "value": "day"
+        },
+        "trigger_mode": "edge",
+        "operations": [
+          {"op": "set", "entity_id": "campfire", "path": ["properties", "lit"], "value": false}
+        ],
+        "narration": "A fogueira é apagada com a volta da luz do dia."
+      }
     ]
   },
   "regions": [
@@ -88,7 +116,7 @@
       "scale": 1.0,
       "properties": {
         "label": "Fogueira",
-        "lit": true,
+        "lit": false,
         "risk_level": 0.08
       }
     },
