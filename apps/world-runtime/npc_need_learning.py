@@ -23,12 +23,7 @@ class NpcNeedLearning:
 
     def _load(self) -> dict[str, Any]:
         if not self.path.exists():
-            return {
-                "schema": "npc_need_learning_v2",
-                "entries": {},
-                "context_entries": {},
-                "outcomes": {},
-            }
+            return {"schema": "npc_need_learning_v2", "entries": {}, "context_entries": {}, "outcomes": {}}
         with self.path.open("r", encoding="utf-8") as fh:
             value = json.load(fh)
         if not isinstance(value, dict):
@@ -59,7 +54,6 @@ class NpcNeedLearning:
         except (TypeError, ValueError):
             danger = 0.0
         danger = min(1.0, max(0.0, danger))
-        # Coarse buckets prevent accidental context explosion from tiny numeric noise.
         result["danger_band"] = "high" if danger >= 0.67 else "medium" if danger >= 0.34 else "low"
         return result
 
@@ -84,18 +78,9 @@ class NpcNeedLearning:
         new_count = count + 1
         return new_count, mean + (reward - mean) / new_count
 
-    def observe(
-        self,
-        *,
-        outcome_id: str,
-        npc_id: str,
-        need: str,
-        target_entity_id: str,
-        satisfaction: float,
-        plan_id: str | None = None,
-        proposal_id: str | None = None,
-        context: dict[str, Any] | None = None,
-    ) -> dict[str, Any]:
+    def observe(self, *, outcome_id: str, npc_id: str, need: str, target_entity_id: str, satisfaction: float,
+                plan_id: str | None = None, proposal_id: str | None = None,
+                context: dict[str, Any] | None = None) -> dict[str, Any]:
         outcome_id = str(outcome_id or "").strip()
         npc_id = str(npc_id or "").strip()
         need = str(need or "").strip().lower()
@@ -108,37 +93,27 @@ class NpcNeedLearning:
 
         reward = min(1.0, max(0.0, float(satisfaction)))
         canonical_context = self.canonical_context(context)
-
         entries = self._state.setdefault("entries", {})
         global_key = self._key(npc_id, need, target_entity_id)
         global_count, global_mean = self._update_mean(entries.get(global_key), reward)
         entries[global_key] = {
-            "npc_id": npc_id,
-            "need": need,
-            "target_entity_id": target_entity_id,
-            "count": global_count,
-            "mean_satisfaction": global_mean,
+            "npc_id": npc_id, "need": need, "target_entity_id": target_entity_id,
+            "count": global_count, "mean_satisfaction": global_mean,
             "last_outcome_id": outcome_id,
             "last_plan_id": str(plan_id or "").strip() or None,
             "last_proposal_id": str(proposal_id or "").strip() or None,
         }
-
         context_entries = self._state.setdefault("context_entries", {})
         contextual_key = self._contextual_key(npc_id, need, target_entity_id, canonical_context)
         context_count, context_mean = self._update_mean(context_entries.get(contextual_key), reward)
         context_entries[contextual_key] = {
-            "npc_id": npc_id,
-            "need": need,
-            "target_entity_id": target_entity_id,
-            "context": canonical_context,
-            "context_key": self.context_key(canonical_context),
-            "count": context_count,
-            "mean_satisfaction": context_mean,
+            "npc_id": npc_id, "need": need, "target_entity_id": target_entity_id,
+            "context": canonical_context, "context_key": self.context_key(canonical_context),
+            "count": context_count, "mean_satisfaction": context_mean,
             "last_outcome_id": outcome_id,
             "last_plan_id": str(plan_id or "").strip() or None,
             "last_proposal_id": str(proposal_id or "").strip() or None,
         }
-
         outcome = {
             "outcome_id": outcome_id,
             "npc_id": npc_id,
@@ -146,6 +121,9 @@ class NpcNeedLearning:
             "target_entity_id": target_entity_id,
             "satisfaction": reward,
             "context": canonical_context,
+            # v1 compatibility aliases remain the global values.
+            "count_after": global_count,
+            "mean_satisfaction_after": global_mean,
             "global_count_after": global_count,
             "global_mean_satisfaction_after": global_mean,
             "context_count_after": context_count,
@@ -162,32 +140,19 @@ class NpcNeedLearning:
         row = self._state.get("entries", {}).get(key)
         return deepcopy(row) if isinstance(row, dict) else None
 
-    def contextual_stats(
-        self,
-        npc_id: str,
-        need: str,
-        target_entity_id: str,
-        context: dict[str, Any] | None,
-    ) -> dict[str, Any] | None:
+    def contextual_stats(self, npc_id: str, need: str, target_entity_id: str,
+                         context: dict[str, Any] | None) -> dict[str, Any] | None:
         key = self._contextual_key(str(npc_id), str(need).lower(), str(target_entity_id), context)
         row = self._state.get("context_entries", {}).get(key)
         return deepcopy(row) if isinstance(row, dict) else None
 
-    def rank_targets(
-        self,
-        npc_id: str,
-        need: str,
-        target_ids: list[str],
-        context: dict[str, Any] | None = None,
-    ) -> list[dict[str, Any]]:
+    def rank_targets(self, npc_id: str, need: str, target_ids: list[str],
+                     context: dict[str, Any] | None = None) -> list[dict[str, Any]]:
         rows: list[dict[str, Any]] = []
         canonical_context = self.canonical_context(context)
         for target_id in sorted({str(v).strip() for v in target_ids if str(v).strip()}):
             global_stat = self.stats(npc_id, need, target_id) or {"count": 0, "mean_satisfaction": 0.0}
-            contextual_stat = self.contextual_stats(npc_id, need, target_id, canonical_context) or {
-                "count": 0,
-                "mean_satisfaction": 0.0,
-            }
+            contextual_stat = self.contextual_stats(npc_id, need, target_id, canonical_context) or {"count": 0, "mean_satisfaction": 0.0}
             global_count = int(global_stat.get("count", 0))
             global_mean = float(global_stat.get("mean_satisfaction", 0.0))
             context_count = int(contextual_stat.get("count", 0))
@@ -198,6 +163,9 @@ class NpcNeedLearning:
             rows.append({
                 "target_entity_id": target_id,
                 "context": canonical_context,
+                # v1 compatibility aliases remain global evidence.
+                "count": global_count,
+                "mean_satisfaction": global_mean,
                 "context_count": context_count,
                 "context_mean_satisfaction": context_mean,
                 "global_count": global_count,
@@ -206,7 +174,6 @@ class NpcNeedLearning:
                 "evidence_source": "context" if use_context else "global_fallback",
                 "exploring": exploring,
             })
-
         rows.sort(key=lambda row: (
             0 if row["exploring"] else 1,
             row["context_count"] if row["exploring"] else 0,
@@ -217,13 +184,8 @@ class NpcNeedLearning:
         ))
         return rows
 
-    def choose_target(
-        self,
-        npc_id: str,
-        need: str,
-        target_ids: list[str],
-        context: dict[str, Any] | None = None,
-    ) -> str | None:
+    def choose_target(self, npc_id: str, need: str, target_ids: list[str],
+                      context: dict[str, Any] | None = None) -> str | None:
         ranked = self.rank_targets(npc_id, need, target_ids, context=context)
         return str(ranked[0]["target_entity_id"]) if ranked else None
 
