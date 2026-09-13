@@ -33,6 +33,8 @@ class NpcStrategyCompilerTest(unittest.TestCase):
         self.assertEqual(plan["phases"][0]["intent"]["target_entity_id"], "shelter")
         self.assertEqual(plan["phases"][1]["intent"]["target_entity_id"], "goal")
         self.assertEqual(plan["phases"][0]["intent"]["strategy_id"], "via_shelter:shelter")
+        self.assertFalse(plan["phases"][0]["intent"]["need_outcome_eligible"])
+        self.assertTrue(plan["phases"][1]["intent"]["need_outcome_eligible"])
 
     def test_compiles_wait_then_direct_without_mutation(self):
         plan = self.compiler.compile(
@@ -49,6 +51,20 @@ class NpcStrategyCompilerTest(unittest.TestCase):
         )
         self.assertEqual(plan["phases"][0]["intent"]["intent"], "wait_ticks")
         self.assertEqual(plan["phases"][0]["intent"]["ticks"], 3)
+        self.assertFalse(plan["phases"][0]["intent"]["need_outcome_eligible"])
+        self.assertTrue(plan["phases"][1]["intent"]["need_outcome_eligible"])
+
+    def test_direct_terminal_move_is_outcome_eligible(self):
+        plan = self.compiler.compile(
+            actor_entity_id="npc",
+            need="social",
+            target_entity_id="goal",
+            strategy={
+                "strategy_id": "direct",
+                "phases": [{"kind": "move_to_entity", "target_entity_id": "goal"}],
+            },
+        )
+        self.assertTrue(plan["phases"][0]["intent"]["need_outcome_eligible"])
 
     def test_invalid_phase_fails_closed(self):
         with self.assertRaises(NpcStrategyCompileError):
