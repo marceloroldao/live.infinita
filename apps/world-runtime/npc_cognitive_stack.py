@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from npc_belief_model import NpcBeliefModel
 from npc_composite_strategy import NpcCompositeStrategy
 from npc_composite_strategy_outcomes import NpcCompositeStrategyOutcomeProcessor
 from npc_episodic_memory import NpcEpisodicMemory
@@ -25,6 +26,7 @@ class NpcCognitiveStack:
     need_learning: NpcNeedLearning
     strategy_experience: NpcStrategyExperience
     episodic_memory: NpcEpisodicMemory
+    belief_model: NpcBeliefModel
     strategy_value: NpcStrategyValue
     composite_strategy: NpcCompositeStrategy
     strategy_compiler: NpcStrategyCompiler
@@ -78,10 +80,12 @@ def build_npc_cognitive_stack(
     )
     strategy_experience = NpcStrategyExperience(root / "npc-strategy-experience.json", min_samples=strategy_min_samples)
     episodic_memory = NpcEpisodicMemory(root / "npc-episodes.jsonl")
+    belief_model = NpcBeliefModel(root / "npc-beliefs.json")
     strategy_value = NpcStrategyValue(
         planner,
         strategy_experience_provider=strategy_experience,
         episodic_memory_provider=episodic_memory,
+        belief_provider=belief_model,
     )
     composite_strategy = NpcCompositeStrategy(planner, strategy_experience_provider=strategy_experience)
     strategy_compiler = NpcStrategyCompiler()
@@ -108,6 +112,7 @@ def build_npc_cognitive_stack(
         learning_provider=need_learning,
         strategy_experience_provider=strategy_experience,
         episodic_memory_provider=episodic_memory,
+        belief_provider=belief_model,
     )
     composite_strategy_outcomes = NpcCompositeStrategyOutcomeProcessor(
         root / "npc-composite-strategy-outcomes.jsonl",
@@ -122,6 +127,7 @@ def build_npc_cognitive_stack(
         need_learning=need_learning,
         strategy_experience=strategy_experience,
         episodic_memory=episodic_memory,
+        belief_model=belief_model,
         strategy_value=strategy_value,
         composite_strategy=composite_strategy,
         strategy_compiler=strategy_compiler,
