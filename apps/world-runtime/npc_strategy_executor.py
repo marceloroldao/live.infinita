@@ -67,6 +67,7 @@ class NpcStrategyExecutor:
         *,
         principal: dict[str, Any],
         proposer_id: str,
+        proposal_id: str | None = None,
         priority: int = 0,
         idempotency_key: str | None = None,
     ) -> dict[str, Any]:
@@ -79,11 +80,12 @@ class NpcStrategyExecutor:
                     return row
         now = time.time()
         row = {
-            "strategy_execution_schema": "npc_strategy_execution_v1",
+            "strategy_execution_schema": "npc_strategy_execution_v2",
             "strategy_execution_id": f"strategy_exec_{int(now * 1000)}_{uuid.uuid4().hex[:10]}",
             "strategy_plan": deepcopy(strategy_plan),
             "principal": deepcopy(principal),
             "proposer_id": str(proposer_id or "").strip(),
+            "proposal_id": str(proposal_id or "").strip() or None,
             "priority": int(priority),
             "status": "running",
             "phase_index": 0,
@@ -151,8 +153,6 @@ class NpcStrategyExecutor:
             ticks = max(1, int(intent.get("ticks", 0)))
             started = record.get("wait_started_tick")
             if started is None:
-                # The start tick counts as tick zero; completion requires the
-                # requested number of logical advances after it.
                 return self._update(record, wait_started_tick=int(logical_tick))
             elapsed = int(logical_tick) - int(started)
             if elapsed < ticks:
@@ -168,10 +168,17 @@ class NpcStrategyExecutor:
 
         child_plan_id = str(record.get("child_plan_id") or "").strip()
         if not child_plan_id:
+            # The originating proposal belongs to the whole composite strategy.
+            # Only the terminal/outcome-eligible child receives it, so an
+            # intermediate waypoint cannot commit the proposal prematurely.
+            child_proposal_id = None
+            if intent.get("need_outcome_eligible") is True:
+                child_proposal_id = str(record.get("proposal_id") or "").strip() or None
             child = self.plan_scheduler.schedule(
                 intent=deepcopy(intent),
                 principal=deepcopy(record.get("principal") or {}),
                 proposer_id=str(record.get("proposer_id") or "strategy_executor"),
+                proposal_id=child_proposal_id,
                 idempotency_key=f"strategy-phase:{execution_id}:{int(record.get('phase_index', 0))}",
                 priority=int(record.get("priority", 0)),
             )
