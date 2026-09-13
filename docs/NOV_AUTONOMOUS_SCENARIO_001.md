@@ -46,7 +46,7 @@ The first energy target is deliberately unambiguous:
 rest_target_entity_id = bed_nov
 ```
 
-This keeps the first autonomous cycle deterministic. The campfire remains present for future conditional events and alternative-strategy experiments, but is not initially an energy target.
+This keeps the first autonomous cycle deterministic. The campfire remains present as a reactive world object, but is not initially an energy target.
 
 ## Expected first autonomous cycle
 
@@ -68,7 +68,7 @@ The test does not require Nov to remain at the shelter forever. Once the energy 
 
 ## Logical day/night cycle
 
-The bootstrap also declares persistent world schedules. The autonomous runtime imports them into `WorldEventScheduler` using stable idempotency keys, so rebuilding or restarting the runtime does not duplicate the schedule.
+The bootstrap declares persistent world schedules. The autonomous runtime imports them into `WorldEventScheduler` using stable idempotency keys, so rebuilding or restarting the runtime does not duplicate the schedule.
 
 ```text
 tick 12 -> night, danger_level=0.35
@@ -82,6 +82,31 @@ Each phase recurs every 24 logical ticks. The events pass through the same `Muta
 
 The period is therefore not cosmetic state. `NpcNeedDynamics` reads the resulting environmental `danger_level` during the same logical tick. At night the safety need trends upward; when daytime returns and environmental risk falls, the safety need trends downward again. This keeps environmental evolution and NPC motivation causally connected without a special-case AI rule.
 
+## Declarative world reactions
+
+The same bootstrap also declares state-triggered reactions that are installed into `ConditionalEventScheduler` with stable idempotency keys. These conditions are evaluated after scheduled world events and before NPC need dynamics.
+
+The first reactions are deliberately simple and visible:
+
+```text
+night AND campfire.lit == false -> campfire.lit = true
+day   AND campfire.lit == true  -> campfire.lit = false
+```
+
+The compound condition includes the current campfire state so startup does not produce a redundant mutation. When tick 12 turns the world to night, the conditional phase sees the new state in the same tick and lights the campfire. Tick 24 restores day and the next conditional phase turns the fire off. Both changes are authoritative cold-store mutations and still pass through the `Mutation Gate`.
+
+This establishes the first complete reactive chain:
+
+```text
+logical time
+  -> environment changes
+  -> world object reacts
+  -> NPC internal dynamics observe the new environment
+  -> future goals can change
+```
+
+No LLM or renderer frame is involved in that causal chain.
+
 ## Test contract
 
 `tests/test_nov_autonomous_scenario.py` verifies that:
@@ -93,11 +118,14 @@ The period is therefore not cosmetic state. `NpcNeedDynamics` reads the resultin
 5. Nov reaches the `shelter` region without external input;
 6. an energy outcome is produced;
 7. dynamic energy falls below its bootstrap value;
-8. day/night schedules are installed exactly once across runtime rebuilds;
+8. day/night schedules and conditional reactions are installed exactly once across runtime rebuilds;
 9. tick 12 changes the world to night with higher environmental danger;
-10. Nov's safety need rises when the night event raises danger;
-11. tick 24 restores daytime and lower risk, causing safety to trend down again;
-12. recurring schedule cursors advance to ticks 36 and 48 rather than performing catch-up loops.
+10. the campfire lights on the same tick as night begins;
+11. Nov's safety need rises when the night event raises danger;
+12. tick 24 restores daytime and lower risk;
+13. the campfire turns off when daytime returns;
+14. safety trends down again after environmental danger drops;
+15. recurring schedule cursors advance to ticks 36 and 48 rather than performing catch-up loops.
 
 ## Deployment
 
