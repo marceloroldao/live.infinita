@@ -33,6 +33,7 @@ class FakePlanScheduler:
             "intent": intent,
             "principal": principal,
             "proposer_id": proposer_id,
+            "proposal_id": kwargs.get("proposal_id"),
             "priority": priority,
             "idempotency_key": idempotency_key,
         }
@@ -142,6 +143,42 @@ class NpcStrategyExecutorTest(unittest.TestCase):
         self.assertEqual(second["phase_index"], 1)
         self.assertNotEqual(second["child_plan_id"], first_child)
         self.assertEqual(len(self.scheduler.calls), 2)
+
+    def test_proposal_is_attached_only_to_terminal_eligible_child(self):
+        execution = self.executor.start(
+            self._plan([
+                {
+                    "phase_index": 0,
+                    "kind": "move_to_entity",
+                    "intent": {
+                        "intent": "move_to_entity", "actor_entity_id": "npc",
+                        "target_entity_id": "shelter", "need": "energy",
+                        "need_outcome_eligible": False,
+                    },
+                },
+                {
+                    "phase_index": 1,
+                    "kind": "move_to_entity",
+                    "intent": {
+                        "intent": "move_to_entity", "actor_entity_id": "npc",
+                        "target_entity_id": "goal", "need": "energy",
+                        "need_outcome_eligible": True,
+                    },
+                },
+            ]),
+            principal=self.principal,
+            proposer_id="npc:npc",
+            proposal_id="proposal_1",
+        )
+        execution_id = execution["strategy_execution_id"]
+        first = self.executor.tick(execution_id, logical_tick=1)
+        first_child = first["child_plan_id"]
+        self.assertIsNone(self.scheduler.ledger.rows[first_child]["proposal_id"])
+        self.scheduler.ledger.rows[first_child]["status"] = "completed"
+        self.executor.tick(execution_id, logical_tick=2)
+        second = self.executor.tick(execution_id, logical_tick=3)
+        second_child = second["child_plan_id"]
+        self.assertEqual(self.scheduler.ledger.rows[second_child]["proposal_id"], "proposal_1")
 
     def test_child_failure_fails_strategy_without_advancing(self):
         execution = self.executor.start(
