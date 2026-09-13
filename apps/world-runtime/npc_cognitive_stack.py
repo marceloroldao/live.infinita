@@ -102,6 +102,7 @@ def build_npc_cognitive_stack(
         strategy_experience_provider=strategy_experience,
         causal_forecast_provider=causal_forecast,
         counterfactual_provider=counterfactual_simulator,
+        need_state_provider=need_dynamics,
     )
     strategy_compiler = NpcStrategyCompiler()
     strategy_executor = NpcStrategyExecutor(root / "npc-strategy-executions.jsonl", plan_scheduler)
