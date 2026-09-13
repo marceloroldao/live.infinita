@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 from typing import Any
 
 from conditional_event_scheduler import ConditionalEventScheduler
@@ -32,6 +33,16 @@ class WorldTickRunner:
         self.npc_need_outcomes = npc_need_outcomes
         resume_evaluator = getattr(scheduler, "assess_resume", None)
         self.plan_arbiter = plan_arbiter or PlanArbiter(scheduler.ledger, resume_evaluator=resume_evaluator)
+
+    def _tick_plan(self, plan_id: str, logical_tick: int) -> dict[str, Any]:
+        tick_fn = self.scheduler.tick
+        try:
+            parameters = inspect.signature(tick_fn).parameters
+        except (TypeError, ValueError):
+            parameters = {}
+        if "logical_tick" in parameters:
+            return tick_fn(plan_id, logical_tick=logical_tick)
+        return tick_fn(plan_id)
 
     def tick(self) -> dict[str, Any]:
         before = self.clock.state()
@@ -126,7 +137,7 @@ class WorldTickRunner:
             plan_id = str(record.get("plan_id") or "").strip()
             if not plan_id:
                 continue
-            result = self.scheduler.tick(plan_id, logical_tick=after.tick)
+            result = self._tick_plan(plan_id, after.tick)
             results.append({
                 "plan_id": plan_id,
                 "actor_entity_id": result.get("actor_entity_id"),
