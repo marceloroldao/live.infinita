@@ -4,6 +4,7 @@ from memoria_v2_adapter import (
     build_cognitive_frame,
     candidate_from_transition,
     observer_state_addresses,
+    to_memoria_v2_request_payload,
 )
 
 
@@ -77,11 +78,13 @@ def test_region_change_becomes_observable_consequence():
     after = _world(region="r2", tick=2, version=2)
     candidate = candidate_from_transition(
         candidate_id="c1",
+        proposal_id="p1",
         before=before,
         after=after,
         observer_id="nova",
         event_ids=("e1",),
     )
+    assert candidate.proposal_id == "p1"
     assert "live:region:r2" in candidate.consequence_addresses
     assert "live:region:r1" not in candidate.next_state_addresses
 
@@ -92,11 +95,60 @@ def test_no_structural_change_is_explicit_not_fabricated():
     after["current_tick"] = 2
     candidate = candidate_from_transition(
         candidate_id="c0",
+        proposal_id="p1",
         before=before,
         after=after,
         observer_id="nova",
     )
     assert candidate.consequence_addresses == ("live:outcome:no-structural-change",)
+
+
+def test_candidate_for_unknown_proposal_fails_closed():
+    candidate = candidate_from_transition(
+        candidate_id="c1",
+        proposal_id="missing",
+        before=_world(region="r1"),
+        after=_world(region="r2", tick=2, version=2),
+        observer_id="nova",
+    )
+    try:
+        build_cognitive_frame(
+            world=_world(),
+            observer_id="nova",
+            proposals=(_proposal("p1"),),
+            candidates=(candidate,),
+        )
+    except ValueError as exc:
+        assert "available proposal_id" in str(exc)
+    else:
+        raise AssertionError("expected ValueError")
+
+
+def test_selected_request_contains_only_candidates_for_selected_intervention():
+    before = _world(region="r1")
+    c1 = candidate_from_transition(
+        candidate_id="c1",
+        proposal_id="p1",
+        before=before,
+        after=_world(region="r2", tick=2, version=2),
+        observer_id="nova",
+    )
+    c2 = candidate_from_transition(
+        candidate_id="c2",
+        proposal_id="p2",
+        before=before,
+        after=deepcopy(before),
+        observer_id="nova",
+    )
+    frame = build_cognitive_frame(
+        world=before,
+        observer_id="nova",
+        proposals=(_proposal("p1"), _proposal("p2", "wait", None)),
+        candidates=(c1, c2),
+    )
+    payload = to_memoria_v2_request_payload(frame, proposal_id="p1")
+    assert payload["intervention_id"] == "p1"
+    assert tuple(item[0] for item in payload["candidates"]) == ("c1",)
 
 
 def test_unknown_observer_fails_closed():
