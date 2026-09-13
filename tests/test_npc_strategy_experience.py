@@ -71,6 +71,46 @@ class NpcStrategyExperienceTest(unittest.TestCase):
             self.assertEqual(duplicate["count"], 2)
             self.assertAlmostEqual(exp.stats("npc", "energy", "a", ctx)["mean_elapsed_ticks"], 6.0)
 
+    def test_full_strategy_stats_are_independent_for_same_target(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            exp = NpcStrategyExperience(Path(tmpdir) / "strategy.json", min_samples=2)
+            ctx = {"period": "night", "weather": "storm", "region_id": "r0", "danger_level": 0.9}
+            for idx in range(2):
+                exp.observe_strategy(
+                    outcome_id=f"direct:{idx}", npc_id="npc", need="safety", target_entity_id="a",
+                    strategy_id="direct", context=ctx, satisfaction=0.5, elapsed_ticks=4,
+                    preemptions=0, replans=0, observed_risk=0.8,
+                    strategy_execution_id=f"sd{idx}", terminal_plan_id=f"pd{idx}",
+                )
+                exp.observe_strategy(
+                    outcome_id=f"shelter:{idx}", npc_id="npc", need="safety", target_entity_id="a",
+                    strategy_id="via_shelter:s1", context=ctx, satisfaction=0.5, elapsed_ticks=7,
+                    preemptions=0, replans=0, observed_risk=0.2,
+                    strategy_execution_id=f"ss{idx}", terminal_plan_id=f"ps{idx}",
+                )
+
+            direct = exp.strategy_stats("npc", "safety", "a", "direct", ctx)
+            shelter = exp.strategy_stats("npc", "safety", "a", "via_shelter:s1", ctx)
+            self.assertTrue(direct["empirical_ready"])
+            self.assertTrue(shelter["empirical_ready"])
+            self.assertEqual(direct["count"], 2)
+            self.assertEqual(shelter["count"], 2)
+            self.assertAlmostEqual(direct["mean_elapsed_ticks"], 4.0)
+            self.assertAlmostEqual(shelter["mean_elapsed_ticks"], 7.0)
+            self.assertAlmostEqual(direct["mean_observed_risk"], 0.8)
+            self.assertAlmostEqual(shelter["mean_observed_risk"], 0.2)
+
+            duplicate = exp.observe_strategy(
+                outcome_id="shelter:1", npc_id="npc", need="safety", target_entity_id="a",
+                strategy_id="via_shelter:s1", context=ctx, satisfaction=1.0, elapsed_ticks=99,
+                preemptions=99, replans=99, observed_risk=1.0,
+            )
+            self.assertEqual(duplicate["count"], 2)
+            self.assertAlmostEqual(
+                exp.strategy_stats("npc", "safety", "a", "via_shelter:s1", ctx)["mean_elapsed_ticks"],
+                7.0,
+            )
+
     def test_strategy_value_switches_from_heuristic_to_empirical_cost(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             ctx = {"period": "day", "weather": "clear", "region_id": "r0", "danger_level": 0.0}
