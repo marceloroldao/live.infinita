@@ -52,6 +52,14 @@ class FakePlanner:
         self.regions = FakeRegions()
 
 
+class FakeEpisodes:
+    def __init__(self, rows):
+        self.rows = rows
+
+    def recall(self, npc_id, **kwargs):
+        return [dict(row) for row in self.rows if row.get("npc_id") == npc_id]
+
+
 class NpcStrategyValueTest(unittest.TestCase):
     def test_safer_nearer_target_can_beat_higher_predicted_satisfaction(self):
         value = NpcStrategyValue(FakePlanner(), travel_weight=0.20, risk_weight=0.50, route_hops_scale=4)
@@ -66,10 +74,19 @@ class NpcStrategyValueTest(unittest.TestCase):
         self.assertEqual(valued[1]["route_hops"], 4)
 
     def test_exploration_group_stays_ahead_of_known_targets(self):
-        value = NpcStrategyValue(FakePlanner(), travel_weight=0.20, risk_weight=0.50, route_hops_scale=4)
+        episodes = FakeEpisodes([
+            {"npc_id": "npc", "need": "energy", "target_entity_id": "near", "outcome": {"satisfaction": 1.0, "observed_risk": 0.0}}
+        ])
+        value = NpcStrategyValue(
+            FakePlanner(),
+            travel_weight=0.20,
+            risk_weight=0.50,
+            route_hops_scale=4,
+            episodic_memory_provider=episodes,
+        )
         rankings = [
-            {"target_entity_id": "near", "effective_mean_satisfaction": 0.95, "exploring": False, "context_count": 5},
-            {"target_entity_id": "far", "effective_mean_satisfaction": 0.10, "exploring": True, "context_count": 0},
+            {"target_entity_id": "near", "need": "energy", "effective_mean_satisfaction": 0.95, "exploring": False, "context_count": 5},
+            {"target_entity_id": "far", "need": "energy", "effective_mean_satisfaction": 0.10, "exploring": True, "context_count": 0},
         ]
         selected, valued = value.choose(actor_entity_id="npc", rankings=rankings, context={"danger_level": 0.0})
         self.assertEqual(selected, "far")
@@ -82,6 +99,49 @@ class NpcStrategyValueTest(unittest.TestCase):
         _, danger = value.choose(actor_entity_id="npc", rankings=rankings, context={"danger_level": 0.8})
         self.assertGreater(safe[0]["expected_value"], danger[0]["expected_value"])
         self.assertAlmostEqual(danger[0]["risk"], 0.8)
+
+    def test_relevant_episode_can_break_close_target_tie(self):
+        episodes = FakeEpisodes([
+            {
+                "npc_id": "npc",
+                "need": "energy",
+                "target_entity_id": "near",
+                "strategy_id": "direct",
+                "context": {"period": "night", "danger_bucket": 1},
+                "outcome": {"satisfaction": 0.8, "observed_risk": 0.0},
+            },
+            {
+                "npc_id": "npc",
+                "need": "curiosity",
+                "target_entity_id": "far",
+                "strategy_id": "direct",
+                "context": {"period": "night", "danger_bucket": 1},
+                "outcome": {"satisfaction": 1.0, "observed_risk": 0.0},
+            },
+        ])
+        value = NpcStrategyValue(
+            FakePlanner(),
+            travel_weight=0.0,
+            risk_weight=0.0,
+            episodic_weight=0.15,
+            episodic_memory_provider=episodes,
+        )
+        rankings = [
+            {"target_entity_id": "near", "need": "energy", "effective_mean_satisfaction": 0.60, "exploring": False, "context_count": 4},
+            {"target_entity_id": "far", "need": "energy", "effective_mean_satisfaction": 0.65, "exploring": False, "context_count": 4},
+        ]
+        selected, valued = value.choose(
+            actor_entity_id="npc",
+            rankings=rankings,
+            context={"period": "night", "danger_level": 0.30},
+        )
+        self.assertEqual(selected, "near")
+        near = next(row for row in valued if row["target_entity_id"] == "near")
+        far = next(row for row in valued if row["target_entity_id"] == "far")
+        self.assertEqual(near["episodic_evidence_count"], 1)
+        self.assertGreater(near["episodic_bias"], 0.0)
+        self.assertEqual(far["episodic_evidence_count"], 0)
+        self.assertEqual(far["episodic_bias"], 0.0)
 
 
 if __name__ == "__main__":
