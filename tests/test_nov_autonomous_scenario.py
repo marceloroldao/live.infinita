@@ -79,10 +79,14 @@ class NovAutonomousScenarioTest(unittest.TestCase):
             episode = episodes[0]
             self.assertEqual(episode["need"], "energy")
             self.assertEqual(episode["target_entity_id"], "bed_nov")
-            self.assertIn(episode["strategy_id"], {"direct", "via_shelter", "wait_then_direct"})
+            self.assertTrue(
+                episode["strategy_id"] == "direct"
+                or episode["strategy_id"] == "wait_then_direct"
+                or episode["strategy_id"].startswith("via_shelter:")
+            )
             self.assertGreater(float(episode["outcome"]["satisfaction"]), 0.0)
             self.assertIsNotNone(episode["logical_tick"])
-            self.assertEqual(episode["source"]["kind"], "composite_strategy_outcome")
+            self.assertEqual(episode["source"]["kind"], "need_outcome")
 
             reopened = self.build(root)
             persisted = reopened.cognition.episodic_memory.recall(
@@ -115,8 +119,6 @@ class NovAutonomousScenarioTest(unittest.TestCase):
             self.assertEqual(by_bootstrap_id["night-cycle"]["recurrence_every_ticks"], 24)
             self.assertEqual(by_bootstrap_id["day-cycle"]["due_tick"], 24)
 
-            # Rebuilding the same persistent runtime must not duplicate either
-            # timed schedules or state-triggered reactions.
             reopened = self.build(root)
             self.assertEqual(len(reopened.event_scheduler.current()), 2)
             self.assertEqual(len(reopened.conditional_event_scheduler.current()), 2)
