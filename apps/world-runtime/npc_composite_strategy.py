@@ -11,8 +11,8 @@ class NpcCompositeStrategy:
     emits explainable strategy candidates that a later compiler can turn into
     semantic plan phases. When enough full-strategy experience exists, ranking may
     use that empirical evidence instead of route heuristics. Before empirical
-    evidence is mature, a bounded provisional causal forecast may adjust heuristic
-    risk when a scheduled world transition is likely to happen during execution.
+    evidence is mature, bounded causal forecast and counterfactual simulation may
+    adjust heuristic risk for future transitions without mutating the real world.
     """
 
     def __init__(
@@ -22,11 +22,15 @@ class NpcCompositeStrategy:
         wait_penalty_per_tick: float = 0.02,
         strategy_experience_provider: Any | None = None,
         causal_forecast_provider: Any | None = None,
+        counterfactual_provider: Any | None = None,
+        counterfactual_weight: float = 0.35,
     ) -> None:
         self.planner = planner
         self.wait_penalty_per_tick = max(0.0, float(wait_penalty_per_tick))
         self.strategy_experience_provider = strategy_experience_provider
         self.causal_forecast_provider = causal_forecast_provider
+        self.counterfactual_provider = counterfactual_provider
+        self.counterfactual_weight = min(1.0, max(0.0, float(counterfactual_weight)))
 
     def _entity(self, entity_id: str) -> dict[str, Any] | None:
         store = getattr(self.planner, "store", None)
@@ -91,7 +95,7 @@ class NpcCompositeStrategy:
 
         rows: list[dict[str, Any]] = [{
             "strategy_id": "direct",
-            "phases": [{"kind": "move_to_entity", "target_entity_id": target_entity_id}],
+            "phases": [{"kind": "move_to_entity", "target_entity_id": target_entity_id, "estimated_ticks": max(1, int(direct_hops or 1))}],
             "estimated_hops": direct_hops,
             "estimated_risk": max(context_risk, self._risk(target)),
             "wait_ticks": 0,
@@ -110,8 +114,8 @@ class NpcCompositeStrategy:
             rows.append({
                 "strategy_id": f"via_shelter:{shelter_id}",
                 "phases": [
-                    {"kind": "move_to_entity", "target_entity_id": shelter_id},
-                    {"kind": "move_to_entity", "target_entity_id": target_entity_id},
+                    {"kind": "move_to_entity", "target_entity_id": shelter_id, "estimated_ticks": max(1, int(a or 1))},
+                    {"kind": "move_to_entity", "target_entity_id": target_entity_id, "estimated_ticks": max(1, int(b or 1))},
                 ],
                 "estimated_hops": a + b,
                 "estimated_risk": max(self._risk(shelter), self._risk(target)),
@@ -125,7 +129,7 @@ class NpcCompositeStrategy:
                 "strategy_id": "wait_then_direct",
                 "phases": [
                     {"kind": "wait_ticks", "ticks": waits},
-                    {"kind": "move_to_entity", "target_entity_id": target_entity_id},
+                    {"kind": "move_to_entity", "target_entity_id": target_entity_id, "estimated_ticks": max(1, int(direct_hops or 1))},
                 ],
                 "estimated_hops": direct_hops,
                 "estimated_risk": max(self._risk(target), context_risk * 0.5),
@@ -156,6 +160,14 @@ class NpcCompositeStrategy:
         if not callable(assessor):
             return None
         value = assessor(context=context, estimated_ticks=estimated_ticks)
+        return deepcopy(value) if isinstance(value, dict) else None
+
+    def _counterfactual(self, *, strategy: dict[str, Any], context: dict[str, Any] | None, estimated_ticks: int) -> dict[str, Any] | None:
+        provider = self.counterfactual_provider
+        simulate = getattr(provider, "simulate", None) if provider is not None else None
+        if not callable(simulate):
+            return None
+        value = simulate(strategy=strategy, context=context, fallback_estimated_ticks=estimated_ticks)
         return deepcopy(value) if isinstance(value, dict) else None
 
     def rank(
@@ -195,6 +207,8 @@ class NpcCompositeStrategy:
             )
             forecast = None
             forecast_exposure = 0.0
+            counterfactual = None
+            counterfactual_blend = 0.0
             if empirical and bool(empirical.get("empirical_ready")):
                 satisfaction = self._clamp(float(empirical.get("mean_satisfaction", predicted)))
                 elapsed_cost = self._clamp(float(empirical.get("mean_elapsed_ticks", 0.0)) / elapsed_scale)
@@ -222,9 +236,17 @@ class NpcCompositeStrategy:
                     forecast_exposure = self._forecast_exposure(strategy_id)
                     delta = projected_danger - current_danger
                     risk = self._clamp(risk + delta * blend * forecast_exposure)
-                    expected = predicted - float(travel_weight) * travel_cost - float(risk_weight) * risk - wait_penalty
                     if blend > 0.0:
                         source = "heuristic+causal_forecast"
+
+                counterfactual = self._counterfactual(strategy=row, context=context, estimated_ticks=estimated_ticks)
+                if counterfactual is not None:
+                    projected = self._clamp(float(counterfactual.get("mean_effective_risk", risk)))
+                    counterfactual_blend = self.counterfactual_weight
+                    risk = self._clamp((1.0 - counterfactual_blend) * risk + counterfactual_blend * projected)
+                    source = "heuristic+counterfactual" if forecast is None else "heuristic+causal_forecast+counterfactual"
+
+                expected = predicted - float(travel_weight) * travel_cost - float(risk_weight) * risk - wait_penalty
 
             row.update({
                 "travel_cost": travel_cost,
@@ -236,6 +258,8 @@ class NpcCompositeStrategy:
                 "strategy_experience": deepcopy(empirical),
                 "causal_forecast": deepcopy(forecast),
                 "causal_forecast_exposure": forecast_exposure,
+                "counterfactual": deepcopy(counterfactual),
+                "counterfactual_blend": counterfactual_blend,
             })
             ranked.append(row)
         ranked.sort(key=lambda row: (-float(row.get("expected_value", 0.0)), str(row.get("strategy_id") or "")))
