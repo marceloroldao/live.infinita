@@ -98,7 +98,7 @@ class NpcNeedScheduler:
             return value if isinstance(value, dict) else {}
         return {}
 
-    def _context_for(self, entity: dict[str, Any]) -> dict[str, Any]:
+    def _context_for(self, entity: dict[str, Any], *, tick: int | None = None) -> dict[str, Any]:
         world = self._world()
         env = world.get("environment") if isinstance(world.get("environment"), dict) else {}
         props = entity.get("properties") if isinstance(entity.get("properties"), dict) else {}
@@ -110,12 +110,15 @@ class NpcNeedScheduler:
             world_danger = float(env.get("danger_level", 0.0))
         except (TypeError, ValueError):
             world_danger = 0.0
-        return {
+        result = {
             "period": str(env.get("period") or "unknown"),
             "weather": str(env.get("weather") or env.get("weather_state") or "unknown"),
             "danger_level": max(local_danger, world_danger),
             "region_id": str(entity.get("region_id") or "unknown"),
         }
+        if tick is not None:
+            result["logical_tick"] = int(tick)
+        return result
 
     def _need_values(self, entity: dict[str, Any]) -> dict[str, float]:
         if self.need_state_provider is not None:
@@ -312,7 +315,7 @@ class NpcNeedScheduler:
                 results.append({"npc_id": npc_id, "need": need, "status": "cooldown", "tick": tick})
                 continue
 
-            context = self._context_for(entity)
+            context = self._context_for(entity, tick=tick)
             intent, target_ranking, strategy, strategy_ranking = self._intent_for(entity, need, context)
             if intent is None:
                 row = {
