@@ -80,7 +80,7 @@ def build_npc_cognitive_stack(
     )
     strategy_experience = NpcStrategyExperience(root / "npc-strategy-experience.json", min_samples=strategy_min_samples)
     episodic_memory = NpcEpisodicMemory(root / "npc-episodes.jsonl")
-    belief_model = NpcBeliefModel(root / "npc-beliefs.json")
+    belief_model = NpcBeliefModel(root / "npc-beliefs.json", entity_provider=store)
     strategy_value = NpcStrategyValue(
         planner,
         strategy_experience_provider=strategy_experience,
