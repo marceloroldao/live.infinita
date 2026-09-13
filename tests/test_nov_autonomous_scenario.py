@@ -78,7 +78,7 @@ class NovAutonomousScenarioTest(unittest.TestCase):
             self.assertIsNotNone(runtime.store.get_entity("bed_nov"))
             self.assertIsNotNone(runtime.store.get_entity("ancient_tree"))
 
-    def test_day_night_schedule_is_idempotent_and_recurring(self):
+    def test_day_night_schedule_is_idempotent_recurring_and_changes_risk(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
             runtime = self.build(root)
@@ -98,13 +98,17 @@ class NovAutonomousScenarioTest(unittest.TestCase):
             for _ in range(12):
                 result = reopened.world_tick.tick()
             self.assertEqual(result["clock"]["tick"], 12)
-            self.assertEqual(reopened.engine.load_world()["environment"]["period"], "night")
+            environment = reopened.engine.load_world()["environment"]
+            self.assertEqual(environment["period"], "night")
+            self.assertAlmostEqual(float(environment["danger_level"]), 0.35)
             self.assertEqual(len(result["events"]), 1)
 
             for _ in range(12):
                 result = reopened.world_tick.tick()
             self.assertEqual(result["clock"]["tick"], 24)
-            self.assertEqual(reopened.engine.load_world()["environment"]["period"], "day")
+            environment = reopened.engine.load_world()["environment"]
+            self.assertEqual(environment["period"], "day")
+            self.assertAlmostEqual(float(environment["danger_level"]), 0.05)
             self.assertEqual(len(result["events"]), 1)
 
             current = {
