@@ -15,16 +15,18 @@ from autonomous_runtime import build_authoritative_autonomous_runtime
 
 
 class NovAutonomousScenarioTest(unittest.TestCase):
+    def build(self, root: Path):
+        return build_authoritative_autonomous_runtime(
+            bootstrap_file=ROOT / "examples" / "world-state.nov-autonomous.bootstrap.json",
+            data_dir=root / "data",
+            cold_store_dir=root / "cold",
+            npc_ids=["nov"],
+            tick_duration_ms=500,
+        )
+
     def test_nov_generates_energy_goal_and_reaches_rest_target_without_external_input(self):
         with tempfile.TemporaryDirectory() as tmpdir:
-            root = Path(tmpdir)
-            runtime = build_authoritative_autonomous_runtime(
-                bootstrap_file=ROOT / "examples" / "world-state.nov-autonomous.bootstrap.json",
-                data_dir=root / "data",
-                cold_store_dir=root / "cold",
-                npc_ids=["nov"],
-                tick_duration_ms=500,
-            )
+            runtime = self.build(Path(tmpdir))
 
             nov_before = runtime.store.get_entity("nov")
             self.assertIsNotNone(nov_before)
@@ -70,17 +72,49 @@ class NovAutonomousScenarioTest(unittest.TestCase):
 
     def test_bootstrap_keeps_autonomy_explicit_to_nov(self):
         with tempfile.TemporaryDirectory() as tmpdir:
-            root = Path(tmpdir)
-            runtime = build_authoritative_autonomous_runtime(
-                bootstrap_file=ROOT / "examples" / "world-state.nov-autonomous.bootstrap.json",
-                data_dir=root / "data",
-                cold_store_dir=root / "cold",
-                npc_ids=["nov"],
-            )
+            runtime = self.build(Path(tmpdir))
             self.assertEqual(runtime.cognition.need_dynamics.npc_ids, ("nov",))
             self.assertIsNotNone(runtime.store.get_entity("campfire"))
             self.assertIsNotNone(runtime.store.get_entity("bed_nov"))
             self.assertIsNotNone(runtime.store.get_entity("ancient_tree"))
+
+    def test_day_night_schedule_is_idempotent_and_recurring(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            runtime = self.build(root)
+            scheduled = runtime.event_scheduler.current()
+            self.assertEqual(len(scheduled), 2)
+            by_bootstrap_id = {
+                row["metadata"]["bootstrap_schedule_id"]: row for row in scheduled
+            }
+            self.assertEqual(by_bootstrap_id["night-cycle"]["due_tick"], 12)
+            self.assertEqual(by_bootstrap_id["night-cycle"]["recurrence_every_ticks"], 24)
+            self.assertEqual(by_bootstrap_id["day-cycle"]["due_tick"], 24)
+
+            # Rebuilding the same persistent runtime must not duplicate schedules.
+            reopened = self.build(root)
+            self.assertEqual(len(reopened.event_scheduler.current()), 2)
+
+            for _ in range(12):
+                result = reopened.world_tick.tick()
+            self.assertEqual(result["clock"]["tick"], 12)
+            self.assertEqual(reopened.engine.load_world()["environment"]["period"], "night")
+            self.assertEqual(len(result["events"]), 1)
+
+            for _ in range(12):
+                result = reopened.world_tick.tick()
+            self.assertEqual(result["clock"]["tick"], 24)
+            self.assertEqual(reopened.engine.load_world()["environment"]["period"], "day")
+            self.assertEqual(len(result["events"]), 1)
+
+            current = {
+                row["metadata"]["bootstrap_schedule_id"]: row
+                for row in reopened.event_scheduler.current()
+            }
+            self.assertEqual(current["night-cycle"]["fire_count"], 1)
+            self.assertEqual(current["night-cycle"]["due_tick"], 36)
+            self.assertEqual(current["day-cycle"]["fire_count"], 1)
+            self.assertEqual(current["day-cycle"]["due_tick"], 48)
 
 
 if __name__ == "__main__":
