@@ -42,6 +42,7 @@ class NpcNeedScheduler:
         npc_ids: list[str],
         threshold: float = 0.70,
         cooldown_ticks: int = 20,
+        need_state_provider: Any | None = None,
     ) -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -50,6 +51,7 @@ class NpcNeedScheduler:
         self.npc_ids = tuple(sorted({str(v).strip() for v in npc_ids if str(v).strip()}))
         self.threshold = float(threshold)
         self.cooldown_ticks = max(0, int(cooldown_ticks))
+        self.need_state_provider = need_state_provider
 
     def history(self) -> list[dict[str, Any]]:
         if not self.path.exists():
@@ -76,12 +78,23 @@ class NpcNeedScheduler:
             return None
         return store.get_entity(entity_id)
 
-    @staticmethod
-    def _need_values(entity: dict[str, Any]) -> dict[str, float]:
+    def _need_values(self, entity: dict[str, Any]) -> dict[str, float]:
+        if self.need_state_provider is not None:
+            getter = getattr(self.need_state_provider, "get_needs", None)
+            if callable(getter):
+                provided = getter(str(entity.get("id") or ""))
+                if isinstance(provided, dict):
+                    values: dict[str, float] = {}
+                    for name in self.DEFAULT_PRIORITIES:
+                        try:
+                            values[name] = min(1.0, max(0.0, float(provided.get(name, 0.0))))
+                        except (TypeError, ValueError):
+                            values[name] = 0.0
+                    return values
         properties = entity.get("properties") if isinstance(entity.get("properties"), dict) else {}
         raw = properties.get("needs") if isinstance(properties.get("needs"), dict) else {}
         values: dict[str, float] = {}
-        for name in NpcNeedScheduler.DEFAULT_PRIORITIES:
+        for name in self.DEFAULT_PRIORITIES:
             try:
                 values[name] = min(1.0, max(0.0, float(raw.get(name, 0.0))))
             except (TypeError, ValueError):
@@ -122,21 +135,12 @@ class NpcNeedScheduler:
             ]
             if not candidates:
                 continue
-            # Deterministic utility: physiological/policy weight * current severity.
-            # Ties resolve by policy priority and finally by stable need name.
+            # Deterministic winner: utility first, then policy priority, then name.
             candidates.sort(key=lambda item: (-item[3], -item[2], item[0]))
             need, severity, priority, utility = candidates[0]
             last_tick = self._last_tick(npc_id, need)
             if last_tick is not None and tick - last_tick < self.cooldown_ticks:
-                results.append({
-                    "npc_id": npc_id,
-                    "need": need,
-                    "severity": severity,
-                    "priority": priority,
-                    "utility": utility,
-                    "status": "cooldown",
-                    "tick": tick,
-                })
+                results.append({"npc_id": npc_id, "need": need, "status": "cooldown", "tick": tick})
                 continue
 
             intent = self._intent_for(entity, need)
@@ -164,13 +168,7 @@ class NpcNeedScheduler:
                 proposer_id=f"npc:{npc_id}",
                 proposal_kind="agent_intent",
                 payload={"intent": deepcopy(intent)},
-                metadata={
-                    "need": need,
-                    "severity": severity,
-                    "utility": utility,
-                    "tick": tick,
-                    "plan_priority": priority,
-                },
+                metadata={"need": need, "severity": severity, "utility": utility, "tick": tick, "plan_priority": priority},
                 idempotency_key=idem,
             )
             if proposal.get("status") == "proposed":
