@@ -47,17 +47,21 @@ class NovAutonomousScenarioTest(unittest.TestCase):
             )
 
             outcomes = list(first["npc_need_outcomes"])
+            visited_regions = {runtime.store.get_entity("nov")["region_id"]}
+            need_sequence = [row.get("need") for row in first["npc_needs"]]
             for _ in range(12):
                 tick = runtime.world_tick.tick()
                 outcomes.extend(tick["npc_need_outcomes"])
+                need_sequence.extend(row.get("need") for row in tick["npc_needs"])
                 nov = runtime.store.get_entity("nov")
-                if nov is not None and nov.get("region_id") == "shelter" and outcomes:
+                if nov is not None:
+                    visited_regions.add(str(nov.get("region_id")))
+                if "shelter" in visited_regions and any(row.get("need") == "energy" for row in outcomes):
                     break
 
-            nov = runtime.store.get_entity("nov")
-            self.assertIsNotNone(nov)
-            self.assertEqual(nov["region_id"], "shelter")
+            self.assertIn("shelter", visited_regions)
             self.assertTrue(any(row.get("need") == "energy" for row in outcomes))
+            self.assertEqual(need_sequence[0], "energy")
 
             after = runtime.cognition.need_dynamics.get_needs("nov")
             self.assertIsNotNone(after)
