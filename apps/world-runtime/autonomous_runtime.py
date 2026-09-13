@@ -12,6 +12,7 @@ from plan_ledger import PlanLedger
 from plan_scheduler import PlanScheduler
 from proposal_ledger import ProposalLedger
 from simulation_clock import SimulationClock
+from world_event_scheduler import WorldEventScheduler
 from world_tick import WorldTickRunner
 from packages.spatial import (
     AgentIntentResolver,
@@ -35,6 +36,7 @@ class AutonomousWorldRuntime:
     planner: DeterministicIntentPlanner
     resolver: AgentIntentResolver
     scheduler: PlanScheduler
+    event_scheduler: WorldEventScheduler
     cognition: NpcCognitiveStack
     clock: SimulationClock
     world_tick: WorldTickRunner
@@ -99,6 +101,64 @@ def _bootstrap_world(bootstrap_file: Path) -> dict[str, Any]:
     return value
 
 
+def _install_bootstrap_schedules(
+    bootstrap_world: dict[str, Any],
+    event_scheduler: WorldEventScheduler,
+) -> None:
+    simulation = bootstrap_world.get("simulation")
+    if simulation is None:
+        return
+    if not isinstance(simulation, dict):
+        raise ValueError("simulation must be an object")
+    raw_events = simulation.get("scheduled_events", [])
+    if not isinstance(raw_events, list):
+        raise ValueError("simulation.scheduled_events must be a list")
+
+    world_id = str(bootstrap_world.get("world_id") or "world").strip() or "world"
+    seen_ids: set[str] = set()
+    principal = {
+        "source": "world_schedule",
+        "actor_id": "world",
+        "authority": "system",
+        "subject_entity_id": None,
+    }
+    for raw in raw_events:
+        if not isinstance(raw, dict):
+            raise ValueError("scheduled event entries must be objects")
+        schedule_id = str(raw.get("id") or "").strip()
+        if not schedule_id:
+            raise ValueError("scheduled event id is required")
+        if schedule_id in seen_ids:
+            raise ValueError(f"duplicate scheduled event id: {schedule_id}")
+        seen_ids.add(schedule_id)
+        try:
+            due_tick = int(raw["due_tick"])
+        except (KeyError, TypeError, ValueError) as exc:
+            raise ValueError(f"scheduled event {schedule_id} requires integer due_tick") from exc
+        operations = raw.get("operations")
+        if not isinstance(operations, list) or not operations or not all(isinstance(row, dict) for row in operations):
+            raise ValueError(f"scheduled event {schedule_id} requires non-empty operations")
+        recurrence_raw = raw.get("recurrence_every_ticks")
+        recurrence = None
+        if recurrence_raw is not None:
+            try:
+                recurrence = int(recurrence_raw)
+            except (TypeError, ValueError) as exc:
+                raise ValueError(f"scheduled event {schedule_id} recurrence must be an integer") from exc
+        event_scheduler.schedule(
+            due_tick=due_tick,
+            operations=operations,
+            principal=principal,
+            narration=str(raw.get("narration") or ""),
+            recurrence_every_ticks=recurrence,
+            metadata={
+                "bootstrap_world_id": world_id,
+                "bootstrap_schedule_id": schedule_id,
+            },
+            idempotency_key=f"bootstrap-world-event:{world_id}:{schedule_id}",
+        )
+
+
 def build_authoritative_autonomous_runtime(
     *,
     bootstrap_file: Path,
@@ -123,8 +183,9 @@ def build_authoritative_autonomous_runtime(
     root.mkdir(parents=True, exist_ok=True)
     cold_root.mkdir(parents=True, exist_ok=True)
 
+    bootstrap_value = _bootstrap_world(bootstrap)
     # Parse topology from bootstrap before the cold engine externalizes entities.
-    regions = region_catalog_from_world(_bootstrap_world(bootstrap))
+    regions = region_catalog_from_world(bootstrap_value)
     store = FileRegionColdStore(cold_root)
     engine = ColdAuthoritativeWorldEngine(bootstrap, root, store)
     guarded = GuardedMutationService(engine, decision_log_file=root / "mutation-decisions.jsonl")
@@ -133,6 +194,8 @@ def build_authoritative_autonomous_runtime(
     planner = DeterministicIntentPlanner(store, regions)
     resolver = AgentIntentResolver(store)
     scheduler = PlanScheduler(plans, planner, resolver, guarded, proposal_ledger=proposals)
+    event_scheduler = WorldEventScheduler(root / "world-event-schedule.jsonl", guarded)
+    _install_bootstrap_schedules(bootstrap_value, event_scheduler)
     world_provider = engine.load_world
     cognition = build_npc_cognitive_stack(
         data_dir=root,
@@ -142,7 +205,12 @@ def build_authoritative_autonomous_runtime(
         world_provider=world_provider,
     )
     clock = SimulationClock(root / "simulation-clock.json", tick_duration_ms=tick_duration_ms)
-    world_tick = WorldTickRunner(clock, scheduler, **cognition.world_tick_kwargs())
+    world_tick = WorldTickRunner(
+        clock,
+        scheduler,
+        event_scheduler=event_scheduler,
+        **cognition.world_tick_kwargs(),
+    )
 
     return AutonomousWorldRuntime(
         store=store,
@@ -154,6 +222,7 @@ def build_authoritative_autonomous_runtime(
         planner=planner,
         resolver=resolver,
         scheduler=scheduler,
+        event_scheduler=event_scheduler,
         cognition=cognition,
         clock=clock,
         world_tick=world_tick,
