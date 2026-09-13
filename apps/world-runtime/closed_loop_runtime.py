@@ -94,6 +94,19 @@ def simulate_action_outcome(world: dict[str, Any], proposal: dict[str, Any]) -> 
     return (rule.consequence_address,)
 
 
+def _active_runtime_observation_relations(world: dict[str, Any], actor_id: str) -> tuple[str, ...]:
+    relation_ids: list[str] = []
+    for relation_id, relation in (world.get("relations") or {}).items():
+        source = (relation or {}).get("source") or {}
+        if (
+            relation.get("status") == "active"
+            and relation.get("subject") == actor_id
+            and source.get("type") == "world-runtime"
+        ):
+            relation_ids.append(str(relation_id))
+    return tuple(sorted(relation_ids))
+
+
 def execute_validated_action(world: dict[str, Any], proposal: dict[str, Any]) -> RuntimeExecution:
     rule = _rule_for_proposal(world, proposal)
     before_version = int(world.get("current_version", 0))
@@ -106,36 +119,44 @@ def execute_validated_action(world: dict[str, Any], proposal: dict[str, Any]) ->
     delta_id = f"delta_{result_version:08d}"
     event_id = f"event_{result_tick:08d}_{proposal['proposal_id']}"
 
-    operations = (
-        {
-            "op": "add",
-            "path": f"/entities/{effect_id}",
-            "value": {
-                "entity_id": effect_id,
-                "class": "observation",
-                "type": "runtime_effect",
-                "status": "active",
-                "version": result_version,
-                "created_at_tick": result_tick,
-                "components": {"address": {"value": rule.consequence_address}},
+    operations: list[dict[str, Any]] = []
+    for prior_relation_id in _active_runtime_observation_relations(world, proposal["actor"]):
+        if prior_relation_id == relation_id:
+            continue
+        operations.append({"op": "deactivate", "path": f"/relations/{prior_relation_id}"})
+
+    operations.extend(
+        [
+            {
+                "op": "add",
+                "path": f"/entities/{effect_id}",
+                "value": {
+                    "entity_id": effect_id,
+                    "class": "observation",
+                    "type": "runtime_effect",
+                    "status": "active",
+                    "version": result_version,
+                    "created_at_tick": result_tick,
+                    "components": {"address": {"value": rule.consequence_address}},
+                },
             },
-        },
-        {
-            "op": "link",
-            "path": f"/relations/{relation_id}",
-            "value": {
-                "relation_id": relation_id,
-                "subject": proposal["actor"],
-                "predicate": "observes",
-                "object": effect_id,
-                "status": "active",
-                "confidence": 1.0,
-                "valid_from_tick": result_tick,
-                "valid_until_tick": None,
-                "source": {"type": "world-runtime", "proposal_id": proposal["proposal_id"]},
-                "version": result_version,
+            {
+                "op": "link",
+                "path": f"/relations/{relation_id}",
+                "value": {
+                    "relation_id": relation_id,
+                    "subject": proposal["actor"],
+                    "predicate": "observes",
+                    "object": effect_id,
+                    "status": "active",
+                    "confidence": 1.0,
+                    "valid_from_tick": result_tick,
+                    "valid_until_tick": None,
+                    "source": {"type": "world-runtime", "proposal_id": proposal["proposal_id"]},
+                    "version": result_version,
+                },
             },
-        },
+        ]
     )
 
     delta = {
@@ -143,7 +164,7 @@ def execute_validated_action(world: dict[str, Any], proposal: dict[str, Any]) ->
         "base_version": before_version,
         "result_version": result_version,
         "tick_id": result_tick,
-        "operations": list(operations),
+        "operations": deepcopy(operations),
         "provenance": {"origin": "world-runtime", "proposal_id": proposal["proposal_id"]},
     }
 
@@ -168,8 +189,19 @@ def execute_validated_action(world: dict[str, Any], proposal: dict[str, Any]) ->
     }
 
     updated = deepcopy(world)
-    updated.setdefault("entities", {})[effect_id] = deepcopy(operations[0]["value"])
-    updated.setdefault("relations", {})[relation_id] = deepcopy(operations[1]["value"])
+    relations = updated.setdefault("relations", {})
+    for prior_relation_id in _active_runtime_observation_relations(world, proposal["actor"]):
+        if prior_relation_id == relation_id:
+            continue
+        if prior_relation_id in relations:
+            relations[prior_relation_id]["status"] = "inactive"
+            relations[prior_relation_id]["valid_until_tick"] = result_tick
+            relations[prior_relation_id]["version"] = result_version
+
+    effect_value = deepcopy(next(item["value"] for item in operations if item["op"] == "add"))
+    relation_value = deepcopy(next(item["value"] for item in operations if item["op"] == "link"))
+    updated.setdefault("entities", {})[effect_id] = effect_value
+    relations[relation_id] = relation_value
     updated.setdefault("deltas", {})[delta_id] = deepcopy(delta)
     updated.setdefault("events", {})[event_id] = deepcopy(event)
     updated.setdefault("versions", {})[str(result_version)] = {
