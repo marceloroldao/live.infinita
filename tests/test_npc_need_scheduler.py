@@ -22,6 +22,8 @@ def load(name: str, path: Path):
     return module
 
 NpcNeedScheduler = load("npc_need_scheduler_test", RUNTIME / "npc_need_scheduler.py").NpcNeedScheduler
+NpcCompositeStrategy = load("npc_composite_strategy_test_sched", RUNTIME / "npc_composite_strategy.py").NpcCompositeStrategy
+NpcStrategyCompiler = load("npc_strategy_compiler_test_sched", RUNTIME / "npc_strategy_compiler.py").NpcStrategyCompiler
 
 
 class FakeStore:
@@ -36,6 +38,7 @@ class FakeStore:
 class FakePlanner:
     def __init__(self, store):
         self.store = store
+        self.regions = None
 
 
 class FakeProposalLedger:
@@ -72,6 +75,33 @@ class FakePlanScheduler:
         return {"plan_id": f"plan_{len(self.calls)}", "status": "planned", "priority": kwargs.get("priority", 0)}
 
 
+class FakeCompositeProvider:
+    def candidates(self, **kwargs):
+        return [{
+            "strategy_id": "wait_then_direct",
+            "phases": [
+                {"kind": "wait_ticks", "ticks": 2},
+                {"kind": "move_to_entity", "target_entity_id": kwargs["target_entity_id"]},
+            ],
+            "predicted_satisfaction": kwargs["predicted_satisfaction"],
+            "estimated_hops": 0,
+            "estimated_risk": 0.0,
+            "wait_ticks": 2,
+        }]
+
+    def choose(self, candidates):
+        return dict(candidates[0]), [dict(candidates[0])]
+
+
+class FakeStrategyExecutor:
+    def __init__(self):
+        self.calls = []
+
+    def start(self, strategy_plan, **kwargs):
+        self.calls.append({"strategy_plan": strategy_plan, **kwargs})
+        return {"strategy_execution_id": f"exec_{len(self.calls)}", "status": "running"}
+
+
 class NpcNeedSchedulerTest(unittest.TestCase):
     def make(self, tmp: Path, needs: dict[str, float], **targets):
         npc = {
@@ -83,7 +113,7 @@ class NpcNeedSchedulerTest(unittest.TestCase):
         }
         target_ids = {value for key, value in targets.items() if key.endswith("_target_entity_id")}
         entities = [npc] + [
-            {"id": target_id, "type": "place", "region_id": "r0", "position": {"x": 10, "y": 0}}
+            {"id": target_id, "type": "place", "region_id": "r0", "position": {"x": 10, "y": 0}, "properties": {}}
             for target_id in sorted(target_ids)
         ]
         store = FakeStore(entities)
@@ -154,6 +184,29 @@ class NpcNeedSchedulerTest(unittest.TestCase):
             self.assertEqual(plans.calls, [])
             self.assertEqual(proposals.calls, [])
             self.assertEqual(len(scheduler.history()), 1)
+
+    def test_composite_stack_starts_strategy_instead_of_direct_plan(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            scheduler, proposals, plans = self.make(
+                Path(tmpdir),
+                {"energy": 0.90},
+                rest_target_entity_id="bed",
+            )
+            executor = FakeStrategyExecutor()
+            scheduler.composite_strategy_provider = FakeCompositeProvider()
+            scheduler.strategy_compiler = NpcStrategyCompiler()
+            scheduler.strategy_executor = executor
+
+            row = scheduler.evaluate_tick(1)[0]
+            self.assertEqual(row["status"], "scheduled")
+            self.assertEqual(row["strategy_id"], "wait_then_direct")
+            self.assertEqual(row["strategy_execution_id"], "exec_1")
+            self.assertIsNone(row["plan_id"])
+            self.assertEqual(plans.calls, [])
+            self.assertEqual(executor.calls[0]["proposal_id"], row["proposal_id"])
+            phases = executor.calls[0]["strategy_plan"]["phases"]
+            self.assertFalse(phases[0]["intent"]["need_outcome_eligible"])
+            self.assertTrue(phases[1]["intent"]["need_outcome_eligible"])
 
 
 if __name__ == "__main__":
