@@ -61,10 +61,11 @@ logical tick
   -> Nov crosses from clearing to shelter
   -> terminal energy outcome is applied exactly once
   -> energy need decreases
+  -> one concrete episode is persisted
   -> later ticks may generate a different goal, such as curiosity toward deep_forest
 ```
 
-The test does not require Nov to remain at the shelter forever. Once the energy outcome is applied, a later need is allowed to become dominant and create another goal. The invariant is the causal sequence: energy goal first, shelter visited, energy outcome applied, need reduced.
+The test does not require Nov to remain at the shelter forever. Once the energy outcome is applied, a later need is allowed to become dominant and create another goal. The invariant is the causal sequence: energy goal first, shelter visited, energy outcome applied, need reduced and concrete experience persisted.
 
 ## Logical day/night cycle
 
@@ -107,9 +108,47 @@ logical time
 
 No LLM or renderer frame is involved in that causal chain.
 
+## Episodic memory
+
+`NpcEpisodicMemory` adds an append-only record of concrete NPC experience under `npc-episodes.jsonl`. It is deliberately separate from `NpcStrategyExperience`: the latter stores statistical aggregates, while episodic memory preserves individual events that can later be recalled or sent to Memoria.ia.
+
+An episode is created at the `NpcNeedOutcomeProcessor` boundary, in the same logical tick in which a completed need-driven plan actually changes Nov's internal state. This avoids delaying memory until a composite-strategy wrapper notices completion on a later tick.
+
+Each `npc_episode_v1` record preserves:
+
+```text
+episode_id
+npc_id
+logical_tick
+need
+target_entity_id
+strategy_id
+context:
+  period
+  weather
+  region_id
+  danger_level
+  danger_bucket
+outcome:
+  satisfaction
+  elapsed_ticks
+  preemptions
+  replans
+  observed_risk
+source:
+  need_outcome provenance
+  plan_id
+  proposal_id
+  plan_revision
+```
+
+Episode ids are deterministic per completed plan (`plan:<plan_id>`), so replay/reprocessing does not duplicate memory. Recall is also deterministic and local: semantic matches (`need`, target, strategy) are ranked first, then environmental context, then logical recency. No embedding model, vector database or LLM is required for this baseline.
+
+The integration boundary with the external Memoria.ia server remains intentionally open. Live.infinita now owns the concrete runtime event; a future adapter may export these episodes to Memoria.ia without making world simulation depend on that server being online.
+
 ## Test contract
 
-`tests/test_nov_autonomous_scenario.py` verifies that:
+`tests/test_nov_autonomous_scenario.py` and `tests/test_npc_episodic_memory.py` verify that:
 
 1. building the runtime does not advance logical time;
 2. only `nov` is enabled as an autonomous NPC;
@@ -118,14 +157,19 @@ No LLM or renderer frame is involved in that causal chain.
 5. Nov reaches the `shelter` region without external input;
 6. an energy outcome is produced;
 7. dynamic energy falls below its bootstrap value;
-8. day/night schedules and conditional reactions are installed exactly once across runtime rebuilds;
-9. tick 12 changes the world to night with higher environmental danger;
-10. the campfire lights on the same tick as night begins;
-11. Nov's safety need rises when the night event raises danger;
-12. tick 24 restores daytime and lower risk;
-13. the campfire turns off when daytime returns;
-14. safety trends down again after environmental danger drops;
-15. recurring schedule cursors advance to ticks 36 and 48 rather than performing catch-up loops.
+8. the energy experience is persisted as an episode in the same outcome cycle;
+9. episode identity, strategy, target, logical tick and provenance are preserved;
+10. rebuilding the runtime with the same persistent directory recalls the same episode;
+11. duplicate `remember()` calls with the same episode id are idempotent;
+12. recall is scoped per NPC and ranked deterministically by semantic/context match and recency;
+13. day/night schedules and conditional reactions are installed exactly once across runtime rebuilds;
+14. tick 12 changes the world to night with higher environmental danger;
+15. the campfire lights on the same tick as night begins;
+16. Nov's safety need rises when the night event raises danger;
+17. tick 24 restores daytime and lower risk;
+18. the campfire turns off when daytime returns;
+19. safety trends down again after environmental danger drops;
+20. recurring schedule cursors advance to ticks 36 and 48 rather than performing catch-up loops.
 
 ## Deployment
 
