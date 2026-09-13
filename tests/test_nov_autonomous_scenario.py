@@ -74,16 +74,20 @@ class NovAutonomousScenarioTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             runtime = self.build(Path(tmpdir))
             self.assertEqual(runtime.cognition.need_dynamics.npc_ids, ("nov",))
-            self.assertIsNotNone(runtime.store.get_entity("campfire"))
+            campfire = runtime.store.get_entity("campfire")
+            self.assertIsNotNone(campfire)
+            self.assertFalse(campfire["properties"]["lit"])
             self.assertIsNotNone(runtime.store.get_entity("bed_nov"))
             self.assertIsNotNone(runtime.store.get_entity("ancient_tree"))
 
-    def test_day_night_schedule_is_idempotent_recurring_and_changes_risk(self):
+    def test_day_night_schedule_and_campfire_reactions_are_persistent(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
             runtime = self.build(root)
             scheduled = runtime.event_scheduler.current()
+            conditionals = runtime.conditional_event_scheduler.current()
             self.assertEqual(len(scheduled), 2)
+            self.assertEqual(len(conditionals), 2)
             by_bootstrap_id = {
                 row["metadata"]["bootstrap_schedule_id"]: row for row in scheduled
             }
@@ -91,14 +95,17 @@ class NovAutonomousScenarioTest(unittest.TestCase):
             self.assertEqual(by_bootstrap_id["night-cycle"]["recurrence_every_ticks"], 24)
             self.assertEqual(by_bootstrap_id["day-cycle"]["due_tick"], 24)
 
-            # Rebuilding the same persistent runtime must not duplicate schedules.
+            # Rebuilding the same persistent runtime must not duplicate either
+            # timed schedules or state-triggered reactions.
             reopened = self.build(root)
             self.assertEqual(len(reopened.event_scheduler.current()), 2)
+            self.assertEqual(len(reopened.conditional_event_scheduler.current()), 2)
 
             for _ in range(11):
                 reopened.world_tick.tick()
             before_night = reopened.cognition.need_dynamics.get_needs("nov")
             self.assertIsNotNone(before_night)
+            self.assertFalse(reopened.store.get_entity("campfire")["properties"]["lit"])
 
             result = reopened.world_tick.tick()
             self.assertEqual(result["clock"]["tick"], 12)
@@ -106,6 +113,8 @@ class NovAutonomousScenarioTest(unittest.TestCase):
             self.assertEqual(environment["period"], "night")
             self.assertAlmostEqual(float(environment["danger_level"]), 0.35)
             self.assertEqual(len(result["events"]), 1)
+            self.assertTrue(reopened.store.get_entity("campfire")["properties"]["lit"])
+            self.assertTrue(any(row.get("fire_count") == 1 for row in result["conditional_events"]))
             after_night = reopened.cognition.need_dynamics.get_needs("nov")
             self.assertGreater(after_night["safety"], before_night["safety"])
 
@@ -118,6 +127,7 @@ class NovAutonomousScenarioTest(unittest.TestCase):
             self.assertEqual(environment["period"], "day")
             self.assertAlmostEqual(float(environment["danger_level"]), 0.05)
             self.assertEqual(len(result["events"]), 1)
+            self.assertFalse(reopened.store.get_entity("campfire")["properties"]["lit"])
             after_day = reopened.cognition.need_dynamics.get_needs("nov")
             self.assertLess(after_day["safety"], before_day["safety"])
 
@@ -129,6 +139,13 @@ class NovAutonomousScenarioTest(unittest.TestCase):
             self.assertEqual(current["night-cycle"]["due_tick"], 36)
             self.assertEqual(current["day-cycle"]["fire_count"], 1)
             self.assertEqual(current["day-cycle"]["due_tick"], 48)
+
+            conditional_current = {
+                row["metadata"]["bootstrap_conditional_id"]: row
+                for row in reopened.conditional_event_scheduler.current()
+            }
+            self.assertEqual(conditional_current["campfire-on-at-night"]["fire_count"], 1)
+            self.assertEqual(conditional_current["campfire-off-at-day"]["fire_count"], 1)
 
 
 if __name__ == "__main__":
