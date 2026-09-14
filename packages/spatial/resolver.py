@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from math import hypot
 from typing import Any
@@ -31,11 +32,22 @@ class SpatialResolver:
     """Resolve the local interest slice without mutating global world state.
 
     Input data stays presentation-agnostic. The resolver only returns identifiers
-    and small metadata required for hot/warm materialization.
+    and small metadata required for hot/warm materialization. Deployments may
+    override only the hot radius through LIVE_INFINITA_HOT_RADIUS; the reusable
+    library default remains 180 world units.
     """
 
     def __init__(self, config: InterestConfig | None = None) -> None:
-        self.config = config or InterestConfig()
+        if config is None:
+            raw_hot = str(os.getenv("LIVE_INFINITA_HOT_RADIUS", "")).strip()
+            if raw_hot:
+                try:
+                    config = InterestConfig(hot_radius=float(raw_hot))
+                except ValueError as exc:
+                    raise ValueError("LIVE_INFINITA_HOT_RADIUS must be numeric") from exc
+            else:
+                config = InterestConfig()
+        self.config = config
         self.config.validate()
 
     @staticmethod
