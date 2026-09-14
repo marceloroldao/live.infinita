@@ -261,8 +261,11 @@ class SpatialSession:
             self._cold_sequence = sequence
             return
         if not isinstance(delta, dict):
-            # Cold truth cannot be reconstructed from an entity-empty World State.
-            # Keep the last consistent cold snapshot until an explicit delta arrives.
+            # Another process (the autonomous single writer) may have committed
+            # directly to the shared cold store. The World State sequence is the
+            # invalidation signal; reload region payloads on the next projection.
+            self.cold_cache.clear()
+            self._cold_sequence = sequence
             return
         operations = delta.get("operations", [])
         if not isinstance(operations, list):
