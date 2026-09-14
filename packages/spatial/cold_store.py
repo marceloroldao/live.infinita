@@ -45,6 +45,8 @@ class FileRegionColdStore:
 
     def _load_manifest(self) -> None:
         if not self.manifest_file.exists():
+            self._entity_region = {}
+            self._region_counts = {}
             return
         with self.manifest_file.open("r", encoding="utf-8") as fh:
             payload = json.load(fh)
@@ -52,6 +54,10 @@ class FileRegionColdStore:
             raise ValueError("unsupported cold-store manifest version")
         self._entity_region = {str(k): str(v) for k, v in dict(payload.get("entity_region", {})).items()}
         self._region_counts = {str(k): int(v) for k, v in dict(payload.get("region_counts", {})).items()}
+
+    def refresh_manifest(self) -> None:
+        """Reload entity/region pointers after commits made by another process."""
+        self._load_manifest()
 
     def _save_manifest(self) -> None:
         self._atomic_write_json(
@@ -241,10 +247,23 @@ def externalize_world_entities(world: dict[str, Any], store: FileRegionColdStore
     store.replace_all(rows)
     result = deepcopy(world)
     result["entities"] = []
-    result["cold_entities"] = {
+    cold = {
         "mode": "region_file_store",
         "entities_total": store.entities_total(),
         "regions_total": store.stats()["regions_total"],
         "payload_resident_entities": 0,
     }
+    preferred = next(
+        (
+            str(row.get("id", ""))
+            for row in rows
+            if isinstance(row.get("properties"), dict) and bool(row["properties"].get("observer"))
+        ),
+        "",
+    )
+    if not preferred:
+        preferred = next((str(row.get("id", "")) for row in rows if row.get("type") == "human"), "")
+    if preferred:
+        cold["default_observer_entity_id"] = preferred
+    result["cold_entities"] = cold
     return result
