@@ -1,10 +1,16 @@
 from __future__ import annotations
 
 import copy
+from contextlib import contextmanager
 import hashlib
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterator
+
+try:
+    import fcntl
+except ImportError:  # pragma: no cover - Linux production has fcntl.
+    fcntl = None  # type: ignore[assignment]
 
 from packages.spatial import ColdEntityMutator, FileRegionColdStore, externalize_world_entities
 
@@ -24,23 +30,41 @@ class ColdAuthoritativeWorldEngine:
         self.world_file = self.data_dir / "world.json"
         self.events_file = self.data_dir / "events.jsonl"
         self.deltas_file = self.data_dir / "deltas.jsonl"
+        self.mutation_lock_file = self.data_dir / "world-mutation.lock"
         self.cold_store = cold_store
         self.mutator = ColdEntityMutator(cold_store)
         self.data_dir.mkdir(parents=True, exist_ok=True)
-        if not self.world_file.exists():
-            bootstrap = self._load_json(self.bootstrap_file)
-            world = externalize_world_entities(bootstrap, self.cold_store)
-            world["version"] = int(world.get("version", 0))
-            world["sequence"] = 0
-            world["state_hash"] = self._bootstrap_hash(world)
-            self._save_json(self.world_file, world)
-        else:
-            world = self._load_json(self.world_file)
-            cold = world.get("cold_entities") if isinstance(world.get("cold_entities"), dict) else {}
-            if cold.get("mode") != "region_file_store" or world.get("entities") not in ([], None):
-                raise ValueError("cold engine requires a migrated cold-backed world.json")
-            if not self.cold_store.manifest_file.exists():
-                raise ValueError("cold engine requires an existing cold-store manifest")
+        with self._mutation_lock():
+            if not self.world_file.exists():
+                bootstrap = self._load_json(self.bootstrap_file)
+                world = externalize_world_entities(bootstrap, self.cold_store)
+                world["version"] = int(world.get("version", 0))
+                world["sequence"] = 0
+                world["state_hash"] = self._bootstrap_hash(world)
+                self._save_json(self.world_file, world)
+            else:
+                world = self._load_json(self.world_file)
+                cold = world.get("cold_entities") if isinstance(world.get("cold_entities"), dict) else {}
+                if cold.get("mode") != "region_file_store" or world.get("entities") not in ([], None):
+                    raise ValueError("cold engine requires a migrated cold-backed world.json")
+                if not self.cold_store.manifest_file.exists():
+                    raise ValueError("cold engine requires an existing cold-store manifest")
+
+    @contextmanager
+    def _mutation_lock(self) -> Iterator[None]:
+        """Serialize commits from the web runtime and autonomous writer."""
+        self.mutation_lock_file.parent.mkdir(parents=True, exist_ok=True)
+        with self.mutation_lock_file.open("a+", encoding="utf-8") as fh:
+            if fcntl is not None:
+                fcntl.flock(fh.fileno(), fcntl.LOCK_EX)
+            try:
+                refresh = getattr(self.cold_store, "refresh_manifest", None)
+                if callable(refresh):
+                    refresh()
+                yield
+            finally:
+                if fcntl is not None:
+                    fcntl.flock(fh.fileno(), fcntl.LOCK_UN)
 
     @staticmethod
     def _load_json(path: Path) -> dict[str, Any]:
@@ -221,9 +245,10 @@ class ColdAuthoritativeWorldEngine:
         return event, delta, new_world
 
     def commit_action(self, action: str, source: str = "runtime", context: dict[str, Any] | None = None) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
-        world = self.load_world()
-        event, delta = self.propose(world, action, source=source, context=context)
-        return self._commit_delta(event, delta)
+        with self._mutation_lock():
+            world = self.load_world()
+            event, delta = self.propose(world, action, source=source, context=context)
+            return self._commit_delta(event, delta)
 
     def commit_operations(
         self,
@@ -234,38 +259,39 @@ class ColdAuthoritativeWorldEngine:
         narration: str = "",
     ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
         """Commit canonical generic operations without adding a named action."""
-        world = self.load_world()
-        sequence = int(world.get("sequence", 0)) + 1
-        normalized: list[dict[str, Any]] = []
-        for operation in operations:
-            op = str(operation.get("op") or "").strip().lower()
-            if op in {"create", "set", "move", "remove", "link", "unlink"}:
-                normalized.append(self.mutator.normalize(operation))
-            elif op == "set_world":
-                path = operation.get("path")
-                if not isinstance(path, list) or not path:
-                    raise ValueError("set_world path is required")
-                normalized.append({"op": "set_world", "path": [str(v) for v in path], "value": copy.deepcopy(operation.get("value"))})
-            else:
-                raise ValueError(f"unsupported generic operation: {op}")
-        event = {
-            "event_id": f"evt_{sequence:06d}",
-            "sequence": sequence,
-            "type": "generic_mutation",
-            "action": "generic_operations",
-            "source": source,
-            "context": context or {},
-        }
-        delta = {
-            "delta_id": f"delta_{sequence:06d}",
-            "event_id": event["event_id"],
-            "sequence": sequence,
-            "from_version": int(world.get("version", 0)),
-            "to_version": int(world.get("version", 0)) + 1,
-            "operations": normalized,
-            "narration": narration,
-        }
-        return self._commit_delta(event, delta)
+        with self._mutation_lock():
+            world = self.load_world()
+            sequence = int(world.get("sequence", 0)) + 1
+            normalized: list[dict[str, Any]] = []
+            for operation in operations:
+                op = str(operation.get("op") or "").strip().lower()
+                if op in {"create", "set", "move", "remove", "link", "unlink"}:
+                    normalized.append(self.mutator.normalize(operation))
+                elif op == "set_world":
+                    path = operation.get("path")
+                    if not isinstance(path, list) or not path:
+                        raise ValueError("set_world path is required")
+                    normalized.append({"op": "set_world", "path": [str(v) for v in path], "value": copy.deepcopy(operation.get("value"))})
+                else:
+                    raise ValueError(f"unsupported generic operation: {op}")
+            event = {
+                "event_id": f"evt_{sequence:06d}",
+                "sequence": sequence,
+                "type": "generic_mutation",
+                "action": "generic_operations",
+                "source": source,
+                "context": context or {},
+            }
+            delta = {
+                "delta_id": f"delta_{sequence:06d}",
+                "event_id": event["event_id"],
+                "sequence": sequence,
+                "from_version": int(world.get("version", 0)),
+                "to_version": int(world.get("version", 0)) + 1,
+                "operations": normalized,
+                "narration": narration,
+            }
+            return self._commit_delta(event, delta)
 
     def replay_hash(self) -> str:
         bootstrap = self._load_json(self.bootstrap_file)
@@ -277,6 +303,27 @@ class ColdAuthoritativeWorldEngine:
             "regions_total": len({str(row.get("region_id", "")) for row in bootstrap.get("entities", []) if isinstance(row, dict)}),
             "payload_resident_entities": 0,
         }
+        preferred = next(
+            (
+                str(row.get("id", ""))
+                for row in bootstrap.get("entities", [])
+                if isinstance(row, dict)
+                and isinstance(row.get("properties"), dict)
+                and bool(row["properties"].get("observer"))
+            ),
+            "",
+        )
+        if not preferred:
+            preferred = next(
+                (
+                    str(row.get("id", ""))
+                    for row in bootstrap.get("entities", [])
+                    if isinstance(row, dict) and row.get("type") == "human"
+                ),
+                "",
+            )
+        if preferred:
+            envelope["cold_entities"]["default_observer_entity_id"] = preferred
         envelope["version"] = int(envelope.get("version", 0))
         envelope["sequence"] = 0
         state_hash = self._bootstrap_hash(envelope)
