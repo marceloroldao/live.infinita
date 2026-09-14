@@ -37,7 +37,7 @@ func _biome_mix(environment: Dictionary) -> Dictionary:
     var current := _normalized_biome(str(environment.get("biome", "forest")))
     var transition := _transition(environment)
     var next := _normalized_biome(str(transition.get("to_biome", current)))
-    var progress := clamp(float(transition.get("progress", 0.0)), 0.0, 1.0)
+    var progress: float = clampf(float(transition.get("progress", 0.0)), 0.0, 1.0)
     if next == current or transition.is_empty():
         return {current: 1.0}
     return {current: 1.0 - progress, next: progress}
@@ -129,7 +129,7 @@ func _draw_dust(intensity: float) -> void:
 func _draw() -> void:
     var environment := _environment()
     var weather := str(environment.get("weather", "clear")).to_lower()
-    var intensity := clamp(float(environment.get("atmosphere_intensity", 0.55)), 0.0, 1.0)
+    var intensity: float = clampf(float(environment.get("atmosphere_intensity", 0.55)), 0.0, 1.0)
 
     var mix := _biome_mix(environment)
     for biome in mix.keys():
