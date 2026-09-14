@@ -16,6 +16,7 @@ from npc_decision_confidence import NpcDecisionConfidence
 from npc_episodic_memory import NpcEpisodicMemory
 from npc_goal_sequence import NpcGoalSequence
 from npc_horizon_strategy import NpcHorizonStrategy
+from npc_idle_wander import NpcIdleWander
 from npc_need_dynamics import NpcNeedDynamics
 from npc_need_horizon import NpcNeedHorizon
 from npc_need_learning import NpcNeedLearning
@@ -49,12 +50,14 @@ class NpcCognitiveStack:
     strategy_compiler: NpcStrategyCompiler
     strategy_executor: NpcStrategyExecutor
     need_scheduler: NpcNeedScheduler
+    idle_wander: NpcIdleWander
     need_outcomes: NpcNeedOutcomeProcessor
     composite_strategy_outcomes: NpcCompositeStrategyOutcomeProcessor
 
     def world_tick_kwargs(self) -> dict[str, Any]:
         return {
             "npc_need_scheduler": self.need_scheduler,
+            "npc_idle_wander": self.idle_wander,
             "npc_need_dynamics": self.need_dynamics,
             "npc_need_outcomes": self.need_outcomes,
             "npc_strategy_executor": self.strategy_executor,
@@ -141,6 +144,12 @@ def build_npc_cognitive_stack(
         strategy_compiler=strategy_compiler,
         strategy_executor=strategy_executor,
     )
+    idle_wander = NpcIdleWander(
+        plan_scheduler,
+        npc_ids=ids,
+        interval_ticks=8,
+        priority=25,
+    )
     need_outcomes = NpcNeedOutcomeProcessor(
         root / "npc-need-outcomes.jsonl",
         ledger,
@@ -177,6 +186,7 @@ def build_npc_cognitive_stack(
         strategy_compiler=strategy_compiler,
         strategy_executor=strategy_executor,
         need_scheduler=need_scheduler,
+        idle_wander=idle_wander,
         need_outcomes=need_outcomes,
         composite_strategy_outcomes=composite_strategy_outcomes,
     )
