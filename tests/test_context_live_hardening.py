@@ -123,9 +123,13 @@ class AIProposalContextTests(unittest.TestCase):
 
 
 class DeploymentContractTests(unittest.TestCase):
-    def test_systemd_uses_context_live_entrypoint(self) -> None:
+    def test_systemd_uses_cognitive_wrapper_over_context_layer(self) -> None:
         unit = Path("deploy/live-infinita.service").read_text(encoding="utf-8")
-        self.assertIn("main_context_live:app", unit)
+        cognitive = Path("apps/world-runtime/main_cognitive_live.py").read_text(encoding="utf-8")
+        self.assertIn("main_cognitive_live:app", unit)
+        self.assertIn("LIVE_INFINITA_MEMORIA_V2_COGNITIVE_GYM=0", unit)
+        self.assertIn("import main_context_live", cognitive)
+        self.assertIn("app = main_context_live.app", cognitive)
 
     def test_context_layer_replaces_only_ai_and_health_routes(self) -> None:
         source = Path("apps/world-runtime/main_context_live.py").read_text(encoding="utf-8")
@@ -134,6 +138,12 @@ class DeploymentContractTests(unittest.TestCase):
         self.assertIn('_replace_route("/api/health", "GET", context_health)', source)
         self.assertIn("_context_expected_world", source)
         self.assertIn("actor_state_from_agent_output", source)
+
+    def test_late_extension_routes_are_promoted_before_manager_catch_all(self) -> None:
+        source = Path("apps/world-runtime/main_cognitive_live.py").read_text(encoding="utf-8")
+        self.assertIn('_promote_api_route_before_root("/api/ai/context/preview")', source)
+        self.assertIn('_promote_api_route_before_root("/api/cognitive/v2/frame")', source)
+        self.assertIn("isinstance(route, Mount)", source)
 
 
 if __name__ == "__main__":
