@@ -47,6 +47,10 @@ class IntentEngine:
         "dia": "set_day",
         "day": "set_day",
         "reset": "reset",
+        "nov fogueira": "nov_to_fire",
+        "nov abrigo": "nov_to_shelter",
+        "nov floresta": "nov_to_forest",
+        "nov explorar": "nov_explore",
     }
 
     def propose(self, event: UniversalEventEnvelope) -> ProposedAction:
@@ -58,7 +62,10 @@ class IntentEngine:
 
 class RuleValidator:
     ALLOWED_SOURCES = {"simulator", "api", "tiktok", "youtube", "agent"}
-    ALLOWED_ACTIONS = {"spawn_person", "move_tree", "toggle_fire", "set_night", "set_day", "reset"}
+    ALLOWED_ACTIONS = {
+        "spawn_person", "move_tree", "toggle_fire", "set_night", "set_day", "reset",
+        "nov_to_fire", "nov_to_shelter", "nov_to_forest", "nov_explore",
+    }
 
     def validate(self, event: UniversalEventEnvelope, proposed: ProposedAction) -> ValidationResult:
         if event.source not in self.ALLOWED_SOURCES:

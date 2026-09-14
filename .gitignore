@@ -2,3 +2,9 @@ __pycache__/
 *.py[cod]
 .venv/
 .test-tmp/
+
+# Generated Godot editor caches and local visual validation captures.
+**/.godot/
+**/*.gd.uid
+**/*.gdshader.uid
+artifacts/godot/

@@ -61,6 +61,14 @@ class AIProposalStore:
         actor_id: str,
         display_name: str | None,
         metadata: dict[str, Any] | None = None,
+        context_digest: str | None = None,
+        context_schema_version: str | None = None,
+        context_world_version: int | None = None,
+        context_world_sequence: int | None = None,
+        context_world_state_hash: str | None = None,
+        context_actor_key: str | None = None,
+        context_bound_entity_id: str | None = None,
+        context_scope: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         created_at = time.time()
         record = {
@@ -77,6 +85,16 @@ class AIProposalStore:
             "actor_id": actor_id,
             "display_name": display_name,
             "metadata": dict(metadata or {}),
+            "context": {
+                "digest": context_digest,
+                "schema_version": context_schema_version,
+                "world_version": context_world_version,
+                "world_sequence": context_world_sequence,
+                "world_state_hash": context_world_state_hash,
+                "actor_key": context_actor_key,
+                "bound_entity_id": context_bound_entity_id,
+                "scope": dict(context_scope or {}),
+            },
             "created_at_unix": created_at,
         }
         self._append(record)
@@ -108,6 +126,32 @@ class AIProposalStore:
             "status": "rejected",
             "rejected_at_unix": time.time(),
             "rejection_reason": reason[:500],
+        }
+        self._append(record)
+        return record
+
+    def mark_stale(
+        self,
+        proposal_id: str,
+        *,
+        current_world_version: int,
+        current_world_sequence: int,
+        current_world_state_hash: str | None,
+    ) -> dict[str, Any]:
+        current = self.get(proposal_id)
+        if current is None:
+            raise KeyError("proposta não encontrada")
+        if current.get("status") != "pending":
+            raise ValueError("proposta não está pendente")
+        record = {
+            **current,
+            "status": "stale",
+            "stale_at_unix": time.time(),
+            "stale_world": {
+                "version": int(current_world_version),
+                "sequence": int(current_world_sequence),
+                "state_hash": current_world_state_hash,
+            },
         }
         self._append(record)
         return record

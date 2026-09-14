@@ -1,0 +1,120 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - 'mvp/**'
+      - 'feature/**'
+      - 'demo/**'
+      - 'hardening/**'
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: |
+            tests/requirements.txt
+            apps/sources/requirements-tiktok.txt
+
+      - name: Install test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r tests/requirements.txt -r apps/sources/requirements-tiktok.txt 'websockets>=15,<18'
+
+      - name: Compile Python
+        run: python -m compileall -q apps packages tests deploy
+
+      - name: Unit and API tests
+        run: python -m unittest discover -v -s tests -p 'test_*.py'
+
+      - name: Validate monitor and Manager JavaScript
+        run: |
+          node --check apps/renderer-web/monitor/app.js
+          node --check apps/manager/app.js
+          node --check apps/manager/simulator.js
+
+      - name: Showcase source preflight
+        run: python deploy/showcase_preflight.py
+
+      - name: Validate shell scripts
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' script; do
+            echo "bash -n $script"
+            bash -n "$script"
+          done < <(find deploy -maxdepth 1 -type f -name '*.sh' -print0)
+
+      - name: Validate Godot project and GDScript
+        shell: bash
+        run: |
+          set -euo pipefail
+          GODOT_VERSION=4.7.2
+          GODOT_TAG="${GODOT_VERSION}-stable"
+          ZIP="Godot_v${GODOT_TAG}_linux.x86_64.zip"
+          curl --retry 5 --retry-delay 2 --retry-all-errors -fsSL \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_TAG}/${ZIP}" \
+            -o "/tmp/${ZIP}"
+          unzip -q "/tmp/${ZIP}" -d /tmp/godot
+          GODOT_BIN="$(find /tmp/godot -maxdepth 1 -type f -name 'Godot_v*_linux.x86_64' | head -n1)"
+          chmod +x "$GODOT_BIN"
+          "$GODOT_BIN" --headless --editor --quit --path apps/renderer-godot 2>&1 | tee /tmp/godot-editor.log
+          ! grep -E 'SCRIPT ERROR|^ERROR:' /tmp/godot-editor.log
+          for script in apps/renderer-godot/*.gd; do
+            "$GODOT_BIN" --headless --path apps/renderer-godot --check-only --script "$(basename "$script")"
+          done
+          "$GODOT_BIN" --headless --path apps/renderer-godot \
+            --script ../../tests/godot_presentation_smoke.gd 2>&1 | tee /tmp/godot-contracts.log
+          ! grep -E 'SCRIPT ERROR|^ERROR:' /tmp/godot-contracts.log
+
+      - name: Smoke-test native portrait server renderer
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq xvfb ffmpeg
+          GODOT_BIN="$(find /tmp/godot -maxdepth 1 -type f -name 'Godot_v*_linux.x86_64' | head -n1)"
+          Xvfb :99 -screen 0 720x1280x24 -ac -nolisten tcp +extension GLX +render >/tmp/xvfb.log 2>&1 &
+          XVFB_PID=$!
+          cleanup() {
+            kill "${GODOT_PID:-}" 2>/dev/null || true
+            kill "$XVFB_PID" 2>/dev/null || true
+          }
+          trap cleanup EXIT
+          sleep 1
+          DISPLAY=:99 "$GODOT_BIN" --path apps/renderer-godot --display-driver x11 --audio-driver Dummy --resolution 720x1280 >/tmp/godot-render.log 2>&1 &
+          GODOT_PID=$!
+          sleep 3
+          kill -0 "$GODOT_PID"
+          DISPLAY=:99 ffmpeg -hide_banner -loglevel error -y \
+            -f x11grab -video_size 720x1280 -i :99.0+0,0 \
+            -frames:v 1 /tmp/live-infinita-render.png
+          test -s /tmp/live-infinita-render.png
+          file /tmp/live-infinita-render.png | grep -q 'PNG image data, 720 x 1280'
+          DISPLAY=:99 "$GODOT_BIN" --path apps/renderer-godot --display-driver x11 --audio-driver Dummy \
+            --resolution 720x1280 --script ../../tests/godot_presentation_smoke.gd \
+            2>&1 | tee /tmp/godot-presentation.log
+          ! grep -E 'SCRIPT ERROR|^ERROR:' /tmp/godot-presentation.log
+
+      - name: Upload portrait biome captures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: godot-portrait-biomes
+          path: artifacts/godot/*.png
+          if-no-files-found: warn
+
