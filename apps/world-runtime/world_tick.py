@@ -42,6 +42,23 @@ class WorldTickRunner:
         resume_evaluator = getattr(scheduler, "assess_resume", None)
         self.plan_arbiter = plan_arbiter or PlanArbiter(scheduler.ledger, resume_evaluator=resume_evaluator)
 
+    @staticmethod
+    def _idle_blocked_npc_ids(need_results: list[dict[str, Any]]) -> set[str]:
+        """Block idle walking only when this tick actually scheduled need work.
+
+        `cooldown` is not active work; an already-running plan is detected by
+        NpcIdleWander._has_active_plan(). `no_target` explicitly means the need
+        could not produce a plan, so freezing the NPC would deadlock presentation
+        forever when a target is absent. Idle movement may therefore continue
+        until a real need plan becomes schedulable.
+        """
+        return {
+            str(row.get("npc_id") or "")
+            for row in need_results
+            if str(row.get("npc_id") or "")
+            and str(row.get("status") or "") == "scheduled"
+        }
+
     def _tick_plan(self, plan_id: str, logical_tick: int) -> dict[str, Any]:
         tick_fn = self.scheduler.tick
         try:
@@ -168,12 +185,7 @@ class WorldTickRunner:
 
         idle_results: list[dict[str, Any]] = []
         if self.npc_idle_wander is not None:
-            blocked_npcs = {
-                str(row.get("npc_id") or "")
-                for row in need_results
-                if str(row.get("npc_id") or "")
-                and str(row.get("status") or "") in {"scheduled", "cooldown", "no_target"}
-            }
+            blocked_npcs = self._idle_blocked_npc_ids(need_results)
             for row in self.npc_idle_wander.evaluate_tick(after.tick, blocked_npc_ids=blocked_npcs):
                 idle_results.append({
                     "npc_id": row.get("npc_id"),
