@@ -1,13 +1,58 @@
 from __future__ import annotations
 
+from copy import deepcopy
 from pathlib import Path
+from typing import Any
 
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.routing import Mount
 
 import main as core
-from main_spatial import app
+import main_spatial
+
+app = main_spatial.app
+
+
+def _looks_internal_narration(text: str) -> bool:
+    value = text.strip().lower()
+    return (
+        value.startswith("plan plan_")
+        or value.startswith("intent-plan step ")
+        or (value.startswith("plan ") and " revision " in value and " step " in value)
+    )
+
+
+def _sanitize_public_world_message(message: dict[str, Any]) -> dict[str, Any]:
+    """Never expose execution/audit strings through the live presentation stream."""
+    result = deepcopy(message)
+    world = result.get("world")
+    if not isinstance(world, dict):
+        return result
+    narration = world.get("narration")
+    if not isinstance(narration, dict):
+        return result
+    text = str(narration.get("text") or "")
+    if _looks_internal_narration(text):
+        world["narration"] = {
+            **narration,
+            "text": "Nov continua sua jornada pelo mundo.",
+        }
+    return result
+
+
+# main_spatial projects the authoritative world into observer-local slices.
+# Wrap that final presentation boundary so both Godot and the narrator consume
+# clean narrative text, including already-persisted legacy plan messages.
+_original_wrap_world_message = main_spatial.spatial_session.wrap_world_message
+
+
+def _public_wrap_world_message(message: dict[str, Any], view: dict[str, Any]) -> dict[str, Any]:
+    projected = _original_wrap_world_message(message, view)
+    return _sanitize_public_world_message(projected)
+
+
+main_spatial.spatial_session.wrap_world_message = _public_wrap_world_message  # type: ignore[method-assign]
 
 
 # Restore the public presentation contract introduced by manager-shell-011 while
