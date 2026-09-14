@@ -18,6 +18,9 @@ from tiktok_audience_mapping import gift_to_payload, join_to_payload, like_to_pa
 from tiktok_mapping import comment_to_payload
 
 
+RESTART_EXIT_CODE = 75
+
+
 @dataclass(frozen=True)
 class BridgeConfig:
     unique_id: str
@@ -165,25 +168,36 @@ def main() -> int:
         flush=True,
     )
 
-    while True:
-        try:
-            write_status(config, "searching")
-            print(f"[tiktok] procurando LIVE de {config.unique_id}...", flush=True)
-            client = build_client(config)
-            client.run()
-            write_status(config, "waiting_retry", retry_seconds=round(config.retry_seconds))
-            print(f"[tiktok] conexão encerrada; nova tentativa em {config.retry_seconds:.0f}s", flush=True)
-        except KeyboardInterrupt:
-            write_status(config, "stopped")
-            print("[tiktok] encerrado", flush=True)
-            return 0
-        except Exception as exc:
-            name = type(exc).__name__
-            message = str(exc).replace("\n", " ")
-            write_status(config, "waiting_retry", error_type=name, retry_seconds=round(config.retry_seconds))
-            print(f"[tiktok] LIVE indisponível ou consulta recusada ({name}): {message}", flush=True)
-            print(f"[tiktok] aguardando {config.retry_seconds:.0f}s antes de tentar novamente", flush=True)
-        time.sleep(config.retry_seconds)
+    try:
+        write_status(config, "searching")
+        print(f"[tiktok] procurando LIVE de {config.unique_id}...", flush=True)
+        client = build_client(config)
+        client.run()
+        write_status(config, "waiting_retry", retry_seconds=round(config.retry_seconds))
+        print(
+            f"[tiktok] conexão encerrada; systemd iniciará um processo limpo em {config.retry_seconds:.0f}s",
+            flush=True,
+        )
+        return RESTART_EXIT_CODE
+    except KeyboardInterrupt:
+        write_status(config, "stopped")
+        print("[tiktok] encerrado", flush=True)
+        return 0
+    except Exception as exc:
+        name = type(exc).__name__
+        message = str(exc).replace("\n", " ")
+        write_status(
+            config,
+            "waiting_retry",
+            error_type=name,
+            retry_seconds=round(config.retry_seconds),
+        )
+        print(f"[tiktok] LIVE indisponível ou consulta recusada ({name}): {message}", flush=True)
+        print(
+            f"[tiktok] systemd iniciará um processo limpo em {config.retry_seconds:.0f}s",
+            flush=True,
+        )
+        return RESTART_EXIT_CODE
 
 
 if __name__ == "__main__":
