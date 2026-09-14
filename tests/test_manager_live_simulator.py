@@ -40,7 +40,8 @@ class ManagerLiveSimulatorTests(unittest.TestCase):
         self.assertIn("api('/api/manage/simulator/state')", source)
         self.assertIn('manager-viewer-', source)
         self.assertIn('data.narration_cue?.text', source)
-        self.assertIn("appendBubble('narrator'", source)
+        self.assertIn("'narrator'", source)
+        self.assertIn("'Narrador'", source)
         self.assertIn('chooseNewViewer', source)
 
     def test_late_simulator_routes_are_promoted_before_manager_root_mount(self) -> None:
