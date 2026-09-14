@@ -22,28 +22,28 @@ THEMES: dict[str, ThemeTemplate] = {
         arc="mystery",
         title="O caminho entre as árvores",
         landmark_label="Árvore marcada pela audiência",
-        narration="A vontade coletiva insiste na floresta. Um novo caminho se revela entre as árvores.",
+        narration="A vontade coletiva insiste na floresta. Um novo caminho se revela entre as árvores, e Nov decide segui-lo.",
     ),
     "river": ThemeTemplate(
         biome="river",
         arc="crossing",
         title="A margem que ainda não existia",
         landmark_label="Salgueiro da nova margem",
-        narration="A audiência puxa a história em direção à água. Uma margem surge adiante e Nov ganha um novo destino.",
+        narration="A audiência puxa a história em direção à água. Uma margem surge adiante, e Nov segue até ela.",
     ),
     "village": ThemeTemplate(
         biome="village",
         arc="encounter",
         title="Sinais de outras presenças",
         landmark_label="Fogueira da nova vila",
-        narration="A intenção coletiva procura outras presenças. Luzes de uma pequena vila aparecem no horizonte.",
+        narration="A intenção coletiva procura outras presenças. Luzes de uma pequena vila aparecem no horizonte, e Nov vai investigar.",
     ),
     "field": ThemeTemplate(
         biome="field",
         arc="horizon",
         title="O horizonte se abre",
         landmark_label="Árvore solitária do campo",
-        narration="A audiência escolhe espaço e horizonte. A floresta se abre para uma nova campina.",
+        narration="A audiência escolhe espaço e horizonte. A floresta se abre para uma nova campina, e Nov caminha em sua direção.",
     ),
 }
 
@@ -154,6 +154,7 @@ class CollectiveWorldEvolver:
         operations: list[dict[str, Any]] = []
         created_region_id: str | None = None
         target_entity_id: str | None = None
+        target_position: dict[str, float] | None = None
 
         if slot is not None:
             created_region_id = f"collective_{theme}_{chapter:03d}"
@@ -176,6 +177,7 @@ class CollectiveWorldEvolver:
             regions.append(new_region)
             regions.sort(key=lambda row: str(row.get("id") or ""))
             target_entity_id = f"collective_landmark_{chapter:03d}"
+            target_position = {"x": float(slot[0]), "y": float(slot[1])}
             entity_type = "campfire" if theme == "village" else "tree"
             properties: dict[str, Any] = {
                 "label": template.landmark_label,
@@ -193,7 +195,7 @@ class CollectiveWorldEvolver:
                         "id": target_entity_id,
                         "type": entity_type,
                         "region_id": created_region_id,
-                        "position": {"x": slot[0], "y": slot[1]},
+                        "position": target_position,
                         "scale": 1.18 if entity_type == "tree" else 0.92,
                         "properties": properties,
                     },
@@ -204,6 +206,12 @@ class CollectiveWorldEvolver:
             if target_entity_id is None:
                 target_entity_id = "ancient_tree" if self.store.get_entity("ancient_tree") else "fire_01"
                 created_region_id = self.store.entity_region(target_entity_id)
+            target = self.store.get_entity(str(target_entity_id or ""))
+            if isinstance(target, dict) and isinstance(target.get("position"), dict):
+                target_position = {
+                    "x": float(target["position"].get("x", 0.0)),
+                    "y": float(target["position"].get("y", 0.0)),
+                }
 
         if target_entity_id and self.store.get_entity("nov") is not None:
             operations.append({
@@ -212,12 +220,16 @@ class CollectiveWorldEvolver:
                 "path": ["properties", "curiosity_target_entity_id"],
                 "value": target_entity_id,
             })
-            operations.append({
-                "op": "set",
-                "entity_id": "nov",
-                "path": ["properties", "needs", "curiosity"],
-                "value": 0.92,
-            })
+            if created_region_id and target_position is not None:
+                # Collective convergence changes the place where the story happens.
+                # The authoritative position advances immediately; Godot presents
+                # that transition as a continuous walk at HUMAN_WALK_SPEED.
+                operations.append({
+                    "op": "move",
+                    "entity_id": "nov",
+                    "position": target_position,
+                    "region_id": created_region_id,
+                })
 
         story = {
             "chapter": chapter,
