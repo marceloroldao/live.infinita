@@ -10,6 +10,7 @@ from fastapi.responses import JSONResponse
 import main as core
 import main_context_live
 import main_spatial
+from cognitive_shadow import summarize_shadow_file
 from memoria_v2_adapter import build_nov_cognitive_frame, to_memoria_v2_request_payload
 from route_precedence import promote_api_route_before_root
 
@@ -30,6 +31,10 @@ def _entity_map(rows: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
         for row in rows
         if isinstance(row, dict) and str(row.get("id") or "").strip()
     }
+
+
+def _shadow_file():
+    return main_spatial._world_data_root() / "memoria-v2-shadow.jsonl"
 
 
 async def _build_cognitive_projection(observer_id: str):
@@ -96,18 +101,38 @@ async def cognitive_v2_frame(observer_id: str = "nov") -> JSONResponse:
     })
 
 
+@app.get("/api/cognitive/v2/shadow/metrics", dependencies=[Depends(core.require_operator)])
+async def cognitive_v2_shadow_metrics() -> JSONResponse:
+    summary = summarize_shadow_file(_shadow_file())
+    return JSONResponse({
+        "ok": True,
+        "world_mutated": False,
+        "mode": "passive-shadow-observer",
+        "direct_world_write": False,
+        "selection_authority": False,
+        "metrics": summary,
+    })
+
+
 _original_context_health = main_context_live.context_health
 
 
 async def cognitive_health() -> JSONResponse:
     response = await _original_context_health()
     payload = json.loads(response.body.decode("utf-8")) if response.body else {}
+    shadow_summary = summarize_shadow_file(_shadow_file())
     payload["cognitive_gym_v2"] = {
         "enabled": COGNITIVE_GYM_ENABLED,
         "mode": "read-only-cognitive-projection",
         "direct_world_write": False,
         "observer": "nov",
         "contract": "CognitiveFrame -> Memoria V2 request payload",
+        "shadow_observer": {
+            "records": shadow_summary.get("records", 0),
+            "exact_match_rate": shadow_summary.get("exact_match_rate"),
+            "direct_world_write": False,
+            "selection_authority": False,
+        },
     }
     if COGNITIVE_GYM_ENABLED:
         pipeline = list(payload.get("pipeline") or [])
@@ -125,6 +150,7 @@ main_context_live._replace_route("/api/health", "GET", cognitive_health)
 
 
 # main_context_live is imported after main_live has mounted Manager at '/'. Its
-# preview route and this cognitive route therefore need explicit precedence.
+# preview and cognitive extension routes therefore need explicit precedence.
 promote_api_route_before_root(app, "/api/ai/context/preview")
 promote_api_route_before_root(app, "/api/cognitive/v2/frame")
+promote_api_route_before_root(app, "/api/cognitive/v2/shadow/metrics")
