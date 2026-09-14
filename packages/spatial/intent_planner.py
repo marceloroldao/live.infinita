@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Callable
 
 from .cold_store import FileRegionColdStore
 from .regions import Region, RegionCatalog
@@ -61,6 +61,18 @@ class DeterministicIntentPlanner:
     def __init__(self, store: FileRegionColdStore, regions: RegionCatalog) -> None:
         self.store = store
         self.regions = regions
+        self.world_provider: Callable[[], dict[str, Any]] | None = None
+
+    def set_world_provider(self, provider: Callable[[], dict[str, Any]] | None) -> None:
+        self.world_provider = provider
+
+    def _refresh_live_regions(self) -> None:
+        provider = self.world_provider
+        if provider is None:
+            return
+        world = provider()
+        if isinstance(world, dict):
+            self.refresh_regions(world)
 
     def refresh_regions(self, world: dict[str, Any]) -> None:
         raw_regions = world.get("regions")
@@ -155,6 +167,7 @@ class DeterministicIntentPlanner:
         return goal_region, route
 
     def plan(self, intent: dict[str, Any]) -> IntentPlan:
+        self._refresh_live_regions()
         if not isinstance(intent, dict):
             raise IntentPlanError("intent must be an object")
         intent_type = str(intent.get("intent") or intent.get("type") or "").strip().lower()
@@ -233,6 +246,7 @@ class DeterministicIntentPlanner:
         return IntentPlan(intent_type, actor_id, source_region, goal_region, route, tuple(steps))
 
     def revalidate_step(self, plan: IntentPlan, step_index: int) -> PlanStep:
+        self._refresh_live_regions()
         if step_index < 0 or step_index >= len(plan.steps):
             raise IntentPlanError("step index out of range")
         step = plan.steps[step_index]
