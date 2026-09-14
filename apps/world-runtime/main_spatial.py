@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import os
 from contextvars import ContextVar
 from pathlib import Path
@@ -52,6 +53,11 @@ def _cold_store_root() -> Path | None:
     return Path(value) if value else None
 
 
+def _world_data_root() -> Path:
+    value = str(os.getenv("LIVE_INFINITA_WORLD_DATA_DIR", "")).strip()
+    return Path(value) if value else core.DATA_DIR
+
+
 def _cold_engine_enabled() -> bool:
     return str(os.getenv("LIVE_INFINITA_COLD_ENGINE", "")).strip().lower() in {"1", "true", "yes", "on"}
 
@@ -73,7 +79,7 @@ def _configure_authoritative_engine() -> FileRegionColdStore | None:
         raise RuntimeError(f"cold bootstrap not found: {bootstrap}")
 
     store = FileRegionColdStore(store_root)
-    core.engine = ColdAuthoritativeWorldEngine(bootstrap, core.DATA_DIR, store)
+    core.engine = ColdAuthoritativeWorldEngine(bootstrap, _world_data_root(), store)
     return store
 
 
@@ -168,10 +174,29 @@ _install_operator_approval_marker()
 proposal_ledger = install_runtime_proposal_ledger(core, core.DATA_DIR)
 spatial_session = SpatialSession(cold_store=cold_store) if cold_store is not None else SpatialSession()
 session_views: dict[WebSocket, dict[str, Any]] = {}
+_external_world_sync_task: asyncio.Task[None] | None = None
+_last_world_marker: tuple[int, str] | None = None
+
+
+def _world_marker(world: dict[str, Any]) -> tuple[int, str]:
+    return int(world.get("sequence", 0)), str(world.get("state_hash") or "")
+
+
+def _external_world_sync_seconds() -> float:
+    raw = str(os.getenv("LIVE_INFINITA_EXTERNAL_WORLD_SYNC_MS", "500")).strip()
+    try:
+        milliseconds = max(100, int(raw))
+    except ValueError:
+        milliseconds = 500
+    return milliseconds / 1000.0
 
 
 async def spatial_broadcast(message: dict[str, Any]) -> None:
     """Broadcast side-channel messages unchanged and world state as local slices."""
+    global _last_world_marker
+    if message.get("type") == "world_state" and isinstance(message.get("world"), dict):
+        _last_world_marker = _world_marker(message["world"])
+
     dead: list[WebSocket] = []
     for client, view in list(session_views.items()):
         try:
@@ -183,9 +208,54 @@ async def spatial_broadcast(message: dict[str, Any]) -> None:
         session_views.pop(client, None)
 
 
+async def _external_world_sync_loop() -> None:
+    """Project commits made by the autonomous writer into every live WebSocket."""
+    global _last_world_marker
+    interval = _external_world_sync_seconds()
+    while True:
+        try:
+            world = core.engine.load_world()
+            marker = _world_marker(world)
+            if _last_world_marker is None:
+                _last_world_marker = marker
+            elif marker != _last_world_marker:
+                await spatial_broadcast({"type": "world_state", "world": world})
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            # A transient atomic-replace/read race must not take down the runtime.
+            pass
+        await asyncio.sleep(interval)
+
+
+async def _start_external_world_sync() -> None:
+    global _external_world_sync_task, _last_world_marker
+    _last_world_marker = _world_marker(core.engine.load_world())
+    if _external_world_sync_task is None or _external_world_sync_task.done():
+        _external_world_sync_task = asyncio.create_task(
+            _external_world_sync_loop(),
+            name="live-infinita-external-world-sync",
+        )
+
+
+async def _stop_external_world_sync() -> None:
+    global _external_world_sync_task
+    task = _external_world_sync_task
+    _external_world_sync_task = None
+    if task is None:
+        return
+    task.cancel()
+    try:
+        await task
+    except asyncio.CancelledError:
+        pass
+
+
 async def spatial_websocket_endpoint(websocket: WebSocket) -> None:
+    global _last_world_marker
     await websocket.accept()
     world = core.engine.load_world()
+    _last_world_marker = _world_marker(world)
     view = spatial_session.default_view(world)
     session_views[websocket] = view
     await websocket.send_json(spatial_session.wrap_world_message(
@@ -202,8 +272,10 @@ async def spatial_websocket_endpoint(websocket: WebSocket) -> None:
             if message_type == "interest_update":
                 view = spatial_session.normalize_view(message, view)
                 session_views[websocket] = view
+                world = core.engine.load_world()
+                _last_world_marker = _world_marker(world)
                 await websocket.send_json(spatial_session.wrap_world_message(
-                    {"type": "world_state", "world": core.engine.load_world()},
+                    {"type": "world_state", "world": world},
                     view,
                 ))
     except WebSocketDisconnect:
@@ -229,3 +301,5 @@ def _replace_world_websocket_route() -> None:
 # while making delivery observer-local and, when opted in, cold-authoritative.
 core.broadcast = spatial_broadcast
 _replace_world_websocket_route()
+app.add_event_handler("startup", _start_external_world_sync)
+app.add_event_handler("shutdown", _stop_external_world_sync)
