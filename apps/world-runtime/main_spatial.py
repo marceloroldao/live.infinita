@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import os
 from contextvars import ContextVar
 from pathlib import Path
@@ -18,6 +19,20 @@ from spatial_session import SpatialSession
 
 app = core.app
 _operator_approval_context: ContextVar[bool] = ContextVar("operator_approval_context", default=False)
+_AUDIENCE_SOURCES = frozenset({"tiktok", "youtube"})
+_AUDIENCE_AUTO_ACTIONS = frozenset({
+    "spawn_person",
+    "move_tree",
+    "toggle_fire",
+    "nov_to_fire",
+    "nov_to_shelter",
+    "nov_to_forest",
+    "nov_explore",
+})
+_AI_TRIGGER_TERMS = (
+    "nov", "fogueira", "fogo", "arvore", "árvore", "abrigo", "floresta",
+    "explor", "andar", "caminh", "passe", "visitante", "personagem",
+)
 
 
 @app.middleware("http")
@@ -202,20 +217,147 @@ def _install_cold_mutation_gate() -> None:
     engine.commit_action = guarded_commit_action  # type: ignore[method-assign]
 
 
+def _audience_command_like(text: str) -> bool:
+    lowered = str(text or "").strip().lower()
+    return bool(lowered) and any(term in lowered for term in _AI_TRIGGER_TERMS)
+
+
+async def _observe_unhandled_audience(normalized: Any) -> None:
+    await core.observe_actor(
+        source=normalized.source,
+        actor_id=normalized.actor.actor_id,
+        display_name=normalized.actor.display_name,
+        kind=normalized.kind,
+        source_event_id=normalized.source_event_id,
+        metadata={"channel": "gateway", "unhandled": True, **dict(normalized.metadata)},
+        observed_at_unix=core.time.time(),
+    )
+
+
+async def _audience_ai_fallback(normalized: Any, original: Any):
+    await _observe_unhandled_audience(normalized)
+    status = core.integrations.public_status()
+    openai_ready = bool((status.get("openai") or {}).get("configured"))
+    if not openai_ready or not _audience_command_like(normalized.text):
+        return core.JSONResponse({
+            "ok": True,
+            "world_mutated": False,
+            "audience_comment": "observed",
+            "ai_fallback": "not_needed" if openai_ready else "not_configured",
+        }, status_code=202)
+
+    try:
+        router = core.build_ai_router()
+        proposal = await asyncio.to_thread(router.propose, normalized.text)
+    except (core.AIRouterError, core.HTTPException) as exc:
+        return core.JSONResponse({
+            "ok": True,
+            "world_mutated": False,
+            "audience_comment": "observed",
+            "ai_fallback": "error",
+            "ai_error": str(getattr(exc, "detail", exc)),
+        }, status_code=202)
+
+    proposal_dict = proposal.to_dict()
+    actionable = bool(proposal.actionable and proposal.confidence >= core.AI_MIN_CONFIDENCE)
+    async with core.ai_lock:
+        stored = core.ai_proposals.create(
+            action=proposal.action,
+            confidence=proposal.confidence,
+            reason=proposal.reason,
+            original_text=proposal.original_text,
+            model=proposal.model,
+            gateway_text=proposal_dict.get("gateway_text") if actionable else None,
+            actionable=actionable,
+            source=normalized.source,
+            actor_id=normalized.actor.actor_id,
+            display_name=normalized.actor.display_name,
+            metadata={"audience_fallback": True, **dict(normalized.metadata)},
+        )
+    await core.broadcast({"type": "ai_proposal", "proposal": stored})
+
+    action = str(stored.get("action") or "")
+    gateway_text = str(stored.get("gateway_text") or "").strip()
+    if stored.get("status") != "pending" or action not in _AUDIENCE_AUTO_ACTIONS or not gateway_text:
+        return core.JSONResponse({
+            "ok": True,
+            "world_mutated": False,
+            "audience_comment": "observed",
+            "ai_fallback": "proposal_only",
+            "proposal": stored,
+        }, status_code=202)
+
+    metadata = {
+        **dict(normalized.metadata),
+        "ai_proposal_id": stored["proposal_id"],
+        "ai_auto_approved": True,
+        "ai_model": stored.get("model"),
+        "ai_confidence": stored.get("confidence"),
+        "original_text": normalized.text,
+    }
+    response = await original({
+        "source": normalized.source,
+        "source_event_id": f"{normalized.source_event_id}:ai",
+        "actor_id": normalized.actor.actor_id,
+        "display_name": normalized.actor.display_name,
+        "kind": "text",
+        "text": gateway_text,
+        "metadata": metadata,
+    })
+    if response.status_code < 300:
+        body = json.loads(response.body.decode("utf-8")) if response.body else {}
+        world_event_id = str((body.get("event") or {}).get("event_id") or "") or None
+        async with core.ai_lock:
+            committed = core.ai_proposals.mark_committed(str(stored["proposal_id"]), world_event_id=world_event_id)
+        await core.broadcast({"type": "ai_proposal", "proposal": committed})
+        body["ai_fallback"] = "auto_committed"
+        body["ai_proposal"] = committed
+        return core.JSONResponse(body, status_code=response.status_code)
+    return response
+
+
 def _install_operator_approval_marker() -> None:
     original = core.process_gateway_payload
 
     async def wrapped(payload: dict[str, Any]):
         cloned = dict(payload)
         metadata = dict(cloned.get("metadata") or {})
+        source = str(cloned.get("source") or "").strip().lower()
+
         if (
             _operator_approval_context.get()
-            and str(cloned.get("source") or "").strip().lower() == "api"
+            and source == "api"
             and str(cloned.get("actor_id") or "").strip() == "audience-aggregator"
             and metadata.get("proposal_id")
         ):
             metadata["operator_approved"] = True
             cloned["metadata"] = metadata
+            return await original(cloned)
+
+        if source in _AUDIENCE_SOURCES:
+            try:
+                normalized, proposed, validation = core.pipeline.process(cloned)
+            except ValueError:
+                return await original(cloned)
+
+            if validation.accepted and validation.action in _AUDIENCE_AUTO_ACTIONS:
+                metadata["audience_auto_approved"] = True
+                cloned["metadata"] = metadata
+                return await original(cloned)
+
+            if not validation.accepted and normalized.kind == "text":
+                return await _audience_ai_fallback(normalized, original)
+
+            if validation.accepted:
+                await _observe_unhandled_audience(normalized)
+                return core.JSONResponse({
+                    "ok": True,
+                    "world_mutated": False,
+                    "audience_comment": "observed",
+                    "requires_operator": True,
+                    "proposed_action": proposed.action,
+                }, status_code=202)
+
         return await original(cloned)
 
     core.process_gateway_payload = wrapped
@@ -279,8 +421,6 @@ async def _external_world_sync_loop() -> None:
         except asyncio.CancelledError:
             raise
         except Exception:
-            # Atomic persistence means a transient read/refresh problem can be
-            # retried on the next sync interval without taking down the Runtime.
             pass
         await asyncio.sleep(interval)
 
@@ -350,9 +490,6 @@ def _replace_world_websocket_route() -> None:
     raise RuntimeError("world websocket route /ws not found")
 
 
-# Existing runtime code resolves `broadcast` and `engine` from the `main` module
-# globals at call time. Replacing those symbols keeps REST/API logic untouched
-# while making delivery observer-local and, when opted in, cold-authoritative.
 core.broadcast = spatial_broadcast
 _replace_world_websocket_route()
 app.add_event_handler("startup", _start_external_world_sync)
