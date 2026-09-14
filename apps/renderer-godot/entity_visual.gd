@@ -13,8 +13,8 @@ var target_presentation_scale := 1.0
 var visual_time := 0.0
 
 func world_to_portrait(value: Vector2) -> Vector2:
-    var nx := clamp(value.x / LOGICAL_WORLD_SIZE.x, 0.0, 1.0)
-    var ny := clamp(value.y / LOGICAL_WORLD_SIZE.y, 0.0, 1.0)
+    var nx: float = clampf(value.x / LOGICAL_WORLD_SIZE.x, 0.0, 1.0)
+    var ny: float = clampf(value.y / LOGICAL_WORLD_SIZE.y, 0.0, 1.0)
     return Vector2(
         PORTRAIT_STAGE.position.x + nx * PORTRAIT_STAGE.size.x,
         PORTRAIT_STAGE.position.y + ny * PORTRAIT_STAGE.size.y
@@ -40,16 +40,16 @@ func apply_entity(next_entity: Dictionary) -> bool:
 
 func set_presentation_target(screen_position: Vector2, emphasis: float = 1.0) -> void:
     target_position = screen_position
-    target_presentation_scale = clamp(emphasis, 0.75, 1.35)
+    target_presentation_scale = clampf(emphasis, 0.75, 1.35)
 
 func restore_default_presentation(emphasis: float = 1.0) -> void:
     set_presentation_target(world_to_portrait(world_position), emphasis)
 
 func _process(delta: float) -> void:
     visual_time += delta
-    position = position.lerp(target_position, min(1.0, delta * 3.8))
-    var uniform := scale.x
-    uniform = lerpf(uniform, target_presentation_scale, min(1.0, delta * 3.2))
+    position = position.lerp(target_position, minf(1.0, delta * 3.8))
+    var uniform: float = scale.x
+    uniform = lerpf(uniform, target_presentation_scale, minf(1.0, delta * 3.2))
     scale = Vector2.ONE * uniform
     if entity_type == "tree" or entity_type == "campfire":
         queue_redraw()
