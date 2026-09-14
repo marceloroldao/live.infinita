@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource path="res://main.gd" type="Script" id="1"]
 [ext_resource path="res://atmosphere_overlay.gd" type="Script" id="2"]
@@ -6,6 +6,9 @@
 [ext_resource path="res://warm_prefetch.gd" type="Script" id="4"]
 [ext_resource path="res://materialization_transition.gd" type="Script" id="5"]
 [ext_resource path="res://spatial_metrics.gd" type="Script" id="6"]
+
+[ext_resource path="res://diorama.gd" type="Script" id="7"]
+[ext_resource path="res://broadcast_overlay.gd" type="Script" id="8"]
 
 [node name="LiveInfinita" type="Node2D"]
 script = ExtResource("1")
@@ -23,5 +26,12 @@ script = ExtResource("4")
 script = ExtResource("6")
 
 [node name="AtmosphereOverlay" type="Node2D" parent="."]
-z_index = 20
+z_index = 3000
 script = ExtResource("2")
+
+[node name="Diorama" type="Node2D" parent="."]
+script = ExtResource("7")
+
+[node name="BroadcastOverlay" type="Node2D" parent="."]
+z_index = 4000
+script = ExtResource("8")

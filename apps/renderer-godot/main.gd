@@ -15,7 +15,19 @@ var audience_feed: Array[String] = []
 var last_action := "aguardando evento"
 var last_event_id := "-"
 var last_delta_id := "-"
-var narration_text := "A Live Infinita está começando."
+var narration_text := ""
+var narration_remaining := 0.0
+var audience_remaining := 0.0
+var night_amount := 0.0
+var wind_amount := 0.25
+var lighting_initialized := false
+var camera_offset := Vector2.ZERO
+var camera_target := Vector2.ZERO
+var director_cooldown_until := 0
+var sky_material := ShaderMaterial.new()
+var retiring: Array[Node2D] = []
+const MAX_RETIRING := 32
+const MAX_CAMERA_SHIFT := 22.0
 var ws_reconnect_attempt := 0
 var ws_reconnect_at_ms := 0
 var visual_time := 0.0
@@ -23,6 +35,13 @@ var director_focus_entity_id := ""
 var director_focus_until_ms := 0
 
 func _ready() -> void:
+    var sky := ColorRect.new()
+    sky.size = Vector2(720, 1280)
+    sky.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    sky.z_index = -10
+    sky_material.shader = preload("res://story_sky.gdshader")
+    sky.material = sky_material
+    add_child(sky)
     _connect_websocket()
     _install_browser_audio_bridge()
     queue_redraw()
@@ -83,6 +102,9 @@ func _maybe_reconnect_websocket() -> void:
 
 func _process(delta: float) -> void:
     visual_time += delta
+    narration_remaining = maxf(0.0, narration_remaining - delta)
+    audience_remaining = maxf(0.0, audience_remaining - delta)
+    _update_lighting(delta)
     socket.poll()
     var state := socket.get_ready_state()
     if state == WebSocketPeer.STATE_OPEN:
@@ -98,7 +120,7 @@ func _process(delta: float) -> void:
         if connection_state != "desconectado": connection_state = "desconectado"; _schedule_websocket_reconnect()
         _maybe_reconnect_websocket()
     else: _maybe_reconnect_websocket()
-    _update_director_layout()
+    _update_director_layout(delta)
     queue_redraw()
 
 func _apply_world_state(message: Dictionary) -> void:
@@ -114,7 +136,9 @@ func _apply_world_state(message: Dictionary) -> void:
     var narration = world.get("narration", {})
     if typeof(narration) == TYPE_DICTIONARY:
         var text := str(narration.get("text", "")).strip_edges()
-        if not text.is_empty(): narration_text = text
+        if not text.is_empty() and text != narration_text:
+            narration_text = text
+            narration_remaining = clampf(float(text.length()) * 0.075, 8.0, 20.0)
     queue_redraw()
 
 func _apply_audience_event(event: Dictionary) -> void:
@@ -130,6 +154,7 @@ func _apply_audience_event(event: Dictionary) -> void:
         "join": line = "%s entrou" % name
         "like": line = "%s curtiu" % name
         "gift": line = "%s enviou um presente" % name
+    audience_remaining = 12.0
     audience_feed.push_front(line)
     while audience_feed.size() > 4: audience_feed.pop_back()
     queue_redraw()
@@ -150,7 +175,10 @@ func _reconcile_entities(entities) -> Dictionary:
                 else: result["unchanged"] += 1
     for entity_id in entity_nodes.keys().duplicate():
         if not seen.has(entity_id):
-            var visual = entity_nodes[entity_id]; entity_nodes.erase(entity_id); visual.queue_free(); result["removed"] += 1
+            var visual = entity_nodes[entity_id]
+            entity_nodes.erase(entity_id)
+            _retire_visual(visual)
+            result["removed"] += 1
     return result
 
 func _first_entity_id_by_type(entity_type: String) -> String:
@@ -171,105 +199,98 @@ func _last_entity_id_by_type(entity_type: String) -> String:
     return ""
 
 func _direct_from_event(event: Dictionary) -> void:
+    if Time.get_ticks_msec() < director_cooldown_until: return
     var action := str(event.get("action", ""))
     var next_focus := ""
     match action:
         "move_tree": next_focus = _first_entity_id_by_type("tree")
         "toggle_fire": next_focus = _first_entity_id_by_type("campfire")
         "spawn_person": next_focus = _last_entity_id_by_type("human")
+        "move", "move_entity", "npc_move", "arrive": next_focus = str(event.get("entity_id", ""))
         _:
             if action == "reset": director_focus_entity_id = ""; director_focus_until_ms = 0
             return
     if next_focus.is_empty() or not entity_nodes.has(next_focus): return
+    director_cooldown_until = Time.get_ticks_msec() + 14000
     director_focus_entity_id = next_focus
     director_focus_until_ms = Time.get_ticks_msec() + DIRECTOR_FOCUS_MS
 
-func _update_director_layout() -> void:
+func _update_lighting(delta: float) -> void:
+    var environment: Dictionary = world.get("environment", {})
+    var period := str(environment.get("period", "day"))
+    var target := 1.0 if period == "night" else 0.0
+    if period in ["dawn", "dusk", "twilight"]: target = 0.65
+    if period in ["sunset", "sunrise"]: target = 0.35
+    if not lighting_initialized and not world.is_empty():
+        night_amount = target
+        lighting_initialized = true
+    night_amount = move_toward(night_amount, target, delta / 18.0)
+    var weather := str(environment.get("weather", "clear"))
+    var wind_target := 0.65 if weather in ["rain", "storm", "chuva"] else 0.25
+    var wind_value = environment.get("wind", wind_target)
+    if typeof(wind_value) in [TYPE_FLOAT, TYPE_INT]: wind_target = clampf(float(wind_value), 0.0, 1.0)
+    wind_amount = lerpf(wind_amount, wind_target, 1.0 - exp(-delta * 0.5))
+    sky_material.set_shader_parameter("night_amount", night_amount)
+    sky_material.set_shader_parameter("dusk_amount", sin(night_amount * PI))
+
+func _retire_visual(visual: Node2D) -> void:
+    # Only a bounded, non-interactive presentation tail remains after hot eviction.
+    for i in range(retiring.size() - 1, -1, -1):
+        if not is_instance_valid(retiring[i]): retiring.remove_at(i)
+    if retiring.size() >= MAX_RETIRING:
+        var oldest: Node2D = retiring.pop_front()
+        if is_instance_valid(oldest): oldest.queue_free()
+    retiring.append(visual)
+    visual.set_process(false)
+    var fade := visual.create_tween()
+    fade.tween_property(visual, "modulate:a", 0.0, 0.35)
+    fade.tween_callback(visual.queue_free)
+
+func _update_director_layout(delta: float = 0.016) -> void:
     var active := not director_focus_entity_id.is_empty() and Time.get_ticks_msec() < director_focus_until_ms and entity_nodes.has(director_focus_entity_id)
-    if not active:
-        if director_focus_until_ms != 0 and Time.get_ticks_msec() >= director_focus_until_ms:
-            director_focus_entity_id = ""; director_focus_until_ms = 0
-        for visual in entity_nodes.values(): visual.restore_default_presentation(1.0)
-        return
-    var focus = entity_nodes[director_focus_entity_id]
-    var focus_default: Vector2 = focus.world_to_portrait(focus.world_position)
-    var camera_shift := (DIRECTOR_STAGE_CENTER - focus_default) * 0.18
-    for entity_id in entity_nodes.keys():
-        var visual = entity_nodes[entity_id]
-        var base: Vector2 = visual.world_to_portrait(visual.world_position)
-        var emphasis := 1.16 if entity_id == director_focus_entity_id else 0.94
-        visual.set_presentation_target(base + camera_shift, emphasis)
+    camera_target = Vector2.ZERO
+    if active:
+        var focus = entity_nodes[director_focus_entity_id]
+        camera_target = ((DIRECTOR_STAGE_CENTER - focus.position) * 0.10).limit_length(MAX_CAMERA_SHIFT)
+    elif director_focus_until_ms != 0:
+        director_focus_entity_id = ""
+        director_focus_until_ms = 0
+    camera_offset = camera_offset.move_toward(camera_target, delta * 4.0)
+    for visual in entity_nodes.values():
+        # Camera is a draw offset, never a walking waypoint.
+        visual.camera_offset = camera_offset
+        visual.night_amount = night_amount
+        visual.wind_amount = wind_amount
+        visual.restore_default_presentation(1.0)
+        var foot_offset := 72.0 if visual.entity_type == "tree" else (49.0 if visual.entity_type == "human" else 25.0)
+        visual.z_index = clampi(int(visual.position.y + foot_offset), 1, 2000)
 
-func _panel_style(fill: Color, border: Color, radius: int = 18) -> StyleBoxFlat:
-    var style := StyleBoxFlat.new(); style.bg_color = fill; style.border_color = border; style.set_border_width_all(1)
-    style.corner_radius_top_left = radius; style.corner_radius_top_right = radius; style.corner_radius_bottom_left = radius; style.corner_radius_bottom_right = radius
-    style.shadow_color = Color(0,0,0,0.24); style.shadow_size = 12
-    return style
-
-func _draw_sky(v: Vector2, night: bool) -> void:
-    var top := Color("#071421") if night else Color("#67afd5")
-    var bottom := Color("#315066") if night else Color("#dce9d6")
-    for i in range(16):
-        var t := float(i)/15.0
-        draw_rect(Rect2(0, v.y*t*0.62, v.x, v.y*0.62/16.0+2), top.lerp(bottom,t))
-    if night:
-        for i in range(32):
-            var x := fmod(float(i*149+61),v.x-50.0)+25.0; var y := fmod(float(i*83+29),v.y*0.42)+30.0
-            draw_circle(Vector2(x,y),1.0+float(i%3)*0.35,Color(0.94,0.97,1.0,0.48+0.35*sin(visual_time*1.6+i)))
-        draw_circle(Vector2(v.x-90,150),44,Color(0.95,0.94,0.79,0.10)); draw_circle(Vector2(v.x-90,150),31,Color("#f2edc8"))
-    else:
-        draw_circle(Vector2(v.x-90,150),62,Color(1.0,0.77,0.30,0.10)); draw_circle(Vector2(v.x-90,150),36,Color("#f8c75e"))
-        for i in range(3):
-            var cx := fmod(80.0+i*270.0+visual_time*(4.0+i),v.x+180.0)-90.0; var cy := 190.0+i*75.0
-            draw_circle(Vector2(cx,cy),26,Color(1,1,1,0.22)); draw_circle(Vector2(cx+28,cy+3),20,Color(1,1,1,0.20)); draw_circle(Vector2(cx-25,cy+8),18,Color(1,1,1,0.17))
-
-func _draw_landscape(v: Vector2, night: bool) -> void:
-    var horizon := v.y*0.49
-    var far := Color("#183040") if night else Color("#75977f"); var mid := Color("#16342f") if night else Color("#527c59"); var ground := Color("#102b25") if night else Color("#365f3e")
-    var hills := PackedVector2Array([Vector2(0,horizon+55)])
-    for i in range(7): hills.append(Vector2(float(i)*v.x/6.0,horizon-20.0-sin(float(i)*1.13)*54.0))
-    hills.append(Vector2(v.x,v.y)); hills.append(Vector2(0,v.y)); draw_colored_polygon(hills,far)
-    var hills2 := PackedVector2Array([Vector2(0,horizon+105)])
-    for i in range(7): hills2.append(Vector2(float(i)*v.x/6.0,horizon+35.0-cos(float(i)*1.27)*42.0))
-    hills2.append(Vector2(v.x,v.y)); hills2.append(Vector2(0,v.y)); draw_colored_polygon(hills2,mid)
-    draw_rect(Rect2(0,horizon+105,v.x,v.y-horizon-105),ground)
-    draw_colored_polygon(PackedVector2Array([Vector2(0,v.y*0.83),Vector2(v.x,v.y*0.79),Vector2(v.x,v.y),Vector2(0,v.y)]),Color("#0d211d") if night else Color("#294b33"))
-
-func _draw_brand(font: Font, v: Vector2) -> void:
-    draw_circle(Vector2(46,52),15,Color(0.36,0.84,0.96,0.16)); draw_circle(Vector2(46,52),7,Color("#77d9ef"))
-    draw_string(font,Vector2(72,57),"LIVE INFINITA",HORIZONTAL_ALIGNMENT_LEFT,-1,22,Color.WHITE)
-    draw_string(font,Vector2(72,78),"um mundo que continua",HORIZONTAL_ALIGNMENT_LEFT,-1,12,Color(0.84,0.91,0.94,0.82))
-    var r := Rect2(v.x-126,34,96,34); draw_style_box(_panel_style(Color(0.35,0.05,0.08,0.82),Color(1,0.25,0.34,0.55),14),r)
-    draw_circle(Vector2(r.position.x+16,r.position.y+17),4.5,Color("#ff4055")); draw_string(font,r.position+Vector2(29,23),"AO VIVO",HORIZONTAL_ALIGNMENT_LEFT,-1,13,Color.WHITE)
-
-func _draw_audience(font: Font, v: Vector2) -> void:
-    if audience_feed.is_empty(): return
-    var width := v.x-60.0; var height := 48.0+audience_feed.size()*25.0; var r := Rect2(30,102,width,height)
-    draw_style_box(_panel_style(Color(0.025,0.045,0.07,0.48),Color(0.76,0.48,0.76,0.34)),r)
-    draw_string(font,r.position+Vector2(18,26),"AGORA NA LIVE",HORIZONTAL_ALIGNMENT_LEFT,-1,12,Color(0.95,0.80,0.95,0.9))
-    var y := r.position.y+53
-    for i in range(audience_feed.size()):
-        var alpha := 1.0-float(i)*0.14; draw_circle(Vector2(r.position.x+20,y-5),3.5,Color(0.97,0.63,0.79,alpha)); draw_string(font,Vector2(r.position.x+33,y),audience_feed[i],HORIZONTAL_ALIGNMENT_LEFT,width-52,14,Color(1,1,1,alpha)); y += 25
-
-func _draw_narration(font: Font, v: Vector2) -> void:
-    var r := Rect2(30,v.y-196,v.x-60,128)
-    draw_style_box(_panel_style(Color(0.02,0.04,0.06,0.72),Color(0.93,0.72,0.32,0.40)),r)
-    draw_string(font,r.position+Vector2(20,28),"NARRADOR",HORIZONTAL_ALIGNMENT_LEFT,-1,12,Color("#f5d47c"))
-    draw_multiline_string(font,r.position+Vector2(20,59),narration_text,HORIZONTAL_ALIGNMENT_CENTER,r.size.x-40,20,-1,Color.WHITE)
-
-func _draw_safe_guides(v: Vector2) -> void:
-    if not OS.has_feature("web"): return
-    var guides = JavaScriptBridge.eval("new URLSearchParams(window.location.search).get('guides')")
-    if str(guides) != "1": return
-    draw_rect(Rect2(24,24,v.x-48,v.y-48),Color(1,1,1,0.22),false,1)
-    draw_rect(Rect2(24,96,v.x-48,v.y-250),Color(1,0.75,0.25,0.30),false,1)
+func _draw_sky(v: Vector2, _night: bool) -> void:
+    # Continuous shader below this node; celestial bodies cross-fade above it.
+    for i in range(38):
+        var x := fposmod(sin(float(i + 1) * 127.1) * 43758.5453, 1.0) * (v.x - 50.0) + 25.0
+        var y := fposmod(sin(float(i + 1) * 311.7) * 19642.349, 1.0) * 340.0 + 105.0
+        draw_circle(Vector2(x, y), 1.0 + float(i % 3) * 0.35, Color(0.94, 0.97, 1.0, night_amount * (0.48 + 0.16 * sin(visual_time * 0.7 + i))))
+    var sun := Vector2(570, 220 + night_amount * 100)
+    for i in range(8, 0, -1):
+        draw_circle(sun, 34.0 + i * 8.0, Color(1.0, 0.79, 0.44, 0.015 * (1.0 - night_amount)))
+    draw_circle(sun, 34, Color(1.0, 0.85, 0.56, 1.0 - night_amount))
+    var moon := Vector2(565, 185)
+    draw_circle(moon, 47, Color(0.81, 0.87, 1.0, 0.04 * night_amount))
+    draw_circle(moon, 27, Color(0.94, 0.94, 0.81, night_amount))
+    draw_circle(moon + Vector2(-7, 5), 6, Color(0.62, 0.69, 0.69, 0.18 * night_amount))
+    for i in range(5):
+        var cx := fmod(80.0 + i * 183.0 + visual_time * (2.0 + i * 0.5), v.x + 240.0) - 120.0
+        var cy := 240.0 + i * 43.0
+        var cloud := Color(0.96, 0.96, 0.86, lerpf(0.22, 0.055, night_amount))
+        draw_set_transform(Vector2(cx, cy) + camera_offset * 0.06, 0.0, Vector2(1.8, 0.58))
+        var contour := PackedVector2Array()
+        for point in range(40):
+            var angle := float(point) / 40.0 * TAU
+            var radius := 1.0 + sin(angle * 5.0 + i) * 0.07
+            contour.append(Vector2(cos(angle) * 54.0, sin(angle) * 24.0) * radius)
+        draw_colored_polygon(contour, cloud)
+        draw_set_transform(Vector2.ZERO)
 
 func _draw() -> void:
-    var v := get_viewport_rect().size
-    var environment = world.get("environment", {}); var period := "day"
-    if typeof(environment) == TYPE_DICTIONARY: period = str(environment.get("period","day"))
-    var night := period == "night"
-    _draw_sky(v,night); _draw_landscape(v,night)
-    draw_rect(Rect2(0,0,v.x,28),Color(0,0,0,0.15)); draw_rect(Rect2(0,v.y-34,v.x,34),Color(0,0,0,0.24)); draw_rect(Rect2(0,0,20,v.y),Color(0,0,0,0.10)); draw_rect(Rect2(v.x-20,0,20,v.y),Color(0,0,0,0.10))
-    var font := ThemeDB.fallback_font
-    _draw_brand(font,v); _draw_audience(font,v); _draw_narration(font,v); _draw_safe_guides(v)
+    _draw_sky(Vector2(720, 1280), night_amount > 0.5)
