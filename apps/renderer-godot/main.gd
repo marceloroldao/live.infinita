@@ -69,8 +69,8 @@ func _connect_websocket() -> void:
 
 func _schedule_websocket_reconnect() -> void:
     if ws_reconnect_at_ms != 0: return
-    var exponent := min(ws_reconnect_attempt, 5)
-    var delay_ms := min(WS_RECONNECT_MAX_MS, int(1000.0 * pow(2.0, float(exponent))))
+    var exponent: int = mini(ws_reconnect_attempt, 5)
+    var delay_ms: int = mini(WS_RECONNECT_MAX_MS, int(1000.0 * pow(2.0, float(exponent))))
     ws_reconnect_attempt += 1
     ws_reconnect_at_ms = Time.get_ticks_msec() + delay_ms
     queue_redraw()
