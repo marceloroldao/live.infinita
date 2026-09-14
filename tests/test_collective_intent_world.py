@@ -77,6 +77,37 @@ class CollectiveIntentTest(unittest.TestCase):
             self.assertFalse(snapshot["ready"])
             self.assertGreater(snapshot["engagement"], 0)
 
+    def test_natural_question_can_express_village_intent(self) -> None:
+        theme, weight, matches = CollectiveIntentEngine.classify_text(
+            "Será que tem alguém morando por perto? Talvez exista uma vila."
+        )
+        self.assertEqual(theme, "village")
+        self.assertGreaterEqual(weight, 1.0)
+        self.assertTrue(any(term in matches for term in ("alguem morando", "vila")))
+
+    def test_natural_question_can_express_forest_intent(self) -> None:
+        theme, _weight, matches = CollectiveIntentEngine.classify_text(
+            "O que existe depois da trilha na floresta, entre as árvores?"
+        )
+        self.assertEqual(theme, "forest")
+        self.assertIn("floresta", matches)
+
+    def test_general_question_stays_conversation_only(self) -> None:
+        theme, weight, matches = CollectiveIntentEngine.classify_text(
+            "Qual é a capital do Japão e quantas pessoas moram lá?"
+        )
+        self.assertIsNone(theme)
+        self.assertEqual(weight, 0.0)
+        self.assertEqual(matches, [])
+
+    def test_scene_terms_match_words_not_accidental_substrings(self) -> None:
+        theme, weight, matches = CollectiveIntentEngine.classify_text(
+            "Estou curioso: a solução parece boa para o casamento."
+        )
+        self.assertIsNone(theme)
+        self.assertEqual(weight, 0.0)
+        self.assertEqual(matches, [])
+
 
 class CollectiveWorldEvolutionTest(unittest.TestCase):
     def test_collective_chapter_grows_map_moves_nov_and_preserves_replay(self) -> None:
