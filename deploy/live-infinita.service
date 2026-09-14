@@ -16,6 +16,7 @@ Environment="LIVE_INFINITA_COLD_STORE_DIR=/var/lib/live-infinita/autonomous-worl
 Environment="LIVE_INFINITA_COLD_BOOTSTRAP_FILE=/opt/live.infinita/examples/world-state.nov-live.bootstrap.json"
 Environment="LIVE_INFINITA_WORLD_DATA_DIR=/var/lib/live-infinita/autonomous-world"
 Environment="LIVE_INFINITA_EXTERNAL_WORLD_SYNC_MS=500"
+Environment="LIVE_INFINITA_HOT_RADIUS=280"
 ExecStart=/opt/live.infinita/.venv/bin/uvicorn --app-dir /opt/live.infinita/apps/world-runtime main_live:app --host 0.0.0.0 --port 8080
 Restart=on-failure
 RestartSec=3
