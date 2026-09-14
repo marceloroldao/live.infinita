@@ -34,9 +34,13 @@ class PublicRouteContractTests(unittest.TestCase):
         wrapper = (ROOT / "apps" / "world-runtime" / "main_live.py").read_text(encoding="utf-8")
         self.assertIn('route.path in {"", "/", "/manage"}', wrapper)
 
-    def test_production_unit_uses_public_route_wrapper(self) -> None:
+    def test_production_unit_composes_context_over_public_route_wrapper(self) -> None:
         unit = (ROOT / "deploy" / "live-infinita.service").read_text(encoding="utf-8")
-        self.assertIn("main_live:app", unit)
+        context_wrapper = (ROOT / "apps" / "world-runtime" / "main_context_live.py").read_text(encoding="utf-8")
+
+        self.assertIn("main_context_live:app", unit)
+        self.assertIn("import main_live", context_wrapper)
+        self.assertIn("app = main_live.app", context_wrapper)
 
 
 if __name__ == "__main__":
