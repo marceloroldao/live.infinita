@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import time
+import unicodedata
 import urllib.error
 import urllib.request
 from collections import deque
@@ -82,6 +84,14 @@ class LiveStoryNarrator:
         self.transport = transport or self._openai_transport
         self.sequence = 0
         self.last_collective_cue_at = -1.0e18
+        self.last_generation_error: str | None = None
+        self.last_generation_source = "none"
+
+    @staticmethod
+    def _normalize(text: str) -> str:
+        value = unicodedata.normalize("NFKD", str(text or "").lower())
+        value = "".join(ch for ch in value if not unicodedata.combining(ch))
+        return " ".join(value.split())
 
     def _prune(self, now: float) -> None:
         cutoff = now - max(10.0, self.window_seconds)
@@ -152,13 +162,40 @@ class LiveStoryNarrator:
             "ready": bool(state.get("ready")),
         }
 
-    @staticmethod
-    def _display_name(row: dict[str, Any]) -> str:
+    def _display_name(self, row: dict[str, Any]) -> str | None:
         value = str(row.get("display_name") or "").strip()
-        if value:
-            return value[:60]
-        actor = str(row.get("actor_id") or "Visitante").strip()
-        return actor[:60] or "Visitante"
+        if not value:
+            value = str(row.get("actor_id") or "").strip()
+        if not value or value.lower() in {"anonymous", "visitante"}:
+            return None
+        normalized = re.sub(r"[^a-z0-9]+", "", self._normalize(value))
+        # The broadcaster may post from the channel account itself. Saying
+        # "Live Infinita, ..." aloud makes the host sound like a bot reading its
+        # own brand name as a viewer, so treat those labels as self-identifiers.
+        if normalized in {"liveinfinita", "liveinfinitabr", "liveinfinitatv"}:
+            return None
+        return value[:60]
+
+    @staticmethod
+    def _starts_like_greeting(normalized: str) -> bool:
+        return bool(re.match(r"^(oi|ola|opa|e ai|eae|bom dia|boa tarde|boa noite)\b", normalized))
+
+    @staticmethod
+    def _looks_like_thanks(normalized: str) -> bool:
+        return any(term in normalized for term in ("obrigado", "obrigada", "valeu", "brigado", "brigada", "tmj"))
+
+    @staticmethod
+    def _asks_about_live(normalized: str) -> bool:
+        patterns = (
+            "que live e essa",
+            "o que e live infinita",
+            "o que e a live infinita",
+            "como funciona essa live",
+            "como funciona a live",
+            "quem e voce",
+            "quem e vc",
+        )
+        return any(pattern in normalized for pattern in patterns)
 
     def _fallback_interaction(
         self,
@@ -167,27 +204,69 @@ class LiveStoryNarrator:
         active: dict[str, Any],
         collective_state: dict[str, Any],
     ) -> tuple[str, str]:
+        """Natural local safety net used only when the conversational model fails."""
         participants = int(active.get("participants", 0))
+        raw_text = str(comment.get("text") or "").strip()
+        normalized = self._normalize(raw_text)
+        name = self._display_name(comment)
         theme = str(collective_state.get("dominant") or "").strip() or None
         direction = THEME_LABELS.get(theme or "")
-        if participants <= 1:
-            name = self._display_name(comment)
+
+        if participants > 1:
             if direction:
-                return "individual", (
-                    f"{name}, ouvi você. {direction.capitalize()} já apareceu como uma direção possível do cenário. "
-                    "Continua falando comigo — quero entender onde vocês querem levar este mundo."
+                options = (
+                    f"Olha só, o papo de vocês está puxando para {direction}. Vamos ver se essa ideia segura a liderança.",
+                    f"Vocês estão convergindo em {direction}. Se continuar assim, isso pode acabar aparecendo no mundo.",
+                    f"Tem uma direção ficando clara por aqui: {direction}. Mas ainda dá para virar o jogo.",
                 )
+            else:
+                options = (
+                    "O chat está bem dividido agora. Quero ver qual ideia vai começar a se repetir de verdade.",
+                    "Tem bastante coisa diferente vindo do chat. Continuem, porque ainda não apareceu uma direção dominante.",
+                    "Boa, agora ficou interessante: tem várias ideias concorrendo ao mesmo tempo.",
+                )
+            return "collective", options[self.sequence % len(options)]
+
+        prefix = f"{name}, " if name else ""
+        if self._asks_about_live(normalized):
             return "individual", (
-                f"{name}, ouvi sua pergunta. Estou aqui para conversar com você e acompanhar o que chama sua atenção."
+                f"{prefix}essa é a Live Infinita: eu converso com o chat enquanto o mundo virtual continua rodando, "
+                "e as intenções que mais aparecem por aqui podem mudar o cenário."
             )
+        if self._starts_like_greeting(normalized):
+            options = (
+                f"{prefix}opa! Bom te ver por aqui.",
+                f"{prefix}e aí! Chegou numa hora boa.",
+                f"{prefix}fala! Bem-vindo por aqui.",
+            )
+            return "individual", options[self.sequence % len(options)]
+        if self._looks_like_thanks(normalized):
+            options = (
+                f"{prefix}tamo junto!",
+                f"{prefix}valeu você por participar.",
+                f"{prefix}boa! É isso aí.",
+            )
+            return "individual", options[self.sequence % len(options)]
         if direction:
-            return "collective", (
-                f"Estou ouvindo o grupo: {direction} está ganhando força. "
-                "Quero ver se vocês realmente querem levar o cenário para lá ou se outra ideia vai vencer."
+            options = (
+                f"{prefix}boa, {direction} entrou forte no radar do chat. Se essa ideia continuar aparecendo, o cenário pode ir nessa direção.",
+                f"{prefix}peguei a ideia de {direction}. Agora quero ver se mais gente embarca junto.",
+                f"{prefix}{direction.capitalize()} está começando a ganhar espaço por aqui. Ainda não está decidido, mas já chamou atenção.",
             )
-        return "collective", (
-            "Tem várias ideias aparecendo ao mesmo tempo. Continuem falando; vou responder ao que surgir e observar qual direção ganha força."
+            return "individual", options[self.sequence % len(options)]
+        if raw_text.endswith("?"):
+            options = (
+                f"{prefix}essa é boa. Vou no ponto, sem enrolar — se o sistema de resposta falhar, a conversa continua daqui.",
+                f"{prefix}boa pergunta. Não quero te devolver uma frase pronta; quero responder isso direito.",
+                f"{prefix}essa merece resposta de verdade, não texto automático. Segura comigo um instante.",
+            )
+            return "individual", options[self.sequence % len(options)]
+        options = (
+            f"{prefix}boa, peguei a ideia.",
+            f"{prefix}entendi. Isso pode render por aqui.",
+            f"{prefix}legal — vamos ver onde esse papo leva.",
         )
+        return "individual", options[self.sequence % len(options)]
 
     def _next_cue_id(self, prefix: str, source_event_id: str | None = None) -> str:
         self.sequence += 1
@@ -199,24 +278,31 @@ class LiveStoryNarrator:
     @staticmethod
     def _system_prompt(mode: str) -> str:
         audience_rule = (
-            "Há uma única pessoa ativa: responda diretamente a ela pelo nome quando o nome estiver disponível."
+            "Há uma única pessoa ativa: converse diretamente com ela. Use o nome só quando soar espontâneo; não repita o nome em toda resposta."
             if mode == "individual"
             else (
-                "Há várias pessoas ativas: responda à pergunta ou ideia mais recente, mas considere também as vozes recentes. "
-                "Não tente responder cada comentário separadamente e não cite métricas."
+                "Há várias pessoas ativas: aja como apresentador lendo um chat movimentado. Responda à fala mais recente e, quando fizer sentido, "
+                "costure rapidamente uma tendência que apareceu nas falas recentes. Não responda comentário por comentário e não cite métricas."
             )
         )
         return (
-            "Você é o anfitrião conversacional da Live Infinita. Não é narrador da história. "
-            "Sua função é conversar com a audiência somente quando alguém interage. "
-            "Responda qualquer pergunta que puder responder, inclusive perguntas gerais que não sejam sobre o mundo virtual. "
-            "Quando a pergunta for sobre o cenário atual, use apenas os fatos presentes no contexto; não invente estado do mundo. "
-            "Fale em português do Brasil, normalmente em 1 a 3 frases curtas, naturais e vivas. "
+            "Você apresenta a Live Infinita ao vivo. Soe como um apresentador humano de live lendo o chat em tempo real, e não como assistente virtual, "
+            "SAC, tutorial, narrador de RPG ou mensagem institucional. "
+            "Responda primeiro ao conteúdo concreto que a pessoa acabou de escrever. Se for uma pergunta factual e você souber, dê a resposta diretamente. "
+            "Se for opinião, brincadeira, provocação ou comentário, reaja de forma espontânea e breve. "
+            "Você pode responder perguntas gerais que não tenham relação nenhuma com o mundo virtual. "
+            "Quando a pergunta for sobre o cenário atual, use apenas fatos presentes no contexto e não invente estado do mundo. "
+            "Fale em português do Brasil, normalmente em 1 a 3 frases curtas, próprias para serem ditas em voz alta. Varie a abertura e o ritmo das respostas. "
             f"{audience_rule} "
-            "Mantenha as pessoas curiosas e participando, mas sem forçar suspense, sem transformar toda resposta em conto e sem fingir mistério. "
-            "Quando for natural, termine com uma pergunta curta ou provocação ligada ao assunto para incentivar nova interação. "
-            "A intenção de cenário já é extraída por outro componente: você pode reconhecer preferências da audiência, mas não execute mudanças e não diga que uma mudança ocorreu antes de ela ocorrer. "
-            "Nunca mencione API, JSON, score, modelo, comando, pipeline, World State ou termos internos. "
+            "Pode usar expressões naturais como 'boa', 'olha só', 'essa é boa', 'e aí', 'sim', 'não', 'depende' ou simplesmente começar pela resposta, "
+            "mas não transforme nenhuma dessas expressões em bordão repetitivo. "
+            "Não comece respostas dizendo 'Live Infinita'. Não diga 'ouvi sua pergunta', 'estou aqui para responder', 'estou aqui para conversar', "
+            "'acompanhar o que chama sua atenção' ou frases equivalentes de atendimento. Não explique sua função a menos que perguntem sobre a própria live. "
+            "Não termine toda resposta com uma pergunta. Quando houver um gancho realmente bom, convide o chat de forma curta e orgânica. "
+            "A intenção de cenário é extraída por outro componente: reconheça naturalmente ideias sobre floresta, rio, vila ou campo quando surgirem, "
+            "mas não fale em voto, score, algoritmo ou consenso e não afirme que o mundo mudou antes da mudança acontecer. "
+            "Mantenha energia de apresentador, sem exagerar em entusiasmo e sem inventar suspense. "
+            "Nunca mencione API, JSON, modelo, comando, pipeline, World State ou termos internos. "
             "Não use listas, títulos ou emojis, a menos que a própria pergunta peça isso."
         )
 
@@ -269,6 +355,8 @@ class LiveStoryNarrator:
         generated_by = "fallback"
         api_key = str(config.get("openai_api_key") or "").strip()
         model = str(config.get("openai_model") or "gpt-5-mini").strip()
+        self.last_generation_error = None
+        self.last_generation_source = "fallback"
         if api_key and model:
             payload = {
                 "mode": mode,
@@ -283,7 +371,16 @@ class LiveStoryNarrator:
                 if candidate:
                     text = candidate
                     generated_by = f"openai:{model}"
-            except Exception:
+                    self.last_generation_source = generated_by
+                else:
+                    self.last_generation_error = "empty_response"
+            except Exception as exc:
+                self.last_generation_error = f"{type(exc).__name__}: {exc}"[:240]
+                print(
+                    f"[presenter] conversational model unavailable; using natural fallback "
+                    f"({self.last_generation_error})",
+                    flush=True,
+                )
                 mode = fallback_mode
                 text = fallback_text
 
