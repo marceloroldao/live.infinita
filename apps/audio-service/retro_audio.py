@@ -10,7 +10,8 @@ import server_audio
 
 
 RETRO_SCORE_ENABLED = str(os.getenv("LIVE_INFINITA_RETRO_SCORE_ENABLED", "1")).strip().lower() not in {"0", "false", "no", "off"}
-RETRO_SCORE_VOLUME = float(os.getenv("LIVE_INFINITA_RETRO_SCORE_VOLUME", "0.36"))
+RETRO_SCORE_VOLUME = float(os.getenv("LIVE_INFINITA_RETRO_SCORE_VOLUME", "0.10"))
+NIGHT_INSECT_VOLUME = float(os.getenv("LIVE_INFINITA_NIGHT_INSECT_VOLUME", "0.045"))
 TAU = math.tau
 
 
@@ -102,6 +103,11 @@ class RetroProgramAudio(server_audio.ProgramAudio):
         self.retro_kick_env = 0.0
         self.retro_noise_env = 0.0
 
+        # The base engine's old night insect was a gated high sine tone. Keep a
+        # separate smoothed noise state so the night texture sounds organic rather
+        # than like a notification beep on small phone speakers.
+        self.night_insect_noise = 0.0
+
         # Two gentle one-pole stages remove the hard square-wave edge that would
         # otherwise be perceived as a sequence of isolated beeps.
         self.retro_filter_l = 0.0
@@ -143,8 +149,14 @@ class RetroProgramAudio(server_audio.ProgramAudio):
         status["retro_score"] = {
             "enabled": RETRO_SCORE_ENABLED,
             "volume": RETRO_SCORE_VOLUME,
+            "night_gain": 0.72,
             "synthesis": ["pulse-lead", "pulse-arpeggio", "triangle-bass", "noise-percussion"],
             "copyrighted_music": False,
+        }
+        status["night_ambience"] = {
+            "insect_volume": NIGHT_INSECT_VOLUME,
+            "texture": "soft-noise-chirp",
+            "pure_high_beep": False,
         }
         return status
 
@@ -154,6 +166,35 @@ class RetroProgramAudio(server_audio.ProgramAudio):
         if phase >= TAU:
             phase -= TAU
         return phase
+
+    def _night_insects(self, enabled: bool) -> float:
+        """Soft nocturnal insect texture without the old gated 3.65 kHz beep."""
+        if not enabled:
+            self.cricket_envelope *= 0.985
+            self.night_insect_noise *= 0.94
+            return 0.0
+        if self.cricket_next <= 0:
+            self.cricket_envelope = random.uniform(0.055, 0.12)
+            self.cricket_next = random.randint(
+                int(server_audio.SAMPLE_RATE * 0.42),
+                int(server_audio.SAMPLE_RATE * 1.15),
+            )
+        self.cricket_next -= 1
+        if self.cricket_envelope < 0.0005:
+            return 0.0
+
+        self.cricket_phase = self._advance_retro_phase(
+            self.cricket_phase,
+            2250.0 + random.uniform(-42.0, 42.0),
+        )
+        raw_noise = random.uniform(-1.0, 1.0)
+        self.night_insect_noise = self.night_insect_noise * 0.86 + raw_noise * 0.14
+        tonal = math.sin(self.cricket_phase) * 0.18
+        texture = tonal + self.night_insect_noise * 0.82
+        pulse = 0.58 + 0.42 * (0.5 + 0.5 * math.sin(self.cricket_phase * 0.031))
+        value = texture * self.cricket_envelope * pulse
+        self.cricket_envelope *= 0.99945
+        return value * NIGHT_INSECT_VOLUME
 
     def _trigger_retro_step(self, state: server_audio.WorldAudioState) -> None:
         profile = self.retro_profile(state)
@@ -176,31 +217,31 @@ class RetroProgramAudio(server_audio.ProgramAudio):
         lead_offset = lead_pattern[self.retro_step]
         if lead_offset is not None:
             self.retro_lead_frequency = midi_frequency(root + int(lead_offset))
-            self.retro_lead_env = 0.82 if state.period != "night" else 0.60
+            self.retro_lead_env = 0.82 if state.period != "night" else 0.38
 
         arp = profile["arp"]
         arp_offset = int(arp[self.retro_step % len(arp)])
         # The arpeggio sits one octave above the root but is intentionally quiet.
         self.retro_arp_frequency = midi_frequency(root + 12 + arp_offset)
-        self.retro_arp_env = 0.44 if state.period != "night" else 0.30
+        self.retro_arp_env = 0.44 if state.period != "night" else 0.16
 
         if self.retro_step % 4 == 0:
             bass_pattern = profile["bass"]
             bass_slot = (self.retro_step // 2) % len(bass_pattern)
             bass_offset = int(bass_pattern[bass_slot])
             self.retro_bass_frequency = midi_frequency(root - 24 + bass_offset)
-            self.retro_bass_env = 0.92
+            self.retro_bass_env = 0.92 if state.period != "night" else 0.68
 
         # Sparse retro percussion: low thump on the downbeat, short noise on the
         # backbeat. River/village get a little more motion than forest/field.
         if self.retro_step in {0, 8}:
-            self.retro_kick_env = 0.82
+            self.retro_kick_env = 0.82 if state.period != "night" else 0.48
             self.retro_kick_frequency = 86.0
             self.retro_kick_phase = 0.0
         elif self.retro_step in {4, 12}:
-            self.retro_noise_env = 0.24 if state.period != "night" else 0.14
+            self.retro_noise_env = 0.24 if state.period != "night" else 0.08
         elif state.biome in {"river", "village"} and self.retro_step % 2 == 1:
-            self.retro_noise_env = max(self.retro_noise_env, 0.065)
+            self.retro_noise_env = max(self.retro_noise_env, 0.065 if state.period != "night" else 0.025)
 
     def _retro_sample(self, state: server_audio.WorldAudioState) -> tuple[float, float]:
         if not RETRO_SCORE_ENABLED:
@@ -259,7 +300,8 @@ class RetroProgramAudio(server_audio.ProgramAudio):
         with self.state_lock:
             state = self.world_state
         retro_l, retro_r = self._retro_sample(state)
-        music_gain = master_volume * RETRO_SCORE_VOLUME
+        night_gain = 0.72 if state.period == "night" else 1.0
+        music_gain = master_volume * RETRO_SCORE_VOLUME * night_gain
         left = base_l + int(retro_l * 32767 * music_gain)
         right = base_r + int(retro_r * 32767 * music_gain)
         return self._clip(left), self._clip(right)
