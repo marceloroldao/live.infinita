@@ -243,7 +243,6 @@ def build_authoritative_autonomous_runtime(
     cold_root.mkdir(parents=True, exist_ok=True)
 
     bootstrap_value = _bootstrap_world(bootstrap)
-    # Parse topology from bootstrap before the cold engine externalizes entities.
     regions = region_catalog_from_world(bootstrap_value)
     store = FileRegionColdStore(cold_root)
     engine = ColdAuthoritativeWorldEngine(bootstrap, root, store)
@@ -251,6 +250,9 @@ def build_authoritative_autonomous_runtime(
     proposals = ProposalLedger(root / "proposals.jsonl")
     plans = PlanLedger(root / "plans.jsonl")
     planner = DeterministicIntentPlanner(store, regions)
+    # The persistent map may grow after startup through collective intent. Every
+    # plan/revalidation refreshes topology from current authoritative world.json.
+    planner.set_world_provider(engine.load_world)
     resolver = AgentIntentResolver(store)
     scheduler = PlanScheduler(plans, planner, resolver, guarded, proposal_ledger=proposals)
     event_scheduler = WorldEventScheduler(root / "world-event-schedule.jsonl", guarded)
