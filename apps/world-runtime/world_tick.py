@@ -168,7 +168,13 @@ class WorldTickRunner:
 
         idle_results: list[dict[str, Any]] = []
         if self.npc_idle_wander is not None:
-            for row in self.npc_idle_wander.evaluate_tick(after.tick):
+            blocked_npcs = {
+                str(row.get("npc_id") or "")
+                for row in need_results
+                if str(row.get("npc_id") or "")
+                and str(row.get("status") or "") in {"scheduled", "cooldown", "no_target"}
+            }
+            for row in self.npc_idle_wander.evaluate_tick(after.tick, blocked_npc_ids=blocked_npcs):
                 idle_results.append({
                     "npc_id": row.get("npc_id"),
                     "tick": row.get("tick"),
