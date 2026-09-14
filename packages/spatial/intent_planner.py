@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from .cold_store import FileRegionColdStore
-from .regions import RegionCatalog
+from .regions import Region, RegionCatalog
 
 
 class IntentPlanError(ValueError):
@@ -53,15 +53,47 @@ class IntentPlan:
 class DeterministicIntentPlanner:
     """Expand semantic intents into deterministic, revalidatable steps.
 
-    Movement intents are decomposed across explicit region topology. Compound
-    ``move_via_entities`` intents are expanded into ordinary ``move_to_entity``
-    and region-waypoint steps, so execution still uses the existing resolver and
-    Mutation Gate on every authoritative step.
+    Region topology can be refreshed from the authoritative World State. This is
+    required by persistent worlds whose map grows while the autonomous runtime is
+    already running.
     """
 
     def __init__(self, store: FileRegionColdStore, regions: RegionCatalog) -> None:
         self.store = store
         self.regions = regions
+
+    def refresh_regions(self, world: dict[str, Any]) -> None:
+        raw_regions = world.get("regions")
+        if not isinstance(raw_regions, list) or not raw_regions:
+            return
+        rows: list[Region] = []
+        seen: set[str] = set()
+        for raw in raw_regions:
+            if not isinstance(raw, dict):
+                continue
+            region_id = str(raw.get("id") or "").strip()
+            if not region_id or region_id in seen:
+                continue
+            center = raw.get("center") if isinstance(raw.get("center"), dict) else {}
+            try:
+                x = float(center.get("x", 0.0))
+                y = float(center.get("y", 0.0))
+                radius = float(raw.get("radius", 1.0))
+            except (TypeError, ValueError):
+                continue
+            if radius <= 0:
+                continue
+            seen.add(region_id)
+            rows.append(Region(
+                id=region_id,
+                center=(x, y),
+                radius=radius,
+                biome=str(raw.get("biome") or "unknown"),
+                neighbors=tuple(sorted({str(v).strip() for v in raw.get("neighbors", []) if str(v).strip()})),
+                metadata=dict(raw.get("metadata", {})) if isinstance(raw.get("metadata"), dict) else {},
+            ))
+        if rows:
+            self.regions = RegionCatalog(rows)
 
     def _entity(self, entity_id: str) -> dict[str, Any]:
         entity = self.store.get_entity(entity_id)
@@ -159,14 +191,7 @@ class DeterministicIntentPlanner:
                     if not region_path or region_path[-1] != region_id:
                         region_path.append(region_id)
                 current_region = goal_region
-            return IntentPlan(
-                intent_type,
-                actor_id,
-                source_region,
-                goal_region,
-                tuple(region_path),
-                tuple(steps),
-            )
+            return IntentPlan(intent_type, actor_id, source_region, goal_region, tuple(region_path), tuple(steps))
 
         if intent_type not in {"move_to_entity", "move_to_position"}:
             actor_id = str(intent.get("actor_entity_id") or "").strip() or None
