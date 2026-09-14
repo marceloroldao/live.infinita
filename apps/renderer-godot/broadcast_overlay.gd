@@ -1,6 +1,7 @@
 extends Node2D
 
 @onready var stage = get_parent()
+var panel_styles: Dictionary = {}
 
 func _process(_delta: float) -> void:
     queue_redraw()
@@ -15,9 +16,12 @@ func _draw() -> void:
     _draw_safe_guides(viewport)
 
 func _panel_style(fill: Color, border: Color, radius: int = 18) -> StyleBoxFlat:
+    var key := str(fill) + str(border) + str(radius)
+    if panel_styles.has(key): return panel_styles[key]
     var style := StyleBoxFlat.new(); style.bg_color = fill; style.border_color = border; style.set_border_width_all(1)
     style.corner_radius_top_left = radius; style.corner_radius_top_right = radius; style.corner_radius_bottom_left = radius; style.corner_radius_bottom_right = radius
     style.shadow_color = Color(0,0,0,0.24); style.shadow_size = 12
+    panel_styles[key] = style
     return style
 
 func _draw_brand(font: Font, v: Vector2) -> void:
@@ -41,7 +45,7 @@ func _draw_narration(font: Font, v: Vector2) -> void:
     var r := Rect2(30,v.y-196,v.x-60,128)
     draw_style_box(_panel_style(Color(0.02,0.04,0.06,0.72),Color(0.93,0.72,0.32,0.40)),r)
     draw_string(font,r.position+Vector2(20,28),"NARRADOR",HORIZONTAL_ALIGNMENT_LEFT,-1,12,Color("#f5d47c"))
-    draw_multiline_string(font,r.position+Vector2(20,59),stage.narration_text,HORIZONTAL_ALIGNMENT_CENTER,r.size.x-40,20,-1,Color.WHITE)
+    draw_multiline_string(font,r.position+Vector2(20,59),stage.narration_text,HORIZONTAL_ALIGNMENT_CENTER,r.size.x-40,20,3,Color.WHITE)
 
 func _draw_safe_guides(v: Vector2) -> void:
     if not OS.has_feature("web"): return

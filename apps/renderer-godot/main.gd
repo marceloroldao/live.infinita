@@ -124,8 +124,12 @@ func _process(delta: float) -> void:
     queue_redraw()
 
 func _apply_world_state(message: Dictionary) -> void:
+    var previous_chapter := int(Dictionary(world.get("story", {})).get("chapter", 0))
     world = Dictionary(message.get("world", {})).duplicate(true)
     last_reconcile = _reconcile_entities(world.get("entities", []))
+    var story: Dictionary = world.get("story", {})
+    if int(story.get("chapter", 0)) > previous_chapter:
+        _request_focus(str(story.get("target_entity_id", "")))
     last_message = "World State v%s / seq %s" % [world.get("version", "?"), world.get("sequence", "?")]
     var event = message.get("event", {})
     if typeof(event) == TYPE_DICTIONARY:
@@ -171,7 +175,12 @@ func _reconcile_entities(entities) -> Dictionary:
             if not entity_nodes.has(entity_id):
                 var visual = EntityVisual.new(); visual.name = "Entity_%s" % entity_id; add_child(visual); entity_nodes[entity_id] = visual; visual.apply_entity(entity); result["added"] += 1
             else:
-                if entity_nodes[entity_id].apply_entity(entity): result["updated"] += 1
+                var visual = entity_nodes[entity_id]
+                var previous_position: Vector2 = visual.world_position
+                if visual.apply_entity(entity):
+                    result["updated"] += 1
+                    if visual.entity_type == "human" and visual.world_position.distance_to(previous_position) > 1.0:
+                        _request_focus(entity_id)
                 else: result["unchanged"] += 1
     for entity_id in entity_nodes.keys().duplicate():
         if not seen.has(entity_id):
@@ -211,8 +220,12 @@ func _direct_from_event(event: Dictionary) -> void:
             if action == "reset": director_focus_entity_id = ""; director_focus_until_ms = 0
             return
     if next_focus.is_empty() or not entity_nodes.has(next_focus): return
+    _request_focus(next_focus)
+
+func _request_focus(entity_id: String) -> void:
+    if not entity_nodes.has(entity_id) or Time.get_ticks_msec() < director_cooldown_until: return
     director_cooldown_until = Time.get_ticks_msec() + 14000
-    director_focus_entity_id = next_focus
+    director_focus_entity_id = entity_id
     director_focus_until_ms = Time.get_ticks_msec() + DIRECTOR_FOCUS_MS
 
 func _update_lighting(delta: float) -> void:
@@ -258,6 +271,8 @@ func _update_director_layout(delta: float = 0.016) -> void:
     camera_offset = camera_offset.move_toward(camera_target, delta * 4.0)
     for visual in entity_nodes.values():
         # Camera is a draw offset, never a walking waypoint.
+        if visual.entity_type == "human" and visual.arrival > 0.9:
+            _request_focus(visual.entity_id)
         visual.camera_offset = camera_offset
         visual.night_amount = night_amount
         visual.wind_amount = wind_amount
