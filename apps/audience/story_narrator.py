@@ -12,10 +12,10 @@ from typing import Any, Callable
 
 
 THEME_LABELS = {
-    "forest": "a floresta e seus caminhos escondidos",
-    "river": "o rio e o que pode existir além da margem",
-    "village": "uma vila e a possibilidade de novos encontros",
-    "field": "o campo aberto e um horizonte ainda desconhecido",
+    "forest": "a floresta",
+    "river": "o rio",
+    "village": "a vila",
+    "field": "o campo aberto",
 }
 
 
@@ -52,12 +52,11 @@ class StoryCue:
 
 
 class LiveStoryNarrator:
-    """Interaction-only presentation narrator.
+    """Interaction-only conversational host for Live Infinita.
 
-    The narrator observes audience language and World State but never mutates the
-    world. Its short in-memory history is presentation context only, enough to
-    continue a story between human interactions without becoming a second source
-    of truth.
+    Despite the legacy class name, this component no longer narrates the autonomous
+    story or keeps a narration history. It speaks only in response to audience
+    interaction. Scene intent is extracted independently by CollectiveIntentEngine.
     """
 
     def __init__(
@@ -80,7 +79,6 @@ class LiveStoryNarrator:
         )
         self.timeout_seconds = float(timeout_seconds)
         self.comments: deque[dict[str, Any]] = deque(maxlen=64)
-        self.history: deque[dict[str, Any]] = deque(maxlen=8)
         self.transport = transport or self._openai_transport
         self.sequence = 0
         self.last_collective_cue_at = -1.0e18
@@ -131,26 +129,9 @@ class LiveStoryNarrator:
             "window_seconds": self.window_seconds,
         }
 
-    def story_snapshot(self) -> list[dict[str, Any]]:
-        return [deepcopy(row) for row in self.history]
-
-    def _remember(self, cue: StoryCue) -> StoryCue:
-        self.history.append({
-            "cue_id": cue.cue_id,
-            "text": cue.text[:650],
-            "mode": cue.mode,
-            "theme": cue.theme,
-            "participants": cue.participants,
-            "created_at_unix": cue.created_at_unix,
-        })
-        if cue.mode in {"collective", "collective_chapter"}:
-            self.last_collective_cue_at = cue.created_at_unix
-        return cue
-
     @staticmethod
     def _world_context(world: dict[str, Any]) -> dict[str, Any]:
         environment = world.get("environment") if isinstance(world.get("environment"), dict) else {}
-        story = world.get("story") if isinstance(world.get("story"), dict) else {}
         return {
             "world_id": world.get("world_id"),
             "sequence": world.get("sequence"),
@@ -159,7 +140,6 @@ class LiveStoryNarrator:
             "biome": environment.get("biome"),
             "region_id": environment.get("region_id"),
             "region_label": environment.get("region_label"),
-            "story": deepcopy(story),
         }
 
     @staticmethod
@@ -169,7 +149,6 @@ class LiveStoryNarrator:
             "dominance": state.get("dominance"),
             "contributors": state.get("contributors"),
             "comment_signals": state.get("comment_signals"),
-            "chapter": state.get("chapter"),
             "ready": bool(state.get("ready")),
         }
 
@@ -190,37 +169,24 @@ class LiveStoryNarrator:
     ) -> tuple[str, str]:
         participants = int(active.get("participants", 0))
         theme = str(collective_state.get("dominant") or "").strip() or None
-        theme_phrase = THEME_LABELS.get(theme or "", "um caminho que ainda não tomou forma")
-        continuing = bool(self.history)
+        direction = THEME_LABELS.get(theme or "")
         if participants <= 1:
             name = self._display_name(comment)
-            opening = f"{name}, a história continua de onde ficou. " if continuing else f"{name}, Nov percebeu sua presença. "
+            if direction:
+                return "individual", (
+                    f"{name}, ouvi você. {direction.capitalize()} já apareceu como uma direção possível do cenário. "
+                    "Continua falando comigo — quero entender onde vocês querem levar este mundo."
+                )
             return "individual", (
-                opening
-                + f"Sua voz aproxima {theme_phrase}; Nov observa o caminho por um instante, "
-                "como se esperasse o seu próximo sinal."
+                f"{name}, ouvi sua pergunta. Estou aqui para conversar com você e acompanhar o que chama sua atenção."
             )
-        opening = "A história muda de direção outra vez. " if continuing else "As vozes começam a se encontrar. "
+        if direction:
+            return "collective", (
+                f"Estou ouvindo o grupo: {direction} está ganhando força. "
+                "Quero ver se vocês realmente querem levar o cenário para lá ou se outra ideia vai vencer."
+            )
         return "collective", (
-            opening
-            + f"Elas apontam para {theme_phrase}; Nov ainda não sabe o que existe adiante, "
-            "mas o próximo gesto do grupo pode abrir uma passagem nova."
-        )
-
-    def _fallback_evolution(
-        self,
-        *,
-        evolution: dict[str, Any],
-        collective_state: dict[str, Any],
-    ) -> str:
-        theme = str(evolution.get("theme") or collective_state.get("dominant") or "").strip() or None
-        phrase = THEME_LABELS.get(theme or "", "um lugar que ainda não tinha nome")
-        chapter = int(evolution.get("chapter") or collective_state.get("chapter") or 0)
-        bridge = "O fio da história encontra uma resposta. " if self.history else "Desta vez as vozes concordaram. "
-        return (
-            bridge
-            + f"{phrase.capitalize()} começa a ganhar forma no capítulo {chapter}; "
-            "Nov segue adiante, enquanto uma nova pergunta permanece aberta no caminho."
+            "Tem várias ideias aparecendo ao mesmo tempo. Continuem falando; vou responder ao que surgir e observar qual direção ganha força."
         )
 
     def _next_cue_id(self, prefix: str, source_event_id: str | None = None) -> str:
@@ -233,33 +199,38 @@ class LiveStoryNarrator:
     @staticmethod
     def _system_prompt(mode: str) -> str:
         audience_rule = (
-            "Há uma única pessoa interagindo: responda diretamente a ela pelo nome, sem soar como atendimento ao cliente."
+            "Há uma única pessoa ativa: responda diretamente a ela pelo nome quando o nome estiver disponível."
             if mode == "individual"
-            else "Há várias pessoas interagindo: sintetize a direção que surge entre as vozes; não responda comentário por comentário e não cite métricas."
+            else (
+                "Há várias pessoas ativas: responda à pergunta ou ideia mais recente, mas considere também as vozes recentes. "
+                "Não tente responder cada comentário separadamente e não cite métricas."
+            )
         )
         return (
-            "Você é a voz narrativa da Live Infinita, uma história contínua acontecendo ao vivo. "
-            "Fale em português do Brasil, em 2 ou 3 frases curtas, naturais e cinematográficas. "
+            "Você é o anfitrião conversacional da Live Infinita. Não é narrador da história. "
+            "Sua função é conversar com a audiência somente quando alguém interage. "
+            "Responda qualquer pergunta que puder responder, inclusive perguntas gerais que não sejam sobre o mundo virtual. "
+            "Quando a pergunta for sobre o cenário atual, use apenas os fatos presentes no contexto; não invente estado do mundo. "
+            "Fale em português do Brasil, normalmente em 1 a 3 frases curtas, naturais e vivas. "
             f"{audience_rule} "
-            "Continue o fio das falas anteriores quando houver histórico narrativo. "
-            "Conecte a fala ao estado atual do mundo e à intenção da audiência. "
-            "Nunca mencione API, sistema, score, porcentagem, JSON, modelo, comando, evento, World State ou termos técnicos. "
-            "Não narre ações autônomas como relatório. Não invente fatos que o contexto não confirma; desejos ainda não realizados devem soar como possibilidades. "
-            "Termine com um pequeno gancho narrativo para o próximo gesto da audiência. "
-            "Não use listas, títulos, aspas ou emojis."
+            "Mantenha as pessoas curiosas e participando, mas sem forçar suspense, sem transformar toda resposta em conto e sem fingir mistério. "
+            "Quando for natural, termine com uma pergunta curta ou provocação ligada ao assunto para incentivar nova interação. "
+            "A intenção de cenário já é extraída por outro componente: você pode reconhecer preferências da audiência, mas não execute mudanças e não diga que uma mudança ocorreu antes de ela ocorrer. "
+            "Nunca mencione API, JSON, score, modelo, comando, pipeline, World State ou termos internos. "
+            "Não use listas, títulos ou emojis, a menos que a própria pergunta peça isso."
         )
 
     def _render_openai(self, *, api_key: str, model: str, mode: str, payload: dict[str, Any]) -> str:
         request_payload = {
             "model": model,
-            "max_output_tokens": 160,
+            "max_output_tokens": 220,
             "input": [
                 {"role": "system", "content": [{"type": "input_text", "text": self._system_prompt(mode)}]},
                 {
                     "role": "user",
                     "content": [{
                         "type": "input_text",
-                        "text": "Contexto narrativo somente-leitura:\n" + json.dumps(
+                        "text": "Contexto somente-leitura da interação:\n" + json.dumps(
                             payload,
                             ensure_ascii=False,
                             sort_keys=True,
@@ -270,7 +241,7 @@ class LiveStoryNarrator:
             ],
         }
         response = self.transport(request_payload, api_key)
-        return " ".join(self._extract_text(response).split())[:650]
+        return " ".join(self._extract_text(response).split())[:800]
 
     def render_interaction(
         self,
@@ -287,6 +258,7 @@ class LiveStoryNarrator:
         participants = max(1, int(active.get("participants", 0)))
         if participants > 1 and at - self.last_collective_cue_at < self.collective_min_interval_seconds:
             raise NarrationSuppressed("collective comments are being coalesced")
+
         fallback_mode, fallback_text = self._fallback_interaction(
             comment=comment,
             active=active,
@@ -302,7 +274,6 @@ class LiveStoryNarrator:
                 "mode": mode,
                 "current_comment": deepcopy(comment),
                 "recent_audience": active,
-                "story_history": self.story_snapshot(),
                 "collective_intent": self._collective_context(collective_state),
                 "world": self._world_context(world),
                 "interaction_result": deepcopy(interaction_result or {}),
@@ -316,8 +287,10 @@ class LiveStoryNarrator:
                 mode = fallback_mode
                 text = fallback_text
 
+        if mode == "collective":
+            self.last_collective_cue_at = at
         theme = str(collective_state.get("dominant") or "").strip() or None
-        return self._remember(StoryCue(
+        return StoryCue(
             cue_id=self._next_cue_id("interaction", comment.get("source_event_id")),
             text=text,
             mode=mode,
@@ -328,7 +301,7 @@ class LiveStoryNarrator:
             theme=theme,
             generated_by=generated_by,
             created_at_unix=at,
-        ))
+        )
 
     def render_collective_evolution(
         self,
@@ -339,47 +312,27 @@ class LiveStoryNarrator:
         evolution: dict[str, Any],
         now: float | None = None,
     ) -> StoryCue:
+        """Compatibility hook: world evolution itself must never produce speech."""
         at = float(now if now is not None else time.time())
-        active = self.active_snapshot(at)
-        participants = max(int(active.get("participants", 0)), int(evolution.get("contributors") or 0), 2)
-        fallback = self._fallback_evolution(evolution=evolution, collective_state=collective_state)
-        text = fallback
-        generated_by = "fallback"
-        api_key = str(config.get("openai_api_key") or "").strip()
-        model = str(config.get("openai_model") or "gpt-5-mini").strip()
-        if api_key and model:
-            payload = {
-                "mode": "collective_chapter",
-                "recent_audience": active,
-                "story_history": self.story_snapshot(),
-                "collective_intent": self._collective_context(collective_state),
-                "world": self._world_context(world),
-                "evolution": deepcopy(evolution),
-            }
-            try:
-                candidate = self._render_openai(api_key=api_key, model=model, mode="collective", payload=payload)
-                if candidate:
-                    text = candidate
-                    generated_by = f"openai:{model}"
-            except Exception:
-                pass
-        theme = str(evolution.get("theme") or collective_state.get("dominant") or "").strip() or None
-        return self._remember(StoryCue(
-            cue_id=self._next_cue_id("collective", str(evolution.get("chapter") or "")),
-            text=text,
-            mode="collective_chapter",
-            participants=participants,
+        return StoryCue(
+            cue_id=self._next_cue_id("silent-evolution", str(evolution.get("chapter") or "")),
+            text="",
+            mode="silent",
+            participants=max(0, int(evolution.get("contributors") or 0)),
             source="collective_intent",
-            theme=theme,
-            generated_by=generated_by,
+            theme=str(evolution.get("theme") or "").strip() or None,
+            generated_by="suppressed",
             created_at_unix=at,
-        ))
+        )
 
     def _openai_transport(self, payload: dict[str, Any], api_key: str) -> dict[str, Any]:
         request = urllib.request.Request(
             "https://api.openai.com/v1/responses",
             data=json.dumps(payload).encode("utf-8"),
-            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
             method="POST",
         )
         try:
@@ -404,8 +357,9 @@ class LiveStoryNarrator:
                 if not isinstance(content, list):
                     continue
                 for part in content:
-                    if isinstance(part, dict) and isinstance(part.get("text"), str):
-                        value = part["text"].strip()
-                        if value:
-                            return value
-        raise RuntimeError("resposta OpenAI sem texto narrativo")
+                    if not isinstance(part, dict):
+                        continue
+                    text = part.get("text")
+                    if isinstance(text, str) and text.strip():
+                        return text.strip()
+        return ""
