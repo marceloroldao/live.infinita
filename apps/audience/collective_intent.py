@@ -134,7 +134,6 @@ class CollectiveIntentEngine:
         actor_key = f"{str(source).strip().lower()}:{str(actor_id).strip()}"
         repeat_key = (actor_key, theme)
         previous = self._last_actor_theme.get(repeat_key, 0.0)
-        # One viewer cannot manufacture consensus by spamming the same theme.
         if at - previous < 12.0:
             return None
         self._last_actor_theme[repeat_key] = at
@@ -192,7 +191,10 @@ class CollectiveIntentEngine:
         confidence_gain = 1.0 + min(0.35, engagement * 0.025)
         boosted = {theme: value * confidence_gain for theme, value in scores.items()}
         ordered = sorted(boosted.items(), key=lambda pair: (-pair[1], pair[0]))
-        dominant, dominant_score = ordered[0] if ordered else (None, 0.0)
+        if ordered and ordered[0][1] > 0.0:
+            dominant, dominant_score = ordered[0]
+        else:
+            dominant, dominant_score = None, 0.0
         total = sum(boosted.values())
         dominance = (dominant_score / total) if total > 0 else 0.0
         dominant_contributors = len(contributors.get(str(dominant), set())) if dominant else 0
@@ -227,11 +229,7 @@ class CollectiveIntentEngine:
         state = self.snapshot(at)
         if not state["ready"]:
             return None
-        return {
-            **state,
-            "chapter": self.chapter + 1,
-            "decided_at_unix": at,
-        }
+        return {**state, "chapter": self.chapter + 1, "decided_at_unix": at}
 
     def mark_applied(self, decision: dict[str, Any], *, event_id: str, region_id: str | None) -> None:
         self.chapter = max(self.chapter, int(decision.get("chapter", self.chapter + 1)))
