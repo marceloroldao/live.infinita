@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 import importlib.util
+import sys
 import unittest
 from pathlib import Path
 
@@ -10,6 +11,7 @@ MODULE_PATH = ROOT / "apps" / "world-runtime" / "memoria_v2_adapter.py"
 spec = importlib.util.spec_from_file_location("memoria_v2_adapter", MODULE_PATH)
 module = importlib.util.module_from_spec(spec)
 assert spec and spec.loader
+sys.modules[spec.name] = module
 spec.loader.exec_module(module)
 
 
