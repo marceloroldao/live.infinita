@@ -219,11 +219,15 @@ async def _external_world_sync_loop() -> None:
             if _last_world_marker is None:
                 _last_world_marker = marker
             elif marker != _last_world_marker:
+                refresh = getattr(cold_store, "refresh_manifest", None)
+                if callable(refresh):
+                    refresh()
                 await spatial_broadcast({"type": "world_state", "world": world})
         except asyncio.CancelledError:
             raise
         except Exception:
-            # A transient atomic-replace/read race must not take down the runtime.
+            # Atomic persistence means a transient read/refresh problem can be
+            # retried on the next sync interval without taking down the Runtime.
             pass
         await asyncio.sleep(interval)
 
@@ -252,10 +256,8 @@ async def _stop_external_world_sync() -> None:
 
 
 async def spatial_websocket_endpoint(websocket: WebSocket) -> None:
-    global _last_world_marker
     await websocket.accept()
     world = core.engine.load_world()
-    _last_world_marker = _world_marker(world)
     view = spatial_session.default_view(world)
     session_views[websocket] = view
     await websocket.send_json(spatial_session.wrap_world_message(
@@ -273,7 +275,6 @@ async def spatial_websocket_endpoint(websocket: WebSocket) -> None:
                 view = spatial_session.normalize_view(message, view)
                 session_views[websocket] = view
                 world = core.engine.load_world()
-                _last_world_marker = _world_marker(world)
                 await websocket.send_json(spatial_session.wrap_world_message(
                     {"type": "world_state", "world": world},
                     view,
