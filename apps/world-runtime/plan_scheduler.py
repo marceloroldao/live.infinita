@@ -55,6 +55,40 @@ class PlanScheduler:
             tuple(steps),
         )
 
+    def _entity_label(self, entity_id: str | None, fallback: str) -> str:
+        value = str(entity_id or "").strip()
+        if not value:
+            return fallback
+        entity = self.resolver.store.get_entity(value)
+        if not isinstance(entity, dict):
+            return fallback
+        properties = entity.get("properties") if isinstance(entity.get("properties"), dict) else {}
+        label = str(properties.get("label") or "").strip()
+        return label or fallback
+
+    def _public_narration(self, plan: IntentPlan, step: PlanStep) -> str:
+        """Narration is presentation text; plan ids/revisions belong only in audit context."""
+        intent = dict(step.intent or {})
+        intent_type = str(intent.get("intent") or intent.get("type") or plan.intent_type or "").strip().lower()
+        actor = self._entity_label(plan.actor_entity_id, "Nov")
+
+        if intent_type == "move_to_entity":
+            target = self._entity_label(str(intent.get("target_entity_id") or ""), "seu próximo destino")
+            return f"{actor} segue pelo caminho até {target}."
+        if intent_type == "move_to_position":
+            return f"{actor} continua avançando pelo caminho."
+        if intent_type == "establish_relation":
+            target = self._entity_label(str(intent.get("target_entity_id") or ""), "algo próximo")
+            return f"{actor} se aproxima de {target} e interage com ele."
+        if intent_type == "clear_relation":
+            target = self._entity_label(str(intent.get("target_entity_id") or ""), "o que estava observando")
+            return f"{actor} se afasta de {target} e segue adiante."
+        if intent_type == "set_environment":
+            return "O ambiente ao redor de Nov começa a mudar."
+        if intent_type == "transfer_possession":
+            return f"{actor} reorganiza um objeto que encontrou pelo caminho."
+        return f"{actor} continua sua jornada pelo mundo."
+
     def schedule(
         self,
         *,
@@ -231,7 +265,7 @@ class PlanScheduler:
                     "region_path": list(plan.region_path),
                 },
             },
-            narration=f"plan {plan_id} revision {int(record.get('plan_revision', 0))} step {index + 1}/{len(plan.steps)}: {resolved.rationale}",
+            narration=self._public_narration(plan, step),
         )
         audit = result.get("audit") or {}
         decision_id = str(audit.get("mutation_decision_id") or "").strip() or None
