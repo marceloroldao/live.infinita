@@ -62,6 +62,8 @@ for setting in \
   'LIVE_INFINITA_PIPER_MODEL=/var/lib/live-infinita/audio/models/pt_BR-faber-medium.onnx' \
   'LIVE_INFINITA_AMBIENT_VOLUME=0.075' \
   'LIVE_INFINITA_DUCKED_AMBIENT_VOLUME=0.025' \
+  'LIVE_INFINITA_RETRO_SCORE_VOLUME=0.10' \
+  'LIVE_INFINITA_NIGHT_INSECT_VOLUME=0.045' \
   'LIVE_INFINITA_NARRATION_VOLUME=0.95'; do
   key="${setting%%=*}"
   grep -q "^${key}=" "$ENV_DIR/audio.env" || echo "$setting" >> "$ENV_DIR/audio.env"
