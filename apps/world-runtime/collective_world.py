@@ -47,9 +47,6 @@ THEMES: dict[str, ThemeTemplate] = {
     ),
 }
 
-# Showcase coordinates stay inside the current 1280x720 logical stage. Once these
-# cells are occupied, collective intent continues evolving story and goals instead
-# of pushing entities beyond the renderer's current coordinate envelope.
 SLOTS: tuple[tuple[float, float], ...] = (
     (320.0, 145.0),
     (640.0, 145.0),
@@ -130,13 +127,12 @@ class CollectiveWorldEvolver:
         candidates.sort(key=lambda row: (not bool((row.get("metadata") or {}).get("collective_generated")), str(row.get("id") or "")))
         for region in candidates:
             region_id = str(region.get("id") or "")
-            for entity_id in sorted(self.store._entity_region):  # bounded manifest lookup; payload remains cold
-                if self.store.entity_region(entity_id) != region_id:
-                    continue
-                entity = self.store.get_entity(entity_id)
+            for entity in self.store.load_region(region_id):
                 if not isinstance(entity, dict) or str(entity.get("type") or "") == "human":
                     continue
-                return region_id, entity_id
+                entity_id = str(entity.get("id") or "").strip()
+                if entity_id:
+                    return region_id, entity_id
         return None, None
 
     def plan(self, world: dict[str, Any], decision: dict[str, Any]) -> dict[str, Any]:
@@ -216,7 +212,6 @@ class CollectiveWorldEvolver:
                 "path": ["properties", "curiosity_target_entity_id"],
                 "value": target_entity_id,
             })
-            # Make collective curiosity significant without deleting other needs.
             operations.append({
                 "op": "set",
                 "entity_id": "nov",
