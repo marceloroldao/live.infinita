@@ -6,13 +6,12 @@ from typing import Any
 
 from fastapi import Depends
 from fastapi.responses import JSONResponse
-from fastapi.routing import APIRoute
-from starlette.routing import Mount
 
 import main as core
 import main_context_live
 import main_spatial
 from memoria_v2_adapter import build_nov_cognitive_frame, to_memoria_v2_request_payload
+from route_precedence import promote_api_route_before_root
 
 
 app = main_context_live.app
@@ -125,39 +124,7 @@ async def cognitive_health() -> JSONResponse:
 main_context_live._replace_route("/api/health", "GET", cognitive_health)
 
 
-def _promote_api_route_before_root(path: str) -> None:
-    """Keep late extension routes ahead of the Manager catch-all mount at '/'."""
-    routes = app.router.routes
-    candidate = next(
-        (route for route in routes if isinstance(route, APIRoute) and route.path == path),
-        None,
-    )
-    if candidate is None:
-        raise RuntimeError(f"API extension route not found: {path}")
-
-    root_index = next(
-        (
-            index
-            for index, route in enumerate(routes)
-            if isinstance(route, Mount) and route.path in {"", "/"}
-        ),
-        None,
-    )
-    if root_index is None:
-        return
-    candidate_index = routes.index(candidate)
-    if candidate_index < root_index:
-        return
-    routes.pop(candidate_index)
-    root_index = next(
-        index
-        for index, route in enumerate(routes)
-        if isinstance(route, Mount) and route.path in {"", "/"}
-    )
-    routes.insert(root_index, candidate)
-
-
 # main_context_live is imported after main_live has mounted Manager at '/'. Its
 # preview route and this cognitive route therefore need explicit precedence.
-_promote_api_route_before_root("/api/ai/context/preview")
-_promote_api_route_before_root("/api/cognitive/v2/frame")
+promote_api_route_before_root(app, "/api/ai/context/preview")
+promote_api_route_before_root(app, "/api/cognitive/v2/frame")
