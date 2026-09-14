@@ -4,6 +4,8 @@ import os
 from pathlib import Path
 
 from autonomous_runtime import build_authoritative_autonomous_runtime
+from cognitive_shadow import CognitiveShadowRecorder
+from shadow_world_tick import ShadowWorldTickRunner
 from tick_driver_main import run_driver
 
 
@@ -12,6 +14,10 @@ def _required_env(name: str) -> str:
     if not value:
         raise RuntimeError(f"{name} is required")
     return value
+
+
+def _flag_enabled(name: str, default: str = "0") -> bool:
+    return str(os.getenv(name, default)).strip().lower() in {"1", "true", "yes", "on"}
 
 
 def _npc_ids() -> list[str]:
@@ -42,10 +48,25 @@ def build_from_environment():
     )
 
 
+def _runner_with_optional_shadow(runtime, data_dir: Path):
+    enabled = _flag_enabled("LIVE_INFINITA_MEMORIA_V2_SHADOW")
+    if not enabled:
+        return runtime.world_tick
+    recorder = CognitiveShadowRecorder(
+        data_dir / "memoria-v2-shadow.jsonl",
+        world_provider=runtime.engine.load_world,
+        store=runtime.store,
+        observer_id="nov",
+        enabled=True,
+    )
+    return ShadowWorldTickRunner(runtime.world_tick, recorder)
+
+
 def main() -> None:
     """Start autonomous simulation only when this dedicated process is invoked."""
     runtime = build_from_environment()
-    run_driver(runtime.world_tick, Path(_required_env("LIVE_INFINITA_DATA_DIR")))
+    data_dir = Path(_required_env("LIVE_INFINITA_DATA_DIR"))
+    run_driver(_runner_with_optional_shadow(runtime, data_dir), data_dir)
 
 
 if __name__ == "__main__":
