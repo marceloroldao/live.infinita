@@ -49,6 +49,49 @@ class StoryNarratorTests(unittest.TestCase):
         self.assertEqual(cue.participants, 1)
         self.assertIn("Ana", cue.text)
         self.assertIn("rio", cue.text.lower())
+        self.assertNotIn("estou aqui para", cue.text.lower())
+        self.assertNotIn("ouvi sua pergunta", cue.text.lower())
+
+    def test_channel_account_name_is_not_spoken_as_a_viewer_name(self):
+        narrator = LiveStoryNarrator(window_seconds=90)
+        comment = narrator.observe_comment(
+            source="tiktok",
+            actor_id="self",
+            display_name="Live Infinita",
+            text="oi pessoal",
+            now=100,
+        )
+        cue = narrator.render_interaction(
+            config={},
+            comment=comment,
+            world=self.world(),
+            collective_state=self.collective(theme=None, contributors=0),
+            now=100,
+        )
+        self.assertFalse(cue.text.lower().startswith("live infinita"))
+        self.assertTrue(any(term in cue.text.lower() for term in ("opa", "e aí", "fala")))
+
+    def test_local_fallback_varies_instead_of_repeating_one_canned_sentence(self):
+        narrator = LiveStoryNarrator(window_seconds=90)
+        outputs = []
+        for index in range(3):
+            narrator.comments.clear()
+            comment = narrator.observe_comment(
+                source="tiktok",
+                actor_id=f"u{index}",
+                display_name=f"Pessoa {index}",
+                text="isso é interessante",
+                now=100 + index,
+            )
+            cue = narrator.render_interaction(
+                config={},
+                comment=comment,
+                world=self.world(),
+                collective_state=self.collective(theme=None, contributors=0),
+                now=100 + index,
+            )
+            outputs.append(cue.text)
+        self.assertEqual(len(set(outputs)), 3)
 
     def test_multiple_people_become_collective_not_comment_by_comment(self):
         narrator = LiveStoryNarrator(window_seconds=90, collective_min_interval_seconds=8)
@@ -78,7 +121,7 @@ class StoryNarratorTests(unittest.TestCase):
 
         def transport(payload, _api_key):
             requests.append(payload)
-            return {"output_text": "A capital do Japão é Tóquio. Quer testar outra pergunta?"}
+            return {"output_text": "Tóquio. E é uma cidade gigantesca — mais de 14 milhões na área administrativa."}
 
         narrator = LiveStoryNarrator(window_seconds=90, transport=transport)
         comment = narrator.observe_comment(
@@ -98,15 +141,39 @@ class StoryNarratorTests(unittest.TestCase):
         self.assertEqual(cue.mode, "individual")
         self.assertIn("Tóquio", cue.text)
         self.assertEqual(cue.generated_by, "openai:test-model")
+        self.assertEqual(narrator.last_generation_source, "openai:test-model")
+        self.assertIsNone(narrator.last_generation_error)
         self.assertEqual(len(requests), 1)
 
         system_prompt = requests[0]["input"][0]["content"][0]["text"]
-        self.assertIn("Não é narrador da história", system_prompt)
-        self.assertIn("Responda qualquer pergunta", system_prompt)
+        self.assertIn("apresentador humano de live", system_prompt)
+        self.assertIn("Responda primeiro ao conteúdo concreto", system_prompt)
+        self.assertIn("Não comece respostas dizendo 'Live Infinita'", system_prompt)
+        self.assertIn("Não diga 'ouvi sua pergunta'", system_prompt)
         context_text = requests[0]["input"][1]["content"][0]["text"].split("\n", 1)[1]
         context = json.loads(context_text)
         self.assertNotIn("story_history", context)
         self.assertNotIn("story", context["world"])
+
+    def test_model_failure_uses_natural_fallback_and_records_diagnostic(self):
+        def transport(_payload, _api_key):
+            raise RuntimeError("simulated outage")
+
+        narrator = LiveStoryNarrator(window_seconds=90, transport=transport)
+        comment = narrator.observe_comment(
+            source="tiktok", actor_id="u1", display_name="Ana", text="oi", now=100
+        )
+        cue = narrator.render_interaction(
+            config={"openai_api_key": "test", "openai_model": "test-model"},
+            comment=comment,
+            world=self.world(),
+            collective_state=self.collective(theme=None, contributors=0),
+            now=100,
+        )
+        self.assertEqual(cue.generated_by, "fallback")
+        self.assertIsNotNone(narrator.last_generation_error)
+        self.assertIn("simulated outage", narrator.last_generation_error)
+        self.assertNotIn("estou aqui para", cue.text.lower())
 
     def test_collective_world_evolution_itself_is_silent(self):
         narrator = LiveStoryNarrator()
