@@ -147,7 +147,7 @@ def build_npc_cognitive_stack(
     idle_wander = NpcIdleWander(
         plan_scheduler,
         npc_ids=ids,
-        interval_ticks=8,
+        interval_ticks=4,
         priority=25,
     )
     need_outcomes = NpcNeedOutcomeProcessor(
