@@ -307,11 +307,113 @@ class RetroProgramAudio(server_audio.ProgramAudio):
         return self._clip(left), self._clip(right)
 
 
+class InteractionNarrationService(server_audio.NarrationService):
+    """Speak only transient narration_cue messages produced by audience interaction."""
+
+    async def submit_world(self, world: dict[str, Any]) -> None:
+        # World State still drives ambience, footsteps, weather and music, but it
+        # is no longer a TTS trigger. This is the hard boundary that keeps
+        # autonomous ticks, needs and day/night events silent.
+        self.audio.update_world(world)
+        server_audio.write_status(
+            narration_policy="interaction_only",
+            **self.audio.ambient_status(),
+        )
+
+    async def submit_narration_cue(self, cue: dict[str, Any]) -> None:
+        identity = str(cue.get("cue_id") or "").strip()
+        text = str(cue.get("text") or "").strip()
+        if not identity or not text or identity == self.last_identity:
+            return
+        self.last_identity = identity
+        server_audio.persist_last_identity(identity)
+        try:
+            self.queue.put_nowait((identity, text))
+        except asyncio.QueueFull:
+            _ = self.queue.get_nowait()
+            self.queue.task_done()
+            self.queue.put_nowait((identity, text))
+        server_audio.write_status(
+            narration_policy="interaction_only",
+            narration_mode=str(cue.get("mode") or "interaction"),
+            narration_participants=int(cue.get("participants") or 0),
+            narration_theme=cue.get("theme"),
+            **self.audio.ambient_status(),
+        )
+        print(
+            f"[audio] cue narrativa {identity!s} mode={cue.get('mode')} participants={cue.get('participants')}",
+            flush=True,
+        )
+
+    async def world_listener(self) -> None:
+        backoff = 1.0
+        while not self.stop.is_set():
+            server_audio.write_status(
+                state="connecting",
+                world_ws=server_audio.WORLD_WS,
+                udp_output=server_audio.UDP_OUTPUT,
+                tts_local=True,
+                openai_audio_enabled=False,
+                narration_policy="interaction_only",
+                **self.audio.ambient_status(),
+            )
+            try:
+                async with server_audio.websockets.connect(
+                    server_audio.WORLD_WS,
+                    ping_interval=20,
+                    ping_timeout=20,
+                ) as websocket:
+                    server_audio.write_status(
+                        state="connected",
+                        world_ws=server_audio.WORLD_WS,
+                        udp_output=server_audio.UDP_OUTPUT,
+                        tts_local=True,
+                        openai_audio_enabled=False,
+                        narration_policy="interaction_only",
+                        **self.audio.ambient_status(),
+                    )
+                    print(
+                        f"[audio] conectado ao World State {server_audio.WORLD_WS}; "
+                        f"narração=interaction_only; saída {server_audio.UDP_OUTPUT}",
+                        flush=True,
+                    )
+                    backoff = 1.0
+                    async for raw in websocket:
+                        try:
+                            message = server_audio.json.loads(raw)
+                        except server_audio.json.JSONDecodeError:
+                            continue
+                        if not isinstance(message, dict):
+                            continue
+                        message_type = str(message.get("type") or "")
+                        if message_type == "world_state" and isinstance(message.get("world"), dict):
+                            await self.submit_world(message["world"])
+                        elif message_type == "narration_cue" and isinstance(message.get("cue"), dict):
+                            await self.submit_narration_cue(message["cue"])
+                        if self.stop.is_set():
+                            break
+            except Exception as exc:
+                server_audio.write_status(
+                    state="reconnecting",
+                    connector_error=type(exc).__name__,
+                    tts_local=True,
+                    openai_audio_enabled=False,
+                    narration_policy="interaction_only",
+                    **self.audio.ambient_status(),
+                )
+                print(
+                    f"[audio] WebSocket desconectado ({type(exc).__name__}); reconectando",
+                    flush=True,
+                )
+                await asyncio.sleep(backoff)
+                backoff = min(backoff * 2.0, 30.0)
+
+
 async def main() -> None:
-    # server_audio.main resolves ProgramAudio from its module globals at runtime.
-    # Replace it only for the production entry point; the original engine remains
-    # importable and independently testable.
+    # server_audio.main resolves these globals at runtime. Production keeps the
+    # retro ambience, but TTS is driven only by explicit audience story cues.
     server_audio.ProgramAudio = RetroProgramAudio  # type: ignore[assignment]
+    server_audio.NarrationService = InteractionNarrationService  # type: ignore[assignment]
     await server_audio.main()
 
 
