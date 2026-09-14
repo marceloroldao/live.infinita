@@ -4,7 +4,7 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#080a0f">
   <title>Live Infinita — Manager</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23080a0f'/%3E%3Cpath d='M14 33c7-14 15-14 22 0s15 14 22 0' fill='none' stroke='%23b7ff44' stroke-width='7' stroke-linecap='round'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/monitoring.css"><link rel="stylesheet" href="/visibility.css">
+  <link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/monitoring.css"><link rel="stylesheet" href="/visibility.css"><link rel="stylesheet" href="/simulator.css">
 </head>
 <body>
   <div class="ambient" aria-hidden="true"></div>
@@ -19,7 +19,7 @@
   <div id="manager-view" class="app-shell" hidden>
     <aside class="sidebar">
       <a class="brand" href="/" aria-label="Live Infinita Manager"><span class="brand-symbol">∞</span><span>LIVE<br>INFINITA</span></a>
-      <nav aria-label="Navegação principal"><a class="nav-link active" data-page="overview" href="#overview"><span>⌂</span> Visão geral</a><a class="nav-link" data-page="integracoes" href="#integracoes"><span>◫</span> Integrações</a><a class="nav-link" data-page="relatorio" href="#relatorio"><span>▤</span> Relatório</a><a class="nav-link" href="/godot/"><span>◇</span> Godot <b>↗</b></a><a class="nav-link" href="/gdscript/"><span>⌁</span> GDScript <b>↗</b></a></nav>
+      <nav aria-label="Navegação principal"><a class="nav-link active" data-page="overview" href="#overview"><span>⌂</span> Visão geral</a><a class="nav-link" data-page="simulador" href="#simulador"><span>◉</span> Simulador</a><a class="nav-link" data-page="integracoes" href="#integracoes"><span>◫</span> Integrações</a><a class="nav-link" data-page="relatorio" href="#relatorio"><span>▤</span> Relatório</a><a class="nav-link" href="/godot/"><span>◇</span> Godot <b>↗</b></a><a class="nav-link" href="/gdscript/"><span>⌁</span> GDScript <b>↗</b></a></nav>
       <button id="logout" class="logout" type="button"><span>↪</span> Sair</button>
     </aside>
     <main class="workspace">
@@ -46,6 +46,28 @@
           </section>
         </div>
       </section>
+      <section id="simulador" class="manager-page" hidden>
+        <header class="topbar"><div><p class="eyebrow">Gerência · Laboratório</p><h1>Simulador da Live</h1></div><span id="simulator-state" class="system-status"><i></i> Verificando modo de teste</span></header>
+        <section class="simulator-hero"><div><p class="eyebrow green">LIVE OFFLINE</p><h2>Interaja como se você fosse a audiência.</h2><p>Os comentários entram pela mesma lógica de intenção, reação do mundo e narração usada pela Live. Troque de participante para testar intenção coletiva sem precisar abrir uma transmissão.</p></div></section>
+        <div class="simulator-layout">
+          <section class="simulator-preview">
+            <header><div><p class="eyebrow">PREVIEW</p><h2>Mundo ao vivo</h2></div><small>/godot/</small></header>
+            <div class="sim-frame-shell"><iframe id="sim-godot-frame" src="/godot/?manager-simulator=1" title="Preview Godot da Live Infinita" allow="autoplay"></iframe></div>
+            <div class="sim-status-grid"><div><span>Fonte</span><strong id="sim-tiktok-state">verificando</strong></div><div><span>Intenção</span><strong id="sim-collective-state">sem direção coletiva</strong></div><div><span>Mundo</span><strong id="sim-world-state">carregando</strong></div></div>
+          </section>
+          <section class="simulator-chat">
+            <header><div><p class="eyebrow">AUDIÊNCIA DE TESTE</p><h2>Enviar interação</h2></div><button id="sim-new-viewer" class="secondary compact" type="button">Novo participante</button></header>
+            <form id="sim-form">
+              <div class="sim-identity"><label>Nome exibido<input id="sim-display-name" maxlength="80" placeholder="Visitante 1"></label><label>ID do participante<input id="sim-actor-id" maxlength="100" placeholder="manager-viewer-1"></label></div>
+              <div class="sim-compose"><label>Comentário<textarea id="sim-comment" maxlength="500" placeholder="Ex.: Nov, vamos explorar a floresta" required></textarea></label></div>
+              <div class="sim-quick"><button type="button" data-sim-prompt="Nov, vamos até a fogueira">Ir até a fogueira</button><button type="button" data-sim-prompt="Vamos procurar um rio">Procurar um rio</button><button type="button" data-sim-prompt="Nov, explore a floresta">Explorar a floresta</button><button type="button" data-sim-prompt="Será que existe uma vila por perto?">Procurar uma vila</button></div>
+              <div class="sim-actions"><button id="sim-send" class="primary" type="submit">Enviar como espectador</button><button id="sim-clear-feed" class="secondary" type="button">Limpar painel</button></div>
+            </form>
+            <p class="sim-warning">O simulador usa o World State atual e pode mover NOV ou influenciar a intenção coletiva. Por segurança, ele fica bloqueado enquanto uma TikTok LIVE real estiver conectada.</p>
+            <div id="sim-chat-feed" class="sim-chat-feed" aria-live="polite"><p class="sim-chat-empty">As interações desta sessão aparecerão aqui.</p></div>
+          </section>
+        </div>
+      </section>
       <section id="integracoes" class="manager-page" hidden>
         <header class="topbar"><div><p class="eyebrow">Gerência · Centro de controle</p><h1>Integrações</h1></div><span class="system-status"><i></i> Sistema online</span></header>
         <section class="hero"><div><p class="eyebrow green">CONEXÕES</p><h2>Alimente o seu mundo.</h2><p>Conecte os serviços que dão inteligência e audiência à Live Infinita.</p></div><div class="hero-orbit" aria-hidden="true"><span>∞</span></div></section>
@@ -69,5 +91,5 @@
       <p id="message" class="toast" role="status"></p>
     </main>
   </div>
-  <script src="/app.js"></script>
+  <script src="/app.js"></script><script src="/simulator.js"></script>
 </body></html>
