@@ -14,6 +14,10 @@ ALLOWED_ACTIONS = {
     "set_night",
     "set_day",
     "reset",
+    "nov_to_fire",
+    "nov_to_shelter",
+    "nov_to_forest",
+    "nov_explore",
 }
 
 ACTION_TO_GATEWAY_TEXT = {
@@ -23,6 +27,10 @@ ACTION_TO_GATEWAY_TEXT = {
     "set_night": "noite",
     "set_day": "dia",
     "reset": "reset",
+    "nov_to_fire": "nov fogueira",
+    "nov_to_shelter": "nov abrigo",
+    "nov_to_forest": "nov floresta",
+    "nov_explore": "nov explorar",
 }
 
 
@@ -93,10 +101,14 @@ class AIRouter:
                         {
                             "type": "input_text",
                             "text": (
-                                "Você é o AI Router da Live Infinita. Interprete o texto do usuário, "
-                                "mas NÃO execute nada. Responda somente JSON com as chaves action, "
-                                "confidence e reason. action deve ser um destes valores: "
-                                "spawn_person, move_tree, toggle_fire, set_night, set_day, reset, none. "
+                                "Você é o AI Router da Live Infinita. Interprete o comentário da audiência, "
+                                "mas NÃO execute nada. Responda somente JSON com as chaves action, confidence e reason. "
+                                "action deve ser exatamente um destes valores: spawn_person, move_tree, toggle_fire, "
+                                "set_night, set_day, reset, nov_to_fire, nov_to_shelter, nov_to_forest, nov_explore, none. "
+                                "Use nov_to_fire quando pedirem para Nov ir, caminhar ou ficar perto da fogueira; "
+                                "nov_to_shelter para ir ao abrigo; nov_to_forest para ir à floresta; nov_explore para "
+                                "andar, passear ou explorar sem destino específico. Use toggle_fire apenas quando a "
+                                "intenção for acender/apagar/alterar a fogueira, não para caminhar até ela. "
                                 "Use none quando a intenção não estiver clara. confidence deve estar entre 0 e 1."
                             ),
                         }
