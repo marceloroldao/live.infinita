@@ -44,6 +44,7 @@ func _draw() -> void:
     for i in range(GRASS_COUNT):
         var x := fmod(i * 137.7, 760.0) - 20.0
         var y := 665.0 + fmod(i * 79.3, 365.0)
+        if river > 0.001 and y > 742.0 + sin(x * 0.007) * 38.0 and y < 821.0 + sin(x * 0.007) * 38.0: continue
         var p := Vector2(x, y) + shift * 0.65
         var h := 5.0 + float(i % 5) * 2.0 + field * 4.0
         var sway := sin(visual_time * 1.15 + x * 0.022) * (1.0 + wind * 4.0)
@@ -124,3 +125,4 @@ func _village(weight: float, night: float, stage: Node2D) -> void:
                     var phase := fmod(visual_time * 0.085 + puff * 0.33, 1.0)
                     var pos := p + Vector2(18 + sin(phase * 4 + visual_time * 0.3) * 10, -57 - phase * 55)
                     draw_circle(pos, 4 + phase * 8, Color(0.79, 0.84, 0.79, (1.0 - phase) * wall.a * 0.11))
+
