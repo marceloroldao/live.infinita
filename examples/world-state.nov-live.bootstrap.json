@@ -39,12 +39,12 @@
           "kind": "all",
           "conditions": [
             {"kind": "world_equals", "path": ["environment", "period"], "value": "night"},
-            {"kind": "entity_property_equals", "entity_id": "campfire", "path": ["properties", "lit"], "value": false}
+            {"kind": "entity_property_equals", "entity_id": "fire_01", "path": ["properties", "lit"], "value": false}
           ]
         },
         "trigger_mode": "edge",
         "operations": [
-          {"op": "set", "entity_id": "campfire", "path": ["properties", "lit"], "value": true}
+          {"op": "set", "entity_id": "fire_01", "path": ["properties", "lit"], "value": true}
         ],
         "narration": "Com a chegada da noite, a fogueira da clareira se acende."
       },
@@ -54,12 +54,12 @@
           "kind": "all",
           "conditions": [
             {"kind": "world_equals", "path": ["environment", "period"], "value": "day"},
-            {"kind": "entity_property_equals", "entity_id": "campfire", "path": ["properties", "lit"], "value": true}
+            {"kind": "entity_property_equals", "entity_id": "fire_01", "path": ["properties", "lit"], "value": true}
           ]
         },
         "trigger_mode": "edge",
         "operations": [
-          {"op": "set", "entity_id": "campfire", "path": ["properties", "lit"], "value": false}
+          {"op": "set", "entity_id": "fire_01", "path": ["properties", "lit"], "value": false}
         ],
         "narration": "A luz do dia retorna e a fogueira descansa."
       }
@@ -115,7 +115,7 @@
       }
     },
     {
-      "id": "campfire",
+      "id": "fire_01",
       "type": "campfire",
       "region_id": "clearing",
       "position": {"x": 700, "y": 405},
