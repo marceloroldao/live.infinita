@@ -21,6 +21,7 @@ class WorldTickRunner:
         conditional_event_scheduler: ConditionalEventScheduler | None = None,
         plan_arbiter: PlanArbiter | None = None,
         npc_need_scheduler: Any | None = None,
+        npc_idle_wander: Any | None = None,
         npc_need_dynamics: Any | None = None,
         npc_need_outcomes: Any | None = None,
         npc_strategy_executor: Any | None = None,
@@ -32,6 +33,7 @@ class WorldTickRunner:
         self.event_scheduler = event_scheduler
         self.conditional_event_scheduler = conditional_event_scheduler
         self.npc_need_scheduler = npc_need_scheduler
+        self.npc_idle_wander = npc_idle_wander
         self.npc_need_dynamics = npc_need_dynamics
         self.npc_need_outcomes = npc_need_outcomes
         self.npc_strategy_executor = npc_strategy_executor
@@ -68,6 +70,7 @@ class WorldTickRunner:
                 "causal_observations": [],
                 "npc_need_dynamics": [],
                 "npc_needs": [],
+                "npc_idle_wander": [],
                 "npc_strategies": [],
                 "plan_replanning": [],
                 "plan_arbitration": {
@@ -163,6 +166,19 @@ class WorldTickRunner:
                     "strategy_execution_id": row.get("strategy_execution_id"),
                 })
 
+        idle_results: list[dict[str, Any]] = []
+        if self.npc_idle_wander is not None:
+            for row in self.npc_idle_wander.evaluate_tick(after.tick):
+                idle_results.append({
+                    "npc_id": row.get("npc_id"),
+                    "tick": row.get("tick"),
+                    "status": row.get("status"),
+                    "plan_id": row.get("plan_id"),
+                    "region_id": row.get("region_id"),
+                    "position": row.get("position"),
+                    "priority": row.get("priority"),
+                })
+
         strategy_results: list[dict[str, Any]] = []
         if self.npc_strategy_executor is not None:
             for row in self.npc_strategy_executor.tick_all(logical_tick=after.tick):
@@ -251,6 +267,7 @@ class WorldTickRunner:
             "causal_observations": causal_results,
             "npc_need_dynamics": need_dynamics_results,
             "npc_needs": need_results,
+            "npc_idle_wander": idle_results,
             "npc_strategies": strategy_results,
             "plan_replanning": replan_results,
             "plan_arbitration": {
