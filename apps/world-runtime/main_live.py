@@ -18,12 +18,15 @@ from collective_intent import CollectiveIntentEngine
 from collective_world import CollectiveWorldEvolver
 from cold_engine import ColdAuthoritativeWorldEngine
 from mutation_gate_service import GuardedMutationService
+from story_narrator import LiveStoryNarrator, StoryCue
 
 app = main_spatial.app
 APP_STARTED_AT = time.time()
 TIKTOK_STATUS_FILE = core.DATA_DIR / "tiktok-status.json"
 COLLECTIVE_STATE_FILE = core.DATA_DIR / "collective-intent-state.json"
 collective_intent = CollectiveIntentEngine(COLLECTIVE_STATE_FILE)
+story_narrator = LiveStoryNarrator()
+_story_narration_lock = asyncio.Lock()
 collective_evolver = (
     CollectiveWorldEvolver(main_spatial.cold_store)
     if main_spatial.cold_store is not None
@@ -35,15 +38,6 @@ collective_guarded = (
     else None
 )
 _collective_task: asyncio.Task[None] | None = None
-
-
-def _looks_internal_narration(text: str) -> bool:
-    value = text.strip().lower()
-    return (
-        value.startswith("plan plan_")
-        or value.startswith("intent-plan step ")
-        or (value.startswith("plan ") and " revision " in value and " step " in value)
-    )
 
 
 def _project_current_region_environment(
@@ -78,16 +72,29 @@ def _project_current_region_environment(
 
 
 def _sanitize_public_world_message(message: dict[str, Any]) -> dict[str, Any]:
+    """Keep autonomous World State silent; only transient interaction cues are public narration."""
     result = deepcopy(message)
     world = result.get("world")
     if not isinstance(world, dict):
         return result
-    narration = world.get("narration")
-    if not isinstance(narration, dict):
-        return result
-    text = str(narration.get("text") or "")
-    if _looks_internal_narration(text):
-        world["narration"] = {**narration, "text": "Nov continua sua jornada pelo mundo."}
+    narration = world.get("narration") if isinstance(world.get("narration"), dict) else {}
+    cue = result.get("narration_cue") if isinstance(result.get("narration_cue"), dict) else None
+    cue_text = str((cue or {}).get("text") or "").strip()
+    if cue is not None and cue_text:
+        world["narration"] = {
+            **narration,
+            "text": cue_text,
+            "tts_enabled": False,
+            "mode": str(cue.get("mode") or "interaction"),
+            "cue_id": str(cue.get("cue_id") or ""),
+        }
+    else:
+        world["narration"] = {
+            **narration,
+            "text": "",
+            "tts_enabled": False,
+            "mode": "silent",
+        }
     return result
 
 
@@ -115,7 +122,7 @@ def _invalidate_spatial_topology() -> None:
         if callable(clear):
             clear()
     # Keep this exact SpatialSession instance: main_live has wrapped its public
-    # projection method above to sanitize narration and project local biomes.
+    # projection method above to suppress autonomous narration and project local biomes.
     session._catalog = None  # type: ignore[attr-defined]
     session._region_grid = None  # type: ignore[attr-defined]
     session._cold_sequence = None  # type: ignore[attr-defined]
@@ -136,15 +143,85 @@ def _collective_audience_aggregator_ingest(
 core.aggregator.ingest = _collective_audience_aggregator_ingest  # type: ignore[method-assign]
 
 
+def _response_story_summary(response: Any) -> dict[str, Any]:
+    result: dict[str, Any] = {"status_code": int(getattr(response, "status_code", 0) or 0)}
+    body = getattr(response, "body", b"")
+    if not body:
+        return result
+    try:
+        payload = json.loads(body.decode("utf-8"))
+    except (AttributeError, UnicodeDecodeError, json.JSONDecodeError):
+        return result
+    if not isinstance(payload, dict):
+        return result
+    result["ok"] = bool(payload.get("ok"))
+    result["world_mutated"] = bool(payload.get("world_mutated", payload.get("event")))
+    event = payload.get("event")
+    if isinstance(event, dict):
+        result["event"] = {
+            "event_id": event.get("event_id"),
+            "action": event.get("action"),
+            "type": event.get("type"),
+        }
+    validation = payload.get("validation")
+    if isinstance(validation, dict):
+        result["validation"] = {
+            "accepted": validation.get("accepted"),
+            "action": validation.get("action"),
+        }
+    result["ai_fallback"] = payload.get("ai_fallback")
+    return result
+
+
+async def _broadcast_story_cue(cue: StoryCue) -> None:
+    """Send voice cue to audio and a matching transient caption to visual clients."""
+    payload = cue.as_dict()
+    await core.broadcast({"type": "narration_cue", "cue": payload})
+    # A second world projection updates the existing Godot narration panel without
+    # persisting presentation prose into authoritative World State.
+    await main_spatial.spatial_broadcast({
+        "type": "world_state",
+        "world": core.engine.load_world(),
+        "narration_cue": payload,
+    })
+
+
+async def _narrate_comment(comment: dict[str, Any], interaction_result: dict[str, Any]) -> None:
+    try:
+        async with _story_narration_lock:
+            cue = await asyncio.to_thread(
+                story_narrator.render_interaction,
+                config=core.integrations.load(),
+                comment=comment,
+                world=core.engine.load_world(),
+                collective_state=collective_intent.snapshot(),
+                interaction_result=interaction_result,
+            )
+            await _broadcast_story_cue(cue)
+    except asyncio.CancelledError:
+        raise
+    except Exception:
+        # Narration is presentation only; it can never fail the audience/runtime path.
+        return
+
+
 _original_gateway_payload = core.process_gateway_payload
 
 
 async def _collective_gateway_payload(payload: dict[str, Any]):
-    """Observe audience language once, independently from individual commands."""
+    """Observe audience language for collective direction and story narration."""
     source = str(payload.get("source") or "").strip().lower()
     kind = str(payload.get("kind") or "text").strip().lower()
     signal: dict[str, Any] | None = None
+    story_comment: dict[str, Any] | None = None
     if source in {"tiktok", "youtube"} and kind == "text":
+        story_comment = story_narrator.observe_comment(
+            source=source,
+            actor_id=str(payload.get("actor_id") or "anonymous"),
+            display_name=payload.get("display_name"),
+            text=str(payload.get("text") or ""),
+            source_event_id=str(payload.get("source_event_id") or "") or None,
+        )
         signal = collective_intent.ingest_comment(
             source=source,
             actor_id=str(payload.get("actor_id") or "anonymous"),
@@ -158,6 +235,12 @@ async def _collective_gateway_payload(payload: dict[str, Any]):
             "signal": signal,
             "state": collective_intent.snapshot(),
         })
+    if story_comment is not None:
+        # Do not hold the source bridge HTTP request while the narrator phrases the story.
+        asyncio.create_task(
+            _narrate_comment(story_comment, _response_story_summary(response)),
+            name=f"live-story-{story_comment.get('source_event_id') or int(time.time() * 1000)}",
+        )
     return response
 
 
@@ -211,28 +294,35 @@ async def _collective_evolution_loop() -> None:
                         region_id=planned.get("region_id"),
                     )
                     _invalidate_spatial_topology()
+                    evolution = {
+                        "theme": planned["theme"],
+                        "chapter": planned["chapter"],
+                        "region_id": planned.get("region_id"),
+                        "target_entity_id": planned.get("target_entity_id"),
+                        "contributors": decision.get("contributors"),
+                    }
                     await main_spatial.spatial_broadcast({
                         "type": "world_state",
                         "world": result["world"],
                         "event": result["event"],
                         "delta": result["delta"],
-                        "collective_evolution": {
-                            "theme": planned["theme"],
-                            "chapter": planned["chapter"],
-                            "region_id": planned.get("region_id"),
-                            "target_entity_id": planned.get("target_entity_id"),
-                            "contributors": decision.get("contributors"),
-                        },
+                        "collective_evolution": evolution,
                     })
+                    state = collective_intent.snapshot()
                     await core.broadcast({
                         "type": "collective_intent",
-                        "state": collective_intent.snapshot(),
-                        "evolution": {
-                            "theme": planned["theme"],
-                            "chapter": planned["chapter"],
-                            "region_id": planned.get("region_id"),
-                        },
+                        "state": state,
+                        "evolution": evolution,
                     })
+                    async with _story_narration_lock:
+                        cue = await asyncio.to_thread(
+                            story_narrator.render_collective_evolution,
+                            config=core.integrations.load(),
+                            world=result["world"],
+                            collective_state=state,
+                            evolution=evolution,
+                        )
+                        await _broadcast_story_cue(cue)
                 else:
                     reason = str((result.get("decision") or {}).get("reason") or "mutation rejected")
                     await asyncio.to_thread(collective_intent.mark_failed, decision, reason)
@@ -320,6 +410,7 @@ async def current_collective_intent() -> JSONResponse:
         "state": collective_intent.snapshot(),
         "evolutions": collective_intent.evolutions[-20:],
         "last_failure": collective_intent.last_failure,
+        "story_audience": story_narrator.active_snapshot(),
     })
 
 
@@ -361,6 +452,10 @@ async def current_manager_monitor() -> JSONResponse:
             "replay_ok": bool(replay.get("ok")),
         },
         "collective": collective_intent.snapshot(now),
+        "narrator": {
+            "policy": "interaction_only",
+            "audience": story_narrator.active_snapshot(now),
+        },
         "websocket": {"clients": len(main_spatial.session_views)},
         "audience": {"total": len(audience_events), **counts},
         "actors": {"total": len(core.actors.actors()), "bound": len(core.bindings.current())},
