@@ -7,7 +7,9 @@ from typing import Any
 
 @dataclass(frozen=True)
 class InterestConfig:
-    hot_radius: float = 180.0
+    # 280 keeps nearby scenic anchors (for example the clearing campfire) hot
+    # while Nov is at the shelter, without materializing the whole warm set.
+    hot_radius: float = 280.0
     warm_radius: float = 420.0
     forward_bias: float = 0.35
     semantic_boost: float = 0.45
