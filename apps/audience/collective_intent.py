@@ -41,14 +41,32 @@ THEME_KEYWORDS: dict[str, tuple[str, ...]] = {
     ),
 }
 
+# Theme mention is not enough. These expressions indicate that the viewer is
+# proposing, preferring or asking about a direction in the current world.
+SCENE_INTENT_CUES: tuple[str, ...] = (
+    "quero", "queremos", "queria", "gostaria", "gosto de", "adoro", "prefiro",
+    "vamos", "vamos para", "vamos ate", "leva", "leve", "coloca", "coloque",
+    "cria", "crie", "procura", "procure", "procurar", "explorar", "explore",
+    "seguir", "siga", "atravessar", "construir", "construa", "por perto",
+    "aqui", "ali", "adiante", "mais adiante", "depois da", "depois do",
+    "nesse mundo", "neste mundo", "no mundo", "no cenario", "nesse cenario",
+    "tem uma", "tem um", "tem algum", "tem alguma", "sera que tem",
+    "sera que existe", "existe uma", "existe um", "aparece", "apareca", "nov",
+)
+
+KNOWLEDGE_QUESTION_STARTS = {
+    "qual", "quais", "quem", "quando", "como", "onde", "quanto", "quantos", "quantas",
+}
+
 
 class CollectiveIntentEngine:
     """Bounded, deterministic aggregation of crowd preference over time.
 
     Conversation and world intent are deliberately separate: every comment may be
     answered by the conversational host, but only text that maps to the closed
-    scene vocabulary becomes a collective world signal. Telemetry only amplifies
-    an existing semantic direction and never chooses one by itself.
+    scene vocabulary *and* looks like a scene preference becomes a collective world
+    signal. Telemetry only amplifies an existing semantic direction and never
+    chooses one by itself.
     """
 
     def __init__(self, state_file: Path) -> None:
@@ -87,9 +105,23 @@ class CollectiveIntentEngine:
         return re.search(pattern, normalized) is not None
 
     @classmethod
+    def _looks_like_scene_intent(cls, normalized: str) -> bool:
+        if not normalized:
+            return False
+        if any(cls._contains_term(normalized, cue) for cue in SCENE_INTENT_CUES):
+            return True
+        tokens = normalized.split()
+        # Short noun-like comments are treated as direct votes: "rio", "floresta",
+        # "rio ponte agua". Short knowledge questions such as "qual rio?" are not.
+        return bool(
+            1 <= len(tokens) <= 3
+            and tokens[0] not in KNOWLEDGE_QUESTION_STARTS
+        )
+
+    @classmethod
     def classify_text(cls, text: str) -> tuple[str | None, float, list[str]]:
         normalized = cls._normalize(text)
-        if not normalized:
+        if not normalized or not cls._looks_like_scene_intent(normalized):
             return None, 0.0, []
         scored: list[tuple[int, int, str, list[str]]] = []
         for theme, terms in THEME_KEYWORDS.items():
