@@ -2,7 +2,7 @@ extends Node
 
 const FADE_SECONDS := 0.55
 const START_ALPHA := 0.08
-const START_SCALE_FACTOR := 0.82
+const START_SCALE_FACTOR := 0.96
 
 var known_entities: Dictionary = {}
 var active: Dictionary = {}
