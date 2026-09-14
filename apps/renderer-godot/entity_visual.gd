@@ -91,7 +91,8 @@ func _process(delta: float) -> void:
     var uniform: float = scale.x
     uniform = lerpf(uniform, target_presentation_scale, minf(1.0, delta * 3.2))
     scale = Vector2.ONE * uniform
-    if entity_type == "tree" or entity_type == "campfire" or _is_walking():
+    # Humans redraw even while stopped so breathing/idle sway keeps the scene alive.
+    if entity_type == "tree" or entity_type == "campfire" or entity_type == "human":
         queue_redraw()
 
 func _shadow(radius_x: float, radius_y: float, offset_y: float = 44.0) -> void:
@@ -165,10 +166,13 @@ func _draw_fire(s: float) -> void:
 func _draw_human(s: float) -> void:
     var walking := _is_walking()
     var blend := walk_blend if walking else 0.0
+    var idle_blend := 1.0 - clampf(blend, 0.0, 1.0)
+    var idle_breath := sin(visual_time * 1.8 + float(abs(entity_id.hash()) % 7)) * 0.85 * idle_blend
+    var idle_sway := sin(visual_time * 0.72 + float(abs(entity_id.hash()) % 5)) * 0.65 * idle_blend
     var stride := sin(walk_phase) * blend
     var opposite := sin(walk_phase + PI) * blend
-    var bob := absf(sin(walk_phase)) * 2.4 * blend
-    var torso_sway := sin(walk_phase) * 1.6 * blend
+    var bob := absf(sin(walk_phase)) * 2.4 * blend + idle_breath
+    var torso_sway := sin(walk_phase) * 1.6 * blend + idle_sway
     var leg_swing := stride * 12.0
     var arm_swing := opposite * 9.0
     var lean := clampf(walk_velocity.x / HUMAN_WALK_SPEED, -1.0, 1.0) * 2.2 * blend
@@ -185,15 +189,16 @@ func _draw_human(s: float) -> void:
     draw_line(Vector2(12 - leg_swing, 49) * s, Vector2(23 - leg_swing, 49) * s, Color("#1d273b"), 5 * s)
 
     draw_colored_polygon(PackedVector2Array([
-        Vector2(-17 + lean, -23 + bob) * s, Vector2(16 + lean, -23 + bob) * s,
+        Vector2(-17 + lean + idle_sway, -23 + bob) * s, Vector2(16 + lean + idle_sway, -23 + bob) * s,
         Vector2(13 + torso_sway, 22 + bob) * s, Vector2(-13 + torso_sway, 22 + bob) * s
     ]), coat)
 
-    # Arms swing opposite to the legs, mostly fore/aft rather than both sideways.
-    draw_line(Vector2(-13 + lean, -15 + bob) * s, Vector2(-27, 8 + bob + arm_swing) * s, coat_dark, 8 * s)
-    draw_line(Vector2(13 + lean, -15 + bob) * s, Vector2(27, 8 + bob - arm_swing) * s, coat_dark, 8 * s)
+    # Arms swing opposite to the legs. While idle they inherit a tiny breathing sway.
+    var idle_arm := idle_sway * 1.6
+    draw_line(Vector2(-13 + lean, -15 + bob) * s, Vector2(-27, 8 + bob + arm_swing + idle_arm) * s, coat_dark, 8 * s)
+    draw_line(Vector2(13 + lean, -15 + bob) * s, Vector2(27, 8 + bob - arm_swing - idle_arm) * s, coat_dark, 8 * s)
 
-    var head_x := lean * 0.65
+    var head_x := lean * 0.65 + idle_sway * 0.45
     draw_circle(Vector2(head_x, -42 + bob) * s, 16 * s, skin)
     draw_arc(Vector2(head_x, -45 + bob) * s, 15 * s, PI, TAU, 18, Color("#382d2a"), 7 * s)
     # Eye subtly indicates the current horizontal walking direction.
