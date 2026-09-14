@@ -262,8 +262,11 @@ class SpatialSession:
             return
         if not isinstance(delta, dict):
             # Another process (the autonomous single writer) may have committed
-            # directly to the shared cold store. The World State sequence is the
-            # invalidation signal; reload region payloads on the next projection.
+            # directly to the shared cold store. Refresh entity->region pointers
+            # and reload region payloads on the next projection.
+            refresh = getattr(self.cold_store, "refresh_manifest", None)
+            if callable(refresh):
+                refresh()
             self.cold_cache.clear()
             self._cold_sequence = sequence
             return
