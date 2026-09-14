@@ -139,11 +139,13 @@ class DeploymentContractTests(unittest.TestCase):
         self.assertIn("_context_expected_world", source)
         self.assertIn("actor_state_from_agent_output", source)
 
-    def test_late_extension_routes_are_promoted_before_manager_catch_all(self) -> None:
+    def test_late_extension_routes_use_tested_precedence_helper(self) -> None:
         source = Path("apps/world-runtime/main_cognitive_live.py").read_text(encoding="utf-8")
-        self.assertIn('_promote_api_route_before_root("/api/ai/context/preview")', source)
-        self.assertIn('_promote_api_route_before_root("/api/cognitive/v2/frame")', source)
-        self.assertIn("isinstance(route, Mount)", source)
+        helper = Path("apps/world-runtime/route_precedence.py").read_text(encoding="utf-8")
+        self.assertIn('promote_api_route_before_root(app, "/api/ai/context/preview")', source)
+        self.assertIn('promote_api_route_before_root(app, "/api/cognitive/v2/frame")', source)
+        self.assertIn("isinstance(route, Mount)", helper)
+        self.assertIn('route.path in {"", "/"}', helper)
 
 
 if __name__ == "__main__":
