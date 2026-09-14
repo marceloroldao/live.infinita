@@ -91,8 +91,12 @@ def _principal_for_action(source: str, context: dict[str, Any] | None) -> Mutati
 
     if actor_id == "system":
         authority = "system"
+    elif metadata.get("ai_auto_approved") or metadata.get("audience_auto_approved"):
+        # A closed allowlist was already validated in the gateway. The LLM only
+        # interpreted intent; mutation still passes through this deterministic gate.
+        authority = "world_agent"
     elif metadata.get("ai_proposal_id"):
-        # AI proposals only reach this path after the operator explicitly commits them.
+        # Non-auto AI proposals only reach this path after explicit operator commit.
         authority = "operator"
     elif metadata.get("operator_approved") and metadata.get("proposal_id"):
         # Marker can only be injected inside the authenticated approval context.
@@ -113,6 +117,49 @@ def _principal_for_action(source: str, context: dict[str, Any] | None) -> Mutati
     )
 
 
+def _nov_action(engine: ColdAuthoritativeWorldEngine, action: str) -> tuple[list[dict[str, Any]], str]:
+    nov = engine.cold_store.get_entity("nov")
+    if not isinstance(nov, dict):
+        raise ValueError("nov não existe")
+
+    target_id = {
+        "nov_to_fire": "fire_01",
+        "nov_to_shelter": "shelter_marker",
+        "nov_to_forest": "ancient_tree",
+    }.get(action)
+
+    if action == "nov_explore":
+        region_id = str(nov.get("region_id") or "")
+        target_id = {
+            "clearing": "ancient_tree",
+            "deep_forest": "shelter_marker",
+            "shelter": "fire_01",
+        }.get(region_id, "ancient_tree")
+
+    if not target_id:
+        raise ValueError(f"ação de Nov desconhecida: {action}")
+    target = engine.cold_store.get_entity(target_id)
+    if not isinstance(target, dict):
+        raise ValueError(f"destino de Nov não existe: {target_id}")
+    position = target.get("position") if isinstance(target.get("position"), dict) else {}
+    region_id = str(target.get("region_id") or "").strip()
+    if not region_id:
+        raise ValueError(f"destino sem região: {target_id}")
+    operation = {
+        "op": "move",
+        "entity_id": "nov",
+        "position": {"x": float(position.get("x", 0.0)), "y": float(position.get("y", 0.0))},
+        "region_id": region_id,
+    }
+    label = str((target.get("properties") or {}).get("label") or target_id)
+    narration = (
+        "Nov escolhe um novo caminho e continua explorando."
+        if action == "nov_explore"
+        else f"Nov caminha em direção a {label}."
+    )
+    return [operation], narration
+
+
 def _install_cold_mutation_gate() -> None:
     if not isinstance(core.engine, ColdAuthoritativeWorldEngine):
         return
@@ -128,18 +175,24 @@ def _install_cold_mutation_gate() -> None:
         source: str = "runtime",
         context: dict[str, Any] | None = None,
     ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
-        world = engine.load_world()
-        _event, proposed_delta = engine.propose(world, action, source=source, context=context)
+        if action in {"nov_to_fire", "nov_to_shelter", "nov_to_forest", "nov_explore"}:
+            operations, narration = _nov_action(engine, action)
+        else:
+            world = engine.load_world()
+            _event, proposed_delta = engine.propose(world, action, source=source, context=context)
+            operations = list(proposed_delta.get("operations", []))
+            narration = str(proposed_delta.get("narration", ""))
+
         principal = _principal_for_action(source, context)
         result = guarded.commit(
-            list(proposed_delta.get("operations", [])),
+            operations,
             principal=principal,
             context={
                 **dict(context or {}),
                 "validated_action": action,
-                "proposal_narration": proposed_delta.get("narration", ""),
+                "proposal_narration": narration,
             },
-            narration=str(proposed_delta.get("narration", "")),
+            narration=narration,
         )
         if not result["ok"]:
             decision = result["decision"]
