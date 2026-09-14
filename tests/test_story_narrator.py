@@ -21,6 +21,8 @@ class StoryNarratorTests(unittest.TestCase):
             "world_id": "test-world",
             "sequence": 7,
             "environment": {"period": "night", "weather": "clear", "biome": "forest"},
+            # Story metadata may still exist authoritatively, but the conversational
+            # host must not receive it as material for narration.
             "story": {"chapter": 2, "motif": "river"},
         }
 
@@ -71,56 +73,58 @@ class StoryNarratorTests(unittest.TestCase):
                 config={}, comment=third, world=self.world(), collective_state=self.collective(contributors=3), now=103
             )
 
-    def test_previous_narration_is_supplied_to_next_openai_phrase(self):
+    def test_openai_can_answer_general_question_without_story_context(self):
         requests = []
-        outputs = iter([
-            "Ana chama Nov para o rio. A trilha parece escutar. Talvez a margem responda.",
-            "Ana insiste, e a margem volta ao centro da história. O caminho agora parece mais próximo.",
-        ])
 
         def transport(payload, _api_key):
             requests.append(payload)
-            return {"output_text": next(outputs)}
+            return {"output_text": "A capital do Japão é Tóquio. Quer testar outra pergunta?"}
 
         narrator = LiveStoryNarrator(window_seconds=90, transport=transport)
-        first = narrator.observe_comment(
-            source="tiktok", actor_id="u1", display_name="Ana", text="rio", now=100
-        )
-        narrator.render_interaction(
-            config={"openai_api_key": "test", "openai_model": "test-model"},
-            comment=first,
-            world=self.world(),
-            collective_state=self.collective(),
+        comment = narrator.observe_comment(
+            source="tiktok",
+            actor_id="u1",
+            display_name="Ana",
+            text="qual a capital do Japão?",
             now=100,
         )
-        second = narrator.observe_comment(
-            source="tiktok", actor_id="u1", display_name="Ana", text="continua", now=110
-        )
-        narrator.render_interaction(
+        cue = narrator.render_interaction(
             config={"openai_api_key": "test", "openai_model": "test-model"},
-            comment=second,
+            comment=comment,
             world=self.world(),
-            collective_state=self.collective(),
-            now=110,
+            collective_state=self.collective(theme=None, contributors=0),
+            now=100,
         )
-        context_text = requests[1]["input"][1]["content"][0]["text"].split("\n", 1)[1]
-        context = json.loads(context_text)
-        self.assertEqual(len(context["story_history"]), 1)
-        self.assertIn("Ana chama Nov", context["story_history"][0]["text"])
-        self.assertEqual(len(narrator.story_snapshot()), 2)
+        self.assertEqual(cue.mode, "individual")
+        self.assertIn("Tóquio", cue.text)
+        self.assertEqual(cue.generated_by, "openai:test-model")
+        self.assertEqual(len(requests), 1)
 
-    def test_collective_evolution_becomes_story_chapter_cue(self):
+        system_prompt = requests[0]["input"][0]["content"][0]["text"]
+        self.assertIn("Não é narrador da história", system_prompt)
+        self.assertIn("Responda qualquer pergunta", system_prompt)
+        context_text = requests[0]["input"][1]["content"][0]["text"].split("\n", 1)[1]
+        context = json.loads(context_text)
+        self.assertNotIn("story_history", context)
+        self.assertNotIn("story", context["world"])
+
+    def test_collective_world_evolution_itself_is_silent(self):
         narrator = LiveStoryNarrator()
         cue = narrator.render_collective_evolution(
-            config={},
+            config={"openai_api_key": "unused", "openai_model": "unused"},
             world=self.world(),
             collective_state=self.collective(contributors=4),
             evolution={"theme": "river", "chapter": 3, "contributors": 4},
             now=200,
         )
-        self.assertEqual(cue.mode, "collective_chapter")
-        self.assertEqual(cue.participants, 4)
-        self.assertIn("capítulo 3", cue.text.lower())
+        self.assertEqual(cue.mode, "silent")
+        self.assertEqual(cue.text, "")
+        self.assertEqual(cue.generated_by, "suppressed")
+
+    def test_host_keeps_no_narration_history(self):
+        narrator = LiveStoryNarrator()
+        self.assertFalse(hasattr(narrator, "history"))
+        self.assertFalse(hasattr(narrator, "story_snapshot"))
 
 
 if __name__ == "__main__":
