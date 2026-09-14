@@ -51,6 +51,13 @@ function badge(id, ok) { const el = $(id); el.textContent = ok ? 'Conectado' : '
 function duration(seconds) { const h=Math.floor(seconds/3600),m=Math.floor((seconds%3600)/60); return h?`${h}h ${m}min`:`${m}min`; }
 function monitorTextState(state) { return ({connected:'Ao vivo',searching:'Procurando live',waiting_retry:'Aguardando nova tentativa',disconnected:'Desconectado',live_ended:'Live encerrada',not_started:'Não iniciado',unknown:'Indisponível'})[state] || state; }
 function activityLabel(item) { return ({join:'entrou na live',like:'enviou curtidas',gift:'enviou um presente',comment:'comentou',world_event:'alterou o mundo'})[item.kind] || `gerou ${item.kind}`; }
+function collectiveLabel(state) {
+  if (!state || !state.dominant) return 'sem direção';
+  const names = {forest:'floresta',river:'rio',village:'vila',field:'campo'};
+  const name = names[state.dominant] || state.dominant;
+  const pct = Math.round((state.dominance || 0) * 100);
+  return `${name} · ${pct}% · ${state.contributors || 0} pessoas`;
+}
 
 async function load() {
   const status = await api('/api/manage/integrations');
@@ -81,7 +88,14 @@ async function loadMonitor() {
     $('websocket-value').textContent = data.websocket.clients;
     $('audience-total').textContent = `${data.audience.total} eventos`;
     $('joins-value').textContent = data.audience.join; $('likes-value').textContent = data.audience.like; $('gifts-value').textContent = data.audience.gift; $('actors-value').textContent = data.actors.total;
-    $('world-version').textContent = data.world.version ?? '—'; $('world-sequence').textContent = data.world.sequence ?? '—'; $('world-entities').textContent = data.world.entities; $('world-period').textContent = data.world.period || '—';
+    $('world-version').textContent = data.world.version ?? '—';
+    $('world-sequence').textContent = data.world.sequence ?? '—';
+    $('world-entities').textContent = data.world.entities;
+    $('world-regions').textContent = data.world.regions ?? '—';
+    $('world-period').textContent = data.world.period || '—';
+    $('story-chapter').textContent = data.world.story?.chapter ?? data.collective?.chapter ?? 0;
+    $('story-motif').textContent = data.world.story?.title || data.world.story?.motif || 'história autônoma';
+    $('collective-intent').textContent = collectiveLabel(data.collective);
     badge('replay-state', data.world.replay_ok); $('replay-state').textContent = data.world.replay_ok ? 'Replay íntegro' : 'Replay com erro';
     $('system-state').classList.toggle('status-error', !data.world.replay_ok); $('system-state').lastChild.textContent = data.world.replay_ok ? ' Sistema online' : ' Verificar sistema';
     $('last-update').textContent = `atualizado ${new Date(data.generated_at_unix*1000).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}`;
