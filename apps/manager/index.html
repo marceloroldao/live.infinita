@@ -19,7 +19,7 @@
   <div id="manager-view" class="app-shell" hidden>
     <aside class="sidebar">
       <a class="brand" href="/" aria-label="Live Infinita Manager"><span class="brand-symbol">∞</span><span>LIVE<br>INFINITA</span></a>
-      <nav aria-label="Navegação principal"><a class="nav-link active" data-page="overview" href="#overview"><span>⌂</span> Visão geral</a><a class="nav-link" data-page="integracoes" href="#integracoes"><span>◫</span> Integrações</a><a class="nav-link" href="/godot/"><span>◇</span> Godot <b>↗</b></a><a class="nav-link" href="/gdscript/"><span>⌁</span> GDScript <b>↗</b></a></nav>
+      <nav aria-label="Navegação principal"><a class="nav-link active" data-page="overview" href="#overview"><span>⌂</span> Visão geral</a><a class="nav-link" data-page="integracoes" href="#integracoes"><span>◫</span> Integrações</a><a class="nav-link" data-page="relatorio" href="#relatorio"><span>▤</span> Relatório</a><a class="nav-link" href="/godot/"><span>◇</span> Godot <b>↗</b></a><a class="nav-link" href="/gdscript/"><span>⌁</span> GDScript <b>↗</b></a></nav>
       <button id="logout" class="logout" type="button"><span>↪</span> Sair</button>
     </aside>
     <main class="workspace">
@@ -53,6 +53,18 @@
           <section class="integration-card"><div class="card-heading"><div class="service-icon openai">AI</div><div><h2>OpenAI</h2><p>Inteligência do mundo</p></div><span id="openai-state" class="badge">Não configurado</span></div><label for="openai-key">API key</label><input id="openai-key" type="password" autocomplete="off" placeholder="Cole sua API key"><label for="openai-model">Modelo</label><input id="openai-model" value="gpt-5-mini"><div class="actions"><button class="primary" data-save="openai">Salvar alterações</button><button class="secondary" id="test-openai">Testar</button></div><button class="remove" data-clear="openai_api_key">Remover chave</button></section>
           <section class="integration-card"><div class="card-heading"><div class="service-icon tiktok">♪</div><div><h2>TikTok Live</h2><p>Audiência em tempo real</p></div><span id="tiktok-state" class="badge">Não configurado</span></div><label for="tiktok-user">Usuário da live</label><input id="tiktok-user" placeholder="@usuario"><label for="tiktok-key">Chave Euler Stream <small>opcional</small></label><input id="tiktok-key" type="password" autocomplete="off" placeholder="Deixe vazio para manter a atual"><div class="actions"><button class="primary" data-save="tiktok">Salvar alterações</button></div><button class="remove" data-clear="tiktok_sign_api_key">Remover chave</button></section>
         </div>
+      </section>
+      <section id="relatorio" class="manager-page" hidden>
+        <header class="topbar"><div><p class="eyebrow">Gerência · Diagnóstico</p><h1>Relatório do sistema</h1></div><span id="report-state" class="system-status"><i></i> Pronto para gerar</span></header>
+        <section class="report-hero">
+          <div><p class="eyebrow green">SUPORTE</p><h2>Um retrato técnico da Live Infinita.</h2><p>Gera um relatório sanitizado do runtime, mundo, integrações, narração, audiência e logs recentes. Copie e envie o conteúdo para análise sem expor chaves ou senhas.</p></div>
+          <div class="report-actions"><button id="report-generate" class="primary" type="button">Gerar relatório</button><button id="report-copy" class="secondary" type="button">Copiar relatório</button><button id="report-download" class="secondary" type="button">Baixar .txt</button></div>
+        </section>
+        <section class="monitor-card report-card">
+          <div class="section-title"><div><p class="eyebrow">DIAGNÓSTICO</p><h2>Relatório pronto para enviar</h2></div><span id="report-generated-at">ainda não gerado</span></div>
+          <pre id="diagnostic-report" class="diagnostic-report">Clique em “Gerar relatório”. Se algum serviço estiver com erro, o próprio erro será incluído aqui.</pre>
+          <p class="log-note">Política de segurança: o relatório não inclui a senha do Manager, Bearer token, API keys nem comentários brutos da audiência.</p>
+        </section>
       </section>
       <p id="message" class="toast" role="status"></p>
     </main>
