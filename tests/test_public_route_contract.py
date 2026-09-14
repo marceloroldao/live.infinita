@@ -1,8 +1,14 @@
 from pathlib import Path
 import unittest
 
+from starlette.routing import Mount
+
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+async def _dummy_asgi(scope, receive, send):
+    return None
 
 
 class PublicRouteContractTests(unittest.TestCase):
@@ -20,6 +26,13 @@ class PublicRouteContractTests(unittest.TestCase):
         self.assertIn('href="/gdscript/"', manager)
         self.assertIn('src="/app.js"', manager)
         self.assertIn('src="/gdscript/app.js"', legacy_renderer)
+
+    def test_starlette_root_mount_is_empty_and_wrapper_removes_it(self) -> None:
+        # This is the exact regression that let the MVP-001 catch-all shadow '/'.
+        root_mount = Mount("/", app=_dummy_asgi)
+        self.assertEqual(root_mount.path, "")
+        wrapper = (ROOT / "apps" / "world-runtime" / "main_live.py").read_text(encoding="utf-8")
+        self.assertIn('route.path in {"", "/", "/manage"}', wrapper)
 
     def test_production_unit_uses_public_route_wrapper(self) -> None:
         unit = (ROOT / "deploy" / "live-infinita.service").read_text(encoding="utf-8")
