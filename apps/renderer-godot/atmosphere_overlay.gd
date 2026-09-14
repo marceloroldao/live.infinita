@@ -58,13 +58,14 @@ func _draw_forest_mist(intensity: float, weight: float) -> void:
 func _draw_forest_motes(intensity: float, weight: float) -> void:
     if weight <= 0.001: return
     var amount := int(10 + 10 * intensity)
+    var night: float = get_parent().night_amount
     for i in range(amount):
         var speed := 7.0 + float(i % 5) * 1.8
         var x := STAGE.position.x + fmod(float(i * 97) + visual_time * speed, STAGE.size.x)
         var drift := sin(visual_time * 0.9 + float(i) * 1.7) * 18.0
         var y := STAGE.position.y + 90.0 + fmod(float(i * 83) + visual_time * (3.0 + float(i % 3)), STAGE.size.y - 180.0) + drift
         var radius := 1.0 + float(i % 3) * 0.45
-        draw_circle(Vector2(x, y), radius, Color(0.90, 0.94, 0.63, (0.10 + 0.10 * intensity) * weight))
+        draw_circle(Vector2(x, y), radius, Color(0.90, 0.94, 0.63, (0.10 + 0.10 * intensity + night * 0.30 * (0.5 + 0.5 * sin(visual_time + i))) * weight))
 
 func _draw_field_air(intensity: float, weight: float) -> void:
     if weight <= 0.001: return
@@ -101,8 +102,8 @@ func _draw_biome(biome: String, intensity: float, weight: float) -> void:
             _draw_forest_mist(intensity, weight)
             _draw_forest_motes(intensity, weight)
         "field": _draw_field_air(intensity, weight)
-        "river": _draw_river_shimmer(intensity, weight)
-        "village": _draw_village_glow(intensity, weight)
+        "river": _draw_forest_motes(intensity * 0.4, weight)
+        "village": _draw_forest_motes(intensity * 0.35, weight)
         _:
             pass
 
@@ -131,6 +132,7 @@ func _draw() -> void:
     var weather := str(environment.get("weather", "clear")).to_lower()
     var intensity: float = clampf(float(environment.get("atmosphere_intensity", 0.55)), 0.0, 1.0)
 
+    _draw_foreground(intensity)
     var mix := _biome_mix(environment)
     for biome in mix.keys():
         _draw_biome(str(biome), intensity, float(mix[biome]))
@@ -140,3 +142,33 @@ func _draw() -> void:
         "dust", "dry", "poeira", "seco": _draw_dust(intensity)
         _:
             pass
+
+func _draw_foreground(intensity: float) -> void:
+    var night: float = get_parent().night_amount
+    var wind: float = get_parent().wind_amount
+    var shift: Vector2 = get_parent().camera_offset
+    # Near corner foliage frames the stage without obscuring NOV or the UI.
+    for side in [-1, 1]:
+        var base := Vector2(0 if side == -1 else 720, 1250) + shift * 1.1
+        var color := Color("#294d37").lerp(Color("#10272b"), night)
+        for leaf in range(9):
+            var sway := sin(visual_time * 0.7 + leaf) * (1 + wind * 3)
+            var pos := base + Vector2(-side * (12 + leaf % 3 * 20) + sway, -leaf * 13)
+            draw_set_transform(pos, side * 0.6, Vector2(0.45, 1.0))
+            draw_circle(Vector2.ZERO, 26 + leaf % 3 * 5, color)
+        draw_set_transform(Vector2.ZERO)
+    # Fixed near-field framing, leaving the narration safe area unobstructed.
+    for i in range(22):
+        var x := float(i) * 37.0 - 30.0
+        var y := 1040.0 + sin(i * 1.8) * 16.0
+        var p := Vector2(x, y) + shift * 1.1
+        var sway := sin(visual_time * 0.9 + i * 0.6) * (1.0 + wind * 5.0)
+        for blade in range(3):
+            draw_line(p, p + Vector2((blade - 1) * 7 + sway, -15 - i % 5 * 4), Color("#2b513a").lerp(Color("#122b30"), night), 2.5, true)
+    for i in range(int(4 + intensity * 4)):
+        var phase := fmod(visual_time * 0.025 + i * 0.137, 1.0)
+        var x := fmod(i * 173.0 + phase * 190.0, 740.0) - 10
+        var y := 565 + phase * 440
+        draw_set_transform(Vector2(x, y), sin(visual_time * 0.5 + i), Vector2(1.0, 0.45))
+        draw_circle(Vector2.ZERO, 2.4, Color(0.73, 0.73, 0.40, sin(phase * PI) * 0.24))
+    draw_set_transform(Vector2.ZERO)
