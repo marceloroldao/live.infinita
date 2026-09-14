@@ -43,6 +43,10 @@ class NovWalkingPresentationTests(unittest.TestCase):
         self.assertIn("var arm_swing := opposite * 9.0", source)
         self.assertIn("facing_sign", source)
 
+    def test_audio_service_uses_same_presentation_walk_speed(self) -> None:
+        unit = (ROOT / "deploy" / "live-infinita-audio.service").read_text(encoding="utf-8")
+        self.assertIn('Environment="LIVE_INFINITA_WORLD_WALK_SPEED=48.0"', unit)
+
 
 if __name__ == "__main__":
     unittest.main()
