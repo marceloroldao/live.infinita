@@ -21,7 +21,7 @@ class NpcIdleWander:
         plan_scheduler: PlanScheduler,
         *,
         npc_ids: list[str],
-        interval_ticks: int = 8,
+        interval_ticks: int = 4,
         priority: int = 25,
     ) -> None:
         self.plans = plan_scheduler
@@ -46,8 +46,8 @@ class NpcIdleWander:
             return None
 
         # Mostly roam inside the current region. Every fourth idle decision may
-        # cross one topology edge, which keeps the world alive without making Nov
-        # ping-pong across the entire map.
+        # cross one topology edge, which keeps Nov exploring without allowing
+        # idle motion to outrank a real need or explicit audience request.
         neighbors = [region_id for region_id in sorted(current.neighbors) if regions.get(region_id) is not None]
         if neighbors and bucket % 4 == 3:
             return regions.get(neighbors[(bucket // 4) % len(neighbors)])
@@ -56,9 +56,11 @@ class NpcIdleWander:
     @staticmethod
     def _waypoint(npc_id: str, region: Any, bucket: int) -> dict[str, float]:
         seed = zlib.crc32(npc_id.encode("utf-8")) & 0xFFFFFFFF
-        phase_index = (bucket + seed) % 12
-        angle = (float(phase_index) / 12.0) * math.tau
-        radius = float(region.radius) * (0.34 + 0.08 * float((bucket + seed) % 3))
+        # A 5/16 angular stride is coprime with 16, so consecutive idle goals are
+        # intentionally separated instead of crawling around the circumference.
+        phase_index = (bucket * 5 + seed) % 16
+        angle = (float(phase_index) / 16.0) * math.tau
+        radius = float(region.radius) * (0.44 + 0.08 * float((bucket + seed) % 3))
         return {
             "x": float(region.center[0]) + math.cos(angle) * radius,
             "y": float(region.center[1]) + math.sin(angle) * radius * 0.60,
