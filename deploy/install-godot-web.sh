@@ -24,13 +24,15 @@ if [[ ! -f "$PROJECT_DIR/project.godot" ]]; then
   echo "Erro: projeto Godot não encontrado em: $PROJECT_DIR"
   exit 1
 fi
-if [[ ! -f "$SOURCE_DIR/deploy/nginx_godot_patch.py" ]]; then
-  echo "Erro: nginx_godot_patch.py não encontrado."
-  exit 1
-fi
+for required in nginx_godot_patch.py export-godot-web.sh; do
+  [[ -f "$SOURCE_DIR/deploy/$required" ]] || {
+    echo "Erro: deploy/$required não encontrado." >&2
+    exit 1
+  }
+done
 
 apt-get update
-DEBIAN_FRONTEND=noninteractive apt-get install -y curl unzip ca-certificates libfontconfig1 fontconfig
+DEBIAN_FRONTEND=noninteractive apt-get install -y curl unzip ca-certificates libfontconfig1 fontconfig rsync
 mkdir -p "$INSTALL_ROOT" "$WEB_DIR" "$CACHE_DIR" "$NGINX_BACKUP_DIR"
 
 if [[ ! -f "$ENGINE_ZIP" ]]; then
@@ -44,6 +46,7 @@ rm -rf "$INSTALL_ROOT/engine"
 mkdir -p "$INSTALL_ROOT/engine"
 unzip -q -o "$ENGINE_ZIP" -d "$INSTALL_ROOT/engine"
 GODOT_BIN="$(find "$INSTALL_ROOT/engine" -maxdepth 1 -type f -name 'Godot_v*_linux.x86_64' | head -n1)"
+[[ -n "$GODOT_BIN" ]] || { echo 'Binário Godot não encontrado após extração.' >&2; exit 1; }
 chmod +x "$GODOT_BIN"
 
 TEMPLATE_DIR="/root/.local/share/godot/export_templates/$GODOT_TEMPLATE_DIR_VERSION"
@@ -52,19 +55,16 @@ mkdir -p "$TEMPLATE_DIR" /tmp/live-infinita-godot-templates
 unzip -q -o "$TEMPLATES_TPZ" -d /tmp/live-infinita-godot-templates
 cp -a /tmp/live-infinita-godot-templates/templates/. "$TEMPLATE_DIR/"
 
-STAGING_DIR="$(mktemp -d /tmp/live-infinita-godot-export.XXXXXX)"
-cleanup(){ rm -rf "$STAGING_DIR"; }
-trap cleanup EXIT
-
-"$GODOT_BIN" --headless --path "$PROJECT_DIR" --export-release "Web" "$STAGING_DIR/index.html"
-[[ -f "$STAGING_DIR/index.html" ]] || { echo 'Export Godot não gerou index.html.' >&2; exit 1; }
-
-# Publica apenas depois de um export completo, evitando janela com build parcial.
-rm -rf "$WEB_DIR"/*
-cp -a "$STAGING_DIR"/. "$WEB_DIR"/
-chown -R www-data:www-data "$WEB_DIR"
-find "$WEB_DIR" -type d -exec chmod 0755 {} +
-find "$WEB_DIR" -type f -exec chmod 0644 {} +
+# O mesmo exportador usado pelos updates valida status, parse errors e publica
+# atomicamente, preservando o build anterior quando o GDScript estiver inválido.
+SOURCE_SHA="$(git -C "$SOURCE_DIR" rev-parse --short HEAD 2>/dev/null || printf unknown)"
+env \
+  INSTALL_DIR="$SOURCE_DIR" \
+  PROJECT_DIR="$PROJECT_DIR" \
+  WEB_DIR="$WEB_DIR" \
+  GODOT_ENGINE_ROOT="$INSTALL_ROOT/engine" \
+  LIVE_INFINITA_SOURCE_SHA="$SOURCE_SHA" \
+  bash "$SOURCE_DIR/deploy/export-godot-web.sh"
 
 NGINX_ENTRY="$(grep -RIl 'server_name[[:space:]].*live\.etbra\.com\.br' /etc/nginx/sites-enabled /etc/nginx/conf.d 2>/dev/null | head -n1 || true)"
 if [[ -z "$NGINX_ENTRY" ]]; then
@@ -96,4 +96,5 @@ systemctl reload nginx
 echo
 echo "Godot ${GODOT_VERSION} Showcase exportado com sucesso."
 echo "Projeto: $PROJECT_DIR"
+echo "Commit:  $SOURCE_SHA"
 echo "Abra: https://live.etbra.com.br/godot/"
