@@ -73,6 +73,25 @@ class RetroWorldAudioTests(unittest.TestCase):
         self.assertGreater(energy, 20.0)
         self.assertLessEqual(max(abs(value) for value in peaks), 2.0)
 
+    def test_default_music_volume_is_deliberately_low(self):
+        self.assertLessEqual(AUDIO.RETRO_SCORE_VOLUME, 0.12)
+        audio = AUDIO.RetroProgramAudio()
+        audio.update_world(self.world(period="night"))
+        status = audio.ambient_status()
+        self.assertLess(status["retro_score"]["night_gain"], 1.0)
+
+    def test_night_insects_are_soft_texture_not_high_pure_beep(self):
+        audio = AUDIO.RetroProgramAudio()
+        audio.cricket_next = 0
+        samples = [audio._night_insects(True) for _ in range(12000)]
+        energy = sum(abs(value) for value in samples)
+        peak = max(abs(value) for value in samples)
+        self.assertGreater(energy, 0.01)
+        self.assertLess(peak, 0.01)
+        status = audio.ambient_status()
+        self.assertEqual(status["night_ambience"]["texture"], "soft-noise-chirp")
+        self.assertFalse(status["night_ambience"]["pure_high_beep"])
+
     def test_production_unit_points_to_retro_entry_point(self):
         unit = (ROOT / "deploy" / "live-infinita-audio.service").read_text(encoding="utf-8")
         self.assertIn("apps/audio-service/retro_audio.py", unit)
