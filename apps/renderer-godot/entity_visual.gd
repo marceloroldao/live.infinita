@@ -2,6 +2,7 @@ extends Node2D
 
 const LOGICAL_WORLD_SIZE := Vector2(1280.0, 720.0)
 const PORTRAIT_STAGE := Rect2(90.0, 330.0, 540.0, 620.0)
+const HUMAN_WALK_SPEED := 62.0
 
 var entity_id: String = ""
 var entity_type: String = ""
@@ -45,13 +46,19 @@ func set_presentation_target(screen_position: Vector2, emphasis: float = 1.0) ->
 func restore_default_presentation(emphasis: float = 1.0) -> void:
     set_presentation_target(world_to_portrait(world_position), emphasis)
 
+func _is_walking() -> bool:
+    return entity_type == "human" and position.distance_to(target_position) > 2.0
+
 func _process(delta: float) -> void:
     visual_time += delta
-    position = position.lerp(target_position, minf(1.0, delta * 3.8))
+    if entity_type == "human":
+        position = position.move_toward(target_position, HUMAN_WALK_SPEED * delta)
+    else:
+        position = position.lerp(target_position, minf(1.0, delta * 3.8))
     var uniform: float = scale.x
     uniform = lerpf(uniform, target_presentation_scale, minf(1.0, delta * 3.2))
     scale = Vector2.ONE * uniform
-    if entity_type == "tree" or entity_type == "campfire":
+    if entity_type == "tree" or entity_type == "campfire" or _is_walking():
         queue_redraw()
 
 func _shadow(radius_x: float, radius_y: float, offset_y: float = 44.0) -> void:
@@ -123,21 +130,27 @@ func _draw_fire(s: float) -> void:
     draw_circle(Vector2(2, -4) * s, 9 * s, Color("#fff3b0"))
 
 func _draw_human(s: float) -> void:
+    var walking := _is_walking()
+    var stride := sin(visual_time * 9.5) if walking else 0.0
+    var bob := abs(sin(visual_time * 9.5)) * 2.2 if walking else 0.0
+    var leg_swing := stride * 11.0
+    var arm_swing := stride * 8.0
+
     _shadow(28.0 * s, 10.0 * s, 46.0 * s)
     var skin := Color("#e8b98e")
     var coat := Color("#435a83")
     var coat_dark := Color("#2d3f62")
-    draw_line(Vector2(-6, 15) * s, Vector2(-16, 49) * s, Color("#26334b"), 9 * s)
-    draw_line(Vector2(6, 15) * s, Vector2(16, 49) * s, Color("#26334b"), 9 * s)
+    draw_line(Vector2(-6, 15 + bob) * s, Vector2(-16 + leg_swing, 49) * s, Color("#26334b"), 9 * s)
+    draw_line(Vector2(6, 15 + bob) * s, Vector2(16 - leg_swing, 49) * s, Color("#26334b"), 9 * s)
     draw_colored_polygon(PackedVector2Array([
-        Vector2(-17, -23) * s, Vector2(16, -23) * s,
-        Vector2(13, 22) * s, Vector2(-13, 22) * s
+        Vector2(-17, -23 + bob) * s, Vector2(16, -23 + bob) * s,
+        Vector2(13, 22 + bob) * s, Vector2(-13, 22 + bob) * s
     ]), coat)
-    draw_line(Vector2(-13, -15) * s, Vector2(-29, 8) * s, coat_dark, 8 * s)
-    draw_line(Vector2(13, -15) * s, Vector2(29, 8) * s, coat_dark, 8 * s)
-    draw_circle(Vector2(0, -42) * s, 16 * s, skin)
-    draw_arc(Vector2(0, -45) * s, 15 * s, PI, TAU, 18, Color("#382d2a"), 7 * s)
-    draw_circle(Vector2(5, -42) * s, 1.5 * s, Color("#3b302d"))
+    draw_line(Vector2(-13, -15 + bob) * s, Vector2(-29 - arm_swing, 8 + bob) * s, coat_dark, 8 * s)
+    draw_line(Vector2(13, -15 + bob) * s, Vector2(29 + arm_swing, 8 + bob) * s, coat_dark, 8 * s)
+    draw_circle(Vector2(0, -42 + bob) * s, 16 * s, skin)
+    draw_arc(Vector2(0, -45 + bob) * s, 15 * s, PI, TAU, 18, Color("#382d2a"), 7 * s)
+    draw_circle(Vector2(5, -42 + bob) * s, 1.5 * s, Color("#3b302d"))
 
 func _draw() -> void:
     var scale_value := float(entity_data.get("scale", 1.0))
