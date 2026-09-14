@@ -56,8 +56,8 @@ func _process(delta: float) -> void:
             continue
         var state: Dictionary = active[entity_id]
         var elapsed := float(state.get("elapsed", 0.0)) + delta
-        var t := clamp(elapsed / FADE_SECONDS, 0.0, 1.0)
-        var eased := 1.0 - pow(1.0 - t, 3.0)
+        var t: float = clampf(elapsed / FADE_SECONDS, 0.0, 1.0)
+        var eased: float = 1.0 - pow(1.0 - t, 3.0)
         visual.modulate.a = lerpf(START_ALPHA, 1.0, eased)
         # Do not fight the Smart Director after the short entry transition.
         if t < 1.0:
