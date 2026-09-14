@@ -19,6 +19,10 @@ THEME_LABELS = {
 }
 
 
+class NarrationSuppressed(RuntimeError):
+    """Expected presentation-only suppression, never a runtime failure."""
+
+
 @dataclass(frozen=True)
 class StoryCue:
     cue_id: str
@@ -60,6 +64,7 @@ class LiveStoryNarrator:
         self,
         *,
         window_seconds: float | None = None,
+        collective_min_interval_seconds: float | None = None,
         timeout_seconds: float = 12.0,
         transport: Callable[[dict[str, Any], str], dict[str, Any]] | None = None,
     ) -> None:
@@ -68,11 +73,17 @@ class LiveStoryNarrator:
             if window_seconds is not None
             else os.getenv("LIVE_INFINITA_STORY_WINDOW_SECONDS", "90")
         )
+        self.collective_min_interval_seconds = float(
+            collective_min_interval_seconds
+            if collective_min_interval_seconds is not None
+            else os.getenv("LIVE_INFINITA_STORY_COLLECTIVE_MIN_INTERVAL_SECONDS", "8")
+        )
         self.timeout_seconds = float(timeout_seconds)
         self.comments: deque[dict[str, Any]] = deque(maxlen=64)
         self.history: deque[dict[str, Any]] = deque(maxlen=8)
         self.transport = transport or self._openai_transport
         self.sequence = 0
+        self.last_collective_cue_at = -1.0e18
 
     def _prune(self, now: float) -> None:
         cutoff = now - max(10.0, self.window_seconds)
@@ -132,6 +143,8 @@ class LiveStoryNarrator:
             "participants": cue.participants,
             "created_at_unix": cue.created_at_unix,
         })
+        if cue.mode in {"collective", "collective_chapter"}:
+            self.last_collective_cue_at = cue.created_at_unix
         return cue
 
     @staticmethod
@@ -241,10 +254,7 @@ class LiveStoryNarrator:
             "model": model,
             "max_output_tokens": 160,
             "input": [
-                {
-                    "role": "system",
-                    "content": [{"type": "input_text", "text": self._system_prompt(mode)}],
-                },
+                {"role": "system", "content": [{"type": "input_text", "text": self._system_prompt(mode)}]},
                 {
                     "role": "user",
                     "content": [{
@@ -275,6 +285,8 @@ class LiveStoryNarrator:
         at = float(now if now is not None else time.time())
         active = self.active_snapshot(at)
         participants = max(1, int(active.get("participants", 0)))
+        if participants > 1 and at - self.last_collective_cue_at < self.collective_min_interval_seconds:
+            raise NarrationSuppressed("collective comments are being coalesced")
         fallback_mode, fallback_text = self._fallback_interaction(
             comment=comment,
             active=active,
