@@ -25,16 +25,34 @@ if [[ -z "$GODOT_BIN" ]]; then
 fi
 
 TMP_DIR="$(mktemp -d /tmp/live-infinita-godot-export.XXXXXX)"
-cleanup(){ rm -rf "$TMP_DIR"; }
+EXPORT_LOG="$(mktemp /tmp/live-infinita-godot-export-log.XXXXXX)"
+cleanup(){ rm -rf "$TMP_DIR" "$EXPORT_LOG"; }
 trap cleanup EXIT
+
+# Remove artefatos compilados antigos para impedir que um .gdc anterior masque erro no fonte atual.
+rm -rf "$PROJECT_DIR/.godot"
 
 printf '[godot] exportando projeto %s\n' "$PROJECT_DIR"
 printf '[godot] engine: %s\n' "$GODOT_BIN"
-"$GODOT_BIN" --headless --path "$PROJECT_DIR" --export-release "Web" "$TMP_DIR/index.html"
+set +e
+GODOT_SILENCE_ROOT_WARNING=1 "$GODOT_BIN" --headless --path "$PROJECT_DIR" --export-release "Web" "$TMP_DIR/index.html" 2>&1 | tee "$EXPORT_LOG"
+GODOT_STATUS=${PIPESTATUS[0]}
+set -e
+
+if ((GODOT_STATUS != 0)); then
+  echo "Export Godot terminou com status $GODOT_STATUS" >&2
+  exit 4
+fi
+
+if grep -Eiq 'SCRIPT ERROR:|Parse Error:|Failed to load script' "$EXPORT_LOG"; then
+  echo "Export Godot contém erro de script/parse; versão pública anterior foi preservada." >&2
+  grep -Ei 'SCRIPT ERROR:|Parse Error:|Failed to load script' "$EXPORT_LOG" >&2 || true
+  exit 5
+fi
 
 if [[ ! -s "$TMP_DIR/index.html" ]]; then
   echo "Export Godot não gerou index.html" >&2
-  exit 4
+  exit 6
 fi
 
 mkdir -p "$WEB_DIR"
