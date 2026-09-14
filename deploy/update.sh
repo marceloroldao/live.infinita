@@ -6,6 +6,8 @@ SOURCE_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 INSTALL_DIR="${INSTALL_DIR:-/opt/live.infinita}"
 SERVICE_USER="${SERVICE_USER:-liveinfinita}"
 DATA_DIR="${DATA_DIR:-/var/lib/live-infinita}"
+AUTONOMOUS_DATA_DIR="${AUTONOMOUS_DATA_DIR:-$DATA_DIR/autonomous-world}"
+AUTONOMOUS_ENV_FILE="${AUTONOMOUS_ENV_FILE:-/etc/live-infinita/autonomous-world.env}"
 READY_TIMEOUT="${READY_TIMEOUT:-25}"
 
 ok(){ printf '[ OK ] %s\n' "$*"; }
@@ -43,7 +45,7 @@ if ! command -v rsync >/dev/null 2>&1; then
   sudo DEBIAN_FRONTEND=noninteractive apt-get install -y rsync
 fi
 
-sudo mkdir -p "$INSTALL_DIR" "$DATA_DIR"
+sudo mkdir -p "$INSTALL_DIR" "$DATA_DIR" "$AUTONOMOUS_DATA_DIR" /etc/live-infinita
 info "Sincronizando checkout -> $INSTALL_DIR"
 sudo rsync -a --delete \
   --exclude '.git/' \
@@ -110,7 +112,48 @@ else
   warn 'Script de export Godot Web ausente; mantendo export existente.'
 fi
 
-# Apenas units presentes no repositório são considerados gerenciados por este deploy.
+# Configura o mundo autônomo sem apagar dados históricos do Runtime principal.
+AUTONOMY_WANTED=0
+AUTONOMOUS_UNIT_SOURCE="$INSTALL_DIR/deploy/live-infinita-autonomous-world.service"
+AUTONOMOUS_UNIT_TARGET="/etc/systemd/system/live-infinita-autonomous-world.service"
+AUTONOMOUS_ENV_EXAMPLE="$INSTALL_DIR/deploy/autonomous-world.env.example"
+if [[ -f "$AUTONOMOUS_UNIT_SOURCE" && -f "$AUTONOMOUS_ENV_EXAMPLE" ]]; then
+  AUTONOMY_WANTED=1
+  if [[ ! -f "$AUTONOMOUS_ENV_FILE" ]]; then
+    sudo install -m 0644 "$AUTONOMOUS_ENV_EXAMPLE" "$AUTONOMOUS_ENV_FILE"
+    ok "Configuração autônoma criada em $AUTONOMOUS_ENV_FILE"
+  else
+    info "Preservando configuração autônoma existente em $AUTONOMOUS_ENV_FILE"
+  fi
+
+  ensure_env_key(){
+    local key="$1" value="$2"
+    if sudo grep -q "^${key}=" "$AUTONOMOUS_ENV_FILE"; then
+      sudo sed -i "s|^${key}=.*|${key}=${value}|" "$AUTONOMOUS_ENV_FILE"
+    else
+      printf '%s=%s\n' "$key" "$value" | sudo tee -a "$AUTONOMOUS_ENV_FILE" >/dev/null
+    fi
+  }
+  ensure_env_default(){
+    local key="$1" value="$2"
+    if ! sudo grep -q "^${key}=" "$AUTONOMOUS_ENV_FILE"; then
+      printf '%s=%s\n' "$key" "$value" | sudo tee -a "$AUTONOMOUS_ENV_FILE" >/dev/null
+    fi
+  }
+
+  # Estes três caminhos precisam coincidir com o Runtime Web para ambos lerem/escreverem o mesmo mundo.
+  ensure_env_key LIVE_INFINITA_DATA_DIR "$AUTONOMOUS_DATA_DIR"
+  ensure_env_key LIVE_INFINITA_COLD_STORE_DIR "$AUTONOMOUS_DATA_DIR/cold-store"
+  ensure_env_key LIVE_INFINITA_COLD_BOOTSTRAP_FILE "$INSTALL_DIR/examples/world-state.nov-live.bootstrap.json"
+  ensure_env_default LIVE_INFINITA_NPC_IDS nov
+  ensure_env_default LIVE_INFINITA_TICK_DURATION_MS 500
+  ensure_env_default LIVE_INFINITA_TICK_OWNER autonomous-world
+
+  sudo install -m 0644 "$AUTONOMOUS_UNIT_SOURCE" "$AUTONOMOUS_UNIT_TARGET"
+  ok 'Unit do mundo autônomo instalada.'
+fi
+
+# Apenas units presentes no repositório e já instaladas são considerados gerenciados por este deploy.
 MANAGED_SERVICES=()
 UPDATED_UNITS=0
 shopt -s nullglob
@@ -124,6 +167,10 @@ for unit_src in "$INSTALL_DIR"/deploy/live-infinita*.service "$INSTALL_DIR"/depl
 done
 shopt -u nullglob
 sudo systemctl daemon-reload
+if ((AUTONOMY_WANTED)); then
+  sudo systemctl enable live-infinita-autonomous-world.service >/dev/null
+  ok 'Mundo autônomo habilitado para iniciar com o servidor.'
+fi
 ok "$UPDATED_UNITS unit(s) systemd instalado(s) foram atualizados."
 
 mapfile -t INSTALLED_SERVICES < <(
@@ -211,6 +258,55 @@ for svc in "${MANAGED_SERVICES[@]}"; do
   fi
 done
 
+AUTONOMY_STATUS="skipped"
+AUTONOMY_FAIL=0
+read_autonomous_tick(){
+  sudo "$INSTALL_DIR/.venv/bin/python" - "$AUTONOMOUS_DATA_DIR/simulation-clock.json" <<'PY'
+import json, sys
+from pathlib import Path
+path = Path(sys.argv[1])
+if not path.exists():
+    raise SystemExit(2)
+value = json.loads(path.read_text(encoding="utf-8"))
+print(int(value.get("tick", -1)))
+PY
+}
+
+check_autonomous_tick(){
+  local i before after
+  for ((i=0; i<10; i++)); do
+    if [[ -f "$AUTONOMOUS_DATA_DIR/simulation-clock.json" ]]; then
+      break
+    fi
+    sleep 1
+  done
+  if [[ ! -f "$AUTONOMOUS_DATA_DIR/simulation-clock.json" ]]; then
+    fail 'Autonomia NOV: simulation-clock.json não foi criado.'
+    AUTONOMY_STATUS="failed"
+    AUTONOMY_FAIL=1
+    return
+  fi
+  before="$(read_autonomous_tick 2>/dev/null || echo -1)"
+  sleep 2
+  after="$(read_autonomous_tick 2>/dev/null || echo -1)"
+  if [[ "$before" =~ ^[0-9]+$ && "$after" =~ ^[0-9]+$ && "$after" -gt "$before" ]]; then
+    AUTONOMY_STATUS="ok"
+    ok "Autonomia NOV: tick $before -> $after (mundo continua sem audiência)"
+  else
+    AUTONOMY_STATUS="failed"
+    AUTONOMY_FAIL=1
+    fail "Autonomia NOV não avançou: tick $before -> $after"
+  fi
+}
+
+if ((AUTONOMY_WANTED)) && systemctl is-active --quiet live-infinita-autonomous-world.service; then
+  check_autonomous_tick
+elif ((AUTONOMY_WANTED)); then
+  AUTONOMY_STATUS="failed"
+  AUTONOMY_FAIL=1
+  fail 'Autonomia NOV: serviço não está ativo.'
+fi
+
 check_http(){
   local label="$1" url="$2" required="${3:-0}" timeout="${4:-$READY_TIMEOUT}" code i
   for ((i=0; i<timeout; i++)); do
@@ -251,16 +347,18 @@ printf 'Source commit : %s\n' "$SOURCE_SHA"
 printf 'Branch        : %s\n' "$(git branch --show-current)"
 printf 'Produção      : %s\n' "$INSTALL_DIR"
 printf 'Godot export  : %s\n' "$VISUAL_EXPORT"
+printf 'Autonomia NOV : %s\n' "$AUTONOMY_STATUS"
 printf 'Serviços OK   : %d\n' "$ACTIVE"
 printf 'Inativos      : %d\n' "$INACTIVE"
 printf 'Legados       : %d\n' "${#LEGACY_SERVICES[@]}"
 printf 'Falhas svc    : %d\n' "$FAIL"
 printf 'Falhas HTTP   : %d\n' "$HTTP_FAIL"
 
-if ((VISUAL_FAIL || FAIL || HTTP_FAIL)); then
+if ((VISUAL_FAIL || AUTONOMY_FAIL || FAIL || HTTP_FAIL)); then
   printf '\nDEPLOY CONCLUÍDO COM FALHAS\n'
-  printf 'Runtime: sudo journalctl -u live-infinita -n 80 --no-pager\n'
-  printf 'Áudio:   sudo journalctl -u live-infinita-audio-web -n 80 --no-pager\n'
+  printf 'Runtime:   sudo journalctl -u live-infinita -n 80 --no-pager\n'
+  printf 'Autonomia: sudo journalctl -u live-infinita-autonomous-world -n 80 --no-pager\n'
+  printf 'Áudio:     sudo journalctl -u live-infinita-audio-web -n 80 --no-pager\n'
   exit 1
 fi
 
@@ -268,3 +366,4 @@ printf '\nDEPLOY OK\n'
 printf 'Visual: https://live.etbra.com.br/godot/\n'
 printf 'Build:  https://live.etbra.com.br/godot/build.json\n'
 printf 'Monitor/gerência: https://live.etbra.com.br/manage/\n'
+printf 'Autonomia: systemctl status live-infinita-autonomous-world --no-pager\n'
