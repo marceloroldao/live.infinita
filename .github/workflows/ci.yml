@@ -96,7 +96,7 @@ jobs:
           }
           trap cleanup EXIT
           sleep 1
-          DISPLAY=:99 "$GODOT_BIN" --path apps/renderer-godot --display-driver x11 --resolution 720x1280 >/tmp/godot-render.log 2>&1 &
+          DISPLAY=:99 "$GODOT_BIN" --path apps/renderer-godot --display-driver x11 --audio-driver Dummy --resolution 720x1280 >/tmp/godot-render.log 2>&1 &
           GODOT_PID=$!
           sleep 3
           kill -0 "$GODOT_PID"
@@ -105,7 +105,7 @@ jobs:
             -frames:v 1 /tmp/live-infinita-render.png
           test -s /tmp/live-infinita-render.png
           file /tmp/live-infinita-render.png | grep -q 'PNG image data, 720 x 1280'
-          DISPLAY=:99 "$GODOT_BIN" --path apps/renderer-godot --display-driver x11 \
+          DISPLAY=:99 "$GODOT_BIN" --path apps/renderer-godot --display-driver x11 --audio-driver Dummy \
             --resolution 720x1280 --script ../../tests/godot_presentation_smoke.gd \
             2>&1 | tee /tmp/godot-presentation.log
           ! grep -E 'SCRIPT ERROR|^ERROR:' /tmp/godot-presentation.log
@@ -117,3 +117,4 @@ jobs:
           name: godot-portrait-biomes
           path: artifacts/godot/*.png
           if-no-files-found: warn
+
