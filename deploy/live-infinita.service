@@ -1,6 +1,7 @@
 [Unit]
 Description=Live Infinita Runtime + Spatial Delivery
-After=network.target
+After=network.target live-infinita-autonomous-world.service
+Wants=live-infinita-autonomous-world.service
 
 [Service]
 Type=simple
@@ -10,6 +11,11 @@ WorkingDirectory=/opt/live.infinita
 Environment="PYTHONUNBUFFERED=1"
 Environment="PYTHONPATH=/opt/live.infinita:/opt/live.infinita/apps/world-runtime"
 Environment="LIVE_INFINITA_DATA_DIR=/var/lib/live-infinita"
+Environment="LIVE_INFINITA_COLD_ENGINE=1"
+Environment="LIVE_INFINITA_COLD_STORE_DIR=/var/lib/live-infinita/autonomous-world/cold-store"
+Environment="LIVE_INFINITA_COLD_BOOTSTRAP_FILE=/opt/live.infinita/examples/world-state.nov-live.bootstrap.json"
+Environment="LIVE_INFINITA_WORLD_DATA_DIR=/var/lib/live-infinita/autonomous-world"
+Environment="LIVE_INFINITA_EXTERNAL_WORLD_SYNC_MS=500"
 ExecStart=/opt/live.infinita/.venv/bin/uvicorn --app-dir /opt/live.infinita/apps/world-runtime main_spatial:app --host 0.0.0.0 --port 8080
 Restart=on-failure
 RestartSec=3
