@@ -2,7 +2,10 @@ extends Node2D
 
 const LOGICAL_WORLD_SIZE := Vector2(1280.0, 720.0)
 const PORTRAIT_STAGE := Rect2(90.0, 330.0, 540.0, 620.0)
-const HUMAN_WALK_SPEED := 62.0
+const HUMAN_WALK_SPEED := 48.0
+const HUMAN_WALK_ACCEL := 150.0
+const HUMAN_WALK_DECEL := 210.0
+const HUMAN_STOP_RADIUS := 1.5
 
 var entity_id: String = ""
 var entity_type: String = ""
@@ -12,6 +15,10 @@ var world_position := Vector2.ZERO
 var target_position := Vector2.ZERO
 var target_presentation_scale := 1.0
 var visual_time := 0.0
+var walk_velocity := Vector2.ZERO
+var walk_phase := 0.0
+var walk_blend := 0.0
+var facing_sign := 1.0
 
 func world_to_portrait(value: Vector2) -> Vector2:
     var nx: float = clampf(value.x / LOGICAL_WORLD_SIZE.x, 0.0, 1.0)
@@ -47,12 +54,38 @@ func restore_default_presentation(emphasis: float = 1.0) -> void:
     set_presentation_target(world_to_portrait(world_position), emphasis)
 
 func _is_walking() -> bool:
-    return entity_type == "human" and position.distance_to(target_position) > 2.0
+    return entity_type == "human" and (walk_blend > 0.08 or position.distance_to(target_position) > HUMAN_STOP_RADIUS)
+
+func _advance_human_walk(delta: float) -> void:
+    var offset := target_position - position
+    var distance := offset.length()
+    if distance > HUMAN_STOP_RADIUS:
+        var direction := offset / distance
+        if absf(direction.x) > 0.08:
+            facing_sign = 1.0 if direction.x >= 0.0 else -1.0
+        # Slow down near the destination instead of stopping abruptly.
+        var approach := clampf(distance / 34.0, 0.34, 1.0)
+        var desired_velocity := direction * HUMAN_WALK_SPEED * approach
+        walk_velocity = walk_velocity.move_toward(desired_velocity, HUMAN_WALK_ACCEL * delta)
+        var step := walk_velocity * delta
+        if step.length() >= distance:
+            position = target_position
+            walk_velocity = Vector2.ZERO
+        else:
+            position += step
+    else:
+        position = target_position
+        walk_velocity = walk_velocity.move_toward(Vector2.ZERO, HUMAN_WALK_DECEL * delta)
+
+    var speed_ratio := clampf(walk_velocity.length() / HUMAN_WALK_SPEED, 0.0, 1.0)
+    walk_blend = move_toward(walk_blend, speed_ratio, delta * 5.5)
+    # Cadence follows actual presentation speed, so feet do not skate when slowing.
+    walk_phase = fmod(walk_phase + delta * lerpf(4.2, 9.2, speed_ratio), TAU)
 
 func _process(delta: float) -> void:
     visual_time += delta
     if entity_type == "human":
-        position = position.move_toward(target_position, HUMAN_WALK_SPEED * delta)
+        _advance_human_walk(delta)
     else:
         position = position.lerp(target_position, minf(1.0, delta * 3.8))
     var uniform: float = scale.x
@@ -131,26 +164,40 @@ func _draw_fire(s: float) -> void:
 
 func _draw_human(s: float) -> void:
     var walking := _is_walking()
-    var stride := sin(visual_time * 9.5) if walking else 0.0
-    var bob := abs(sin(visual_time * 9.5)) * 2.2 if walking else 0.0
-    var leg_swing := stride * 11.0
-    var arm_swing := stride * 8.0
+    var blend := walk_blend if walking else 0.0
+    var stride := sin(walk_phase) * blend
+    var opposite := sin(walk_phase + PI) * blend
+    var bob := absf(sin(walk_phase)) * 2.4 * blend
+    var torso_sway := sin(walk_phase) * 1.6 * blend
+    var leg_swing := stride * 12.0
+    var arm_swing := opposite * 9.0
+    var lean := clampf(walk_velocity.x / HUMAN_WALK_SPEED, -1.0, 1.0) * 2.2 * blend
 
-    _shadow(28.0 * s, 10.0 * s, 46.0 * s)
+    _shadow((28.0 + 3.0 * blend) * s, 10.0 * s, 46.0 * s)
     var skin := Color("#e8b98e")
     var coat := Color("#435a83")
     var coat_dark := Color("#2d3f62")
-    draw_line(Vector2(-6, 15 + bob) * s, Vector2(-16 + leg_swing, 49) * s, Color("#26334b"), 9 * s)
-    draw_line(Vector2(6, 15 + bob) * s, Vector2(16 - leg_swing, 49) * s, Color("#26334b"), 9 * s)
+
+    # Feet/legs alternate naturally instead of opening and closing in sync.
+    draw_line(Vector2(-6 + torso_sway, 15 + bob) * s, Vector2(-15 + leg_swing, 49) * s, Color("#26334b"), 9 * s)
+    draw_line(Vector2(6 + torso_sway, 15 + bob) * s, Vector2(15 - leg_swing, 49) * s, Color("#26334b"), 9 * s)
+    draw_line(Vector2(-18 + leg_swing, 49) * s, Vector2(-7 + leg_swing, 49) * s, Color("#1d273b"), 5 * s)
+    draw_line(Vector2(12 - leg_swing, 49) * s, Vector2(23 - leg_swing, 49) * s, Color("#1d273b"), 5 * s)
+
     draw_colored_polygon(PackedVector2Array([
-        Vector2(-17, -23 + bob) * s, Vector2(16, -23 + bob) * s,
-        Vector2(13, 22 + bob) * s, Vector2(-13, 22 + bob) * s
+        Vector2(-17 + lean, -23 + bob) * s, Vector2(16 + lean, -23 + bob) * s,
+        Vector2(13 + torso_sway, 22 + bob) * s, Vector2(-13 + torso_sway, 22 + bob) * s
     ]), coat)
-    draw_line(Vector2(-13, -15 + bob) * s, Vector2(-29 - arm_swing, 8 + bob) * s, coat_dark, 8 * s)
-    draw_line(Vector2(13, -15 + bob) * s, Vector2(29 + arm_swing, 8 + bob) * s, coat_dark, 8 * s)
-    draw_circle(Vector2(0, -42 + bob) * s, 16 * s, skin)
-    draw_arc(Vector2(0, -45 + bob) * s, 15 * s, PI, TAU, 18, Color("#382d2a"), 7 * s)
-    draw_circle(Vector2(5, -42 + bob) * s, 1.5 * s, Color("#3b302d"))
+
+    # Arms swing opposite to the legs, mostly fore/aft rather than both sideways.
+    draw_line(Vector2(-13 + lean, -15 + bob) * s, Vector2(-27, 8 + bob + arm_swing) * s, coat_dark, 8 * s)
+    draw_line(Vector2(13 + lean, -15 + bob) * s, Vector2(27, 8 + bob - arm_swing) * s, coat_dark, 8 * s)
+
+    var head_x := lean * 0.65
+    draw_circle(Vector2(head_x, -42 + bob) * s, 16 * s, skin)
+    draw_arc(Vector2(head_x, -45 + bob) * s, 15 * s, PI, TAU, 18, Color("#382d2a"), 7 * s)
+    # Eye subtly indicates the current horizontal walking direction.
+    draw_circle(Vector2(head_x + 5.0 * facing_sign, -42 + bob) * s, 1.5 * s, Color("#3b302d"))
 
 func _draw() -> void:
     var scale_value := float(entity_data.get("scale", 1.0))
