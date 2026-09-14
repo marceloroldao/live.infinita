@@ -13,6 +13,7 @@ if str(RUNTIME_DIR) not in sys.path:
     sys.path.insert(0, str(RUNTIME_DIR))
 
 from npc_idle_wander import NpcIdleWander  # noqa: E402
+from world_tick import WorldTickRunner  # noqa: E402
 
 
 class NovWalkingPresentationTests(unittest.TestCase):
@@ -32,6 +33,15 @@ class NovWalkingPresentationTests(unittest.TestCase):
         distance = math.hypot(second["x"] - first["x"], second["y"] - first["y"])
         self.assertGreater(distance, 55.0)
 
+    def test_only_a_scheduled_need_blocks_idle_walking(self) -> None:
+        rows = [
+            {"npc_id": "nov", "status": "cooldown"},
+            {"npc_id": "nov", "status": "no_target"},
+        ]
+        self.assertEqual(WorldTickRunner._idle_blocked_npc_ids(rows), set())
+        rows.append({"npc_id": "nov", "status": "scheduled"})
+        self.assertEqual(WorldTickRunner._idle_blocked_npc_ids(rows), {"nov"})
+
     def test_godot_human_walk_uses_velocity_cadence_and_opposed_limbs(self) -> None:
         source = (ROOT / "apps" / "renderer-godot" / "entity_visual.gd").read_text(encoding="utf-8")
         self.assertIn("const HUMAN_WALK_SPEED := 48.0", source)
@@ -42,6 +52,13 @@ class NovWalkingPresentationTests(unittest.TestCase):
         self.assertIn("var opposite := sin(walk_phase + PI)", source)
         self.assertIn("var arm_swing := opposite * 9.0", source)
         self.assertIn("facing_sign", source)
+
+    def test_stationary_human_keeps_a_visible_idle_animation(self) -> None:
+        source = (ROOT / "apps" / "renderer-godot" / "entity_visual.gd").read_text(encoding="utf-8")
+        self.assertIn('entity_type == "human"', source)
+        self.assertIn("var idle_breath := sin(visual_time * 1.8", source)
+        self.assertIn("var idle_sway := sin(visual_time * 0.72", source)
+        self.assertIn("Humans redraw even while stopped", source)
 
     def test_audio_service_uses_same_presentation_walk_speed(self) -> None:
         unit = (ROOT / "deploy" / "live-infinita-audio.service").read_text(encoding="utf-8")
