@@ -72,7 +72,14 @@ jobs:
           unzip -q "/tmp/${ZIP}" -d /tmp/godot
           GODOT_BIN="$(find /tmp/godot -maxdepth 1 -type f -name 'Godot_v*_linux.x86_64' | head -n1)"
           chmod +x "$GODOT_BIN"
-          "$GODOT_BIN" --headless --editor --quit --path apps/renderer-godot
+          "$GODOT_BIN" --headless --editor --quit --path apps/renderer-godot 2>&1 | tee /tmp/godot-editor.log
+          ! grep -E 'SCRIPT ERROR|^ERROR:' /tmp/godot-editor.log
+          for script in apps/renderer-godot/*.gd; do
+            "$GODOT_BIN" --headless --path apps/renderer-godot --check-only --script "$(basename "$script")"
+          done
+          "$GODOT_BIN" --headless --path apps/renderer-godot \
+            --script ../../tests/godot_presentation_smoke.gd 2>&1 | tee /tmp/godot-contracts.log
+          ! grep -E 'SCRIPT ERROR|^ERROR:' /tmp/godot-contracts.log
 
       - name: Smoke-test native portrait server renderer
         shell: bash
@@ -98,3 +105,15 @@ jobs:
             -frames:v 1 /tmp/live-infinita-render.png
           test -s /tmp/live-infinita-render.png
           file /tmp/live-infinita-render.png | grep -q 'PNG image data, 720 x 1280'
+          DISPLAY=:99 "$GODOT_BIN" --path apps/renderer-godot --display-driver x11 \
+            --resolution 720x1280 --script ../../tests/godot_presentation_smoke.gd \
+            2>&1 | tee /tmp/godot-presentation.log
+          ! grep -E 'SCRIPT ERROR|^ERROR:' /tmp/godot-presentation.log
+
+      - name: Upload portrait biome captures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: godot-portrait-biomes
+          path: artifacts/godot/*.png
+          if-no-files-found: warn
