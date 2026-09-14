@@ -43,7 +43,7 @@ func _emit_metrics() -> void:
 
     var promotions := int(transition_metrics.get("promotions_total", 0))
     var predicted := int(transition_metrics.get("predicted_promotions_total", 0))
-    var unexpected := max(0, promotions - predicted)
+    var unexpected: int = maxi(0, promotions - predicted)
     var hit_rate := 0.0
     if promotions > 0:
         hit_rate = float(predicted) / float(promotions)
