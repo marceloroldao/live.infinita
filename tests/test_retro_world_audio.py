@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 import sys
 import unittest
+from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -95,6 +96,61 @@ class RetroWorldAudioTests(unittest.TestCase):
     def test_production_unit_points_to_retro_entry_point(self):
         unit = (ROOT / "deploy" / "live-infinita-audio.service").read_text(encoding="utf-8")
         self.assertIn("apps/audio-service/retro_audio.py", unit)
+
+
+class _FakeAudio:
+    def __init__(self):
+        self.world_updates = 0
+
+    def update_world(self, _world):
+        self.world_updates += 1
+        return AUDIO.server_audio.WorldAudioState()
+
+    def ambient_status(self):
+        return {"ambient_enabled": True}
+
+
+class InteractionNarrationAudioTests(unittest.IsolatedAsyncioTestCase):
+    async def asyncSetUp(self):
+        self.audio = _FakeAudio()
+        self.load_patch = patch.object(AUDIO.server_audio, "load_last_identity", return_value="")
+        self.status_patch = patch.object(AUDIO.server_audio, "write_status")
+        self.persist_patch = patch.object(AUDIO.server_audio, "persist_last_identity")
+        self.load_patch.start()
+        self.status_patch.start()
+        self.persist = self.persist_patch.start()
+        self.addCleanup(self.load_patch.stop)
+        self.addCleanup(self.status_patch.stop)
+        self.addCleanup(self.persist_patch.stop)
+        self.service = AUDIO.InteractionNarrationService(self.audio)
+
+    async def test_autonomous_world_narration_never_enters_tts_queue(self):
+        world = self.world_with_legacy_narration("A noite caiu e Nov caminhou.")
+        await self.service.submit_world(world)
+        self.assertEqual(self.audio.world_updates, 1)
+        self.assertTrue(self.service.queue.empty())
+
+    async def test_interaction_cue_is_the_only_tts_trigger(self):
+        await self.service.submit_narration_cue({
+            "cue_id": "interaction:c1:1",
+            "text": "Ana, Nov ouviu você. A trilha parece responder.",
+            "mode": "individual",
+            "participants": 1,
+            "theme": "forest",
+        })
+        identity, text = self.service.queue.get_nowait()
+        self.assertEqual(identity, "interaction:c1:1")
+        self.assertIn("Ana", text)
+        self.persist.assert_called_once_with("interaction:c1:1")
+
+    @staticmethod
+    def world_with_legacy_narration(text):
+        return {
+            "environment": {"biome": "forest", "period": "night", "weather": "clear"},
+            "entities": [],
+            "narration": {"text": text},
+            "last_event": {"event_id": "auto-evt"},
+        }
 
 
 if __name__ == "__main__":
