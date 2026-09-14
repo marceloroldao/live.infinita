@@ -41,8 +41,11 @@ jobs:
       - name: Unit and API tests
         run: python -m unittest discover -v -s tests -p 'test_*.py'
 
-      - name: Validate monitor JavaScript
-        run: node --check apps/renderer-web/monitor/app.js
+      - name: Validate monitor and Manager JavaScript
+        run: |
+          node --check apps/renderer-web/monitor/app.js
+          node --check apps/manager/app.js
+          node --check apps/manager/simulator.js
 
       - name: Showcase source preflight
         run: python deploy/showcase_preflight.py
