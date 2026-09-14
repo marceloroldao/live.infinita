@@ -100,6 +100,20 @@ class CollectiveIntentTest(unittest.TestCase):
         self.assertEqual(weight, 0.0)
         self.assertEqual(matches, [])
 
+    def test_theme_mention_in_knowledge_question_is_not_scene_intent(self) -> None:
+        theme, weight, matches = CollectiveIntentEngine.classify_text(
+            "Qual é o maior rio do mundo?"
+        )
+        self.assertIsNone(theme)
+        self.assertEqual(weight, 0.0)
+        self.assertEqual(matches, [])
+
+    def test_short_theme_comment_is_still_a_direct_vote(self) -> None:
+        theme, weight, matches = CollectiveIntentEngine.classify_text("rio ponte agua")
+        self.assertEqual(theme, "river")
+        self.assertGreater(weight, 1.0)
+        self.assertIn("rio", matches)
+
     def test_scene_terms_match_words_not_accidental_substrings(self) -> None:
         theme, weight, matches = CollectiveIntentEngine.classify_text(
             "Estou curioso: a solução parece boa para o casamento."
