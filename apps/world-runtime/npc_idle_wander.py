@@ -11,9 +11,9 @@ class NpcIdleWander:
     """Schedule low-priority deterministic walking when an NPC has no active goal.
 
     This is deliberately below every need-driven priority. It never competes with
-    safety/energy/social/curiosity plans: as soon as a real plan exists, idle
-    wandering yields. Waypoints are derived from region topology, so no random
-    generator or LLM is required and replay remains deterministic.
+    safety/energy/social/curiosity plans: as soon as a real need or plan exists,
+    idle wandering yields. Waypoints are derived from region topology, so no
+    random generator or LLM is required and replay remains deterministic.
     """
 
     def __init__(
@@ -64,16 +64,20 @@ class NpcIdleWander:
             "y": float(region.center[1]) + math.sin(angle) * radius * 0.60,
         }
 
-    def evaluate_tick(self, tick: int) -> list[dict[str, Any]]:
+    def evaluate_tick(self, tick: int, *, blocked_npc_ids: set[str] | None = None) -> list[dict[str, Any]]:
         tick = int(tick)
         if tick <= 0 or tick % self.interval_ticks != 0:
             return []
 
+        blocked = {str(value) for value in (blocked_npc_ids or set())}
         bucket = tick // self.interval_ticks
         results: list[dict[str, Any]] = []
         for npc_id in self.npc_ids:
             entity = self._entity(npc_id)
             if entity is None:
+                continue
+            if npc_id in blocked:
+                results.append({"npc_id": npc_id, "tick": tick, "status": "need_active"})
                 continue
             if self._has_active_plan(npc_id):
                 results.append({"npc_id": npc_id, "tick": tick, "status": "busy"})
