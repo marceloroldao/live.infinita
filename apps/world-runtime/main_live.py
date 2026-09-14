@@ -55,6 +55,17 @@ def _public_wrap_world_message(message: dict[str, Any], view: dict[str, Any]) ->
 main_spatial.spatial_session.wrap_world_message = _public_wrap_world_message  # type: ignore[method-assign]
 
 
+def _is_legacy_static_mount(route: object) -> bool:
+    """Identify mounts that main.py attaches before the production shell.
+
+    Starlette canonicalizes Mount("/") to path == "".  Matching only "/"
+    leaves the legacy renderer as a catch-all route in front of the Manager.
+    Keep the explicit slash form too so this remains safe across Starlette
+    versions.
+    """
+    return isinstance(route, Mount) and route.path in {"", "/", "/manage"}
+
+
 # Restore the public presentation contract introduced by manager-shell-011 while
 # keeping main_spatial as the authoritative runtime implementation.
 #
@@ -64,13 +75,10 @@ main_spatial.spatial_session.wrap_world_message = _public_wrap_world_message  # 
 #   /godot/     -> served by nginx from the Godot Web export
 #
 # main.py still carries legacy mounts for compatibility with older entrypoints.
-# This production wrapper removes only those two static mounts and reattaches
-# them in the intended order so the catch-all root cannot shadow /gdscript.
-app.router.routes = [
-    route
-    for route in app.router.routes
-    if not (isinstance(route, Mount) and route.path in {"/", "/manage"})
-]
+# Remove those mounts before attaching the production routes.  In particular,
+# Starlette stores Mount("/") with an empty path, so the empty-string case is
+# essential: otherwise the old MVP-001 renderer shadows the Manager.
+app.router.routes = [route for route in app.router.routes if not _is_legacy_static_mount(route)]
 
 
 @app.get("/manage", include_in_schema=False)
