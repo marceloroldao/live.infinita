@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import math
 import os
+import re
 import time
 import unicodedata
 from collections import deque
@@ -11,22 +12,32 @@ from pathlib import Path
 from typing import Any
 
 
+# Closed scene vocabulary. This layer extracts only preferences that can safely
+# map to scenery the current renderer/world evolver already understands. General
+# questions remain conversation-only and therefore cannot accidentally mutate the
+# world. Multi-word phrases are intentionally supported for natural questions.
 THEME_KEYWORDS: dict[str, tuple[str, ...]] = {
     "forest": (
-        "floresta", "mata", "arvore", "arvores", "bosque", "misterio",
-        "sombrio", "escuro", "explorar", "exploracao", "aventura",
+        "floresta", "mata", "mata fechada", "arvore", "arvores", "bosque",
+        "selva", "vegetacao", "folhagem", "trilha na mata", "trilha na floresta",
+        "entre as arvores", "animais da floresta",
     ),
     "river": (
-        "rio", "agua", "cachoeira", "lago", "ponte", "margem",
-        "pescar", "atravessar", "travessia", "correnteza",
+        "rio", "rios", "agua", "aguas", "cachoeira", "cachoeiras", "lago", "lagos",
+        "ponte", "pontes", "margem", "margens", "riacho", "corrego", "nascente",
+        "beira do rio", "pescar", "atravessar o rio", "travessia", "correnteza",
+        "barco", "ilha",
     ),
     "village": (
-        "vila", "aldeia", "cidade", "casa", "casas", "pessoas",
-        "comunidade", "encontro", "construir", "moradores", "praca",
+        "vila", "aldeia", "cidade", "casa", "casas", "comunidade", "morador",
+        "moradores", "praca", "mercado", "rua", "ruas", "construcao", "construcoes",
+        "outras pessoas", "alguem morando", "tem alguem por perto", "encontrar gente",
+        "luzes de casas",
     ),
     "field": (
-        "campo", "campina", "planicie", "aberto", "horizonte", "flores",
-        "sol", "claridade", "grama", "prado", "tranquilo", "calma",
+        "campo", "campo aberto", "campina", "planicie", "horizonte", "flores", "grama",
+        "prado", "clareira", "clareiras", "ceu aberto", "vale", "colina", "colinas",
+        "espaco aberto",
     ),
 }
 
@@ -34,8 +45,10 @@ THEME_KEYWORDS: dict[str, tuple[str, ...]] = {
 class CollectiveIntentEngine:
     """Bounded, deterministic aggregation of crowd preference over time.
 
-    Text decides direction. Telemetry only increases confidence/momentum. The
-    engine never mutates World State; it only exposes a ready evolution intent.
+    Conversation and world intent are deliberately separate: every comment may be
+    answered by the conversational host, but only text that maps to the closed
+    scene vocabulary becomes a collective world signal. Telemetry only amplifies
+    an existing semantic direction and never chooses one by itself.
     """
 
     def __init__(self, state_file: Path) -> None:
@@ -59,22 +72,37 @@ class CollectiveIntentEngine:
     def _normalize(text: str) -> str:
         value = unicodedata.normalize("NFKD", str(text or "").lower())
         value = "".join(ch for ch in value if not unicodedata.combining(ch))
-        return " ".join(value.replace("-", " ").replace("_", " ").split())
+        value = re.sub(r"[^a-z0-9]+", " ", value)
+        return " ".join(value.split())
+
+    @staticmethod
+    def _contains_term(normalized: str, term: str) -> bool:
+        """Match complete words/phrases so `rio` does not match `curioso`."""
+        normalized_term = " ".join(str(term).split())
+        if not normalized_term:
+            return False
+        pattern = r"(?<![a-z0-9])" + r"\s+".join(
+            re.escape(piece) for piece in normalized_term.split()
+        ) + r"(?![a-z0-9])"
+        return re.search(pattern, normalized) is not None
 
     @classmethod
     def classify_text(cls, text: str) -> tuple[str | None, float, list[str]]:
         normalized = cls._normalize(text)
         if not normalized:
             return None, 0.0, []
-        scored: list[tuple[int, str, list[str]]] = []
+        scored: list[tuple[int, int, str, list[str]]] = []
         for theme, terms in THEME_KEYWORDS.items():
-            matches = [term for term in terms if term in normalized]
+            matches = [term for term in terms if cls._contains_term(normalized, term)]
             if matches:
-                scored.append((len(matches), theme, matches))
+                # Prefer more evidence; when counts tie, specific multi-word
+                # phrases beat a generic single word before deterministic theme id.
+                phrase_specificity = sum(term.count(" ") for term in matches)
+                scored.append((len(matches), phrase_specificity, theme, matches))
         if not scored:
             return None, 0.0, []
-        scored.sort(key=lambda row: (-row[0], row[1]))
-        count, theme, matches = scored[0]
+        scored.sort(key=lambda row: (-row[0], -row[1], row[2]))
+        count, _specificity, theme, matches = scored[0]
         weight = min(1.75, 1.0 + max(0, count - 1) * 0.25)
         return theme, weight, matches
 
