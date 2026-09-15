@@ -231,6 +231,7 @@ class CollectiveWorldEvolver:
                     "region_id": created_region_id,
                 })
 
+        previous_story = world.get("story") if isinstance(world.get("story"), dict) else {}
         story = {
             "chapter": chapter,
             "arc": template.arc,
@@ -246,6 +247,16 @@ class CollectiveWorldEvolver:
             },
             "updated_at_unix": decision.get("decided_at_unix"),
         }
+        # Interaction beats are deterministic consequences already accepted by the
+        # runtime. A new collective chapter changes the current arc but must not
+        # erase how the audience got there.
+        if "beat" in previous_story:
+            story["beat"] = int(previous_story.get("beat", 0))
+        if isinstance(previous_story.get("beats"), list):
+            story["beats"] = deepcopy(previous_story["beats"][-16:])
+        if isinstance(previous_story.get("last_interaction"), dict):
+            story["last_interaction"] = deepcopy(previous_story["last_interaction"])
+
         operations.extend([
             {"op": "set_world", "path": ["story"], "value": story},
             {
