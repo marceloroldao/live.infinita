@@ -9,8 +9,12 @@ import main_spatial
 from cold_engine import ColdAuthoritativeWorldEngine
 from interaction_story import InteractionStoryContinuity
 from mutation_gate_service import GuardedMutationService
+from story_narrator_v1 import StoryContinuityNarrator
 
 
+# Replace only the presentation narrator. The interaction parser, mutation gate and
+# World State authority remain exactly where they already live.
+main_live.story_narrator = StoryContinuityNarrator()
 story_continuity = InteractionStoryContinuity(max_beats=16)
 _story_guarded = (
     GuardedMutationService(core.engine, decision_log_file=core.DATA_DIR / "mutation-decisions.jsonl")
