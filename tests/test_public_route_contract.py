@@ -36,10 +36,13 @@ class PublicRouteContractTests(unittest.TestCase):
 
     def test_production_unit_preserves_wrapper_chain_to_public_routes(self) -> None:
         unit = (ROOT / "deploy" / "live-infinita.service").read_text(encoding="utf-8")
+        story = (ROOT / "apps" / "world-runtime" / "main_story_live.py").read_text(encoding="utf-8")
         cognitive = (ROOT / "apps" / "world-runtime" / "main_cognitive_live.py").read_text(encoding="utf-8")
         context = (ROOT / "apps" / "world-runtime" / "main_context_live.py").read_text(encoding="utf-8")
 
-        self.assertIn("main_cognitive_live:app", unit)
+        self.assertIn("main_story_live:app", unit)
+        self.assertIn("import main_cognitive_live", story)
+        self.assertIn("app = main_cognitive_live.app", story)
         self.assertIn("import main_context_live", cognitive)
         self.assertIn("app = main_context_live.app", cognitive)
         self.assertIn("import main_live", context)
