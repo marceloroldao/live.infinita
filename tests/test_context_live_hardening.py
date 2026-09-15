@@ -123,11 +123,14 @@ class AIProposalContextTests(unittest.TestCase):
 
 
 class DeploymentContractTests(unittest.TestCase):
-    def test_systemd_uses_cognitive_wrapper_over_context_layer(self) -> None:
+    def test_systemd_uses_story_wrapper_over_cognitive_and_context_layers(self) -> None:
         unit = Path("deploy/live-infinita.service").read_text(encoding="utf-8")
+        story = Path("apps/world-runtime/main_story_live.py").read_text(encoding="utf-8")
         cognitive = Path("apps/world-runtime/main_cognitive_live.py").read_text(encoding="utf-8")
-        self.assertIn("main_cognitive_live:app", unit)
+        self.assertIn("main_story_live:app", unit)
         self.assertIn("LIVE_INFINITA_MEMORIA_V2_COGNITIVE_GYM=0", unit)
+        self.assertIn("import main_cognitive_live", story)
+        self.assertIn("app = main_cognitive_live.app", story)
         self.assertIn("import main_context_live", cognitive)
         self.assertIn("app = main_context_live.app", cognitive)
 
