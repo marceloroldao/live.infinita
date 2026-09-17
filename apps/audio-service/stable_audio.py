@@ -6,11 +6,14 @@ import subprocess
 import time
 from array import array
 
-# The procedural mixer is intentionally rendered at 24 kHz and resampled by the
-# downstream relays to 48 kHz. Speech and the current ambience contain no useful
-# energy near the 12 kHz Nyquist limit, while halving the Python sample workload
-# gives the realtime loop substantially more scheduling headroom.
-os.environ.setdefault("LIVE_INFINITA_AUDIO_SAMPLE_RATE", "24000")
+# The procedural mixer is intentionally rendered at 16 kHz and resampled by the
+# downstream relays to 48 kHz. 16 kHz is wideband speech quality and keeps the
+# narration intelligible while reducing the Python realtime workload by another
+# third compared with the previous 24 kHz hotfix. With CHUNK_FRAMES=960 this also
+# gives each rendered block a 60 ms deadline instead of 40 ms, which is important
+# on the shared Live.infinita server where the procedural ambience, Piper, Godot
+# and connector processes compete for CPU.
+os.environ.setdefault("LIVE_INFINITA_AUDIO_SAMPLE_RATE", "16000")
 
 import retro_audio
 import server_audio
@@ -21,7 +24,7 @@ class StableRetroProgramAudio(retro_audio.RetroProgramAudio):
 
     The original mixer evaluates every procedural ambience layer for every PCM
     frame, even while narration is active. On a shared server that can miss its
-    20/40 ms delivery deadline and starve the local UDP transport. Narration is
+    realtime delivery deadline and starve the local UDP transport. Narration is
     more important than decorative ambience, so this mixer suspends expensive
     procedural synthesis while voice PCM is active and exposes deadline metrics
     for the Manager diagnostic report.
@@ -52,6 +55,7 @@ class StableRetroProgramAudio(retro_audio.RetroProgramAudio):
             "max_late_ms": round(self.audio_max_late_ms, 3),
             "narration_fast_path": True,
             "ambient_suspended_during_voice": True,
+            "continuity_profile": "wideband-16k-to-48k",
         }
         return status
 
@@ -129,13 +133,14 @@ class StableRetroProgramAudio(retro_audio.RetroProgramAudio):
                 if wait < -0.25:
                     next_deadline = time.monotonic()
 
-            # This line is intentionally sparse (~10 s at the production 40 ms
-            # chunk). It becomes visible in Manager -> Relatório without flooding
-            # journalctl and lets us distinguish TTS quality from transport xruns.
+            # Sparse diagnostics. At 16 kHz / 960 frames this prints about every
+            # 15 seconds and is surfaced in Manager -> Relatório.
             if self.audio_chunks % 250 == 0:
                 print(
                     "[audio] realtime "
                     f"chunks={self.audio_chunks} misses={self.audio_deadline_misses} "
+                    f"sample_rate={server_audio.SAMPLE_RATE} "
+                    f"chunk_ms={server_audio.CHUNK_SECONDS * 1000.0:.1f} "
                     f"last_ms={self.audio_last_chunk_render_ms:.2f} "
                     f"max_ms={self.audio_max_chunk_render_ms:.2f} "
                     f"late_ms={self.audio_max_late_ms:.2f} "
