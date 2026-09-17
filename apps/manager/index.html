@@ -1,37 +1,95 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Live Infinita — Gerência</title>
-  <link rel="stylesheet" href="/manage/style.css">
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#080a0f">
+  <title>Live Infinita — Manager</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23080a0f'/%3E%3Cpath d='M14 33c7-14 15-14 22 0s15 14 22 0' fill='none' stroke='%23b7ff44' stroke-width='7' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/monitoring.css"><link rel="stylesheet" href="/visibility.css"><link rel="stylesheet" href="/simulator.css">
 </head>
 <body>
-  <main>
-    <header><span>LIVE INFINITA</span><h1>Gerência</h1><p>Conecte os serviços usados pela live.</p></header>
-    <section class="unlock">
-      <label>Chave de gerenciamento</label>
-      <div class="row"><input id="operator" type="password" autocomplete="current-password" placeholder="Cole a chave do operador"><button id="unlock">Entrar</button></div>
-      <small>A chave fica apenas nesta aba.</small>
+  <div class="ambient" aria-hidden="true"></div>
+  <main id="login-view" class="login-shell">
+    <section class="login-card" aria-labelledby="login-title">
+      <div class="brand-mark" aria-hidden="true">∞</div><p class="eyebrow">LIVE INFINITA · Gerência</p>
+      <h1 id="login-title">Bem-vindo de volta.</h1><p class="intro">Entre para acessar o centro de controle da sua live.</p>
+      <form id="login-form"><label for="operator">Senha de gerenciamento</label><div class="password-field"><input id="operator" type="password" autocomplete="current-password" placeholder="Digite sua senha" required autofocus><button id="toggle-password" class="icon-button" type="button" aria-label="Mostrar senha">◉</button></div><button id="unlock" class="primary wide" type="submit"><span>Entrar no manager</span><span aria-hidden="true">→</span></button></form>
+      <p id="login-message" class="message" role="status"></p><p class="secure-note"><span aria-hidden="true">◆</span> A chave permanece somente nesta aba</p>
     </section>
-    <div id="panel" hidden>
-      <section>
-        <div class="title"><h2>OpenAI</h2><span id="openai-state" class="badge">Não configurado</span></div>
-        <label>API key</label><input id="openai-key" type="password" autocomplete="off" placeholder="Deixe vazio para manter a atual">
-        <label>Modelo</label><input id="openai-model" value="gpt-5-mini">
-        <div class="actions"><button data-save="openai">Salvar</button><button class="secondary" id="test-openai">Testar conexão</button><button class="danger" data-clear="openai_api_key">Remover chave</button></div>
-      </section>
-      <section>
-        <div class="title"><h2>TikTok Live</h2><span id="tiktok-state" class="badge">Não configurado</span></div>
-        <label>Usuário da live</label><input id="tiktok-user" placeholder="@usuario">
-        <label>Chave Euler Stream (opcional)</label><input id="tiktok-key" type="password" autocomplete="off" placeholder="Deixe vazio para manter a atual">
-        <p class="note">A integração atual lê lives públicas pelo usuário. A chave opcional aumenta os limites do assinador usado pela biblioteca TikTokLive.</p>
-        <div class="actions"><button data-save="tiktok">Salvar</button><button class="danger" data-clear="tiktok_sign_api_key">Remover chave</button></div>
-        <p class="note">Quando o conector estiver ativo, ele será reiniciado automaticamente após salvar.</p>
-      </section>
-    </div>
-    <p id="message" role="status"></p>
   </main>
-  <script src="/manage/app.js"></script>
-</body>
-</html>
+  <div id="manager-view" class="app-shell" hidden>
+    <aside class="sidebar">
+      <a class="brand" href="/" aria-label="Live Infinita Manager"><span class="brand-symbol">∞</span><span>LIVE<br>INFINITA</span></a>
+      <nav aria-label="Navegação principal"><a class="nav-link active" data-page="overview" href="#overview"><span>⌂</span> Visão geral</a><a class="nav-link" data-page="simulador" href="#simulador"><span>◉</span> Simulador</a><a class="nav-link" data-page="integracoes" href="#integracoes"><span>◫</span> Integrações</a><a class="nav-link" data-page="relatorio" href="#relatorio"><span>▤</span> Relatório</a><a class="nav-link" href="/godot/"><span>◇</span> Godot <b>↗</b></a><a class="nav-link" href="/gdscript/"><span>⌁</span> GDScript <b>↗</b></a></nav>
+      <button id="logout" class="logout" type="button"><span>↪</span> Sair</button>
+    </aside>
+    <main class="workspace">
+      <section id="overview" class="manager-page">
+        <header class="topbar"><div><p class="eyebrow">Gerência · Centro de controle</p><h1>Visão geral</h1></div><span id="system-state" class="system-status"><i></i> Sistema online</span></header>
+        <section class="monitor-hero"><div><p class="eyebrow green">LIVE AGORA</p><h2 id="live-title">Monitorando a Live Infinita</h2><p id="live-detail">Carregando o estado dos serviços...</p></div><div class="live-pulse"><span></span><b id="tiktok-live-state">VERIFICANDO</b></div></section>
+        <div class="metric-grid">
+          <article class="metric"><span>Runtime</span><strong id="runtime-value">—</strong><small id="runtime-detail">aguardando</small></article>
+          <article class="metric"><span>TikTok</span><strong id="tiktok-value">—</strong><small id="tiktok-detail">aguardando</small></article>
+          <article class="metric"><span>OpenAI</span><strong id="monitor-openai-value">—</strong><small id="monitor-openai-detail">aguardando</small></article>
+          <article class="metric"><span>WebSocket</span><strong id="websocket-value">—</strong><small>telas conectadas</small></article>
+        </div>
+        <div class="monitor-grid">
+          <section class="monitor-card audience-card"><div class="section-title"><div><p class="eyebrow">AUDIÊNCIA</p><h2>Movimento da live</h2></div><span id="audience-total" class="total-pill">0 eventos</span></div><div class="audience-metrics"><div><strong id="joins-value">0</strong><span>Entradas</span></div><div><strong id="likes-value">0</strong><span>Curtidas</span></div><div><strong id="gifts-value">0</strong><span>Presentes</span></div><div><strong id="actors-value">0</strong><span>Atores</span></div></div></section>
+          <section class="monitor-card world-card"><div class="section-title"><div><p class="eyebrow">MUNDO</p><h2>Estado atual</h2></div><span id="replay-state" class="badge">Verificando</span></div><dl><div><dt>Versão</dt><dd id="world-version">—</dd></div><div><dt>Sequência</dt><dd id="world-sequence">—</dd></div><div><dt>Entidades</dt><dd id="world-entities">—</dd></div><div><dt>Regiões</dt><dd id="world-regions">—</dd></div><div><dt>Período</dt><dd id="world-period">—</dd></div><div><dt>Capítulo</dt><dd id="story-chapter">—</dd></div><div><dt>História</dt><dd id="story-motif">—</dd></div><div><dt>Intenção coletiva</dt><dd id="collective-intent">—</dd></div></dl></section>
+          <section class="monitor-card activity-card"><div class="section-title"><div><p class="eyebrow">TEMPO REAL</p><h2>Atividade recente</h2></div><span id="last-update">—</span></div><ol id="activity-list" class="activity-list"><li class="empty">Aguardando eventos...</li></ol></section>
+          <section class="monitor-card logs-card">
+            <div class="section-title"><div><p class="eyebrow">SERVIDOR</p><h2>Logs em tempo real</h2></div><div class="log-actions"><button id="logs-refresh" class="secondary compact" type="button">Atualizar agora</button><button id="logs-pause" class="secondary compact" type="button">Pausar</button></div></div>
+            <div class="logs-grid">
+              <article class="log-console"><header><div><span class="log-dot"></span><strong>TikTok Bridge</strong></div><small>live-infinita-tiktok</small></header><pre id="tiktok-log">Carregando journal...</pre></article>
+              <article class="log-console"><header><div><span class="log-dot audio"></span><strong>Narrador / Server Audio</strong></div><small>live-infinita-audio</small></header><pre id="audio-log">Carregando journal...</pre></article>
+            </div>
+            <p class="log-note">Logs sanitizados; segredos e tokens são removidos antes da exibição.</p>
+          </section>
+        </div>
+      </section>
+      <section id="simulador" class="manager-page" hidden>
+        <header class="topbar"><div><p class="eyebrow">Gerência · Laboratório</p><h1>Simulador da Live</h1></div><span id="simulator-state" class="system-status"><i></i> Verificando modo de teste</span></header>
+        <section class="simulator-hero"><div><p class="eyebrow green">LIVE OFFLINE</p><h2>Interaja como se você fosse a audiência.</h2><p>Os comentários entram pela mesma lógica de intenção, reação do mundo e narração usada pela Live. Troque de participante para testar intenção coletiva sem precisar abrir uma transmissão.</p></div></section>
+        <div class="simulator-layout">
+          <section class="simulator-preview">
+            <header><div><p class="eyebrow">PREVIEW</p><h2>Mundo ao vivo</h2></div><small>/godot/</small></header>
+            <div class="sim-frame-shell"><iframe id="sim-godot-frame" src="/godot/?manager-simulator=1" title="Preview Godot da Live Infinita" allow="autoplay"></iframe></div>
+            <div class="sim-status-grid"><div><span>Fonte</span><strong id="sim-tiktok-state">verificando</strong></div><div><span>Intenção</span><strong id="sim-collective-state">sem direção coletiva</strong></div><div><span>Mundo</span><strong id="sim-world-state">carregando</strong></div></div>
+          </section>
+          <section class="simulator-chat">
+            <header><div><p class="eyebrow">AUDIÊNCIA DE TESTE</p><h2>Enviar interação</h2></div><button id="sim-new-viewer" class="secondary compact" type="button">Novo participante</button></header>
+            <form id="sim-form">
+              <div class="sim-identity"><label>Nome exibido<input id="sim-display-name" maxlength="80" placeholder="Visitante 1"></label><label>ID do participante<input id="sim-actor-id" maxlength="100" placeholder="manager-viewer-1"></label></div>
+              <div class="sim-compose"><label>Comentário<textarea id="sim-comment" maxlength="500" placeholder="Ex.: Nov, vamos explorar a floresta" required></textarea></label></div>
+              <div class="sim-quick"><button type="button" data-sim-prompt="Nov, vamos até a fogueira">Ir até a fogueira</button><button type="button" data-sim-prompt="Vamos procurar um rio">Procurar um rio</button><button type="button" data-sim-prompt="Nov, explore a floresta">Explorar a floresta</button><button type="button" data-sim-prompt="Será que existe uma vila por perto?">Procurar uma vila</button></div>
+              <div class="sim-actions"><button id="sim-send" class="primary" type="submit">Enviar como espectador</button><button id="sim-clear-feed" class="secondary" type="button">Limpar painel</button></div>
+            </form>
+            <p class="sim-warning">O simulador usa o World State atual e pode mover NOV ou influenciar a intenção coletiva. Por segurança, ele fica bloqueado enquanto uma TikTok LIVE real estiver conectada.</p>
+            <div id="sim-chat-feed" class="sim-chat-feed" aria-live="polite"><p class="sim-chat-empty">As interações desta sessão aparecerão aqui.</p></div>
+          </section>
+        </div>
+      </section>
+      <section id="integracoes" class="manager-page" hidden>
+        <header class="topbar"><div><p class="eyebrow">Gerência · Centro de controle</p><h1>Integrações</h1></div><span class="system-status"><i></i> Sistema online</span></header>
+        <section class="hero"><div><p class="eyebrow green">CONEXÕES</p><h2>Alimente o seu mundo.</h2><p>Conecte os serviços que dão inteligência e audiência à Live Infinita.</p></div><div class="hero-orbit" aria-hidden="true"><span>∞</span></div></section>
+        <div class="integration-grid">
+          <section class="integration-card"><div class="card-heading"><div class="service-icon openai">AI</div><div><h2>OpenAI</h2><p>Inteligência do mundo</p></div><span id="openai-state" class="badge">Não configurado</span></div><label for="openai-key">API key</label><input id="openai-key" type="password" autocomplete="off" placeholder="Cole sua API key"><label for="openai-model">Modelo</label><input id="openai-model" value="gpt-5-mini"><div class="actions"><button class="primary" data-save="openai">Salvar alterações</button><button class="secondary" id="test-openai">Testar</button></div><button class="remove" data-clear="openai_api_key">Remover chave</button></section>
+          <section class="integration-card"><div class="card-heading"><div class="service-icon tiktok">♪</div><div><h2>TikTok Live</h2><p>Audiência em tempo real</p></div><span id="tiktok-state" class="badge">Não configurado</span></div><label for="tiktok-user">Usuário da live</label><input id="tiktok-user" placeholder="@usuario"><label for="tiktok-key">Chave Euler Stream <small>opcional</small></label><input id="tiktok-key" type="password" autocomplete="off" placeholder="Deixe vazio para manter a atual"><div class="actions"><button class="primary" data-save="tiktok">Salvar alterações</button></div><button class="remove" data-clear="tiktok_sign_api_key">Remover chave</button></section>
+        </div>
+      </section>
+      <section id="relatorio" class="manager-page" hidden>
+        <header class="topbar"><div><p class="eyebrow">Gerência · Diagnóstico</p><h1>Relatório do sistema</h1></div><span id="report-state" class="system-status"><i></i> Pronto para gerar</span></header>
+        <section class="report-hero">
+          <div><p class="eyebrow green">SUPORTE</p><h2>Um retrato técnico da Live Infinita.</h2><p>Gera um relatório sanitizado do runtime, mundo, integrações, narração, audiência e logs recentes. Copie e envie o conteúdo para análise sem expor chaves ou senhas.</p></div>
+          <div class="report-actions"><button id="report-generate" class="primary" type="button">Gerar relatório</button><button id="report-copy" class="secondary" type="button">Copiar relatório</button><button id="report-download" class="secondary" type="button">Baixar .txt</button></div>
+        </section>
+        <section class="monitor-card report-card">
+          <div class="section-title"><div><p class="eyebrow">DIAGNÓSTICO</p><h2>Relatório pronto para enviar</h2></div><span id="report-generated-at">ainda não gerado</span></div>
+          <pre id="diagnostic-report" class="diagnostic-report">Clique em “Gerar relatório”. Se algum serviço estiver com erro, o próprio erro será incluído aqui.</pre>
+          <p class="log-note">Política de segurança: o relatório não inclui a senha do Manager, Bearer token, API keys nem comentários brutos da audiência.</p>
+        </section>
+      </section>
+      <p id="message" class="toast" role="status"></p>
+    </main>
+  </div>
+  <script src="/app.js"></script><script src="/simulator.js"></script>
+</body></html>
