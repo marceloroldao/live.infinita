@@ -10,6 +10,8 @@ MODEL_DIR="$DATA_DIR/audio/models"
 PIPER_MODEL="$MODEL_DIR/pt_BR-faber-medium.onnx"
 PIPER_CONFIG="$PIPER_MODEL.json"
 PIPER_BASE="https://huggingface.co/rhasspy/piper-voices/resolve/main/pt/pt_BR/faber/medium"
+NATIVE_DIR="$DATA_DIR/audio/native-bin"
+NATIVE_BIN="$NATIVE_DIR/live-infinita-audio-native"
 
 if [[ ${EUID} -ne 0 ]]; then
   echo "Execute como root: sudo bash deploy/install-server-audio.sh"
@@ -38,10 +40,11 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y ffmpeg espeak-ng rsync curl ca
 
 "$INSTALL_DIR/.venv/bin/pip" install --upgrade 'websockets>=15,<18' 'piper-tts>=1.3,<2'
 
-mkdir -p "$INSTALL_DIR/apps/audio-service" "$INSTALL_DIR/apps/audio-native" "$DATA_DIR/audio/tts" "$MODEL_DIR" "$ENV_DIR"
+mkdir -p "$INSTALL_DIR/apps/audio-service" "$INSTALL_DIR/apps/audio-native" "$DATA_DIR/audio/tts" "$MODEL_DIR" "$NATIVE_DIR" "$ENV_DIR"
 rsync -a --delete "$SOURCE_DIR/apps/audio-service/" "$INSTALL_DIR/apps/audio-service/"
 rsync -a --delete --exclude build/ "$SOURCE_DIR/apps/audio-native/" "$INSTALL_DIR/apps/audio-native/"
-ROOT_DIR="$INSTALL_DIR" bash "$SOURCE_DIR/deploy/build-native-audio.sh"
+chown -R "$SERVICE_USER:$SERVICE_USER" "$NATIVE_DIR"
+ROOT_DIR="$INSTALL_DIR" OUT_DIR="$NATIVE_DIR" sudo -u "$SERVICE_USER" bash "$SOURCE_DIR/deploy/build-native-audio.sh"
 
 if [[ ! -s "$PIPER_MODEL" ]]; then
   echo "Baixando voz local Piper pt_BR-faber-medium (~63 MB)..."
@@ -58,23 +61,39 @@ chmod 0644 "$PIPER_MODEL" "$PIPER_CONFIG"
 if [[ ! -f "$ENV_DIR/audio.env" ]]; then
   touch "$ENV_DIR/audio.env"
 fi
-# Remove legacy OpenAI audio configuration and write only local-audio settings.
-sed -i '/^LIVE_INFINITA_TTS_MODEL=/d;/^LIVE_INFINITA_TTS_VOICE=/d;/^LIVE_INFINITA_TTS_INSTRUCTIONS=/d;/^LIVE_INFINITA_PIPER_/d' "$ENV_DIR/audio.env"
-for setting in \
-  'LIVE_INFINITA_WORLD_WS=ws://127.0.0.1:8080/ws' \
-  'LIVE_INFINITA_AUDIO_UDP=udp://127.0.0.1:5500?pkt_size=1316' \
-  'LIVE_INFINITA_AUDIO_SAMPLE_RATE=48000' \
-  'LIVE_INFINITA_AUDIO_NATIVE_BIN=/opt/live.infinita/apps/audio-native/build/live-infinita-audio-native' \
-  'LIVE_INFINITA_PIPER_BIN=/opt/live.infinita/.venv/bin/piper' \
-  'LIVE_INFINITA_PIPER_MODEL=/var/lib/live-infinita/audio/models/pt_BR-faber-medium.onnx' \
-  'LIVE_INFINITA_AMBIENT_VOLUME=0.075' \
-  'LIVE_INFINITA_DUCKED_AMBIENT_VOLUME=0.025' \
-  'LIVE_INFINITA_RETRO_SCORE_VOLUME=0.10' \
-  'LIVE_INFINITA_NIGHT_INSECT_VOLUME=0.045' \
-  'LIVE_INFINITA_NARRATION_VOLUME=0.95'; do
-  key="${setting%%=*}"
-  grep -q "^${key}=" "$ENV_DIR/audio.env" || echo "$setting" >> "$ENV_DIR/audio.env"
-done
+
+# Remove legacy/cloud audio settings and values whose exact runtime path/sample
+# rate must follow the current deploy. These are rewritten below, never merely
+# appended, so old installations cannot pin the service to the former /opt build.
+sed -i \
+  '/^LIVE_INFINITA_TTS_MODEL=/d;
+   /^LIVE_INFINITA_TTS_VOICE=/d;
+   /^LIVE_INFINITA_TTS_INSTRUCTIONS=/d;
+   /^LIVE_INFINITA_PIPER_/d;
+   /^LIVE_INFINITA_AUDIO_SAMPLE_RATE=/d;
+   /^LIVE_INFINITA_AUDIO_NATIVE_BIN=/d' \
+  "$ENV_DIR/audio.env"
+
+ensure_setting(){
+  local setting="$1" key="${1%%=*}"
+  if grep -q "^${key}=" "$ENV_DIR/audio.env"; then
+    sed -i "s|^${key}=.*|${setting}|" "$ENV_DIR/audio.env"
+  else
+    echo "$setting" >> "$ENV_DIR/audio.env"
+  fi
+}
+
+ensure_setting 'LIVE_INFINITA_WORLD_WS=ws://127.0.0.1:8080/ws'
+ensure_setting 'LIVE_INFINITA_AUDIO_UDP=udp://127.0.0.1:5500?pkt_size=1316'
+ensure_setting 'LIVE_INFINITA_AUDIO_SAMPLE_RATE=48000'
+ensure_setting "LIVE_INFINITA_AUDIO_NATIVE_BIN=$NATIVE_BIN"
+ensure_setting 'LIVE_INFINITA_PIPER_BIN=/opt/live.infinita/.venv/bin/piper'
+ensure_setting 'LIVE_INFINITA_PIPER_MODEL=/var/lib/live-infinita/audio/models/pt_BR-faber-medium.onnx'
+ensure_setting 'LIVE_INFINITA_AMBIENT_VOLUME=0.075'
+ensure_setting 'LIVE_INFINITA_DUCKED_AMBIENT_VOLUME=0.025'
+ensure_setting 'LIVE_INFINITA_RETRO_SCORE_VOLUME=0.10'
+ensure_setting 'LIVE_INFINITA_NIGHT_INSECT_VOLUME=0.045'
+ensure_setting 'LIVE_INFINITA_NARRATION_VOLUME=0.95'
 chmod 0644 "$ENV_DIR/audio.env"
 
 install -m 0644 "$SOURCE_DIR/deploy/live-infinita-audio.service" /etc/systemd/system/live-infinita-audio.service
@@ -89,9 +108,8 @@ if ! systemctl is-active --quiet live-infinita-audio.service; then
   exit 1
 fi
 
-NATIVE_BIN="$INSTALL_DIR/apps/audio-native/build/live-infinita-audio-native"
 if [[ -x "$NATIVE_BIN" ]]; then
-  echo "Mixer realtime: C++ nativo 48 kHz / 20 ms"
+  echo "Mixer realtime: C++ nativo 48 kHz / 20 ms ($NATIVE_BIN)"
 else
   echo "AVISO: mixer C++ não foi compilado; serviço usará fallback Python."
 fi
