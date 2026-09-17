@@ -129,6 +129,20 @@ class StableRetroProgramAudio(retro_audio.RetroProgramAudio):
                 if wait < -0.25:
                     next_deadline = time.monotonic()
 
+            # This line is intentionally sparse (~10 s at the production 40 ms
+            # chunk). It becomes visible in Manager -> Relatório without flooding
+            # journalctl and lets us distinguish TTS quality from transport xruns.
+            if self.audio_chunks % 250 == 0:
+                print(
+                    "[audio] realtime "
+                    f"chunks={self.audio_chunks} misses={self.audio_deadline_misses} "
+                    f"last_ms={self.audio_last_chunk_render_ms:.2f} "
+                    f"max_ms={self.audio_max_chunk_render_ms:.2f} "
+                    f"late_ms={self.audio_max_late_ms:.2f} "
+                    f"voice_chunks={self.audio_voice_priority_chunks}",
+                    flush=True,
+                )
+
 
 async def main() -> None:
     server_audio.ProgramAudio = StableRetroProgramAudio  # type: ignore[assignment]
