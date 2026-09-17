@@ -97,10 +97,11 @@ class RetroWorldAudioTests(unittest.TestCase):
         unit = (ROOT / "deploy" / "live-infinita-audio.service").read_text(encoding="utf-8")
         stable = (ROOT / "apps" / "audio-service" / "stable_audio.py").read_text(encoding="utf-8")
         self.assertIn("apps/audio-service/stable_audio.py", unit)
-        self.assertIn("LIVE_INFINITA_AUDIO_SAMPLE_RATE=24000", unit)
+        self.assertIn("LIVE_INFINITA_AUDIO_SAMPLE_RATE=16000", unit)
         self.assertIn("StableRetroProgramAudio", stable)
         self.assertIn("ambient_suspended_during_voice", stable)
         self.assertIn("audio_deadline_misses", stable)
+        self.assertIn("wideband-16k-to-48k", stable)
 
 
 class _FakeAudio:
