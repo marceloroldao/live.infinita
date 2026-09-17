@@ -14,16 +14,20 @@ spec.loader.exec_module(module)
 
 
 class AudioWebBridgeTest(unittest.IsolatedAsyncioTestCase):
-    def test_ffmpeg_command_is_low_latency_mp3_stereo(self) -> None:
+    def test_ffmpeg_command_buffers_and_repairs_audio_jitter(self) -> None:
         command = module.build_ffmpeg_command()
         self.assertEqual(command[0], module.FFMPEG_BIN)
         self.assertIn(module.UDP_INPUT, command)
         self.assertIn("libmp3lame", command)
         self.assertIn("48000", command)
         self.assertIn("128k", command)
+        self.assertIn("4096", command)
+        self.assertIn("aresample=async=1000:first_pts=0", command)
+        self.assertNotIn("nobuffer", command)
+        self.assertNotIn("low_delay", command)
         self.assertEqual(command[-2:], ["mp3", "pipe:1"])
 
-    async def test_health_exposes_real_input_and_capacity(self) -> None:
+    async def test_health_exposes_real_input_capacity_and_continuity_policy(self) -> None:
         with patch.object(module, "ffmpeg_available", return_value=True):
             response = await module.health()
         self.assertEqual(response.status_code, 200)
@@ -31,6 +35,9 @@ class AudioWebBridgeTest(unittest.IsolatedAsyncioTestCase):
         self.assertIn(module.UDP_INPUT, body)
         self.assertIn('"ffmpeg_available":true', body)
         self.assertIn('"openai_audio":false', body)
+        self.assertIn('"transport_buffered":true', body)
+        self.assertIn('"jitter_filter":"aresample-async"', body)
+        self.assertIn('"latency_policy":"continuity-first"', body)
 
     async def test_health_fails_when_ffmpeg_is_missing(self) -> None:
         with patch.object(module, "ffmpeg_available", return_value=False):
