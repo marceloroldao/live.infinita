@@ -38,6 +38,14 @@ jobs:
       - name: Compile Python
         run: python -m compileall -q apps packages tests deploy
 
+      - name: Compile native audio engine
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash deploy/build-native-audio.sh
+          test -x apps/audio-native/build/live-infinita-audio-native
+          file apps/audio-native/build/live-infinita-audio-native | grep -q 'ELF 64-bit'
+
       - name: Unit and API tests
         run: python -m unittest discover -v -s tests -p 'test_*.py'
 
@@ -127,3 +135,4 @@ jobs:
           name: godot-portrait-biomes
           path: artifacts/godot/*.png
           if-no-files-found: warn
+
