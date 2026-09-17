@@ -93,9 +93,14 @@ class RetroWorldAudioTests(unittest.TestCase):
         self.assertEqual(status["night_ambience"]["texture"], "soft-noise-chirp")
         self.assertFalse(status["night_ambience"]["pure_high_beep"])
 
-    def test_production_unit_points_to_retro_entry_point(self):
+    def test_production_unit_points_to_stable_retro_entry_point(self):
         unit = (ROOT / "deploy" / "live-infinita-audio.service").read_text(encoding="utf-8")
-        self.assertIn("apps/audio-service/retro_audio.py", unit)
+        stable = (ROOT / "apps" / "audio-service" / "stable_audio.py").read_text(encoding="utf-8")
+        self.assertIn("apps/audio-service/stable_audio.py", unit)
+        self.assertIn("LIVE_INFINITA_AUDIO_SAMPLE_RATE=24000", unit)
+        self.assertIn("StableRetroProgramAudio", stable)
+        self.assertIn("ambient_suspended_during_voice", stable)
+        self.assertIn("audio_deadline_misses", stable)
 
 
 class _FakeAudio:
