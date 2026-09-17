@@ -88,6 +88,16 @@ jobs:
           sudo apt-get update -qq
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq xvfb ffmpeg
           GODOT_BIN="$(find /tmp/godot -maxdepth 1 -type f -name 'Godot_v*_linux.x86_64' | head -n1)"
+
+          # Godot's native GLES renderer writes shader/user caches under user://.
+          # Give the isolated CI smoke an explicit writable profile so a cache
+          # warning never masquerades as a renderer regression.
+          export HOME=/tmp/live-infinita-ci-home
+          export XDG_DATA_HOME="$HOME/.local/share"
+          export XDG_CACHE_HOME="$HOME/.cache"
+          export XDG_CONFIG_HOME="$HOME/.config"
+          mkdir -p "$XDG_DATA_HOME" "$XDG_CACHE_HOME" "$XDG_CONFIG_HOME"
+
           Xvfb :99 -screen 0 720x1280x24 -ac -nolisten tcp +extension GLX +render >/tmp/xvfb.log 2>&1 &
           XVFB_PID=$!
           cleanup() {
@@ -117,4 +127,3 @@ jobs:
           name: godot-portrait-biomes
           path: artifacts/godot/*.png
           if-no-files-found: warn
-
