@@ -93,15 +93,23 @@ class RetroWorldAudioTests(unittest.TestCase):
         self.assertEqual(status["night_ambience"]["texture"], "soft-noise-chirp")
         self.assertFalse(status["night_ambience"]["pure_high_beep"])
 
-    def test_production_unit_points_to_stable_retro_entry_point(self):
+    def test_production_unit_builds_native_48k_mixer_with_python_fallback(self):
         unit = (ROOT / "deploy" / "live-infinita-audio.service").read_text(encoding="utf-8")
         stable = (ROOT / "apps" / "audio-service" / "stable_audio.py").read_text(encoding="utf-8")
+        native = (ROOT / "apps" / "audio-native" / "src" / "main.cpp").read_text(encoding="utf-8")
+        build = (ROOT / "deploy" / "build-native-audio.sh").read_text(encoding="utf-8")
         self.assertIn("apps/audio-service/stable_audio.py", unit)
-        self.assertIn("LIVE_INFINITA_AUDIO_SAMPLE_RATE=16000", unit)
+        self.assertIn("LIVE_INFINITA_AUDIO_SAMPLE_RATE=48000", unit)
+        self.assertIn("build-native-audio.sh", unit)
+        self.assertIn("NativeProgramAudio", stable)
         self.assertIn("StableRetroProgramAudio", stable)
-        self.assertIn("ambient_suspended_during_voice", stable)
-        self.assertIn("audio_deadline_misses", stable)
-        self.assertIn("wideband-16k-to-48k", stable)
+        self.assertIn("cpp-native", stable)
+        self.assertIn("python-fallback", stable)
+        self.assertIn("kSampleRate = 48000", native)
+        self.assertIn("kChunkFrames = 960", native)
+        self.assertIn("deadline_misses", native)
+        self.assertIn("xruns", native)
+        self.assertIn("g++", build)
 
 
 class _FakeAudio:
