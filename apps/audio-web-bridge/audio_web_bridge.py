@@ -10,12 +10,12 @@ from fastapi.responses import JSONResponse, StreamingResponse
 
 UDP_INPUT = os.getenv(
     "LIVE_INFINITA_AUDIO_UDP_INPUT",
-    "udp://127.0.0.1:5500?fifo_size=1000000&overrun_nonfatal=1",
+    "udp://127.0.0.1:5500?fifo_size=2000000&overrun_nonfatal=1",
 )
 MAX_CLIENTS = max(1, int(os.getenv("LIVE_INFINITA_AUDIO_WEB_MAX_CLIENTS", "4")))
 FFMPEG_BIN = os.getenv("LIVE_INFINITA_FFMPEG_BIN", "ffmpeg")
 
-app = FastAPI(title="Live Infinita Audio Web Bridge", version="0.2.0")
+app = FastAPI(title="Live Infinita Audio Web Bridge", version="0.3.0")
 _active_streams = 0
 
 
@@ -26,14 +26,19 @@ def ffmpeg_available() -> bool:
 
 
 def build_ffmpeg_command() -> list[str]:
+    # Browser preview values continuity over minimum possible latency. The old
+    # nobuffer/low_delay flags exposed every tiny scheduling gap from the local
+    # realtime mixer as an audible interruption. Keep a bounded input queue and
+    # let aresample smooth timestamp jitter before MP3 encoding.
     return [
         FFMPEG_BIN,
         "-hide_banner",
         "-loglevel", "error",
-        "-fflags", "nobuffer",
-        "-flags", "low_delay",
+        "-thread_queue_size", "4096",
+        "-fflags", "+genpts",
         "-i", UDP_INPUT,
         "-vn",
+        "-af", "aresample=async=1000:first_pts=0",
         "-c:a", "libmp3lame",
         "-b:a", "128k",
         "-ar", "48000",
@@ -58,6 +63,9 @@ async def health() -> JSONResponse:
             "ffmpeg_available": available,
             "active_streams": _active_streams,
             "max_clients": MAX_CLIENTS,
+            "transport_buffered": True,
+            "jitter_filter": "aresample-async",
+            "latency_policy": "continuity-first",
         },
         status_code=200 if available else 503,
     )
