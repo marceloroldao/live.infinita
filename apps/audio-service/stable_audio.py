@@ -9,10 +9,41 @@ from array import array
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-NATIVE_BIN = Path(os.getenv(
+PERSISTENT_NATIVE_BIN = Path("/var/lib/live-infinita/audio/native-bin/live-infinita-audio-native")
+CONFIGURED_NATIVE_BIN = Path(os.getenv(
     "LIVE_INFINITA_AUDIO_NATIVE_BIN",
-    str(ROOT / "apps" / "audio-native" / "build" / "live-infinita-audio-native"),
+    str(PERSISTENT_NATIVE_BIN),
 ))
+
+
+def _select_native_bin() -> Path:
+    """Resolve the native mixer robustly across deploy migrations.
+
+    Older audio.env files may still point at the former /opt/.../build location.
+    Prefer the configured executable when it is valid, otherwise recover to the
+    persistent runtime path used by the current systemd unit/deploy.
+    """
+    candidates = [CONFIGURED_NATIVE_BIN, PERSISTENT_NATIVE_BIN]
+    legacy = ROOT / "apps" / "audio-native" / "build" / "live-infinita-audio-native"
+    candidates.append(legacy)
+    seen: set[str] = set()
+    for candidate in candidates:
+        key = str(candidate)
+        if key in seen:
+            continue
+        seen.add(key)
+        if candidate.is_file() and os.access(candidate, os.X_OK):
+            if candidate != CONFIGURED_NATIVE_BIN:
+                print(
+                    f"[audio] caminho nativo configurado indisponível: {CONFIGURED_NATIVE_BIN}; "
+                    f"usando {candidate}",
+                    flush=True,
+                )
+            return candidate
+    return CONFIGURED_NATIVE_BIN
+
+
+NATIVE_BIN = _select_native_bin()
 NATIVE_AVAILABLE = NATIVE_BIN.is_file() and os.access(NATIVE_BIN, os.X_OK)
 
 # Native DSP owns the realtime 48 kHz hot loop. If the binary is unavailable,
@@ -172,7 +203,7 @@ class NativeProgramAudio:
 
     def start(self) -> None:
         if not NATIVE_AVAILABLE:
-            self._start_fallback("binary unavailable")
+            self._start_fallback(f"binary unavailable: {NATIVE_BIN}")
             return
         server_audio.AUDIO_DIR.mkdir(parents=True, exist_ok=True)
         self.voice_dir.mkdir(parents=True, exist_ok=True)
@@ -190,11 +221,15 @@ class NativeProgramAudio:
         try:
             self.process = subprocess.Popen(command)
         except OSError as exc:
-            self._start_fallback(type(exc).__name__)
+            self._start_fallback(f"{type(exc).__name__}: {NATIVE_BIN}")
             return
         for _ in range(100):
             if self.socket_path.exists() and self.process.poll() is None:
-                print(f"[audio] native C++ mixer ativo pid={self.process.pid} sample_rate=48000 chunk_ms=20", flush=True)
+                print(
+                    f"[audio] native C++ mixer ativo pid={self.process.pid} "
+                    f"sample_rate=48000 chunk_ms=20 bin={NATIVE_BIN}",
+                    flush=True,
+                )
                 return
             if self.process.poll() is not None:
                 break
@@ -286,6 +321,7 @@ class NativeProgramAudio:
             "chunk_frames": 960,
             "chunk_ms": 20.0,
             "native_process_alive": bool(self.process and self.process.poll() is None),
+            "native_bin": str(NATIVE_BIN),
             "narration_fast_path": True,
             "ambient_suspended_during_voice": True,
             "control_transport": "unix-datagram",
