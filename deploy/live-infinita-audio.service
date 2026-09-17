@@ -12,8 +12,8 @@ WorkingDirectory=/opt/live.infinita
 EnvironmentFile=-/etc/live-infinita/audio.env
 Environment="LIVE_INFINITA_WORLD_WALK_SPEED=48.0"
 Environment="LIVE_INFINITA_AUDIO_SAMPLE_RATE=48000"
-Environment="LIVE_INFINITA_AUDIO_NATIVE_BIN=/opt/live.infinita/apps/audio-native/build/live-infinita-audio-native"
-ExecStartPre=/bin/bash /opt/live.infinita/deploy/build-native-audio.sh
+Environment="LIVE_INFINITA_AUDIO_NATIVE_BIN=/var/lib/live-infinita/audio/native-bin/live-infinita-audio-native"
+ExecStartPre=/usr/bin/env ROOT_DIR=/opt/live.infinita OUT_DIR=/var/lib/live-infinita/audio/native-bin /bin/bash /opt/live.infinita/deploy/build-native-audio.sh
 ExecStart=/opt/live.infinita/.venv/bin/python /opt/live.infinita/apps/audio-service/stable_audio.py
 Restart=always
 RestartSec=3
@@ -21,7 +21,7 @@ NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=full
 ProtectHome=true
-ReadWritePaths=/var/lib/live-infinita /opt/live.infinita/apps/audio-native/build
+ReadWritePaths=/var/lib/live-infinita
 
 [Install]
 WantedBy=multi-user.target
