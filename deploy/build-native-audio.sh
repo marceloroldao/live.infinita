@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="${ROOT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 SRC="$ROOT_DIR/apps/audio-native/src/main.cpp"
-OUT_DIR="$ROOT_DIR/apps/audio-native/build"
+OUT_DIR="${OUT_DIR:-$ROOT_DIR/apps/audio-native/build}"
 OUT="$OUT_DIR/live-infinita-audio-native"
 
 if [[ ! -f "$SRC" ]]; then
