@@ -17,6 +17,7 @@ on:
       - 'apps/world-runtime/scenario_life_gate_001.py'
       - 'apps/world-runtime/test_life_gate_001_crossrepo.py'
       - 'apps/world-runtime/nov_need_scheduler.py'
+      - 'apps/world-runtime/test_nov_need_scheduler.py'
       - 'apps/world-runtime/nov_autonomous_life.py'
       - 'apps/world-runtime/scenario_life_gate_002.py'
       - 'apps/world-runtime/test_life_gate_002_crossrepo.py'
@@ -41,7 +42,7 @@ jobs:
         run: python -m pip install pytest jsonschema
       - name: Run adapter and scenario tests
         working-directory: apps/world-runtime
-        run: python -m pytest -q test_memoria_v2_adapter.py test_scenario_nova_r1_r2.py
+        run: python -m pytest -q test_memoria_v2_adapter.py test_scenario_nova_r1_r2.py test_nov_need_scheduler.py
       - name: Validate cognitive frame example against schema
         run: |
           python - <<'PY'
