@@ -99,27 +99,48 @@ def relocate_nova(world: dict, region_id: str, *, near_source: bool) -> dict:
     else:
         relation["valid_until_tick"] = result_tick
 
+    observation_operations: list[dict] = []
+    for relation_id, observed in updated["relations"].items():
+        source = (observed or {}).get("source") or {}
+        if (
+            relation_id != SOURCE_RELATION_ID
+            and observed.get("status") == "active"
+            and observed.get("subject") == "nova"
+            and source.get("type") == "world-runtime"
+        ):
+            observed["status"] = "inactive"
+            observed["valid_until_tick"] = result_tick
+            observed["version"] = result_version
+            observation_operations.append(
+                {
+                    "op": "deactivate",
+                    "path": f"/relations/{relation_id}",
+                }
+            )
+
     transition = _transition_id("relocate", result_tick, f"{region_id}|{near_source}")
     delta_id = f"delta_{result_version:08d}_{transition}"
     event_id = f"event_{result_tick:08d}_{transition}"
 
+    operations = [
+        {
+            "op": "set",
+            "path": "/entities/nova/components/transform/region_id",
+            "value": region_id,
+        },
+        {
+            "op": "set",
+            "path": f"/relations/{SOURCE_RELATION_ID}/status",
+            "value": relation["status"],
+        },
+        *observation_operations,
+    ]
     delta = {
         "delta_id": delta_id,
         "base_version": before_version,
         "result_version": result_version,
         "tick_id": result_tick,
-        "operations": [
-            {
-                "op": "set",
-                "path": "/entities/nova/components/transform/region_id",
-                "value": region_id,
-            },
-            {
-                "op": "set",
-                "path": f"/relations/{SOURCE_RELATION_ID}/status",
-                "value": relation["status"],
-            },
-        ],
+        "operations": operations,
         "provenance": {"origin": "world-runtime", "kind": "relocate"},
     }
     event = {
@@ -161,7 +182,11 @@ def advance_ambient_ticks(world: dict, count: int) -> dict:
         before_tick = int(updated.get("current_tick", 0))
         result_version = before_version + 1
         result_tick = before_tick + 1
-        marker = _transition_id("ambient", result_tick, updated["entities"]["nova"]["components"]["transform"]["region_id"])
+        marker = _transition_id(
+            "ambient",
+            result_tick,
+            updated["entities"]["nova"]["components"]["transform"]["region_id"],
+        )
         delta_id = f"delta_{result_version:08d}_{marker}"
         event_id = f"event_{result_tick:08d}_{marker}"
 
