@@ -79,11 +79,11 @@ python -m pytest -q \
   test_life_gate_001_crossrepo.py
 ```
 
-O Life Gate 001 passa somente se os três testes específicos ficarem verdes:
+O Life Gate 001 passa somente se os quatro testes específicos ficarem verdes:
 
 - memória altera a decisão após o retorno;
 - decisão de retorno é read-only até o World Runtime executar;
-- execução completa é determinística.
+- execução completa é determinística;\n- a saída da região encerra a observação transitória anterior.
 
 ## Limite desta etapa
 
