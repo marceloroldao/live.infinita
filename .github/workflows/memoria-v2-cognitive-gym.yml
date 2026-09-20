@@ -14,9 +14,12 @@ on:
       - 'apps/world-runtime/test_closed_loop_crossrepo.py'
       - 'apps/world-runtime/scenario_continuous_closed_loop.py'
       - 'apps/world-runtime/test_continuous_closed_loop_crossrepo.py'
+      - 'apps/world-runtime/scenario_life_gate_001.py'
+      - 'apps/world-runtime/test_life_gate_001_crossrepo.py'
       - 'schemas/memoria-v2-cognitive-frame.schema.json'
       - 'examples/memoria-v2-cognitive-frame.minimal.json'
       - 'docs/MEMORIA_V2_COGNITIVE_GYM.md'
+      - 'docs/LIFE_GATE_001.md'
       - '.github/workflows/memoria-v2-cognitive-gym.yml'
   workflow_dispatch:
 
@@ -73,3 +76,4 @@ jobs:
           test_active_curiosity_crossrepo.py
           test_closed_loop_crossrepo.py
           test_continuous_closed_loop_crossrepo.py
+          test_life_gate_001_crossrepo.py
