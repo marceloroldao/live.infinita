@@ -208,6 +208,7 @@ def _run_gate_signature():
     return (
         tuple((item.mode, item.proposal["action"]) for item in discovery_decisions),
         established.context_key,
+        probe_diag["context_key"],
         initial_state,
         return_state,
         prior,
@@ -227,6 +228,7 @@ def test_life_gate_001_memory_changes_novas_behavior_after_return():
     (
         discovery,
         established_key,
+        returned_key,
         initial_state,
         return_state,
         prior,
@@ -245,6 +247,7 @@ def test_life_gate_001_memory_changes_novas_behavior_after_return():
 
     # The spatial/cognitive context is recovered after leaving and spending time away.
     assert return_state == initial_state
+    assert returned_key == established_key
     assert prior.active is not None
 
     # Recognition happens before a new observation at the returned location.
@@ -255,10 +258,6 @@ def test_life_gate_001_memory_changes_novas_behavior_after_return():
     # Curiosity no longer needs to probe the already-established situated regime.
     assert return_mode == "baseline"
     assert return_action == "continue"
-
-    # The established situated key is the one recovered on return.
-    assert prior == prior
-    assert established_key is not None
 
 
 def test_life_gate_001_return_decision_is_read_only_until_world_executes():
