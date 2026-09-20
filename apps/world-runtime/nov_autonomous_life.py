@@ -26,6 +26,7 @@ from closed_loop_runtime import (
 )
 from memoria_v2_adapter import intervention_from_proposal, observer_state_addresses
 from environmental_perception import project_environmental_presence
+from environmental_sensor_runtime import project_environmental_sensor_readings
 from nov_need_scheduler import (
     NeedActionDecision,
     NeedState,
@@ -53,6 +54,7 @@ def request_for_proposal(
 ) -> LiveWorldStateRequest:
     cognitive_world = pre_action_cognitive_world(world, observer_id)
     cognitive_world = project_environmental_presence(cognitive_world, observer_id)
+    cognitive_world = project_environmental_sensor_readings(cognitive_world, observer_id)
     state = observer_state_addresses(cognitive_world, observer_id)
     intervention = intervention_from_proposal(proposal)
     candidates = tuple(
