@@ -16,6 +16,7 @@ Implementação temporal usada:
 ```text
 marceloroldao/bit.analyze
 branch: experiment/temporal-multimodal-reality-slice
+validated commit: b39de5704e07c86c374d62fe8c43eda1d04a9ac8
 experiments/temporal_multimodal/reality_slice.py
 ```
 
