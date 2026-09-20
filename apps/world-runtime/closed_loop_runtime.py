@@ -33,6 +33,24 @@ def _entity_region(world: dict[str, Any], entity_id: str) -> str | None:
     return str(value) if value is not None else None
 
 
+def _entity_presence_regions(world: dict[str, Any], entity_id: str) -> tuple[str, ...]:
+    entity = (world.get("entities") or {}).get(entity_id)
+    if not isinstance(entity, dict) or entity.get("status") != "active":
+        return ()
+
+    components = entity.get("components") or {}
+    distribution = components.get("environmental_distribution")
+    if isinstance(distribution, dict):
+        regions = []
+        for region_id, raw_amount in (distribution.get("by_region") or {}).items():
+            if isinstance(raw_amount, (int, float)) and raw_amount > 0:
+                regions.append(str(region_id))
+        return tuple(sorted(set(regions)))
+
+    region_id = _entity_region(world, entity_id)
+    return (region_id,) if region_id is not None else ()
+
+
 def _rules(world: dict[str, Any], actor_id: str) -> tuple[RuntimeActionRule, ...]:
     rules = (world.get("rules") or {}).get("actions") or ()
     parsed: list[RuntimeActionRule] = []
@@ -55,8 +73,8 @@ def _rules(world: dict[str, Any], actor_id: str) -> tuple[RuntimeActionRule, ...
             if not target:
                 continue
             actor_region = _entity_region(world, actor_id)
-            target_region = _entity_region(world, str(target))
-            if actor_region is None or target_region is None or actor_region != target_region:
+            target_regions = _entity_presence_regions(world, str(target))
+            if actor_region is None or actor_region not in target_regions:
                 continue
         parsed.append(
             RuntimeActionRule(
