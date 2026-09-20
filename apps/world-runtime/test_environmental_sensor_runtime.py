@@ -32,7 +32,7 @@ def test_sensor_initial_sample_reports_only_coarse_band():
     assert "live:entity:water_01" in state
     assert "raw_value" not in serialized
     assert "noisy_value" not in serialized
-    assert "100" not in serialized
+    assert "environmental_distribution" not in serialized
 
 
 def test_sensor_noise_is_deterministic_for_same_world_snapshot():
