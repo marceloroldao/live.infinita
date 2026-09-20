@@ -102,7 +102,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: marceloroldao/bit.analyze
-          ref: experiment/temporal-multimodal-reality-slice
+          ref: b39de5704e07c86c374d62fe8c43eda1d04a9ac8
           path: bit-analyze
       - uses: actions/setup-python@v5
         with:
