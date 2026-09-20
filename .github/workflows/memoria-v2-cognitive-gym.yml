@@ -42,6 +42,9 @@ on:
       - 'apps/world-runtime/scenario_life_gate_007.py'
       - 'apps/world-runtime/test_environmental_multisensor_runtime.py'
       - 'apps/world-runtime/test_life_gate_007_crossrepo.py'
+      - 'apps/world-runtime/reality_slice_bridge.py'
+      - 'apps/world-runtime/scenario_life_gate_008.py'
+      - 'apps/world-runtime/test_life_gate_008_crossrepo.py'
       - 'apps/world-runtime/test_life_gate_003_crossrepo.py'
       - 'schemas/memoria-v2-cognitive-frame.schema.json'
       - 'examples/memoria-v2-cognitive-frame.minimal.json'
@@ -53,6 +56,7 @@ on:
       - 'docs/LIFE_GATE_005.md'
       - 'docs/LIFE_GATE_006.md'
       - 'docs/LIFE_GATE_007.md'
+      - 'docs/LIFE_GATE_008.md'
       - '.github/workflows/memoria-v2-cognitive-gym.yml'
   workflow_dispatch:
 
@@ -94,6 +98,12 @@ jobs:
           repository: marceloroldao/memoria.ia
           ref: experiment/address-trajectory-v2
           path: memoria-ia
+      - name: Checkout bit.analyze temporal RealitySlice experiment
+        uses: actions/checkout@v4
+        with:
+          repository: marceloroldao/bit.analyze
+          ref: experiment/temporal-multimodal-reality-slice
+          path: bit-analyze
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -101,7 +111,7 @@ jobs:
         run: python -m pip install pytest
       - name: Run Live -> Memoria.ia V2 cross-repo gym
         env:
-          PYTHONPATH: ${{ github.workspace }}/memoria-ia/src:${{ github.workspace }}/live-infinita/apps/world-runtime
+          PYTHONPATH: ${{ github.workspace }}/memoria-ia/src:${{ github.workspace }}/bit-analyze/experiments/temporal_multimodal:${{ github.workspace }}/live-infinita/apps/world-runtime
         working-directory: live-infinita/apps/world-runtime
         run: >-
           python -m pytest -q
@@ -116,3 +126,4 @@ jobs:
           test_life_gate_005_crossrepo.py
           test_life_gate_006_crossrepo.py
           test_life_gate_007_crossrepo.py
+          test_life_gate_008_crossrepo.py
