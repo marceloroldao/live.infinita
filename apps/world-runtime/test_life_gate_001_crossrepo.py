@@ -297,3 +297,29 @@ def test_life_gate_001_return_decision_is_read_only_until_world_executes():
 
 def test_life_gate_001_is_deterministic():
     assert _run_gate_signature() == _run_gate_signature()
+
+
+def test_life_gate_001_departure_closes_transient_runtime_observation():
+    world = build_life_gate_world()
+    gym = SituatedLiveCognitiveGymV2(
+        min_independent_episodes=2,
+        min_contiguous_support=2,
+    )
+    world, _, _ = _discover_source_twice(gym, world)
+
+    active_before = [
+        relation
+        for relation in world["relations"].values()
+        if relation.get("status") == "active"
+        and ((relation.get("source") or {}).get("type") == "world-runtime")
+    ]
+    assert len(active_before) == 1
+
+    moved = relocate_nova(world, "forest_far", near_source=False)
+    active_after = [
+        relation
+        for relation in moved["relations"].values()
+        if relation.get("status") == "active"
+        and ((relation.get("source") or {}).get("type") == "world-runtime")
+    ]
+    assert active_after == []
