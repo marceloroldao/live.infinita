@@ -98,10 +98,7 @@ def _run_gate_signature():
         "environmental_distribution",
         "initial_total",
         "evaporated_total",
-        "100",
-        "40",
-        "30",
-        "20",
+        "by_region",
     ):
         assert value not in hidden
 
@@ -235,10 +232,7 @@ def test_life_gate_005_exact_quantity_is_hidden_from_memoria():
         "environmental_distribution",
         "initial_total",
         "evaporated_total",
-        "100",
-        "40",
-        "30",
-        "20",
+        "by_region",
     ):
         assert hidden not in serialized
 
