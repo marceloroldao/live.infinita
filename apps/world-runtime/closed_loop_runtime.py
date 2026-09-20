@@ -13,6 +13,7 @@ class RuntimeActionRule:
     target: str | None
     possible_consequence_addresses: tuple[str, ...]
     consequence_address: str
+    requires_target_colocation: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -22,6 +23,14 @@ class RuntimeExecution:
     event: dict[str, Any]
     world: dict[str, Any]
     consequence_address: str
+
+
+def _entity_region(world: dict[str, Any], entity_id: str) -> str | None:
+    entity = (world.get("entities") or {}).get(entity_id)
+    if not isinstance(entity, dict) or entity.get("status") != "active":
+        return None
+    value = ((entity.get("components") or {}).get("transform") or {}).get("region_id")
+    return str(value) if value is not None else None
 
 
 def _rules(world: dict[str, Any], actor_id: str) -> tuple[RuntimeActionRule, ...]:
@@ -39,9 +48,26 @@ def _rules(world: dict[str, Any], actor_id: str) -> tuple[RuntimeActionRule, ...
             if str(item)
         )
         target = raw.get("target")
+        requires_target_colocation = bool(raw.get("requires_target_colocation", False))
         if not rule_id or not action or not consequence or not possible or consequence not in possible:
             continue
-        parsed.append(RuntimeActionRule(rule_id, action, target, possible, consequence))
+        if requires_target_colocation:
+            if not target:
+                continue
+            actor_region = _entity_region(world, actor_id)
+            target_region = _entity_region(world, str(target))
+            if actor_region is None or target_region is None or actor_region != target_region:
+                continue
+        parsed.append(
+            RuntimeActionRule(
+                rule_id,
+                action,
+                target,
+                possible,
+                consequence,
+                requires_target_colocation,
+            )
+        )
     parsed.sort(key=lambda item: item.rule_id)
     return tuple(parsed)
 
