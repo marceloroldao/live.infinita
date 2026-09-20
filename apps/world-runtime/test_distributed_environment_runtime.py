@@ -105,11 +105,24 @@ def test_distributed_presence_projection_is_read_only():
 def test_exact_quantities_do_not_leak_into_cognitive_state_addresses():
     world = build_life_gate_005_world()
     world = advance_distributed_environmental_agents(world, ticks=1)[0].world
+
     projected = project_environmental_presence(world, "nova")
     state = observer_state_addresses(projected, "nova")
 
+    altered = deepcopy(world)
+    altered_distribution = altered["entities"]["water_01"]["components"]["environmental_distribution"]
+    altered_distribution["by_region"] = {
+        "channel": 59,
+        "hollow": 30,
+        "spring": 1,
+    }
+    altered_projected = project_environmental_presence(altered, "nova")
+    altered_state = observer_state_addresses(altered_projected, "nova")
+
+    # Same observable presence, different hidden quantities -> identical cognitive state.
+    assert altered_state == state
     serialized = "|".join(state)
-    for hidden in ("100", "70", "40", "30", "20", "10", "environmental_distribution"):
+    for hidden in ("environmental_distribution", "initial_total", "evaporated_total", "by_region"):
         assert hidden not in serialized
 
 
