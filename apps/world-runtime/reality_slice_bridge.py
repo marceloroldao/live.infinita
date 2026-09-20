@@ -64,6 +64,7 @@ def reality_window_from_world(
     frame_count: int = 3,
     tick_seconds: float = 0.10,
     occurrence_duration: float = 0.02,
+    time_origin: float = 0.0,
 ) -> RealityWindow:
     """Convert the latest synchronized sensor frames into one temporal RealitySlice.
 
@@ -91,7 +92,7 @@ def reality_window_from_world(
 
     for event in selected:
         event_tick = int(event["tick_id"])
-        t_start = (event_tick - base_tick) * tick_seconds
+        t_start = time_origin + (event_tick - base_tick) * tick_seconds
         t_end = t_start + occurrence_duration
         frame_id = str(event["frame_id"])
         provenance = _stable_int(f"frame-provenance|{frame_id}", bits=31)
@@ -128,7 +129,7 @@ def reality_window_from_world(
     if not occurrences:
         raise ValueError("selected frames contain no sensor channels")
 
-    slice_start = 0.0
+    slice_start = time_origin
     slice_end = max(item.t_end for item in occurrences)
     reality_slice = RealitySlice(
         slice_id=slice_id,
@@ -166,3 +167,21 @@ def ingest_reality_windows(
     for window in windows:
         engine.ingest(window.reality_slice)
     return engine
+
+
+
+def reality_window_from_world_rule(
+    world: dict[str, Any],
+    *,
+    observer_id: str,
+    time_origin: float = 0.0,
+) -> RealityWindow:
+    config = (world.get("rules") or {}).get("reality_slice_window") or {}
+    return reality_window_from_world(
+        world,
+        observer_id=observer_id,
+        frame_count=int(config.get("frame_count", 3)),
+        tick_seconds=float(config.get("tick_seconds", 0.10)),
+        occurrence_duration=float(config.get("occurrence_duration", 0.02)),
+        time_origin=time_origin,
+    )
