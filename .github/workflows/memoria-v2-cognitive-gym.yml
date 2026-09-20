@@ -34,6 +34,10 @@ on:
       - 'apps/world-runtime/scenario_life_gate_005.py'
       - 'apps/world-runtime/test_distributed_environment_runtime.py'
       - 'apps/world-runtime/test_life_gate_005_crossrepo.py'
+      - 'apps/world-runtime/environmental_sensor_runtime.py'
+      - 'apps/world-runtime/scenario_life_gate_006.py'
+      - 'apps/world-runtime/test_environmental_sensor_runtime.py'
+      - 'apps/world-runtime/test_life_gate_006_crossrepo.py'
       - 'apps/world-runtime/test_life_gate_003_crossrepo.py'
       - 'schemas/memoria-v2-cognitive-frame.schema.json'
       - 'examples/memoria-v2-cognitive-frame.minimal.json'
@@ -43,6 +47,7 @@ on:
       - 'docs/LIFE_GATE_003.md'
       - 'docs/LIFE_GATE_004.md'
       - 'docs/LIFE_GATE_005.md'
+      - 'docs/LIFE_GATE_006.md'
       - '.github/workflows/memoria-v2-cognitive-gym.yml'
   workflow_dispatch:
 
@@ -59,7 +64,7 @@ jobs:
         run: python -m pip install pytest jsonschema
       - name: Run adapter and scenario tests
         working-directory: apps/world-runtime
-        run: python -m pytest -q test_memoria_v2_adapter.py test_scenario_nova_r1_r2.py test_nov_need_scheduler.py test_environmental_agent_runtime.py test_environmental_reactive_runtime.py test_distributed_environment_runtime.py
+        run: python -m pytest -q test_memoria_v2_adapter.py test_scenario_nova_r1_r2.py test_nov_need_scheduler.py test_environmental_agent_runtime.py test_environmental_reactive_runtime.py test_distributed_environment_runtime.py test_environmental_sensor_runtime.py
       - name: Validate cognitive frame example against schema
         run: |
           python - <<'PY'
@@ -104,3 +109,4 @@ jobs:
           test_life_gate_003_crossrepo.py
           test_life_gate_004_crossrepo.py
           test_life_gate_005_crossrepo.py
+          test_life_gate_006_crossrepo.py
