@@ -13,9 +13,7 @@ def build_life_gate_002_world() -> dict:
 
     actions = world["rules"]["actions"]
     for rule in actions:
-        if rule["rule_id"] == "probe_source":
-            rule["need_affordances"] = ["explore"]
-        elif rule["rule_id"] == "continue_path":
+        if rule["rule_id"] == "continue_path":
             rule["action"] = "walk"
             rule["possible_consequence_addresses"] = ["live:outcome:path-progress"]
             rule["consequence_address"] = "live:outcome:path-progress"
@@ -38,13 +36,15 @@ def build_life_gate_002_world() -> dict:
 def initial_nov_needs(world: dict) -> NeedState:
     """Initial local pressures for the gate.
 
+    Curiosity is deliberately absent here: it belongs to the cognitive uncertainty
+    loop, not to the physiological/autonomous need scheduler.
+
     The slight roam lead is an initial agent condition, not knowledge about the
-    source. All pressures then grow uniformly with logical time.
+    source. Both local pressures then grow uniformly with logical time.
     """
     return make_need_state(
         tick_id=int(world["current_tick"]),
         pressures={
-            "explore": 0,
             "recover": 0,
             "roam": 4,
         },
