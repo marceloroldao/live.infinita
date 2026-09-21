@@ -65,7 +65,11 @@ def _episode(
     ).world
 
     if signal_after_consequence:
-        # Adversarial timing: same agent state family is sampled after Water.
+        # Adversarial timing: keep the same Wind regime family, but place the signal
+        # clearly after the Water consequence. One extra Water-only physical tick
+        # increases the observation gap beyond bit.analyze simultaneous_delta without
+        # changing the Wind phase (gust_b still maps to a0; lull_b still maps to a1).
+        world = advance_distributed_environmental_agents(world, ticks=1)[0].world
         world = sample_multimodal_sensor_frame(
             world,
             observer_id="nova",
