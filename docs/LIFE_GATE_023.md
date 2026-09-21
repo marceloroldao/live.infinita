@@ -46,9 +46,9 @@ Each ContextAssociation separates:
 
 This prevents double decay at the same timestamp while preserving observation provenance.
 
-Gate 023 configures world-owned:
+Gate 023 configures the higher-order structural evidence policy:
 
-    passive_decay_lambda0 = 0.025
+    forgetting_lambda0 = 0.025
 
 The existing evidence threshold remains:
 
