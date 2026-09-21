@@ -223,3 +223,30 @@ def test_life_gate_012_is_deterministic():
     )
 
     assert a == b
+
+
+def test_life_gate_012_hidden_physical_values_do_not_enter_memoria_resolution():
+    memory = _memory_from_episodes((571, 572, 573))
+    world = _fresh_prediction_world(580)
+
+    prediction = predict_next_environmental_sensor(
+        memory,
+        world,
+        observer_id="nova",
+        sensor_id="s_intensity",
+    )
+
+    physical = prediction.physical_futures.candidates[0]
+    assert not hasattr(physical, "raw_value")
+    assert not hasattr(physical, "source_value")
+
+    serialized = repr(prediction.resolution).lower()
+    for forbidden in (
+        "raw_value",
+        "source_value",
+        "by_region",
+        "initial_total",
+        "evaporated_total",
+        "environmental_distribution",
+    ):
+        assert forbidden not in serialized
