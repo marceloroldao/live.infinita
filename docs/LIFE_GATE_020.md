@@ -15,7 +15,7 @@ The physical XOR structure remains unchanged:
     {a1,c0} -> d2
     {a1,c1} -> d1
 
-Each of the four combinations is repeated four times, giving 16 independent RealitySlices.
+Each of the four combinations is repeated five times, giving 20 independent RealitySlices. The first occurrence can serve as recurrence warm-up; the original evidence thresholds are not relaxed.
 
 Each RealitySlice is then augmented with:
 
@@ -25,9 +25,9 @@ Each RealitySlice is then augmented with:
 Across the full corpus the pairwise pattern universe therefore contains:
 
     7 useful patterns
-  + 768 one-shot distractor IDs
+  + 960 one-shot distractor IDs
   + 8 recurrent distractor IDs
-  = 783 individual pattern IDs
+  = 975 individual pattern IDs
 
 ## Recurrence prefilter
 
@@ -51,6 +51,10 @@ After indexing, the existing gates still apply:
 - context reliability;
 - lower-order insufficiency.
 
+## Warm-up cost
+
+With `min_pattern_support=2`, the first occurrence establishes recurrence eligibility and is not counted as higher-order evidence. Gate 020 therefore uses five observations per physical combination so the original `min_rho=0.39` threshold remains unchanged. This is intentionally stricter than lowering the evidence threshold to compensate for the prefilter.
+
 ## Expected boundedness
 
 The clean Gate 020 corpus and the noisy Gate 020 corpus must have the same higher-order structure.
@@ -58,7 +62,7 @@ The clean Gate 020 corpus and the noisy Gate 020 corpus must have the same highe
 Expected metrics:
 
     clean pairwise pattern IDs: 7
-    noisy pairwise pattern IDs: 783
+    noisy pairwise pattern IDs: 975
 
     clean higher-order indexed links: 8
     noisy higher-order indexed links: 8
@@ -73,11 +77,11 @@ The admitted/observed higher-order ratio is therefore:
 
     4 / 8 = 0.5
 
-The important property is not the ratio itself; it is that increasing the individual pattern universe from 7 to 783 does not increase the higher-order index.
+The important property is not the ratio itself; it is that increasing the individual pattern universe from 7 to 975 does not increase the higher-order index.
 
 ## One-shot distractors
 
-The 768 one-shot patterns are deliberately placed near the useful temporal region.
+The 960 one-shot patterns are deliberately placed near the useful temporal region.
 
 Without recurrence prefiltering they could generate many provisional higher-order combinations.
 
