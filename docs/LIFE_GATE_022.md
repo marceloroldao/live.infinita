@@ -107,3 +107,5 @@ It does not yet test a context that disappears completely. Pure time-based decay
 Life Gate 023 should test passive forgetting when a formerly admitted context stops appearing entirely.
 
 That gate should determine whether the bit.analyze higher-order layer needs explicit global time advancement/decay for links that receive no new observations, while preserving the same historical-versus-active memory boundary.
+
+Temporary validation PR: this marker exists only to force a fresh Actions run against the fully updated Gate 022 branch state.
