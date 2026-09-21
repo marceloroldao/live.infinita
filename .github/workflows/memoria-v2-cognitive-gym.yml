@@ -51,6 +51,8 @@ on:
       - 'apps/world-runtime/test_life_gate_009_crossrepo.py'
       - 'apps/world-runtime/temporal_observation_memoria_adapter.py'
       - 'apps/world-runtime/test_life_gate_010_crossrepo.py'
+      - 'apps/world-runtime/temporal_prediction_memoria_adapter.py'
+      - 'apps/world-runtime/test_life_gate_011_crossrepo.py'
       - 'apps/world-runtime/test_life_gate_003_crossrepo.py'
       - 'schemas/memoria-v2-cognitive-frame.schema.json'
       - 'examples/memoria-v2-cognitive-frame.minimal.json'
@@ -65,6 +67,7 @@ on:
       - 'docs/LIFE_GATE_008.md'
       - 'docs/LIFE_GATE_009.md'
       - 'docs/LIFE_GATE_010.md'
+      - 'docs/LIFE_GATE_011.md'
       - '.github/workflows/memoria-v2-cognitive-gym.yml'
   workflow_dispatch:
 
@@ -104,7 +107,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: marceloroldao/memoria.ia
-          ref: 33599674bf9dbc62063bc96b0426c565f5e9f77d
+          ref: 438c273d98479a550e2162964deecf737e0a5891
           path: memoria-ia
       - name: Checkout bit.analyze temporal RealitySlice experiment
         uses: actions/checkout@v4
@@ -138,3 +141,4 @@ jobs:
           test_temporal_evidence_selector_crossrepo.py
           test_life_gate_009_crossrepo.py
           test_life_gate_010_crossrepo.py
+          test_life_gate_011_crossrepo.py
