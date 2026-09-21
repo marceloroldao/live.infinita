@@ -33,9 +33,13 @@ Repository:
 
 `marceloroldao/memoria.ia`
 
-Branch:
+Branch lineage:
 
 `experiment/address-trajectory-v2`
+
+Validated commit:
+
+`33599674bf9dbc62063bc96b0426c565f5e9f77d`
 
 Module:
 
