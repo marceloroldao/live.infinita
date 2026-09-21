@@ -260,8 +260,72 @@ def commit_branching_environmental_state(
 
     branched_world = _apply_branch_state(world, branch)
     physical = advance_distributed_environmental_agents(branched_world, ticks=1)[0]
+
+    # The externally selected control state and route overrides are committed in the
+    # same authoritative physical transaction. Preview branches remain hypothetical,
+    # but a real branch choice must be auditable in Event/Delta history.
+    physical_world = deepcopy(physical.world)
+    event = deepcopy(physical.event)
+    delta = deepcopy(physical.delta)
+    control_operations: list[dict[str, Any]] = [
+        {
+            "op": "set",
+            "path": (
+                f"/entities/{branch.entity_id}/components/environmental_control/"
+                "state_id"
+            ),
+            "value": branch.state_id,
+        }
+    ]
+    for override in branch.route_overrides:
+        routes = (
+            (world.get("regions") or {})
+            .get(override["region_id"], {})
+            .get("environmental_routes", [])
+        )
+        route_index = next(
+            (
+                index
+                for index, route in enumerate(routes)
+                if str((route or {}).get("route_id") or "") == override["route_id"]
+            ),
+            None,
+        )
+        if route_index is None:
+            raise ValueError("branch route override references missing route")
+        control_operations.append(
+            {
+                "op": "set",
+                "path": (
+                    f"/regions/{override['region_id']}/environmental_routes/"
+                    f"{route_index}/available"
+                ),
+                "value": override["available"],
+            }
+        )
+
+    delta["operations"] = control_operations + list(delta.get("operations") or ())
+    delta["provenance"] = {
+        **(delta.get("provenance") or {}),
+        "external_control_id": branch.control_id,
+        "external_control_state_id": branch.state_id,
+    }
+    event["external_control"] = {
+        "control_id": branch.control_id,
+        "state_id": branch.state_id,
+        "entity_id": branch.entity_id,
+        "route_overrides": tuple(deepcopy(branch.route_overrides)),
+    }
+    event["provenance"] = {
+        **(event.get("provenance") or {}),
+        "external_control_id": branch.control_id,
+        "external_control_state_id": branch.state_id,
+    }
+    physical_world["deltas"][delta["delta_id"]] = deepcopy(delta)
+    physical_world["events"][event["event_id"]] = deepcopy(event)
+
     sensed = sample_multimodal_sensor_frame(
-        physical.world,
+        physical_world,
         observer_id=observer_id,
     )
     return EnvironmentalBranchCommit(
@@ -269,6 +333,6 @@ def commit_branching_environmental_state(
         branch_id=_branch_id(world, branch),
         control_id=branch.control_id,
         control_state_id=branch.state_id,
-        physical_event_id=str(physical.event["event_id"]),
+        physical_event_id=str(event["event_id"]),
         sensor_frame_id=sensed.frame_id,
     )
