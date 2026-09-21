@@ -161,7 +161,7 @@ def _learn(*, noisy: bool, reverse_input: bool = False):
     episode_id = 1500
 
     for wind_phase, barrier_phase, _a, _c, _d in COMBINATIONS:
-        for _ in range(4):
+        for _ in range(5):
             episode_id += 1
             world, window = _episode(
                 episode_id,
@@ -220,7 +220,7 @@ def test_life_gate_020_noise_expands_pattern_universe_without_expanding_higher_o
     _nw, noisy_pairwise, noisy_higher, noisy_candidates, noisy_memory = noisy
 
     assert len(clean_pairwise.pattern_slices) == 7
-    assert len(noisy_pairwise.pattern_slices) == 783
+    assert len(noisy_pairwise.pattern_slices) == 975
 
     assert len(clean_higher.links) == 8
     assert len(noisy_higher.links) == 8
@@ -240,7 +240,7 @@ def test_life_gate_020_one_shot_distractors_never_enter_higher_order_links():
 
     one_shot_prefixes = {
         sensor_pattern_id(f"s_noise_once_{episode_id}_{index}", "n0")
-        for episode_id in range(1501, 1517)
+        for episode_id in range(1501, 1521)
         for index in range(48)
     }
     indexed_patterns = {
@@ -274,7 +274,7 @@ def test_life_gate_020_recurring_late_distractors_are_not_admitted_as_contexts()
 def test_life_gate_020_admitted_to_observed_ratio_and_memory_growth_are_bounded():
     _world, pairwise, higher, candidates, memory = _learn(noisy=True)
 
-    assert len(pairwise.pattern_slices) == 783
+    assert len(pairwise.pattern_slices) == 975
     assert len(higher.links) == 8
     assert len(candidates) == 4
     assert len(memory.snapshot()) == 4
@@ -283,7 +283,7 @@ def test_life_gate_020_admitted_to_observed_ratio_and_memory_growth_are_bounded(
     assert admitted_ratio == 0.5
 
     # The higher-order index is bounded by recurrent/temporally-local evidence, not
-    # by the 783-pattern global universe.
+    # by the 975-pattern global universe.
     assert len(higher.links) < len(pairwise.pattern_slices) // 50
 
 
