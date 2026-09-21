@@ -75,7 +75,7 @@ on:
       - 'apps/world-runtime/environmental_context_runtime.py'
       - 'apps/world-runtime/scenario_life_gate_016.py'
       - 'apps/world-runtime/test_environmental_context_runtime.py'
-      - 'apps/world-runtime/test_environmental_context_process_runtime.py test_environmental_state_interaction_runtime.py'
+      - 'apps/world-runtime/test_environmental_context_process_runtime.py'
       - 'apps/world-runtime/test_life_gate_016_crossrepo.py'
       - 'apps/world-runtime/environmental_context_process_runtime.py'
       - 'apps/world-runtime/contextual_multiagent_environment_runtime.py'
@@ -124,7 +124,7 @@ jobs:
         run: python -m pip install pytest jsonschema
       - name: Run adapter and scenario tests
         working-directory: apps/world-runtime
-        run: python -m pytest -q test_memoria_v2_adapter.py test_scenario_nova_r1_r2.py test_nov_need_scheduler.py test_environmental_agent_runtime.py test_environmental_reactive_runtime.py test_distributed_environment_runtime.py test_environmental_sensor_runtime.py test_environmental_multisensor_runtime.py test_environmental_future_runtime.py test_environmental_branching_runtime.py test_environmental_influence_agent_runtime.py test_environmental_agent_signal_runtime.py test_environmental_context_runtime.py test_environmental_context_process_runtime.py
+        run: python -m pytest -q test_memoria_v2_adapter.py test_scenario_nova_r1_r2.py test_nov_need_scheduler.py test_environmental_agent_runtime.py test_environmental_reactive_runtime.py test_distributed_environment_runtime.py test_environmental_sensor_runtime.py test_environmental_multisensor_runtime.py test_environmental_future_runtime.py test_environmental_branching_runtime.py test_environmental_influence_agent_runtime.py test_environmental_agent_signal_runtime.py test_environmental_context_runtime.py test_environmental_context_process_runtime.py test_environmental_state_interaction_runtime.py
       - name: Validate cognitive frame example against schema
         run: |
           python - <<'PY'
