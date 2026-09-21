@@ -170,7 +170,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: marceloroldao/bit.analyze
-          ref: bf0cd91ba256ee14d4f7974be7312fb486b854e2
+          ref: cc219932dc7a48e7ea78844266248bca16a0d8c6
           path: bit-analyze
       - uses: actions/setup-python@v5
         with:
