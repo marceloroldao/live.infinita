@@ -98,6 +98,8 @@ on:
       - 'apps/world-runtime/test_life_gate_022_crossrepo.py'
       - 'apps/world-runtime/scenario_life_gate_023.py'
       - 'apps/world-runtime/test_life_gate_023_crossrepo.py'
+      - 'apps/world-runtime/scenario_life_gate_024.py'
+      - 'apps/world-runtime/test_life_gate_024_crossrepo.py'
       - 'apps/world-runtime/test_life_gate_003_crossrepo.py'
       - 'schemas/memoria-v2-cognitive-frame.schema.json'
       - 'examples/memoria-v2-cognitive-frame.minimal.json'
@@ -125,6 +127,7 @@ on:
       - 'docs/LIFE_GATE_021.md'
       - 'docs/LIFE_GATE_022.md'
       - 'docs/LIFE_GATE_023.md'
+      - 'docs/LIFE_GATE_024.md'
       - '.github/workflows/memoria-v2-cognitive-gym.yml'
   workflow_dispatch:
 
@@ -217,3 +220,4 @@ jobs:
           test_life_gate_021_crossrepo.py
           test_life_gate_022_crossrepo.py
           test_life_gate_023_crossrepo.py
+          test_life_gate_024_crossrepo.py
