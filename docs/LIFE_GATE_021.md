@@ -107,3 +107,7 @@ If this gate passes without a new rule, then context coverage and consequence co
 If Gate 021 is green, Life Gate 022 should make recurrent distractors conditionally correlated with outcomes for finite periods, then change regime.
 
 That would test whether forgetting and temporal regime changes can remove formerly plausible false contexts rather than only rejecting stationary noise.
+
+## CI acceptance
+
+The reference run must be created after the workflow includes `test_life_gate_021_crossrepo.py`; earlier green runs from documentation-only commits are not valid Gate 021 acceptance evidence.
