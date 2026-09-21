@@ -147,3 +147,33 @@ def test_branching_runtime_is_deterministic():
     )
 
     assert a == b
+
+
+def test_committed_external_branch_is_auditable_in_physical_event_and_delta():
+    world = build_life_gate_013_world(episode_id=8)
+    world = sample_multimodal_sensor_frame(world, observer_id="nova").world
+
+    committed = commit_branching_environmental_state(
+        world,
+        observer_id="nova",
+        control_state_id="v_channel_closed",
+    )
+
+    event = committed.world["events"][committed.physical_event_id]
+    delta = committed.world["deltas"][event["delta_id"]]
+
+    assert event["external_control"]["control_id"] == "spring_channel_valve"
+    assert event["external_control"]["state_id"] == "v_channel_closed"
+    assert event["provenance"]["external_control_state_id"] == "v_channel_closed"
+    assert delta["provenance"]["external_control_state_id"] == "v_channel_closed"
+    assert any(
+        operation["path"].endswith("/environmental_control/state_id")
+        and operation["value"] == "v_channel_closed"
+        for operation in delta["operations"]
+    )
+    assert any(
+        "/environmental_routes/" in operation["path"]
+        and operation["path"].endswith("/available")
+        and operation["value"] is False
+        for operation in delta["operations"]
+    )
