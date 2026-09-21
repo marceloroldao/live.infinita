@@ -306,6 +306,12 @@ def resolve_higher_order_context_states(
         list[HigherOrderContextCurrentHypothesis],
     ] = {}
     for _key, link in sorted(higher.links.items()):
+        lower_order = higher.lower_order_reliabilities(link, pairwise)
+        if any(
+            value >= policy.max_lower_order_reliability
+            for value in lower_order
+        ):
+            continue
         support_slices = (
             set(link.seen_slices)
             if active_set is None
