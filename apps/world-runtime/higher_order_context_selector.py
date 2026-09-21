@@ -244,3 +244,139 @@ def select_higher_order_context_candidates(
         )
     )
     return tuple(values)
+
+
+
+@dataclass(frozen=True, slots=True)
+class HigherOrderContextCurrentHypothesis:
+    candidate_id: str
+    consequence_pattern: int
+    rho: float
+    repetitions: int
+    context_coverage: float
+    context_reliability: float
+    supporting_slice_ids: tuple[int, ...]
+    admitted: bool
+
+
+@dataclass(frozen=True, slots=True)
+class HigherOrderContextResolution:
+    antecedent_patterns: tuple[int, int]
+    resolution_state: str
+    active_candidate_ids: tuple[str, ...]
+    competing_candidate_ids: tuple[str, ...]
+    hypotheses: tuple[HigherOrderContextCurrentHypothesis, ...]
+
+
+def resolve_higher_order_context_states(
+    pairwise: TemporalAssociator,
+    higher: SparseContextAssociator,
+    policy: HigherOrderContextPolicy,
+) -> tuple[HigherOrderContextResolution, ...]:
+    """Describe current resolved/ambiguous/unsupported state for each known context.
+
+    This is a read-only projection over higher-order structural evidence. It does not
+    create links, observations, candidate identities or semantic regime labels.
+    """
+    active_slice_ids = (
+        higher.recent_slice_ids(policy.active_evidence_slice_window)
+        if policy.active_evidence_slice_window > 0
+        else None
+    )
+    active_set = (
+        None
+        if active_slice_ids is None
+        else set(int(value) for value in active_slice_ids)
+    )
+    admitted_links = set(
+        id(link)
+        for link in higher.admitted_contexts(
+            pairwise,
+            min_repetitions=policy.min_repetitions,
+            min_independent_slices=policy.min_independent_slices,
+            min_rho=policy.min_rho,
+            min_context_reliability=policy.min_context_reliability,
+            max_lower_order_reliability=policy.max_lower_order_reliability,
+            active_slice_ids=active_slice_ids,
+        )
+    )
+
+    by_context: dict[
+        tuple[int, int],
+        list[HigherOrderContextCurrentHypothesis],
+    ] = {}
+    for _key, link in sorted(higher.links.items()):
+        support_slices = (
+            set(link.seen_slices)
+            if active_set is None
+            else set(link.seen_slices) & active_set
+        )
+        if not support_slices:
+            continue
+        coverage = higher.context_coverage(link, active_slice_ids)
+        reliability = coverage * higher.temporal_stability(link)
+        by_context.setdefault(link.antecedents, []).append(
+            HigherOrderContextCurrentHypothesis(
+                candidate_id=_candidate_id(link),
+                consequence_pattern=link.consequence,
+                rho=link.rho,
+                repetitions=(
+                    link.repetitions
+                    if active_set is None
+                    else len(support_slices)
+                ),
+                context_coverage=coverage,
+                context_reliability=reliability,
+                supporting_slice_ids=tuple(sorted(int(x) for x in support_slices)),
+                admitted=id(link) in admitted_links,
+            )
+        )
+
+    resolutions: list[HigherOrderContextResolution] = []
+    for antecedents, raw_hypotheses in sorted(by_context.items()):
+        hypotheses = tuple(
+            sorted(
+                raw_hypotheses,
+                key=lambda item: (
+                    item.consequence_pattern,
+                    item.candidate_id,
+                ),
+            )
+        )
+        admitted_ids = tuple(
+            sorted(
+                item.candidate_id
+                for item in hypotheses
+                if item.admitted
+            )
+        )
+
+        if len(admitted_ids) == 1:
+            state = "resolved"
+            active_ids = admitted_ids
+            competing_ids: tuple[str, ...] = ()
+        elif len(admitted_ids) > 1:
+            state = "ambiguous"
+            active_ids = ()
+            competing_ids = admitted_ids
+        elif len(hypotheses) >= 2:
+            state = "ambiguous"
+            active_ids = ()
+            competing_ids = tuple(
+                sorted(item.candidate_id for item in hypotheses)
+            )
+        else:
+            state = "unsupported"
+            active_ids = ()
+            competing_ids = ()
+
+        resolutions.append(
+            HigherOrderContextResolution(
+                antecedent_patterns=antecedents,
+                resolution_state=state,
+                active_candidate_ids=active_ids,
+                competing_candidate_ids=competing_ids,
+                hypotheses=hypotheses,
+            )
+        )
+    return tuple(resolutions)
