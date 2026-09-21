@@ -2,6 +2,9 @@ name: memoria-v2 cognitive gym
 # Gate 022 validation trigger
 
 on:
+  push:
+    branches:
+      - 'validation/life-gate-022'
   pull_request:
     paths:
       - 'apps/world-runtime/memoria_v2_adapter.py'
