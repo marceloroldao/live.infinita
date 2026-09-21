@@ -3,7 +3,7 @@ from __future__ import annotations
 from copy import deepcopy
 from dataclasses import dataclass
 from hashlib import sha256
-from typing import Any
+from typing import Any, Iterable
 
 
 @dataclass(frozen=True, slots=True)
@@ -54,6 +54,23 @@ def _local_quantity(
     if integer < 0 or float(value) != float(integer):
         raise ValueError("multisensor source quantity must be a non-negative integer")
     return integer
+
+
+def _component_enum_value(
+    world: dict[str, Any],
+    *,
+    target_id: str,
+    source_component: str,
+    source_field: str,
+) -> str:
+    target = (world.get("entities") or {}).get(target_id)
+    if not isinstance(target, dict) or target.get("status") != "active":
+        raise ValueError("component enum target must exist and be active")
+    component = ((target.get("components") or {}).get(source_component) or {})
+    value = component.get(source_field)
+    if value is None:
+        raise ValueError("component enum source field is missing")
+    return str(value)
 
 
 def _band_from_thresholds(channel: dict[str, Any], value: int) -> str:
@@ -110,6 +127,32 @@ def _channel_band(
     kind = str(channel.get("kind") or "")
     target_id = str(channel.get("target") or "")
     source_component = str(channel.get("source_component") or "environmental_distribution")
+
+    if kind == "component_enum":
+        source_field = str(channel.get("source_field") or "")
+        value_bands = {
+            str(value): str(band_id)
+            for value, band_id in (channel.get("value_band_ids") or {}).items()
+            if str(value) and str(band_id)
+        }
+        if not source_component or not source_field or not value_bands:
+            raise ValueError(
+                "component_enum requires source_component, source_field and value_band_ids"
+            )
+        value = _component_enum_value(
+            world,
+            target_id=target_id,
+            source_component=source_component,
+            source_field=source_field,
+        )
+        band_id = value_bands.get(value)
+        if not band_id:
+            unknown_band = str(channel.get("unknown_band_id") or "")
+            if not unknown_band:
+                raise ValueError("component_enum value has no configured band")
+            band_id = unknown_band
+        return band_id, value
+
     quantity = _local_quantity(
         world,
         target_id=target_id,
@@ -186,17 +229,33 @@ def sample_multimodal_sensor_frame(
     world: dict[str, Any],
     *,
     observer_id: str,
+    sensor_ids: Iterable[str] | None = None,
 ) -> MultiSensorTick:
     """Sample independent environmental channels into one synchronized sensor frame."""
     region_id = _observer_region(world, observer_id)
+    requested = None
+    if sensor_ids is not None:
+        requested = {str(value) for value in sensor_ids}
+        if not requested or "" in requested:
+            raise ValueError("sensor_ids must contain non-empty values")
+
     rules = [
         deepcopy(raw)
         for raw in (world.get("rules") or {}).get("multimodal_sensors") or ()
         if str((raw or {}).get("observer") or "") == observer_id
+        and (
+            requested is None
+            or str((raw or {}).get("sensor_id") or "") in requested
+        )
     ]
     rules.sort(key=lambda item: str(item.get("sensor_id") or ""))
     if not rules:
-        raise ValueError("observer has no multimodal sensor channels")
+        raise ValueError("observer has no selected multimodal sensor channels")
+    if requested is not None:
+        found = {str(item.get("sensor_id") or "") for item in rules}
+        missing = tuple(sorted(requested - found))
+        if missing:
+            raise ValueError(f"requested sensors are not configured: {missing}")
 
     before_version = int(world.get("current_version", 0))
     before_tick = int(world.get("current_tick", 0))
@@ -229,12 +288,20 @@ def sample_multimodal_sensor_frame(
             previous=previous,
         )
         source_component = str(channel.get("source_component") or "environmental_distribution")
-        source_value = _local_quantity(
-            world,
-            target_id=target_id,
-            source_component=source_component,
-            region_id=region_id,
-        )
+        if kind == "component_enum":
+            source_value: Any = _component_enum_value(
+                world,
+                target_id=target_id,
+                source_component=source_component,
+                source_field=str(channel.get("source_field") or ""),
+            )
+        else:
+            source_value = _local_quantity(
+                world,
+                target_id=target_id,
+                source_component=source_component,
+                region_id=region_id,
+            )
 
         readings[sensor_id] = {
             "sensor_id": sensor_id,
