@@ -1,0 +1,240 @@
+name: memoria-v2 cognitive gym
+
+on:
+  pull_request:
+    paths:
+      - 'apps/world-runtime/memoria_v2_adapter.py'
+      - 'apps/world-runtime/test_memoria_v2_adapter.py'
+      - 'apps/world-runtime/scenario_nova_r1_r2.py'
+      - 'apps/world-runtime/test_scenario_nova_r1_r2.py'
+      - 'apps/world-runtime/test_memoria_v2_crossrepo.py'
+      - 'apps/world-runtime/scenario_active_curiosity.py'
+      - 'apps/world-runtime/test_active_curiosity_crossrepo.py'
+      - 'apps/world-runtime/closed_loop_runtime.py'
+      - 'apps/world-runtime/test_closed_loop_crossrepo.py'
+      - 'apps/world-runtime/scenario_continuous_closed_loop.py'
+      - 'apps/world-runtime/test_continuous_closed_loop_crossrepo.py'
+      - 'apps/world-runtime/scenario_life_gate_001.py'
+      - 'apps/world-runtime/test_life_gate_001_crossrepo.py'
+      - 'apps/world-runtime/nov_need_scheduler.py'
+      - 'apps/world-runtime/test_nov_need_scheduler.py'
+      - 'apps/world-runtime/nov_autonomous_life.py'
+      - 'apps/world-runtime/scenario_life_gate_002.py'
+      - 'apps/world-runtime/test_life_gate_002_crossrepo.py'
+      - 'apps/world-runtime/environmental_agent_runtime.py'
+      - 'apps/world-runtime/environmental_perception.py'
+      - 'apps/world-runtime/spatial_runtime.py'
+      - 'apps/world-runtime/scenario_life_gate_003.py'
+      - 'apps/world-runtime/test_environmental_agent_runtime.py'
+      - 'apps/world-runtime/world_property_runtime.py'
+      - 'apps/world-runtime/scenario_life_gate_004.py'
+      - 'apps/world-runtime/test_environmental_reactive_runtime.py'
+      - 'apps/world-runtime/test_life_gate_004_crossrepo.py'
+      - 'apps/world-runtime/distributed_environment_runtime.py'
+      - 'apps/world-runtime/scenario_life_gate_005.py'
+      - 'apps/world-runtime/test_distributed_environment_runtime.py'
+      - 'apps/world-runtime/test_life_gate_005_crossrepo.py'
+      - 'apps/world-runtime/environmental_sensor_runtime.py'
+      - 'apps/world-runtime/scenario_life_gate_006.py'
+      - 'apps/world-runtime/test_environmental_sensor_runtime.py'
+      - 'apps/world-runtime/test_life_gate_006_crossrepo.py'
+      - 'apps/world-runtime/environmental_multisensor_runtime.py'
+      - 'apps/world-runtime/scenario_life_gate_007.py'
+      - 'apps/world-runtime/test_environmental_multisensor_runtime.py'
+      - 'apps/world-runtime/test_life_gate_007_crossrepo.py'
+      - 'apps/world-runtime/reality_slice_bridge.py'
+      - 'apps/world-runtime/scenario_life_gate_008.py'
+      - 'apps/world-runtime/test_life_gate_008_crossrepo.py'
+      - 'apps/world-runtime/temporal_evidence_selector.py'
+      - 'apps/world-runtime/scenario_life_gate_009.py'
+      - 'apps/world-runtime/test_temporal_evidence_selector_crossrepo.py'
+      - 'apps/world-runtime/test_life_gate_009_crossrepo.py'
+      - 'apps/world-runtime/temporal_observation_memoria_adapter.py'
+      - 'apps/world-runtime/test_life_gate_010_crossrepo.py'
+      - 'apps/world-runtime/temporal_prediction_memoria_adapter.py'
+      - 'apps/world-runtime/test_life_gate_011_crossrepo.py'
+      - 'apps/world-runtime/environmental_future_runtime.py'
+      - 'apps/world-runtime/environmental_temporal_prediction_runtime.py'
+      - 'apps/world-runtime/scenario_life_gate_012.py'
+      - 'apps/world-runtime/test_environmental_future_runtime.py'
+      - 'apps/world-runtime/test_life_gate_012_crossrepo.py'
+      - 'apps/world-runtime/environmental_branching_runtime.py'
+      - 'apps/world-runtime/environmental_branching_temporal_prediction_runtime.py'
+      - 'apps/world-runtime/scenario_life_gate_013.py'
+      - 'apps/world-runtime/test_environmental_branching_runtime.py'
+      - 'apps/world-runtime/test_life_gate_013_crossrepo.py'
+      - 'apps/world-runtime/environmental_influence_agent_runtime.py'
+      - 'apps/world-runtime/multiagent_environment_runtime.py'
+      - 'apps/world-runtime/multiagent_temporal_prediction_runtime.py'
+      - 'apps/world-runtime/scenario_life_gate_014.py'
+      - 'apps/world-runtime/test_environmental_influence_agent_runtime.py'
+      - 'apps/world-runtime/test_life_gate_014_crossrepo.py'
+      - 'apps/world-runtime/scenario_life_gate_015.py'
+      - 'apps/world-runtime/test_environmental_agent_signal_runtime.py'
+      - 'apps/world-runtime/test_life_gate_015_crossrepo.py'
+      - 'apps/world-runtime/environmental_context_runtime.py'
+      - 'apps/world-runtime/scenario_life_gate_016.py'
+      - 'apps/world-runtime/test_environmental_context_runtime.py'
+      - 'apps/world-runtime/test_environmental_context_process_runtime.py'
+      - 'apps/world-runtime/test_life_gate_016_crossrepo.py'
+      - 'apps/world-runtime/environmental_context_process_runtime.py'
+      - 'apps/world-runtime/contextual_multiagent_environment_runtime.py'
+      - 'apps/world-runtime/scenario_life_gate_017.py'
+      - 'apps/world-runtime/test_environmental_context_process_runtime.py'
+      - 'apps/world-runtime/test_life_gate_017_crossrepo.py'
+      - 'apps/world-runtime/environmental_state_interaction_runtime.py'
+      - 'apps/world-runtime/scenario_life_gate_018.py'
+      - 'apps/world-runtime/test_environmental_state_interaction_runtime.py'
+      - 'apps/world-runtime/test_life_gate_018_crossrepo.py'
+      - 'apps/world-runtime/higher_order_context_selector.py'
+      - 'apps/world-runtime/context_observation_memoria_adapter.py'
+      - 'apps/world-runtime/scenario_life_gate_019.py'
+      - 'apps/world-runtime/test_life_gate_019_crossrepo.py'
+      - 'apps/world-runtime/scenario_life_gate_020.py'
+      - 'apps/world-runtime/test_life_gate_020_crossrepo.py'
+      - 'apps/world-runtime/scenario_life_gate_021.py'
+      - 'apps/world-runtime/test_life_gate_021_crossrepo.py'
+      - 'apps/world-runtime/scenario_life_gate_022.py'
+      - 'apps/world-runtime/test_life_gate_022_crossrepo.py'
+      - 'apps/world-runtime/scenario_life_gate_023.py'
+      - 'apps/world-runtime/test_life_gate_023_crossrepo.py'
+      - 'apps/world-runtime/scenario_life_gate_024.py'
+      - 'apps/world-runtime/test_life_gate_024_crossrepo.py'
+      - 'apps/world-runtime/scenario_life_gate_025.py'
+      - 'apps/world-runtime/test_life_gate_025_crossrepo.py'
+      - 'apps/world-runtime/scenario_life_gate_026.py'
+      - 'apps/world-runtime/test_life_gate_026_crossrepo.py'
+      - 'apps/world-runtime/scenario_life_gate_027.py'
+      - 'apps/world-runtime/test_life_gate_027_crossrepo.py'
+      - 'apps/world-runtime/reality_slice_event_time_runtime.py'
+      - 'apps/world-runtime/scenario_life_gate_028.py'
+      - 'apps/world-runtime/test_life_gate_028_crossrepo.py'
+      - 'apps/world-runtime/test_life_gate_003_crossrepo.py'
+      - 'schemas/memoria-v2-cognitive-frame.schema.json'
+      - 'examples/memoria-v2-cognitive-frame.minimal.json'
+      - 'docs/MEMORIA_V2_COGNITIVE_GYM.md'
+      - 'docs/LIFE_GATE_001.md'
+      - 'docs/LIFE_GATE_002.md'
+      - 'docs/LIFE_GATE_003.md'
+      - 'docs/LIFE_GATE_004.md'
+      - 'docs/LIFE_GATE_005.md'
+      - 'docs/LIFE_GATE_006.md'
+      - 'docs/LIFE_GATE_007.md'
+      - 'docs/LIFE_GATE_008.md'
+      - 'docs/LIFE_GATE_009.md'
+      - 'docs/LIFE_GATE_010.md'
+      - 'docs/LIFE_GATE_011.md'
+      - 'docs/LIFE_GATE_012.md'
+      - 'docs/LIFE_GATE_013.md'
+      - 'docs/LIFE_GATE_014.md'
+      - 'docs/LIFE_GATE_015.md'
+      - 'docs/LIFE_GATE_016.md'
+      - 'docs/LIFE_GATE_017.md'
+      - 'docs/LIFE_GATE_018.md'
+      - 'docs/LIFE_GATE_019.md'
+      - 'docs/LIFE_GATE_020.md'
+      - 'docs/LIFE_GATE_021.md'
+      - 'docs/LIFE_GATE_022.md'
+      - 'docs/LIFE_GATE_023.md'
+      - 'docs/LIFE_GATE_024.md'
+      - 'docs/LIFE_GATE_025.md'
+      - 'docs/LIFE_GATE_026.md'
+      - 'docs/LIFE_GATE_027.md'
+      - 'docs/LIFE_GATE_028.md'
+      - '.github/workflows/memoria-v2-cognitive-gym.yml'
+  workflow_dispatch:
+
+jobs:
+  adapter-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Live.Infinita
+        uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install test dependencies
+        run: python -m pip install pytest jsonschema
+      - name: Run adapter and scenario tests
+        working-directory: apps/world-runtime
+        run: python -m pytest -q test_memoria_v2_adapter.py test_scenario_nova_r1_r2.py test_nov_need_scheduler.py test_environmental_agent_runtime.py test_environmental_reactive_runtime.py test_distributed_environment_runtime.py test_environmental_sensor_runtime.py test_environmental_multisensor_runtime.py test_environmental_future_runtime.py test_environmental_branching_runtime.py test_environmental_influence_agent_runtime.py test_environmental_agent_signal_runtime.py test_environmental_context_runtime.py test_environmental_context_process_runtime.py test_environmental_state_interaction_runtime.py
+      - name: Validate cognitive frame example against schema
+        run: |
+          python - <<'PY'
+          import json
+          from jsonschema import Draft202012Validator
+          schema = json.load(open('schemas/memoria-v2-cognitive-frame.schema.json', encoding='utf-8'))
+          example = json.load(open('examples/memoria-v2-cognitive-frame.minimal.json', encoding='utf-8'))
+          Draft202012Validator(schema).validate(example)
+          print('schema fixture: OK')
+          PY
+
+  cross-repo-memoria-v2:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Live.Infinita
+        uses: actions/checkout@v4
+        with:
+          path: live-infinita
+      - name: Checkout Memoria.ia V2 experimental branch
+        uses: actions/checkout@v4
+        with:
+          repository: marceloroldao/memoria.ia
+          ref: 45fdbe5b2404e00d40f492c2e503172a8eb22433
+          path: memoria-ia
+      - name: Checkout bit.analyze temporal RealitySlice experiment
+        uses: actions/checkout@v4
+        with:
+          repository: marceloroldao/bit.analyze
+          ref: 2192c61e514a7bb500500ab9fff63bd42940dc52
+          path: bit-analyze
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install test dependency
+        run: python -m pip install pytest
+      - name: Validate pinned bit.analyze higher-order unit tests
+        working-directory: bit-analyze
+        run: python -m pytest -q experiments/temporal_multimodal/tests/test_temporal_multimodal.py
+      - name: Validate pinned Memoria.ia structural context tests
+        working-directory: memoria-ia
+        run: python -m pytest -q tests/test_structural_context_observation_v2.py tests/test_structural_context_recall_v2.py tests/test_structural_context_admission_state_v2.py
+      - name: Run Live -> Memoria.ia V2 cross-repo gym
+        env:
+          PYTHONPATH: ${{ github.workspace }}/memoria-ia/src:${{ github.workspace }}/bit-analyze/experiments/temporal_multimodal:${{ github.workspace }}/live-infinita/apps/world-runtime
+        working-directory: live-infinita/apps/world-runtime
+        run: >-
+          python -m pytest -q
+          test_memoria_v2_crossrepo.py
+          test_active_curiosity_crossrepo.py
+          test_closed_loop_crossrepo.py
+          test_continuous_closed_loop_crossrepo.py
+          test_life_gate_001_crossrepo.py
+          test_life_gate_002_crossrepo.py
+          test_life_gate_003_crossrepo.py
+          test_life_gate_004_crossrepo.py
+          test_life_gate_005_crossrepo.py
+          test_life_gate_006_crossrepo.py
+          test_life_gate_007_crossrepo.py
+          test_life_gate_008_crossrepo.py
+          test_temporal_evidence_selector_crossrepo.py
+          test_life_gate_009_crossrepo.py
+          test_life_gate_010_crossrepo.py
+          test_life_gate_011_crossrepo.py
+          test_life_gate_012_crossrepo.py
+          test_life_gate_013_crossrepo.py
+          test_life_gate_014_crossrepo.py
+          test_life_gate_015_crossrepo.py
+          test_life_gate_016_crossrepo.py
+          test_life_gate_017_crossrepo.py
+          test_life_gate_018_crossrepo.py
+          test_life_gate_019_crossrepo.py
+          test_life_gate_020_crossrepo.py
+          test_life_gate_021_crossrepo.py
+          test_life_gate_022_crossrepo.py
+          test_life_gate_023_crossrepo.py
+          test_life_gate_024_crossrepo.py
+          test_life_gate_025_crossrepo.py
+          test_life_gate_026_crossrepo.py
+          test_life_gate_027_crossrepo.py
+          test_life_gate_028_crossrepo.py
