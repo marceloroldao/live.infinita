@@ -135,7 +135,7 @@ a0 ... d0
 The directional-reliability policy introduced in Gate 016 prevents either consequence
 from becoming a universal continuation of \`a0\`.
 
-Memoria.ia recall from \`a0\` must not expose \`d1\` or \`d2\` as a supported
+Memoria.ia recall from \`a0\` must not expose \`d1\` or \`d0\` as a supported
 \`after_query\` continuation.
 
 ## Context-specific future remains valid
