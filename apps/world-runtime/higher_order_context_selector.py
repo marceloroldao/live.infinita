@@ -303,11 +303,7 @@ def resolve_higher_order_context_states(
     This is a read-only projection over higher-order structural evidence. It does not
     create links, observations, candidate identities or semantic regime labels.
     """
-    active_slice_ids = (
-        higher.recent_slice_ids(policy.active_evidence_slice_window)
-        if policy.active_evidence_slice_window > 0
-        else None
-    )
+    active_slice_ids = _active_slice_ids(higher, policy)
     active_set = (
         None
         if active_slice_ids is None
