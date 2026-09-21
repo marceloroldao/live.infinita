@@ -13,6 +13,7 @@ from memoria_resolutiva.structural_temporal_recall_v2 import (
 
 from environmental_branching_runtime import BranchingSensorFutureSet
 from environmental_future_runtime import EnvironmentalSensorFutureSet
+from multiagent_environment_runtime import AgentConditionedSensorFutureSet
 from reality_slice_bridge import sensor_pattern_id
 
 
@@ -111,6 +112,36 @@ def resolve_branching_physical_sensor_future_set(
     )
     if not selected:
         raise ValueError("branching future set does not contain requested sensor")
+    return resolve_sensor_temporal_world_candidates(
+        memory,
+        current_sensor_id=current_sensor_id,
+        current_band_id=current_band_id,
+        candidates=selected,
+        min_independent_slices=min_independent_slices,
+    )
+
+
+def resolve_agent_conditioned_sensor_future_set(
+    memory: StructuralTemporalObservationMemory,
+    *,
+    current_sensor_id: str,
+    current_band_id: str,
+    future_set: AgentConditionedSensorFutureSet,
+    sensor_id: str,
+    min_independent_slices: int = 3,
+) -> TemporalWorldCandidateResolution:
+    """Constrain a future already resolved by another autonomous world agent."""
+    selected = tuple(
+        (
+            candidate.candidate_id,
+            candidate.sensor_id,
+            candidate.band_id,
+        )
+        for candidate in future_set.candidates
+        if candidate.sensor_id == sensor_id
+    )
+    if not selected:
+        raise ValueError("agent-conditioned future set does not contain requested sensor")
     return resolve_sensor_temporal_world_candidates(
         memory,
         current_sensor_id=current_sensor_id,
