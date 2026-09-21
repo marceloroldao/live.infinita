@@ -19,6 +19,7 @@ class HigherOrderContextPolicy:
     min_pattern_support: int = 1
     forgetting_lambda0: float = 0.0
     forgetting_consolidation: float = 1.0
+    active_evidence_slice_window: int = 0
 
 
 @dataclass(frozen=True, slots=True)
@@ -83,11 +84,15 @@ def policy_from_world(world: dict[str, Any]) -> HigherOrderContextPolicy:
         forgetting_consolidation=float(
             raw.get("forgetting_consolidation", 1.0)
         ),
+        active_evidence_slice_window=int(
+            raw.get("active_evidence_slice_window", 0)
+        ),
     )
     if (
         policy.min_repetitions < 1
         or policy.min_independent_slices < 1
         or policy.min_pattern_support < 1
+        or policy.active_evidence_slice_window < 0
     ):
         raise ValueError("higher-order count/support thresholds must be >= 1")
     for name in (
@@ -165,6 +170,17 @@ def select_higher_order_context_candidates(
     provenance_by_slice: Mapping[int, Sequence[str]] | None = None,
 ) -> tuple[HigherOrderContextCandidate, ...]:
     """Package only bit.analyze contexts admitted beyond insufficient lower-order links."""
+    active_slice_ids = (
+        higher.recent_slice_ids(policy.active_evidence_slice_window)
+        if policy.active_evidence_slice_window > 0
+        else None
+    )
+    active_set = (
+        None
+        if active_slice_ids is None
+        else set(int(value) for value in active_slice_ids)
+    )
+
     admitted = higher.admitted_contexts(
         pairwise,
         min_repetitions=policy.min_repetitions,
@@ -172,19 +188,36 @@ def select_higher_order_context_candidates(
         min_rho=policy.min_rho,
         min_context_reliability=policy.min_context_reliability,
         max_lower_order_reliability=policy.max_lower_order_reliability,
+        active_slice_ids=active_slice_ids,
     )
 
     values: list[HigherOrderContextCandidate] = []
     for link in admitted:
-        slice_ids = tuple(sorted(int(value) for value in link.seen_slices))
+        slice_ids = tuple(
+            sorted(
+                int(value)
+                for value in (
+                    link.seen_slices
+                    if active_set is None
+                    else link.seen_slices & active_set
+                )
+            )
+        )
         values.append(
             HigherOrderContextCandidate(
                 candidate_id=_candidate_id(link),
                 antecedent_patterns=link.antecedents,
                 consequence_pattern=link.consequence,
                 rho=link.rho,
-                repetitions=link.repetitions,
-                context_coverage=higher.context_coverage(link),
+                repetitions=(
+                    link.repetitions
+                    if active_set is None
+                    else len(link.seen_slices & active_set)
+                ),
+                context_coverage=higher.context_coverage(
+                    link,
+                    active_slice_ids,
+                ),
                 temporal_stability=higher.temporal_stability(link),
                 context_reliability=higher.context_reliability(link),
                 lower_order_reliabilities=tuple(
