@@ -16,6 +16,7 @@ class TemporalEvidencePolicy:
     min_temporal_stability: float
     min_evidence_score: float
     min_direction_confidence: float
+    min_directional_reliability: float = 0.0
 
 
 @dataclass(frozen=True, slots=True)
@@ -32,6 +33,7 @@ class TemporalEvidenceCandidate:
     evidence_score: float
     mean_dt: float
     variance_dt: float
+    directional_reliability: float
     supporting_slice_ids: tuple[int, ...]
     supporting_frame_ids: tuple[str, ...]
 
@@ -57,6 +59,7 @@ class TemporalEvidenceCandidate:
                 "evidence_score": self.evidence_score,
                 "mean_dt": self.mean_dt,
                 "variance_dt": self.variance_dt,
+                "directional_reliability": self.directional_reliability,
             },
             "provenance": {
                 "slice_ids": self.supporting_slice_ids,
@@ -84,6 +87,9 @@ def policy_from_world(world: dict[str, Any]) -> TemporalEvidencePolicy:
         min_temporal_stability=float(raw.get("min_temporal_stability", 0.90)),
         min_evidence_score=float(raw.get("min_evidence_score", 3.0)),
         min_direction_confidence=float(raw.get("min_direction_confidence", 0.80)),
+        min_directional_reliability=float(
+            raw.get("min_directional_reliability", 0.0)
+        ),
     )
     if policy.min_repetitions < 1 or policy.min_independent_slices < 1:
         raise ValueError("temporal evidence count thresholds must be >= 1")
@@ -93,11 +99,14 @@ def policy_from_world(world: dict[str, Any]) -> TemporalEvidencePolicy:
         "min_temporal_stability",
         "min_evidence_score",
         "min_direction_confidence",
+        "min_directional_reliability",
     ):
         if getattr(policy, name) < 0:
             raise ValueError(f"{name} must be >= 0")
     if policy.min_direction_confidence > 1:
         raise ValueError("min_direction_confidence must be <= 1")
+    if policy.min_directional_reliability > 1:
+        raise ValueError("min_directional_reliability must be <= 1")
     return policy
 
 
@@ -147,6 +156,7 @@ def evaluate_temporal_association(
     stability = engine.temporal_stability(link)
     score = engine.evidence_score(link)
     orientation, confidence = _orientation(link)
+    directional_reliability = engine.directional_reliability(link)
     slice_ids = tuple(sorted(int(item) for item in link.seen_slices))
 
     reasons: list[str] = []
@@ -164,6 +174,8 @@ def evaluate_temporal_association(
         reasons.append("insufficient-evidence-score")
     if confidence < policy.min_direction_confidence:
         reasons.append("insufficient-direction-confidence")
+    if directional_reliability < policy.min_directional_reliability:
+        reasons.append("insufficient-directional-reliability")
 
     if reasons:
         return TemporalEvidenceDecision(
@@ -187,6 +199,7 @@ def evaluate_temporal_association(
         evidence_score=score,
         mean_dt=link.mean_dt,
         variance_dt=link.variance_dt,
+        directional_reliability=directional_reliability,
         supporting_slice_ids=slice_ids,
         supporting_frame_ids=_supporting_frames(slice_ids, provenance_by_slice),
     )
