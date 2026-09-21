@@ -104,7 +104,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: marceloroldao/memoria.ia
-          ref: experiment/address-trajectory-v2
+          ref: 33599674bf9dbc62063bc96b0426c565f5e9f77d
           path: memoria-ia
       - name: Checkout bit.analyze temporal RealitySlice experiment
         uses: actions/checkout@v4
