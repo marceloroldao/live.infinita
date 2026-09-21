@@ -459,7 +459,9 @@ def test_life_gate_025_recent_window_preserves_global_historical_links():
     a0 = sensor_pattern_id(AGENT_SENSOR, "a0")
     x0 = sensor_pattern_id(PROXY_SENSOR, PROXY_BAND)
     context = tuple(sorted((a0, x0)))
-    assert len(state["higher"].context_seen_slices[context]) == 10
+    # The first phase-1 proxy occurrence establishes min_pattern_support and is
+    # intentionally not allocated into the higher-order context index.
+    assert len(state["higher"].context_seen_slices[context]) == 9
 
 
 def test_life_gate_025_is_deterministic():
