@@ -16,6 +16,7 @@ class HigherOrderContextPolicy:
     max_lower_order_reliability: float = 0.75
     context_span: float = 0.15
     max_consequence_delay: float = 1.5
+    min_pattern_support: int = 1
 
 
 @dataclass(frozen=True, slots=True)
@@ -75,9 +76,14 @@ def policy_from_world(world: dict[str, Any]) -> HigherOrderContextPolicy:
         ),
         context_span=float(raw.get("context_span", 0.15)),
         max_consequence_delay=float(raw.get("max_consequence_delay", 1.5)),
+        min_pattern_support=int(raw.get("min_pattern_support", 1)),
     )
-    if policy.min_repetitions < 1 or policy.min_independent_slices < 1:
-        raise ValueError("higher-order count thresholds must be >= 1")
+    if (
+        policy.min_repetitions < 1
+        or policy.min_independent_slices < 1
+        or policy.min_pattern_support < 1
+    ):
+        raise ValueError("higher-order count/support thresholds must be >= 1")
     for name in (
         "min_rho",
         "min_context_reliability",
@@ -105,6 +111,7 @@ def make_sparse_context_associator(
         lambda0=lambda0,
         context_span=policy.context_span,
         max_consequence_delay=policy.max_consequence_delay,
+        min_pattern_support=policy.min_pattern_support,
     )
 
 
