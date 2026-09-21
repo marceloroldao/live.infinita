@@ -74,8 +74,13 @@ on:
       - 'apps/world-runtime/test_life_gate_015_crossrepo.py'
       - 'apps/world-runtime/environmental_context_runtime.py'
       - 'apps/world-runtime/scenario_life_gate_016.py'
-      - 'apps/world-runtime/test_environmental_context_runtime.py'
+      - 'apps/world-runtime/test_environmental_context_runtime.py test_environmental_context_process_runtime.py'
       - 'apps/world-runtime/test_life_gate_016_crossrepo.py'
+      - 'apps/world-runtime/environmental_context_process_runtime.py'
+      - 'apps/world-runtime/contextual_multiagent_environment_runtime.py'
+      - 'apps/world-runtime/scenario_life_gate_017.py'
+      - 'apps/world-runtime/test_environmental_context_process_runtime.py'
+      - 'apps/world-runtime/test_life_gate_017_crossrepo.py'
       - 'apps/world-runtime/test_life_gate_003_crossrepo.py'
       - 'schemas/memoria-v2-cognitive-frame.schema.json'
       - 'examples/memoria-v2-cognitive-frame.minimal.json'
@@ -96,6 +101,7 @@ on:
       - 'docs/LIFE_GATE_014.md'
       - 'docs/LIFE_GATE_015.md'
       - 'docs/LIFE_GATE_016.md'
+      - 'docs/LIFE_GATE_017.md'
       - '.github/workflows/memoria-v2-cognitive-gym.yml'
   workflow_dispatch:
 
@@ -175,3 +181,4 @@ jobs:
           test_life_gate_014_crossrepo.py
           test_life_gate_015_crossrepo.py
           test_life_gate_016_crossrepo.py
+          test_life_gate_017_crossrepo.py
