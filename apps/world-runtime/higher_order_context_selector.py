@@ -20,6 +20,7 @@ class HigherOrderContextPolicy:
     forgetting_lambda0: float = 0.0
     forgetting_consolidation: float = 1.0
     active_evidence_slice_window: int = 0
+    active_evidence_time_window: float = 0.0
 
 
 @dataclass(frozen=True, slots=True)
@@ -87,6 +88,9 @@ def policy_from_world(world: dict[str, Any]) -> HigherOrderContextPolicy:
         active_evidence_slice_window=int(
             raw.get("active_evidence_slice_window", 0)
         ),
+        active_evidence_time_window=float(
+            raw.get("active_evidence_time_window", 0.0)
+        ),
     )
     if (
         policy.min_repetitions < 1
@@ -103,6 +107,7 @@ def policy_from_world(world: dict[str, Any]) -> HigherOrderContextPolicy:
         "max_consequence_delay",
         "forgetting_lambda0",
         "forgetting_consolidation",
+        "active_evidence_time_window",
     ):
         if getattr(policy, name) < 0:
             raise ValueError(f"{name} must be >= 0")
@@ -112,6 +117,14 @@ def policy_from_world(world: dict[str, Any]) -> HigherOrderContextPolicy:
         raise ValueError("max_lower_order_reliability must be <= 1")
     if policy.max_consequence_delay <= 0:
         raise ValueError("max_consequence_delay must be > 0")
+    if (
+        policy.active_evidence_slice_window > 0
+        and policy.active_evidence_time_window > 0
+    ):
+        raise ValueError(
+            "configure either active_evidence_slice_window or "
+            "active_evidence_time_window, not both"
+        )
     return policy
 
 
@@ -162,6 +175,22 @@ def _supporting_frames(
     return tuple(output)
 
 
+
+def _active_slice_ids(
+    higher: SparseContextAssociator,
+    policy: HigherOrderContextPolicy,
+) -> tuple[int, ...] | None:
+    if policy.active_evidence_time_window > 0:
+        return higher.recent_slice_ids_by_time(
+            policy.active_evidence_time_window
+        )
+    if policy.active_evidence_slice_window > 0:
+        return higher.recent_slice_ids(
+            policy.active_evidence_slice_window
+        )
+    return None
+
+
 def select_higher_order_context_candidates(
     pairwise: TemporalAssociator,
     higher: SparseContextAssociator,
@@ -170,11 +199,7 @@ def select_higher_order_context_candidates(
     provenance_by_slice: Mapping[int, Sequence[str]] | None = None,
 ) -> tuple[HigherOrderContextCandidate, ...]:
     """Package only bit.analyze contexts admitted beyond insufficient lower-order links."""
-    active_slice_ids = (
-        higher.recent_slice_ids(policy.active_evidence_slice_window)
-        if policy.active_evidence_slice_window > 0
-        else None
-    )
+    active_slice_ids = _active_slice_ids(higher, policy)
     active_set = (
         None
         if active_slice_ids is None
