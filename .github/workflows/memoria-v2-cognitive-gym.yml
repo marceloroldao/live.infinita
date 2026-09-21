@@ -96,6 +96,8 @@ on:
       - 'apps/world-runtime/test_life_gate_021_crossrepo.py'
       - 'apps/world-runtime/scenario_life_gate_022.py'
       - 'apps/world-runtime/test_life_gate_022_crossrepo.py'
+      - 'apps/world-runtime/scenario_life_gate_023.py'
+      - 'apps/world-runtime/test_life_gate_023_crossrepo.py'
       - 'apps/world-runtime/test_life_gate_003_crossrepo.py'
       - 'schemas/memoria-v2-cognitive-frame.schema.json'
       - 'examples/memoria-v2-cognitive-frame.minimal.json'
@@ -122,6 +124,7 @@ on:
       - 'docs/LIFE_GATE_020.md'
       - 'docs/LIFE_GATE_021.md'
       - 'docs/LIFE_GATE_022.md'
+      - 'docs/LIFE_GATE_023.md'
       - '.github/workflows/memoria-v2-cognitive-gym.yml'
   workflow_dispatch:
 
@@ -167,7 +170,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: marceloroldao/bit.analyze
-          ref: 0500a046125f37dd7e288eb74eeb69a56b44d515
+          ref: e1a2bb99bedcfc128f581a1f769bc8659509e13f
           path: bit-analyze
       - uses: actions/setup-python@v5
         with:
