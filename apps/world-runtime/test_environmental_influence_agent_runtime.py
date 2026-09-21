@@ -42,7 +42,7 @@ def test_wind_gust_autonomously_opens_channel_and_advances_phase():
     assert wind["generation"] == 1
 
     assert tick.event["actor"] == "wind_01"
-    assert tick.event["influences"][0]["phase_id"] == "w_lull_b"
+    assert tick.event["influences"][0]["phase_id"] == "w_gust_a"
     assert tick.event["influences"][0]["action_id"] == "wind_open_channel"
     assert tick.event["influences"][0]["next_phase_id"] == "w_gust_b"
     assert any(
@@ -62,7 +62,9 @@ def test_wind_lull_autonomously_closes_channel_and_advances_phase():
     assert wind["phase_id"] == "w_lull_b"
     assert wind["last_action_id"] == "wind_close_channel"
     assert tick.event["actor"] == "wind_01"
+    assert tick.event["influences"][0]["phase_id"] == "w_lull_a"
     assert tick.event["influences"][0]["action_id"] == "wind_close_channel"
+    assert tick.event["influences"][0]["next_phase_id"] == "w_lull_b"
 
 
 def test_wind_phase_cycle_is_endogenous_and_deterministic():
@@ -70,13 +72,17 @@ def test_wind_phase_cycle_is_endogenous_and_deterministic():
 
     first = advance_environmental_influence_agents(world, ticks=1)[0]
     second = advance_environmental_influence_agents(first.world, ticks=1)[0]
+    third = advance_environmental_influence_agents(second.world, ticks=1)[0]
+    fourth = advance_environmental_influence_agents(third.world, ticks=1)[0]
 
     assert first.event["influences"][0]["action_id"] == "wind_open_channel"
-    assert second.event["influences"][0]["action_id"] == "wind_close_channel"
+    assert second.event["influences"][0]["action_id"] == "wind_open_channel"
+    assert third.event["influences"][0]["action_id"] == "wind_close_channel"
+    assert fourth.event["influences"][0]["action_id"] == "wind_close_channel"
 
-    state = second.world["entities"]["wind_01"]["components"]["environmental_state"]
-    assert state["phase_id"] == "w_lull_b"
-    assert state["generation"] == 2
+    state = fourth.world["entities"]["wind_01"]["components"]["environmental_state"]
+    assert state["phase_id"] == "w_gust_a"
+    assert state["generation"] == 4
 
 
 def test_same_observer_state_different_wind_phase_changes_water_future():
@@ -99,20 +105,25 @@ def test_same_observer_state_different_wind_phase_changes_water_future():
     )
 
     assert gust_future.candidates[0].influence_agent_id == "wind_01"
-    assert gust_future.candidates[0].influence_phase_id == "w_lull_b"
+    assert gust_future.candidates[0].influence_phase_id == "w_gust_a"
     assert gust_future.candidates[0].influence_action_id == "wind_open_channel"
+    assert gust_future.candidates[0].influence_next_phase_id == "w_gust_b"
     assert gust_future.candidates[0].band_id == "d1"
 
     assert lull_future.candidates[0].influence_agent_id == "wind_01"
-    assert lull_future.candidates[0].influence_phase_id == "w_gust_b"
+    assert lull_future.candidates[0].influence_phase_id == "w_lull_a"
     assert lull_future.candidates[0].influence_action_id == "wind_close_channel"
+    assert lull_future.candidates[0].influence_next_phase_id == "w_lull_b"
     assert lull_future.candidates[0].band_id == "d2"
 
 
 def test_agent_conditioned_preview_matches_autonomous_commit():
-    for phase_id, expected in (("w_gust_a", "d1"), ("w_lull_a", "d2")):
+    for episode_id, phase_id, expected in (
+        (6, "w_gust_a", "d1"),
+        (7, "w_lull_a", "d2"),
+    ):
         world = build_life_gate_014_world(
-            episode_id=6 if phase_id == "w_lull_b" else 7,
+            episode_id=episode_id,
             wind_phase_id=phase_id,
         )
         world = sample_multimodal_sensor_frame(world, observer_id="nova").world
