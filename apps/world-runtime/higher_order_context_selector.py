@@ -17,6 +17,8 @@ class HigherOrderContextPolicy:
     context_span: float = 0.15
     max_consequence_delay: float = 1.5
     min_pattern_support: int = 1
+    forgetting_lambda0: float = 0.0
+    forgetting_consolidation: float = 1.0
     passive_decay_lambda0: float = 0.0
 
 
