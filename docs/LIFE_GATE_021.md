@@ -111,3 +111,6 @@ That would test whether forgetting and temporal regime changes can remove former
 ## CI acceptance
 
 The reference run must be created after the workflow includes `test_life_gate_021_crossrepo.py`; earlier green runs from documentation-only commits are not valid Gate 021 acceptance evidence.
+
+
+Temporary validation PR: this marker exists only to force a fresh pull-request workflow run against the fully updated Gate 021 branch state.
