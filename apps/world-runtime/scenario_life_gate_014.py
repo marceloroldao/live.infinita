@@ -9,11 +9,11 @@ from scenario_life_gate_013 import build_life_gate_013_world
 def build_life_gate_014_world(
     *,
     episode_id: int = 0,
-    wind_phase_id: str = "w_gust",
+    wind_phase_id: str = "w_gust_a",
 ) -> dict:
     """Replace the abstract external valve branch with autonomous Wind influence."""
-    if wind_phase_id not in {"w_gust", "w_lull"}:
-        raise ValueError("wind_phase_id must be w_gust or w_lull")
+    if wind_phase_id not in {"w_gust_a", "w_gust_b", "w_lull_a", "w_lull_b"}:
+        raise ValueError("unsupported wind_phase_id")
 
     world = deepcopy(build_life_gate_013_world(episode_id=episode_id))
     world["world_id"] = f"life-gate-014-{wind_phase_id}-episode-{episode_id}"
@@ -48,9 +48,9 @@ def build_life_gate_014_world(
             "min_ticks": 1,
             "phases": [
                 {
-                    "phase_id": "w_gust",
+                    "phase_id": "w_gust_a",
                     "action_id": "wind_open_channel",
-                    "next_phase_id": "w_lull",
+                    "next_phase_id": "w_gust_b",
                     "route_overrides": [
                         {
                             "region_id": "spring",
@@ -60,9 +60,33 @@ def build_life_gate_014_world(
                     ],
                 },
                 {
-                    "phase_id": "w_lull",
+                    "phase_id": "w_gust_b",
+                    "action_id": "wind_open_channel",
+                    "next_phase_id": "w_lull_a",
+                    "route_overrides": [
+                        {
+                            "region_id": "spring",
+                            "route_id": "spring_channel",
+                            "available": True,
+                        }
+                    ],
+                },
+                {
+                    "phase_id": "w_lull_a",
                     "action_id": "wind_close_channel",
-                    "next_phase_id": "w_gust",
+                    "next_phase_id": "w_lull_b",
+                    "route_overrides": [
+                        {
+                            "region_id": "spring",
+                            "route_id": "spring_channel",
+                            "available": False,
+                        }
+                    ],
+                },
+                {
+                    "phase_id": "w_lull_b",
+                    "action_id": "wind_close_channel",
+                    "next_phase_id": "w_gust_a",
                     "route_overrides": [
                         {
                             "region_id": "spring",
