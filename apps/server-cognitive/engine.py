@@ -358,7 +358,7 @@ class ServerCognitiveEngine:
                     "needs": self._jsonable(self.needs),
                     "last_decision": self.last_decision,
                     "causal_memory_observations": len(self.gym.memory.snapshot()),
-                    "situated_regimes": len(self.gym.regimes),
+                    "situated_regimes": len(self.gym.regimes.entries),
                 },
                 "environment": {
                     "water_regions": sorted(
