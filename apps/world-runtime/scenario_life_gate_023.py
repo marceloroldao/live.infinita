@@ -24,8 +24,11 @@ def build_life_gate_023_world(
         f"life-gate-023-{wind_phase_id}-{barrier_phase_id}-episode-{episode_id}"
     )
     world["rules"]["higher_order_context_selector"][
-        "passive_decay_lambda0"
+        "forgetting_lambda0"
     ] = 0.025
+    world["rules"]["higher_order_context_selector"][
+        "forgetting_consolidation"
+    ] = 1.0
     world["rules"]["higher_order_passive_forgetting"] = {
         "proxy_sensor_id": "s_regime_proxy_01",
         "proxy_band_id": "x0",
