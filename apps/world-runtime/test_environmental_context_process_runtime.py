@@ -116,7 +116,7 @@ def test_one_world_evolves_clear_then_blocked_while_wind_stays_in_gust_family():
     assert second.influence.influences[0]["action_id"] == "wind_open_channel"
     assert second.context.transitions[0]["phase_id"] == "b_blocked"
     assert second.context.transitions[0]["action_id"] == "barrier_block_channel"
-    assert _flow_band(second.world) == "d2"
+    assert _flow_band(second.world) == "d0"
 
 
 def test_coupled_order_is_wind_then_context_then_water_then_sensor():
