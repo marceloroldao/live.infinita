@@ -86,6 +86,10 @@ on:
       - 'apps/world-runtime/scenario_life_gate_018.py'
       - 'apps/world-runtime/test_environmental_state_interaction_runtime.py'
       - 'apps/world-runtime/test_life_gate_018_crossrepo.py'
+      - 'apps/world-runtime/higher_order_context_selector.py'
+      - 'apps/world-runtime/context_observation_memoria_adapter.py'
+      - 'apps/world-runtime/scenario_life_gate_019.py'
+      - 'apps/world-runtime/test_life_gate_019_crossrepo.py'
       - 'apps/world-runtime/test_life_gate_003_crossrepo.py'
       - 'schemas/memoria-v2-cognitive-frame.schema.json'
       - 'examples/memoria-v2-cognitive-frame.minimal.json'
@@ -108,6 +112,7 @@ on:
       - 'docs/LIFE_GATE_016.md'
       - 'docs/LIFE_GATE_017.md'
       - 'docs/LIFE_GATE_018.md'
+      - 'docs/LIFE_GATE_019.md'
       - '.github/workflows/memoria-v2-cognitive-gym.yml'
   workflow_dispatch:
 
@@ -147,19 +152,25 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: marceloroldao/memoria.ia
-          ref: 438c273d98479a550e2162964deecf737e0a5891
+          ref: f245facd4e198086458fa9a180680146d378cad9
           path: memoria-ia
       - name: Checkout bit.analyze temporal RealitySlice experiment
         uses: actions/checkout@v4
         with:
           repository: marceloroldao/bit.analyze
-          ref: 319100417ec3c30e75b335ae078943d2769b3f61
+          ref: 98e0d992334fa569460dc6d55d21dd1a0b823b68
           path: bit-analyze
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - name: Install test dependency
         run: python -m pip install pytest
+      - name: Validate pinned bit.analyze higher-order unit tests
+        working-directory: bit-analyze
+        run: python -m pytest -q experiments/temporal_multimodal/tests/test_temporal_multimodal.py
+      - name: Validate pinned Memoria.ia structural context tests
+        working-directory: memoria-ia
+        run: python -m pytest -q tests/test_structural_context_observation_v2.py tests/test_structural_context_recall_v2.py
       - name: Run Live -> Memoria.ia V2 cross-repo gym
         env:
           PYTHONPATH: ${{ github.workspace }}/memoria-ia/src:${{ github.workspace }}/bit-analyze/experiments/temporal_multimodal:${{ github.workspace }}/live-infinita/apps/world-runtime
@@ -189,3 +200,4 @@ jobs:
           test_life_gate_016_crossrepo.py
           test_life_gate_017_crossrepo.py
           test_life_gate_018_crossrepo.py
+          test_life_gate_019_crossrepo.py
