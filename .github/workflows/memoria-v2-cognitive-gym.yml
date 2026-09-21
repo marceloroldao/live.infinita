@@ -69,6 +69,9 @@ on:
       - 'apps/world-runtime/scenario_life_gate_014.py'
       - 'apps/world-runtime/test_environmental_influence_agent_runtime.py'
       - 'apps/world-runtime/test_life_gate_014_crossrepo.py'
+      - 'apps/world-runtime/scenario_life_gate_015.py'
+      - 'apps/world-runtime/test_environmental_agent_signal_runtime.py'
+      - 'apps/world-runtime/test_life_gate_015_crossrepo.py'
       - 'apps/world-runtime/test_life_gate_003_crossrepo.py'
       - 'schemas/memoria-v2-cognitive-frame.schema.json'
       - 'examples/memoria-v2-cognitive-frame.minimal.json'
@@ -87,6 +90,7 @@ on:
       - 'docs/LIFE_GATE_012.md'
       - 'docs/LIFE_GATE_013.md'
       - 'docs/LIFE_GATE_014.md'
+      - 'docs/LIFE_GATE_015.md'
       - '.github/workflows/memoria-v2-cognitive-gym.yml'
   workflow_dispatch:
 
@@ -103,7 +107,7 @@ jobs:
         run: python -m pip install pytest jsonschema
       - name: Run adapter and scenario tests
         working-directory: apps/world-runtime
-        run: python -m pytest -q test_memoria_v2_adapter.py test_scenario_nova_r1_r2.py test_nov_need_scheduler.py test_environmental_agent_runtime.py test_environmental_reactive_runtime.py test_distributed_environment_runtime.py test_environmental_sensor_runtime.py test_environmental_multisensor_runtime.py test_environmental_future_runtime.py test_environmental_branching_runtime.py test_environmental_influence_agent_runtime.py
+        run: python -m pytest -q test_memoria_v2_adapter.py test_scenario_nova_r1_r2.py test_nov_need_scheduler.py test_environmental_agent_runtime.py test_environmental_reactive_runtime.py test_distributed_environment_runtime.py test_environmental_sensor_runtime.py test_environmental_multisensor_runtime.py test_environmental_future_runtime.py test_environmental_branching_runtime.py test_environmental_influence_agent_runtime.py test_environmental_agent_signal_runtime.py
       - name: Validate cognitive frame example against schema
         run: |
           python - <<'PY'
@@ -164,3 +168,4 @@ jobs:
           test_life_gate_012_crossrepo.py
           test_life_gate_013_crossrepo.py
           test_life_gate_014_crossrepo.py
+          test_life_gate_015_crossrepo.py
