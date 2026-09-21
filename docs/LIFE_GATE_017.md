@@ -72,6 +72,11 @@ step 1: c0
 step 2: c1
 \`\`\`
 
+After the first Water redistribution, Spring retains only 20 units. On the second
+Water tick, 10 units evaporate and the remaining 10 satisfy Spring retention, leaving
+no mobile quantity at Spring. Therefore the blocked-context flow observation is
+`d0` (no dominant transfer), not the static-world `d2` seen in Gate 016.
+
 The resulting Water trajectory in the same world is:
 
 \`\`\`text
@@ -83,7 +88,7 @@ d1
   ↓
 a0 + c1
   ↓
-d2
+d0
 \`\`\`
 
 No per-episode context selection is used.
@@ -99,7 +104,7 @@ d0 -> a0 -> c0 -> d1
 The second four-frame window, from the same world trajectory, is:
 
 \`\`\`text
-d1 -> a0 -> c1 -> d2
+d1 -> a0 -> c1 -> d0
 \`\`\`
 
 This is intentionally richer than Gate 016.
@@ -124,7 +129,7 @@ Its Water consequences differ:
 
 \`\`\`text
 a0 ... d1
-a0 ... d2
+a0 ... d0
 \`\`\`
 
 The directional-reliability policy introduced in Gate 016 prevents either consequence
@@ -139,7 +144,7 @@ The evolving process still produces reliable context-specific structure:
 
 \`\`\`text
 c0 -> d1
-c1 -> d2
+c1 -> d0
 \`\`\`
 
 These relations can remain above the evidence gate because each context signal is
