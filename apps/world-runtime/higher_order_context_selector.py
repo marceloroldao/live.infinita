@@ -219,7 +219,10 @@ def select_higher_order_context_candidates(
                     active_slice_ids,
                 ),
                 temporal_stability=higher.temporal_stability(link),
-                context_reliability=higher.context_reliability(link),
+                context_reliability=(
+                    higher.context_coverage(link, active_slice_ids)
+                    * higher.temporal_stability(link)
+                ),
                 lower_order_reliabilities=tuple(
                     higher.lower_order_reliabilities(link, pairwise)
                 ),
