@@ -11,6 +11,7 @@ from memoria_resolutiva.structural_temporal_recall_v2 import (
     resolve_temporal_world_candidates,
 )
 
+from environmental_future_runtime import EnvironmentalSensorFutureSet
 from reality_slice_bridge import sensor_pattern_id
 
 
@@ -54,5 +55,35 @@ def resolve_sensor_temporal_world_candidates(
         memory,
         temporal_sensor_pattern_address(current_sensor_id, current_band_id),
         make_temporal_world_candidates(candidates),
+        min_independent_slices=min_independent_slices,
+    )
+
+
+def resolve_physical_sensor_future_set(
+    memory: StructuralTemporalObservationMemory,
+    *,
+    current_sensor_id: str,
+    current_band_id: str,
+    future_set: EnvironmentalSensorFutureSet,
+    sensor_id: str,
+    min_independent_slices: int = 3,
+) -> TemporalWorldCandidateResolution:
+    """Constrain World Runtime-generated physical futures without caller-supplied bands."""
+    selected = tuple(
+        (
+            candidate.candidate_id,
+            candidate.sensor_id,
+            candidate.band_id,
+        )
+        for candidate in future_set.candidates
+        if candidate.sensor_id == sensor_id
+    )
+    if not selected:
+        raise ValueError("physical future set does not contain requested sensor")
+    return resolve_sensor_temporal_world_candidates(
+        memory,
+        current_sensor_id=current_sensor_id,
+        current_band_id=current_band_id,
+        candidates=selected,
         min_independent_slices=min_independent_slices,
     )
