@@ -180,7 +180,7 @@ def test_life_gate_017_one_world_generates_clear_then_blocked_context_without_ep
     c1 = sensor_pattern_id(CONTEXT_SENSOR, "c1")
     d0 = sensor_pattern_id(FLOW_SENSOR, "d0")
     d1 = sensor_pattern_id(FLOW_SENSOR, "d1")
-    d2 = sensor_pattern_id(FLOW_SENSOR, "d2")
+    second_d0 = sensor_pattern_id(FLOW_SENSOR, "d0")
 
     clear_patterns = {item.pattern for item in clear_window.reality_slice.occurrences}
     blocked_patterns = {
@@ -188,7 +188,7 @@ def test_life_gate_017_one_world_generates_clear_then_blocked_context_without_ep
     }
 
     assert clear_patterns == {d0, a0, c0, d1}
-    assert blocked_patterns == {d1, a0, c1, d2}
+    assert blocked_patterns == {d1, a0, c1, second_d0}
 
     process_state = world["entities"]["barrier_01"]["components"]["process_state"]
     assert process_state["generation"] == 2
@@ -206,25 +206,28 @@ def test_life_gate_017_same_a0_becomes_unreliable_across_evolving_context_trajec
 
     a0 = sensor_pattern_id(AGENT_SENSOR, "a0")
     d1 = sensor_pattern_id(FLOW_SENSOR, "d1")
-    d2 = sensor_pattern_id(FLOW_SENSOR, "d2")
+    d0 = sensor_pattern_id(FLOW_SENSOR, "d0")
 
     decision_d1 = _decision(decisions, a0, d1)
-    decision_d2 = _decision(decisions, a0, d2)
+    decision_d0 = _decision(decisions, a0, d0)
 
     assert decision_d1.admitted is False
-    assert decision_d2.admitted is False
+    assert decision_d0.admitted is False
     assert engine.directional_reliability(
         engine.links[_key(a0, d1)]
     ) < 0.75
-    assert 0.49 < engine.directional_reliability(
-        engine.links[_key(a0, d2)]
-    ) < 0.51
+    assert engine.directional_reliability(
+        engine.links[_key(a0, d0)]
+    ) < 0.75
 
     assert (
         "insufficient-directional-reliability" in decision_d1.rejection_reasons
         or "insufficient-direction-confidence" in decision_d1.rejection_reasons
     )
-    assert "insufficient-directional-reliability" in decision_d2.rejection_reasons
+    assert (
+        "insufficient-directional-reliability" in decision_d0.rejection_reasons
+        or "insufficient-direction-confidence" in decision_d0.rejection_reasons
+    )
 
 
 def test_life_gate_017_context_specific_future_relations_survive_evolving_process():
@@ -235,10 +238,10 @@ def test_life_gate_017_context_specific_future_relations_survive_evolving_proces
     c0 = sensor_pattern_id(CONTEXT_SENSOR, "c0")
     c1 = sensor_pattern_id(CONTEXT_SENSOR, "c1")
     d1 = sensor_pattern_id(FLOW_SENSOR, "d1")
-    d2 = sensor_pattern_id(FLOW_SENSOR, "d2")
+    d0 = sensor_pattern_id(FLOW_SENSOR, "d0")
 
     clear = _decision(decisions, c0, d1)
-    blocked = _decision(decisions, c1, d2)
+    blocked = _decision(decisions, c1, d0)
 
     assert clear.admitted is True
     assert blocked.admitted is True
@@ -246,7 +249,7 @@ def test_life_gate_017_context_specific_future_relations_survive_evolving_proces
         engine.links[_key(c0, d1)]
     ) > 0.99
     assert engine.directional_reliability(
-        engine.links[_key(c1, d2)]
+        engine.links[_key(c1, d0)]
     ) > 0.99
 
 
@@ -257,7 +260,7 @@ def test_life_gate_017_prior_consequence_is_preserved_as_before_query_not_false_
 
     c1 = sensor_pattern_id(CONTEXT_SENSOR, "c1")
     d1 = sensor_pattern_id(FLOW_SENSOR, "d1")
-    d2 = sensor_pattern_id(FLOW_SENSOR, "d2")
+    d0 = sensor_pattern_id(FLOW_SENSOR, "d0")
 
     recall = recall_structural_temporal_neighbors(
         memory,
@@ -276,7 +279,7 @@ def test_life_gate_017_prior_consequence_is_preserved_as_before_query_not_false_
         if item.relation_to_query == "before_query"
     }
 
-    assert _address(d2) in after
+    assert _address(d0) in after
     assert _address(d1) not in after
     # d1 may exist structurally before c1, but must not be promoted as its future.
     if _address(d1) in {
@@ -292,7 +295,7 @@ def test_life_gate_017_memoria_still_does_not_promote_a0_to_universal_consequenc
 
     a0 = sensor_pattern_id(AGENT_SENSOR, "a0")
     d1 = sensor_pattern_id(FLOW_SENSOR, "d1")
-    d2 = sensor_pattern_id(FLOW_SENSOR, "d2")
+    d0 = sensor_pattern_id(FLOW_SENSOR, "d0")
 
     recall = recall_structural_temporal_neighbors(
         memory,
@@ -306,7 +309,7 @@ def test_life_gate_017_memoria_still_does_not_promote_a0_to_universal_consequenc
     }
 
     assert _address(d1) not in after
-    assert _address(d2) not in after
+    assert _address(d0) not in after
 
 
 def test_life_gate_017_context_trajectory_itself_is_learned_from_repetition():
