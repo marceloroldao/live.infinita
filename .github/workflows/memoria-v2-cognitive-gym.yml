@@ -106,6 +106,9 @@ on:
       - 'apps/world-runtime/test_life_gate_026_crossrepo.py'
       - 'apps/world-runtime/scenario_life_gate_027.py'
       - 'apps/world-runtime/test_life_gate_027_crossrepo.py'
+      - 'apps/world-runtime/reality_slice_event_time_runtime.py'
+      - 'apps/world-runtime/scenario_life_gate_028.py'
+      - 'apps/world-runtime/test_life_gate_028_crossrepo.py'
       - 'apps/world-runtime/test_life_gate_003_crossrepo.py'
       - 'schemas/memoria-v2-cognitive-frame.schema.json'
       - 'examples/memoria-v2-cognitive-frame.minimal.json'
@@ -137,6 +140,7 @@ on:
       - 'docs/LIFE_GATE_025.md'
       - 'docs/LIFE_GATE_026.md'
       - 'docs/LIFE_GATE_027.md'
+      - 'docs/LIFE_GATE_028.md'
       - '.github/workflows/memoria-v2-cognitive-gym.yml'
   workflow_dispatch:
 
@@ -182,7 +186,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: marceloroldao/bit.analyze
-          ref: 4c9bf3745150d75ea038f225afc10e1479d41d64
+          ref: 2192c61e514a7bb500500ab9fff63bd42940dc52
           path: bit-analyze
       - uses: actions/setup-python@v5
         with:
@@ -233,3 +237,4 @@ jobs:
           test_life_gate_025_crossrepo.py
           test_life_gate_026_crossrepo.py
           test_life_gate_027_crossrepo.py
+          test_life_gate_028_crossrepo.py
