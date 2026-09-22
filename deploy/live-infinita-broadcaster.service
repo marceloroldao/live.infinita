@@ -1,0 +1,25 @@
+[Unit]
+Description=Live Infinita Broadcaster
+After=network-online.target live-infinita-renderer.service live-infinita-audio.service
+Wants=network-online.target
+Requires=live-infinita-renderer.service live-infinita-audio.service
+
+[Service]
+Type=simple
+User=liveinfinita
+Group=liveinfinita
+WorkingDirectory=/opt/live.infinita
+Environment=PYTHONUNBUFFERED=1
+EnvironmentFile=/etc/live-infinita/broadcaster.env
+ExecStart=/opt/live.infinita/.venv/bin/python /opt/live.infinita/apps/broadcaster/broadcaster.py
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=10
+KillMode=control-group
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target
