@@ -28,5 +28,7 @@ curl -fsS -X POST -H 'content-type: application/json' -d '{"count":3}' "http://1
 echo
 curl -fsS "http://127.0.0.1:$PORT/snapshot"
 echo
+curl -fsS "http://127.0.0.1:$PORT/soak"
+echo
 
 echo "Server Cognitive RC1 smoke: OK"
