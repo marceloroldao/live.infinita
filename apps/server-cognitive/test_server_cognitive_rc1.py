@@ -148,3 +148,23 @@ def test_server_cognitive_rc1_soak_summary_exposes_long_run_invariants():
         == 10
     )
     assert soak["errors_in_activity_window"] == 0
+
+
+def test_server_cognitive_rc1_1000_cycle_soak():
+    engine = ServerCognitiveEngine(activity_limit=1000)
+    results = engine.run_steps(1000)
+    soak = engine.soak_summary()
+
+    assert len(results) == 1000
+    assert soak["cycle_id"] == 1000
+    assert soak["world_tick"] == soak["world_version"]
+    assert soak["pairwise_links"] > 0
+    assert soak["causal_memory_observations"] >= 1
+    assert soak["max_event_time"] >= soak["watermark"]
+    assert soak["late_rejections"] == 0
+    assert soak["errors_in_activity_window"] == 0
+    assert (
+        soak["curiosity_cycles_in_activity_window"]
+        + soak["need_cycles_in_activity_window"]
+        == 1000
+    )
