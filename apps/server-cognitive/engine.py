@@ -310,6 +310,19 @@ class ServerCognitiveEngine:
             raise ValueError("count must be between 1 and 1000")
         return tuple(self.step() for _ in range(count))
 
+    def save_checkpoint(self, path: str):
+        from checkpoint import save_engine_checkpoint
+        with self.lock:
+            return save_engine_checkpoint(self, path)
+
+    @classmethod
+    def load_checkpoint(cls, path: str):
+        from checkpoint import load_engine_checkpoint
+        engine = load_engine_checkpoint(path)
+        if not isinstance(engine, cls):
+            raise TypeError("checkpoint did not restore ServerCognitiveEngine")
+        return engine
+
     def flush_event_time(self) -> tuple[int, ...]:
         with self.lock:
             result = flush_reality_slice_event_time(
@@ -393,6 +406,10 @@ class ServerCognitiveEngine:
                     "max_event_time": self.reorder.max_event_time,
                     "pending_slice_ids": self.reorder.pending_slice_ids(),
                     "late_rejections": len(self.rejections),
+                },
+                "persistence": {
+                    "mode": "versioned-json-checkpoint",
+                    "restart_safe": True,
                 },
             }
 
