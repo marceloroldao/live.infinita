@@ -54,8 +54,8 @@ def test_server_cognitive_rc1_structural_pipeline_is_live():
     assert status["cognition"]["structural"]["pairwise_links"] > 0
     assert status["cognition"]["structural"]["higher_order_links"] >= 0
     assert status["persistence"] == {
-        "mode": "memory-only",
-        "restart_safe": False,
+        "mode": "checkpoint-capable",
+        "restart_safe": True,
     }
 
 
