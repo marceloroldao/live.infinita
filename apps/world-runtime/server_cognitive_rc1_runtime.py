@@ -1,14 +1,33 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 from memoria_resolutiva.situated_live_gym_v2 import SituatedLiveCognitiveGymV2
+from memoria_resolutiva.structural_context_admission_state_v2 import (
+    StructuralContextAdmissionStateMemory,
+)
+from memoria_resolutiva.structural_context_observation_v2 import (
+    StructuralContextObservationMemory,
+)
+from reality_slice import RealitySliceReorderBuffer, TemporalAssociator
 
 from closed_loop_runtime import execute_validated_action
+from context_observation_memoria_adapter import (
+    ingest_higher_order_context_candidate,
+    refresh_higher_order_context_resolution_state,
+)
 from distributed_environment_runtime import advance_distributed_environmental_agents
 from environmental_multisensor_runtime import sample_multimodal_sensor_frame
+from higher_order_context_selector import (
+    make_sparse_context_associator,
+    policy_from_world,
+    resolve_higher_order_context_states,
+    select_higher_order_context_candidates,
+)
 from nov_autonomous_life import choose_autonomous_action, needs_after_committed_action
+from reality_slice_bridge import reality_window_from_world_rule
+from reality_slice_event_time_runtime import ingest_reality_slice_event_time
 from scenario_server_cognitive_rc1 import (
     build_server_cognitive_rc1_world,
     initial_server_cognitive_rc1_needs,
@@ -29,13 +48,30 @@ class ServerCognitiveRC1Runtime:
     world: dict[str, Any]
     needs: Any
     gym: SituatedLiveCognitiveGymV2
+    pairwise: Any
+    higher: Any
+    reorder: RealitySliceReorderBuffer
+    context_memory: StructuralContextObservationMemory
+    admission_memory: StructuralContextAdmissionStateMemory
+    provenance_by_slice: dict[int, tuple[str, ...]] = field(default_factory=dict)
     cycles: int = 0
+    simulation_time: float = 0.0
+    reality_slices_offered: int = 0
+    reality_slices_ingested: int = 0
+    late_rejection_count: int = 0
+    recent_late_rejections: list[dict[str, Any]] = field(default_factory=list)
+    last_window_id: int | None = None
+    last_ingested_slice_ids: tuple[int, ...] = ()
+    last_candidates: tuple[Any, ...] = ()
+    last_resolutions: tuple[Any, ...] = ()
     last_decision: Any = None
     last_cognitive_step: Any = None
 
     @classmethod
     def create(cls, *, episode_id: int = 1):
         world = build_server_cognitive_rc1_world(episode_id=episode_id)
+        higher_policy = policy_from_world(world)
+        event_time = world["rules"]["reality_slice_event_time"]
         return cls(
             world=world,
             needs=initial_server_cognitive_rc1_needs(world),
@@ -43,26 +79,103 @@ class ServerCognitiveRC1Runtime:
                 min_independent_episodes=2,
                 min_contiguous_support=2,
             ),
+            pairwise=TemporalAssociator(lambda0=0.0),
+            higher=make_sparse_context_associator(higher_policy),
+            reorder=RealitySliceReorderBuffer(
+                allowed_lateness=float(event_time["allowed_lateness"])
+            ),
+            context_memory=StructuralContextObservationMemory(),
+            admission_memory=StructuralContextAdmissionStateMemory(),
         )
 
-    def step(self) -> dict[str, Any]:
+    def _record_rejections(self, rejections) -> None:
+        for item in rejections:
+            self.late_rejection_count += 1
+            self.recent_late_rejections.append(
+                {
+                    "slice_id": int(item.slice_id),
+                    "event_time": float(item.event_time),
+                    "watermark": float(item.watermark),
+                    "reason": str(item.reason),
+                }
+            )
+        if len(self.recent_late_rejections) > 32:
+            del self.recent_late_rejections[:-32]
+
+    def _sample_temporal_window(self, *, observer_id: str) -> tuple[str, ...]:
         profile = self.world["rules"]["server_cognitive_rc1"]
-        observer_id = str(profile["observer_id"])
+        frame_ids: list[str] = []
 
-        environmental = advance_distributed_environmental_agents(
-            self.world,
-            ticks=int(profile["environment_ticks_between_frames"]),
-        )
-        self.world = environmental[-1].world
-
-        sensor_frames = []
         for _ in range(int(profile["sensor_frames_per_cycle"])):
+            environmental = advance_distributed_environmental_agents(
+                self.world,
+                ticks=int(profile["environment_ticks_between_frames"]),
+            )
+            self.world = environmental[-1].world
+
             sampled = sample_multimodal_sensor_frame(
                 self.world,
                 observer_id=observer_id,
             )
             self.world = sampled.world
-            sensor_frames.append(sampled.frame_id)
+            frame_ids.append(sampled.frame_id)
+
+        window = reality_window_from_world_rule(
+            self.world,
+            observer_id=observer_id,
+            time_origin=self.simulation_time,
+        )
+        self.last_window_id = int(window.reality_slice.slice_id)
+        self.reality_slices_offered += 1
+        self.provenance_by_slice[int(window.reality_slice.slice_id)] = tuple(
+            window.frame_ids
+        )
+
+        ingest = ingest_reality_slice_event_time(
+            self.reorder,
+            self.pairwise,
+            self.higher,
+            window.reality_slice,
+        )
+        self._record_rejections(ingest.batch.rejected)
+        self.last_ingested_slice_ids = tuple(ingest.ingested_slice_ids)
+        self.reality_slices_ingested += len(ingest.ingested_slice_ids)
+
+        if ingest.ingested_slice_ids:
+            policy = policy_from_world(self.world)
+            candidates = select_higher_order_context_candidates(
+                self.pairwise,
+                self.higher,
+                policy,
+                provenance_by_slice=self.provenance_by_slice,
+            )
+            for candidate in candidates:
+                ingest_higher_order_context_candidate(
+                    self.context_memory,
+                    candidate,
+                )
+            resolutions = resolve_higher_order_context_states(
+                self.pairwise,
+                self.higher,
+                policy,
+            )
+            refresh_higher_order_context_resolution_state(
+                self.admission_memory,
+                resolutions,
+                source_epoch_id=f"server-cycle-{self.cycles + 1}",
+                supporting_slice_ids=tuple(ingest.ingested_slice_ids),
+            )
+            self.last_candidates = candidates
+            self.last_resolutions = resolutions
+
+        self.simulation_time += float(profile["simulation_time_step"])
+        return tuple(frame_ids)
+
+    def step(self) -> dict[str, Any]:
+        profile = self.world["rules"]["server_cognitive_rc1"]
+        observer_id = str(profile["observer_id"])
+
+        sensor_frames = self._sample_temporal_window(observer_id=observer_id)
 
         decision = choose_autonomous_action(
             gym=self.gym,
@@ -92,7 +205,7 @@ class ServerCognitiveRC1Runtime:
         self.last_decision = decision
         self.last_cognitive_step = cognitive_step
         return self.status(
-            sensor_frames=tuple(sensor_frames),
+            sensor_frames=sensor_frames,
             consequence_address=execution.consequence_address,
         )
 
@@ -100,6 +213,13 @@ class ServerCognitiveRC1Runtime:
         if cycles < 1:
             raise ValueError("cycles must be >= 1")
         return tuple(self.step() for _ in range(cycles))
+
+    def _resolution_counts(self) -> dict[str, int]:
+        counts = {"resolved": 0, "ambiguous": 0, "unsupported": 0}
+        for item in self.last_resolutions:
+            state = str(item.resolution_state)
+            counts[state] = counts.get(state, 0) + 1
+        return counts
 
     def status(
         self,
@@ -131,6 +251,7 @@ class ServerCognitiveRC1Runtime:
         return {
             "profile": "server-cognitive-rc1",
             "cycles": self.cycles,
+            "simulation_time": self.simulation_time,
             "world": {
                 "world_id": self.world["world_id"],
                 "tick": int(self.world["current_tick"]),
@@ -155,12 +276,46 @@ class ServerCognitiveRC1Runtime:
                 "water_evaporated_total": int(water["evaporated_total"]),
             },
             "cognition": {
-                "memory_episodes": len(self.gym.memory.snapshot()),
-                "active_regime": active,
-                "pending_regime": pending,
-                "consequence_address": consequence_address,
+                "causal": {
+                    "memory_episodes": len(self.gym.memory.snapshot()),
+                    "active_regime": active,
+                    "pending_regime": pending,
+                    "consequence_address": consequence_address,
+                },
+                "structural": {
+                    "pairwise_links": len(self.pairwise.links),
+                    "higher_order_links": len(self.higher.links),
+                    "historical_context_records": len(
+                        self.context_memory.snapshot()
+                    ),
+                    "admission_snapshots": len(
+                        self.admission_memory.snapshot()
+                    ),
+                    "current_contexts": len(
+                        self.admission_memory.current_contexts()
+                    ),
+                    "current_candidates": len(self.last_candidates),
+                    "resolution_counts": self._resolution_counts(),
+                },
+            },
+            "event_time": {
+                "watermark": self.reorder.watermark,
+                "max_event_time": self.reorder.max_event_time,
+                "pending_slice_ids": self.reorder.pending_slice_ids(),
+                "last_window_id": self.last_window_id,
+                "last_ingested_slice_ids": self.last_ingested_slice_ids,
+                "slices_offered": self.reality_slices_offered,
+                "slices_ingested": self.reality_slices_ingested,
+                "late_rejection_count": self.late_rejection_count,
+                "recent_late_rejections": tuple(
+                    self.recent_late_rejections
+                ),
             },
             "sensors": {
                 "frame_ids": sensor_frames,
+            },
+            "persistence": {
+                "mode": "memory-only",
+                "restart_safe": False,
             },
         }
