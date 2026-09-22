@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import time
+from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from threading import Event, RLock, Thread
 from urllib.parse import parse_qs, urlparse
@@ -11,14 +12,47 @@ from server_cognitive_rc1_runtime import ServerCognitiveRC1Runtime
 
 
 class RuntimeController:
-    def __init__(self, *, episode_id: int = 1):
+    def __init__(
+        self,
+        *,
+        episode_id: int = 1,
+        checkpoint_path: str | None = None,
+        autosave_every: int = 1,
+        resume: bool = True,
+    ):
+        if autosave_every < 1:
+            raise ValueError("autosave_every must be >= 1")
         self._lock = RLock()
         self._stop = Event()
         self._thread: Thread | None = None
         self._interval_seconds = 1.0
         self._background_errors = 0
         self._last_background_error: str | None = None
-        self.runtime = ServerCognitiveRC1Runtime.create(episode_id=episode_id)
+        self._checkpoint_errors = 0
+        self._last_checkpoint_error: str | None = None
+        self._checkpoint_path = (
+            str(Path(checkpoint_path))
+            if checkpoint_path
+            else None
+        )
+        self._autosave_every = int(autosave_every)
+        self._last_checkpoint_cycle: int | None = None
+        self._loaded_from_checkpoint = False
+
+        if (
+            resume
+            and self._checkpoint_path
+            and Path(self._checkpoint_path).is_file()
+        ):
+            self.runtime = ServerCognitiveRC1Runtime.load_checkpoint(
+                self._checkpoint_path
+            )
+            self._loaded_from_checkpoint = True
+            self._last_checkpoint_cycle = self.runtime.cycles
+        else:
+            self.runtime = ServerCognitiveRC1Runtime.create(
+                episode_id=episode_id
+            )
 
     @property
     def running(self) -> bool:
@@ -31,7 +65,43 @@ class RuntimeController:
             "interval_seconds": self._interval_seconds,
             "background_errors": self._background_errors,
             "last_background_error": self._last_background_error,
+            "checkpoint_path": self._checkpoint_path,
+            "autosave_every": self._autosave_every,
+            "loaded_from_checkpoint": self._loaded_from_checkpoint,
+            "last_checkpoint_cycle": self._last_checkpoint_cycle,
+            "checkpoint_errors": self._checkpoint_errors,
+            "last_checkpoint_error": self._last_checkpoint_error,
         }
+
+    def _save_checkpoint_locked(self):
+        if not self._checkpoint_path:
+            return None
+        try:
+            target = self.runtime.save_checkpoint(self._checkpoint_path)
+            self._last_checkpoint_cycle = self.runtime.cycles
+            self._last_checkpoint_error = None
+            return str(target)
+        except Exception as exc:
+            self._checkpoint_errors += 1
+            self._last_checkpoint_error = f"{type(exc).__name__}: {exc}"
+            raise
+
+    def checkpoint(self):
+        with self._lock:
+            target = self._save_checkpoint_locked()
+            return {
+                "saved": target is not None,
+                "path": target,
+                "cycles": self.runtime.cycles,
+                "service": self._service_state(),
+            }
+
+    def _autosave_locked(self):
+        if not self._checkpoint_path:
+            return
+        if self.runtime.cycles % self._autosave_every != 0:
+            return
+        self._save_checkpoint_locked()
 
     def status(self):
         with self._lock:
@@ -87,6 +157,7 @@ class RuntimeController:
     def step(self):
         with self._lock:
             payload = self.runtime.step()
+            self._autosave_locked()
             payload["service"] = self._service_state()
             return payload
 
@@ -94,12 +165,15 @@ class RuntimeController:
         if cycles < 1:
             raise ValueError("cycles must be >= 1")
         with self._lock:
-            samples = self.runtime.run(cycles)
+            samples = []
+            for _ in range(cycles):
+                samples.append(self.runtime.step())
+                self._autosave_locked()
             status = self.runtime.status()
             status["service"] = self._service_state()
             return {
                 "cycles_requested": cycles,
-                "samples": samples,
+                "samples": tuple(samples),
                 "status": status,
             }
 
@@ -140,6 +214,8 @@ class RuntimeController:
         if thread is not None and thread.is_alive():
             thread.join(timeout=5.0)
         with self._lock:
+            if self._checkpoint_path:
+                self._save_checkpoint_locked()
             return self.status()
 
     def close(self):
@@ -232,6 +308,9 @@ def make_handler(controller: RuntimeController):
                         controller.start(interval_seconds=interval),
                     )
                     return
+                if path == "/api/v1/checkpoint":
+                    self._json(200, controller.checkpoint())
+                    return
                 if path == "/api/v1/stop":
                     self._json(200, controller.stop())
                     return
@@ -253,9 +332,20 @@ def main():
     parser.add_argument("--episode-id", type=int, default=1)
     parser.add_argument("--autostart", action="store_true")
     parser.add_argument("--interval", type=float, default=1.0)
+    parser.add_argument(
+        "--checkpoint",
+        default="var/server-cognitive-rc1/checkpoint.json",
+    )
+    parser.add_argument("--autosave-every", type=int, default=10)
+    parser.add_argument("--no-resume", action="store_true")
     args = parser.parse_args()
 
-    controller = RuntimeController(episode_id=args.episode_id)
+    controller = RuntimeController(
+        episode_id=args.episode_id,
+        checkpoint_path=args.checkpoint,
+        autosave_every=args.autosave_every,
+        resume=not args.no_resume,
+    )
     if args.autostart:
         controller.start(interval_seconds=args.interval)
 
@@ -272,6 +362,9 @@ def main():
                 "port": args.port,
                 "autostart": bool(args.autostart),
                 "interval": args.interval,
+                "checkpoint": args.checkpoint,
+                "autosave_every": args.autosave_every,
+                "resume": not args.no_resume,
             },
             sort_keys=True,
         ),
