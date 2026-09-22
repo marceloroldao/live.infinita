@@ -112,8 +112,10 @@ on:
       - 'apps/world-runtime/scenario_server_cognitive_rc1.py'
       - 'apps/world-runtime/server_cognitive_rc1_runtime.py'
       - 'apps/world-runtime/server_cognitive_rc1_service.py'
+      - 'apps/world-runtime/server_cognitive_rc1_checkpoint.py'
       - 'apps/world-runtime/test_server_cognitive_rc1_runtime.py'
       - 'apps/world-runtime/test_server_cognitive_rc1_service.py'
+      - 'apps/world-runtime/test_server_cognitive_rc1_checkpoint.py'
       - 'apps/world-runtime/test_life_gate_003_crossrepo.py'
       - 'schemas/memoria-v2-cognitive-frame.schema.json'
       - 'examples/memoria-v2-cognitive-frame.minimal.json'
@@ -246,3 +248,4 @@ jobs:
           test_life_gate_028_crossrepo.py
           test_server_cognitive_rc1_runtime.py
           test_server_cognitive_rc1_service.py
+          test_server_cognitive_rc1_checkpoint.py
