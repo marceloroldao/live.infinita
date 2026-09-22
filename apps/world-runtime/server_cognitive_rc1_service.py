@@ -2,35 +2,57 @@ from __future__ import annotations
 
 import argparse
 import json
-import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from threading import Event, RLock, Thread
-from urllib.parse import parse_qs, urlparse
+from pathlib import Path
+from threading import Event, RLock, Thread, current_thread
+from urllib.parse import parse_qs, urlsplit
 
 from server_cognitive_rc1_runtime import ServerCognitiveRC1Runtime
 
 
 class RuntimeController:
-    def __init__(self, *, episode_id: int = 1):
+    def __init__(
+        self,
+        *,
+        episode_id: int = 1,
+        state_path: str | None = None,
+    ):
         self._lock = RLock()
-        self._stop = Event()
-        self._thread: Thread | None = None
-        self._interval_seconds = 1.0
-        self._background_errors = 0
-        self._last_background_error: str | None = None
-        self.runtime = ServerCognitiveRC1Runtime.create(episode_id=episode_id)
+        self._state_path = Path(state_path).resolve() if state_path else None
+        if self._state_path is not None and self._state_path.exists():
+            self.runtime = ServerCognitiveRC1Runtime.load_checkpoint(
+                self._state_path
+            )
+        else:
+            self.runtime = ServerCognitiveRC1Runtime.create(
+                episode_id=episode_id
+            )
 
-    @property
-    def running(self) -> bool:
-        thread = self._thread
-        return bool(thread is not None and thread.is_alive() and not self._stop.is_set())
+        self._auto_stop = Event()
+        self._auto_thread: Thread | None = None
+        self._auto_interval: float | None = None
+        self._last_auto_error: str | None = None
 
-    def _service_state(self) -> dict:
+    def _checkpoint_unlocked(self):
+        if self._state_path is None:
+            return None
+        return str(self.runtime.save_checkpoint(self._state_path))
+
+    def _service_state(self):
+        running = (
+            self._auto_thread is not None
+            and self._auto_thread.is_alive()
+            and not self._auto_stop.is_set()
+        )
         return {
-            "running": self.running,
-            "interval_seconds": self._interval_seconds,
-            "background_errors": self._background_errors,
-            "last_background_error": self._last_background_error,
+            "auto_running": running,
+            "auto_interval": self._auto_interval,
+            "checkpoint_path": (
+                str(self._state_path)
+                if self._state_path is not None
+                else None
+            ),
+            "last_auto_error": self._last_auto_error,
         }
 
     def status(self):
@@ -39,62 +61,25 @@ class RuntimeController:
             payload["service"] = self._service_state()
             return payload
 
-    def cognition(self):
-        status = self.status()
-        return {
-            "profile": status["profile"],
-            "cycles": status["cycles"],
-            "simulation_time": status["simulation_time"],
-            "cognition": status["cognition"],
-            "event_time": status["event_time"],
-        }
-
-    def world_status(self):
-        status = self.status()
-        return {
-            "profile": status["profile"],
-            "cycles": status["cycles"],
-            "world": status["world"],
-            "nov": status["nov"],
-            "environment": status["environment"],
-            "sensors": status["sensors"],
-        }
-
-    def metrics(self):
-        status = self.status()
-        structural = status["cognition"]["structural"]
-        event_time = status["event_time"]
-        return {
-            "cycles": status["cycles"],
-            "world_tick": status["world"]["tick"],
-            "world_events": status["world"]["events"],
-            "causal_memory_episodes": status["cognition"]["causal"]["memory_episodes"],
-            "pairwise_links": structural["pairwise_links"],
-            "higher_order_links": structural["higher_order_links"],
-            "historical_context_records": structural["historical_context_records"],
-            "current_candidates": structural["current_candidates"],
-            "resolved_contexts": structural["resolution_counts"].get("resolved", 0),
-            "ambiguous_contexts": structural["resolution_counts"].get("ambiguous", 0),
-            "unsupported_contexts": structural["resolution_counts"].get("unsupported", 0),
-            "reality_slices_offered": event_time["slices_offered"],
-            "reality_slices_ingested": event_time["slices_ingested"],
-            "late_rejection_count": event_time["late_rejection_count"],
-            "watermark": event_time["watermark"],
-            "max_event_time": event_time["max_event_time"],
-            "service_running": status["service"]["running"],
-        }
+    def inspect(self):
+        with self._lock:
+            payload = self.runtime.inspect()
+            payload["service"] = self._service_state()
+            return payload
 
     def step(self):
         with self._lock:
             payload = self.runtime.step()
+            self._checkpoint_unlocked()
             payload["service"] = self._service_state()
             return payload
 
     def run(self, cycles: int):
-        if cycles < 1:
-            raise ValueError("cycles must be >= 1")
+        if cycles < 1 or cycles > 1000:
+            raise ValueError("cycles must be between 1 and 1000")
         with self._lock:
             samples = self.runtime.run(cycles)
+            self._checkpoint_unlocked()
             status = self.runtime.status()
             status["service"] = self._service_state()
             return {
@@ -103,66 +88,64 @@ class RuntimeController:
                 "status": status,
             }
 
-    def _background_loop(self):
-        while not self._stop.is_set():
-            started = time.monotonic()
+    def checkpoint(self):
+        with self._lock:
+            path = self._checkpoint_unlocked()
+            if path is None:
+                raise ValueError("checkpoint path is not configured")
+            return {
+                "status": "saved",
+                "path": path,
+                "cycles": self.runtime.cycles,
+            }
+
+    def _auto_worker(self):
+        assert self._auto_interval is not None
+        while not self._auto_stop.wait(self._auto_interval):
             try:
                 self.step()
-                self._last_background_error = None
-            except Exception as exc:
-                self._background_errors += 1
-                self._last_background_error = f"{type(exc).__name__}: {exc}"
-            elapsed = time.monotonic() - started
-            remaining = max(0.0, self._interval_seconds - elapsed)
-            self._stop.wait(remaining)
+            except Exception as exc:  # surfaced in status instead of silent death
+                with self._lock:
+                    self._last_auto_error = (
+                        f"{type(exc).__name__}: {exc}"
+                    )
+                self._auto_stop.set()
+                break
 
-    def start(self, *, interval_seconds: float = 1.0):
-        interval = float(interval_seconds)
-        if interval < 0.01 or interval > 60.0:
-            raise ValueError("interval_seconds must be between 0.01 and 60")
+    def start_auto(self, interval: float):
+        interval = float(interval)
+        if interval <= 0:
+            raise ValueError("auto interval must be > 0")
         with self._lock:
-            if self.running:
-                self._interval_seconds = interval
-                return self.status()
-            self._interval_seconds = interval
-            self._stop.clear()
-            self._thread = Thread(
-                target=self._background_loop,
-                name="server-cognitive-rc1-loop",
+            if (
+                self._auto_thread is not None
+                and self._auto_thread.is_alive()
+            ):
+                raise ValueError("automatic runtime is already running")
+            self._auto_interval = interval
+            self._last_auto_error = None
+            self._auto_stop.clear()
+            self._auto_thread = Thread(
+                target=self._auto_worker,
+                name="server-cognitive-rc1-auto",
                 daemon=True,
             )
-            self._thread.start()
-            return self.status()
+            self._auto_thread.start()
+            return self._service_state()
 
-    def stop(self):
-        self._stop.set()
-        thread = self._thread
-        if thread is not None and thread.is_alive():
+    def stop_auto(self):
+        with self._lock:
+            thread = self._auto_thread
+            self._auto_stop.set()
+        if (
+            thread is not None
+            and thread.is_alive()
+            and thread is not current_thread()
+        ):
             thread.join(timeout=5.0)
         with self._lock:
-            return self.status()
-
-    def close(self):
-        return self.stop()
-
-
-def _query(path: str) -> tuple[str, dict[str, list[str]]]:
-    parsed = urlparse(path)
-    return parsed.path, parse_qs(parsed.query, keep_blank_values=True)
-
-
-def _single_float(query: dict[str, list[str]], key: str, default: float) -> float:
-    values = query.get(key)
-    if not values:
-        return default
-    return float(values[-1])
-
-
-def _single_int(query: dict[str, list[str]], key: str, default: int) -> int:
-    values = query.get(key)
-    if not values:
-        return default
-    return int(values[-1])
+            self._checkpoint_unlocked()
+            return self._service_state()
 
 
 def make_handler(controller: RuntimeController):
@@ -176,69 +159,74 @@ def make_handler(controller: RuntimeController):
                 separators=(",", ":"),
             ).encode("utf-8")
             self.send_response(status)
-            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header(
+                "Content-Type",
+                "application/json; charset=utf-8",
+            )
             self.send_header("Content-Length", str(len(body)))
             self.end_headers()
             self.wfile.write(body)
 
+        def _request(self):
+            parsed = urlsplit(self.path)
+            query = parse_qs(parsed.query)
+            return parsed.path, query
+
+        def _error(self, exc):
+            status = 400 if isinstance(exc, ValueError) else 500
+            self._json(
+                status,
+                {
+                    "error": type(exc).__name__,
+                    "detail": str(exc),
+                },
+            )
+
         def do_GET(self):
-            path, _query_values = _query(self.path)
-            if path == "/health":
-                payload = controller.status()
-                self._json(
-                    200,
-                    {
-                        "status": "ok",
-                        "profile": "server-cognitive-rc1",
-                        "cycles": payload["cycles"],
-                        "running": payload["service"]["running"],
-                    },
-                )
-                return
-            if path == "/api/v1/status":
-                self._json(200, controller.status())
-                return
-            if path == "/api/v1/cognition":
-                self._json(200, controller.cognition())
-                return
-            if path == "/api/v1/world":
-                self._json(200, controller.world_status())
-                return
-            if path == "/api/v1/metrics":
-                self._json(200, controller.metrics())
-                return
-            self._json(404, {"error": "not-found"})
+            path, _query = self._request()
+            try:
+                if path == "/health":
+                    self._json(
+                        200,
+                        {
+                            "status": "ok",
+                            "profile": "server-cognitive-rc1",
+                        },
+                    )
+                    return
+                if path == "/api/v1/status":
+                    self._json(200, controller.status())
+                    return
+                if path == "/api/v1/inspect":
+                    self._json(200, controller.inspect())
+                    return
+                self._json(404, {"error": "not-found"})
+            except Exception as exc:
+                self._error(exc)
 
         def do_POST(self):
-            path, query = _query(self.path)
+            path, query = self._request()
             try:
                 if path == "/api/v1/step":
                     self._json(200, controller.step())
                     return
                 if path == "/api/v1/run":
-                    cycles = _single_int(query, "cycles", 1)
-                    if cycles < 1 or cycles > 1000:
-                        self._json(
-                            400,
-                            {"error": "cycles must be between 1 and 1000"},
-                        )
-                        return
+                    cycles = int(query.get("cycles", ["1"])[0])
                     self._json(200, controller.run(cycles))
                     return
-                if path == "/api/v1/start":
-                    interval = _single_float(query, "interval", 1.0)
-                    self._json(
-                        200,
-                        controller.start(interval_seconds=interval),
-                    )
+                if path == "/api/v1/checkpoint":
+                    self._json(200, controller.checkpoint())
                     return
-                if path == "/api/v1/stop":
-                    self._json(200, controller.stop())
+                if path == "/api/v1/auto/start":
+                    interval = float(query.get("interval", ["1.0"])[0])
+                    self._json(200, controller.start_auto(interval))
                     return
-            except (TypeError, ValueError) as exc:
-                self._json(400, {"error": str(exc)})
-                return
-            self._json(404, {"error": "not-found"})
+                if path == "/api/v1/auto/stop":
+                    self._json(200, controller.stop_auto())
+                    return
+                self._json(404, {"error": "not-found"})
+            except Exception as exc:
+                self._error(exc)
 
         def log_message(self, format, *args):
             return
@@ -251,13 +239,21 @@ def main():
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8091)
     parser.add_argument("--episode-id", type=int, default=1)
-    parser.add_argument("--autostart", action="store_true")
-    parser.add_argument("--interval", type=float, default=1.0)
+    parser.add_argument("--state-path")
+    parser.add_argument(
+        "--auto-interval",
+        type=float,
+        default=0.0,
+        help="run one cognitive cycle every N seconds; 0 disables auto-run",
+    )
     args = parser.parse_args()
 
-    controller = RuntimeController(episode_id=args.episode_id)
-    if args.autostart:
-        controller.start(interval_seconds=args.interval)
+    controller = RuntimeController(
+        episode_id=args.episode_id,
+        state_path=args.state_path,
+    )
+    if args.auto_interval > 0:
+        controller.start_auto(args.auto_interval)
 
     server = ThreadingHTTPServer(
         (args.host, args.port),
@@ -270,8 +266,8 @@ def main():
                 "profile": "server-cognitive-rc1",
                 "host": args.host,
                 "port": args.port,
-                "autostart": bool(args.autostart),
-                "interval": args.interval,
+                "auto_interval": args.auto_interval,
+                "state_path": args.state_path,
             },
             sort_keys=True,
         ),
@@ -280,7 +276,7 @@ def main():
     try:
         server.serve_forever()
     finally:
-        controller.close()
+        controller.stop_auto()
         server.server_close()
 
 
