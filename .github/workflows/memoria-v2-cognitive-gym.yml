@@ -109,6 +109,13 @@ on:
       - 'apps/world-runtime/reality_slice_event_time_runtime.py'
       - 'apps/world-runtime/scenario_life_gate_028.py'
       - 'apps/world-runtime/test_life_gate_028_crossrepo.py'
+      - 'apps/world-runtime/scenario_server_cognitive_rc1.py'
+      - 'apps/world-runtime/server_cognitive_rc1_runtime.py'
+      - 'apps/world-runtime/server_cognitive_rc1_service.py'
+      - 'apps/world-runtime/server_cognitive_rc1_checkpoint.py'
+      - 'apps/world-runtime/test_server_cognitive_rc1_runtime.py'
+      - 'apps/world-runtime/test_server_cognitive_rc1_service.py'
+      - 'apps/world-runtime/test_server_cognitive_rc1_checkpoint.py'
       - 'apps/world-runtime/test_life_gate_003_crossrepo.py'
       - 'schemas/memoria-v2-cognitive-frame.schema.json'
       - 'examples/memoria-v2-cognitive-frame.minimal.json'
@@ -141,6 +148,7 @@ on:
       - 'docs/LIFE_GATE_026.md'
       - 'docs/LIFE_GATE_027.md'
       - 'docs/LIFE_GATE_028.md'
+      - 'docs/SERVER_COGNITIVE_RC1.md'
       - '.github/workflows/memoria-v2-cognitive-gym.yml'
   workflow_dispatch:
 
@@ -238,3 +246,6 @@ jobs:
           test_life_gate_026_crossrepo.py
           test_life_gate_027_crossrepo.py
           test_life_gate_028_crossrepo.py
+          test_server_cognitive_rc1_runtime.py
+          test_server_cognitive_rc1_service.py
+          test_server_cognitive_rc1_checkpoint.py
