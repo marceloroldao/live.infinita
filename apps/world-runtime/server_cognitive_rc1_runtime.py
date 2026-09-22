@@ -214,6 +214,18 @@ class ServerCognitiveRC1Runtime:
             raise ValueError("cycles must be >= 1")
         return tuple(self.step() for _ in range(cycles))
 
+    def save_checkpoint(self, path: str):
+        from server_cognitive_rc1_checkpoint import save_runtime_checkpoint
+        return save_runtime_checkpoint(self, path)
+
+    @classmethod
+    def load_checkpoint(cls, path: str):
+        from server_cognitive_rc1_checkpoint import load_runtime_checkpoint
+        runtime = load_runtime_checkpoint(path)
+        if not isinstance(runtime, cls):
+            raise TypeError("checkpoint did not restore ServerCognitiveRC1Runtime")
+        return runtime
+
     def _resolution_counts(self) -> dict[str, int]:
         counts = {"resolved": 0, "ambiguous": 0, "unsupported": 0}
         for item in self.last_resolutions:
@@ -315,7 +327,7 @@ class ServerCognitiveRC1Runtime:
                 "frame_ids": sensor_frames,
             },
             "persistence": {
-                "mode": "memory-only",
-                "restart_safe": False,
+                "mode": "checkpoint-capable",
+                "restart_safe": True,
             },
         }
