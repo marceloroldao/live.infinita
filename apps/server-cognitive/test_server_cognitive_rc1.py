@@ -124,3 +124,27 @@ def test_server_cognitive_rc1_is_deterministic_for_same_episode():
     b.run_steps(5)
 
     assert _signature(a) == _signature(b)
+
+
+def test_server_cognitive_rc1_soak_summary_exposes_long_run_invariants():
+    engine = ServerCognitiveEngine(activity_limit=50)
+    engine.run_steps(10)
+
+    soak = engine.soak_summary()
+
+    assert soak["profile"] == "server-cognitive-rc1"
+    assert soak["cycle_id"] == 10
+    assert soak["world_tick"] == engine.snapshot()["world"]["tick"]
+    assert soak["world_version"] == engine.snapshot()["world"]["version"]
+    assert soak["pairwise_links"] > 0
+    assert soak["causal_memory_observations"] >= 1
+    assert soak["watermark"] is not None
+    assert soak["max_event_time"] is not None
+    assert soak["max_event_time"] >= soak["watermark"]
+    assert soak["late_rejections"] == 0
+    assert (
+        soak["curiosity_cycles_in_activity_window"]
+        + soak["need_cycles_in_activity_window"]
+        == 10
+    )
+    assert soak["errors_in_activity_window"] == 0
