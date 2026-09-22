@@ -4,6 +4,7 @@ import json
 import os
 import threading
 import time
+from pathlib import Path
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
@@ -64,11 +65,30 @@ refresh(); setInterval(refresh,1500);
 
 
 class CognitiveService:
-    def __init__(self, engine: ServerCognitiveEngine, *, interval: float, autorun: bool):
+    def __init__(
+        self,
+        engine: ServerCognitiveEngine,
+        *,
+        interval: float,
+        autorun: bool,
+        checkpoint_path: str | None = None,
+        autosave_every: int = 10,
+        loaded_from_checkpoint: bool = False,
+    ):
+        if autosave_every < 1:
+            raise ValueError("autosave_every must be >= 1")
         self.engine = engine
         self.interval = max(0.05, float(interval))
         self.autorun = bool(autorun)
         self.last_error: str | None = None
+        self.checkpoint_path = str(Path(checkpoint_path)) if checkpoint_path else None
+        self.autosave_every = int(autosave_every)
+        self.loaded_from_checkpoint = bool(loaded_from_checkpoint)
+        self.last_checkpoint_cycle: int | None = (
+            engine.cycle_id if loaded_from_checkpoint else None
+        )
+        self.checkpoint_errors = 0
+        self.last_checkpoint_error: str | None = None
         self._stop = threading.Event()
         self._thread = threading.Thread(
             target=self._loop,
@@ -77,12 +97,68 @@ class CognitiveService:
         )
         self._thread.start()
 
+    def _save_checkpoint(self):
+        if not self.checkpoint_path:
+            return None
+        try:
+            target = self.engine.save_checkpoint(self.checkpoint_path)
+            self.last_checkpoint_cycle = self.engine.cycle_id
+            self.last_checkpoint_error = None
+            return str(target)
+        except Exception as exc:
+            self.checkpoint_errors += 1
+            self.last_checkpoint_error = f"{type(exc).__name__}: {exc}"
+            raise
+
+    def _maybe_autosave(self):
+        if not self.checkpoint_path:
+            return
+        if self.engine.cycle_id % self.autosave_every != 0:
+            return
+        self._save_checkpoint()
+
+    def state(self):
+        return {
+            "autorun": self.autorun,
+            "interval_seconds": self.interval,
+            "last_error": self.last_error,
+            "checkpoint_path": self.checkpoint_path,
+            "autosave_every": self.autosave_every,
+            "loaded_from_checkpoint": self.loaded_from_checkpoint,
+            "last_checkpoint_cycle": self.last_checkpoint_cycle,
+            "checkpoint_errors": self.checkpoint_errors,
+            "last_checkpoint_error": self.last_checkpoint_error,
+        }
+
+    def step(self):
+        result = self.engine.step()
+        self._maybe_autosave()
+        return result
+
+    def run_steps(self, count: int):
+        count = int(count)
+        if count < 1 or count > 1000:
+            raise ValueError("count must be between 1 and 1000")
+        results = []
+        for _ in range(count):
+            results.append(self.step())
+        return tuple(results)
+
+    def checkpoint(self):
+        target = self._save_checkpoint()
+        return {
+            "saved": target is not None,
+            "path": target,
+            "cycle_id": self.engine.cycle_id,
+            "service": self.state(),
+        }
+
     def _loop(self) -> None:
         while not self._stop.is_set():
             started = time.monotonic()
             if self.autorun:
                 try:
-                    self.engine.step()
+                    self.step()
                     self.last_error = None
                 except Exception as exc:  # service must remain observable after a failed cycle
                     self.last_error = f"{type(exc).__name__}: {exc}"
@@ -92,6 +168,8 @@ class CognitiveService:
     def stop(self) -> None:
         self._stop.set()
         self._thread.join(timeout=2.0)
+        if self.checkpoint_path:
+            self._save_checkpoint()
 
 
 SERVICE: CognitiveService | None = None
@@ -138,13 +216,13 @@ class Handler(BaseHTTPRequestHandler):
             self._json({
                 "status": "ok" if SERVICE.last_error is None else "degraded",
                 "profile": "server-cognitive-rc1",
-                "autorun": SERVICE.autorun,
-                "interval_seconds": SERVICE.interval,
-                "last_error": SERVICE.last_error,
+                **SERVICE.state(),
             })
             return
         if parsed.path == "/snapshot":
-            self._json(SERVICE.engine.snapshot())
+            payload = SERVICE.engine.snapshot()
+            payload["service"] = SERVICE.state()
+            self._json(payload)
             return
         if parsed.path == "/soak":
             self._json(SERVICE.engine.soak_summary())
@@ -167,15 +245,18 @@ class Handler(BaseHTTPRequestHandler):
         try:
             body = self._body()
             if self.path == "/step":
-                self._json(SERVICE.engine._jsonable(SERVICE.engine.step()))
+                self._json(SERVICE.engine._jsonable(SERVICE.step()))
                 return
             if self.path == "/run":
                 count = int(body.get("count", 1))
-                result = SERVICE.engine.run_steps(count)
+                result = SERVICE.run_steps(count)
                 self._json({
                     "count": len(result),
                     "last": SERVICE.engine._jsonable(result[-1]),
                 })
+                return
+            if self.path == "/checkpoint":
+                self._json(SERVICE.checkpoint())
                 return
             if self.path == "/flush":
                 self._json({
@@ -214,16 +295,39 @@ def main() -> None:
     autorun = os.environ.get("LIVE_COGNITIVE_AUTORUN", "1").strip().lower() not in {
         "0", "false", "no", "off"
     }
+    checkpoint_path = os.environ.get(
+        "LIVE_COGNITIVE_CHECKPOINT",
+        "var/server-cognitive-rc1/checkpoint.json",
+    )
+    autosave_every = int(
+        os.environ.get("LIVE_COGNITIVE_AUTOSAVE_EVERY", "10")
+    )
+    resume = os.environ.get("LIVE_COGNITIVE_RESUME", "1").strip().lower() not in {
+        "0", "false", "no", "off"
+    }
+
+    checkpoint_file = Path(checkpoint_path)
+    loaded_from_checkpoint = bool(resume and checkpoint_file.is_file())
+    engine = (
+        ServerCognitiveEngine.load_checkpoint(str(checkpoint_file))
+        if loaded_from_checkpoint
+        else ServerCognitiveEngine()
+    )
 
     SERVICE = CognitiveService(
-        ServerCognitiveEngine(),
+        engine,
         interval=interval,
         autorun=autorun,
+        checkpoint_path=str(checkpoint_file),
+        autosave_every=autosave_every,
+        loaded_from_checkpoint=loaded_from_checkpoint,
     )
     httpd = ThreadingHTTPServer((host, port), Handler)
     print(
         f"[server-cognitive] listening on http://{host}:{port} "
-        f"autorun={autorun} interval={interval}s"
+        f"autorun={autorun} interval={interval}s "
+        f"checkpoint={checkpoint_file} resume={resume} "
+        f"loaded={loaded_from_checkpoint}"
     )
     try:
         httpd.serve_forever()
