@@ -1,86 +1,83 @@
 # Server Cognitive RC1
 
-## Purpose
+## Objetivo
 
-Server Cognitive RC1 is the first long-running integration profile built from the Life Gate 028 cognitive-gym freeze.
+Primeiro perfil long-running da Live Infinita após o Life Gate 028. O teste responde se World Runtime, Nov, natureza, bit.analyze e Memoria.ia V2 conseguem permanecer vivos juntos por longos períodos **e continuar do mesmo estado depois de restart**.
 
-It is intentionally independent of TikTok, LLMs and renderers. The first server test asks a narrower question:
+## Base congelada
 
-> Can the authoritative world, Nov, environmental agents, sensors and Memoria.ia V2 remain alive together for repeated cycles and expose their state for inspection?
-
-## Frozen base
-
-Live.infinita cognitive-gym freeze:
-
-- `af2bbe43a28f472197c1bdebffc0413aa9d9d654`
-
-Pinned cross-repository dependencies inherited from the validated workflow:
-
-- bit.analyze: `2192c61e514a7bb500500ab9fff63bd42940dc52`
+- Live cognitive freeze: `af2bbe43a28f472197c1bdebffc0413aa9d9d654`
 - Memoria.ia: `45fdbe5b2404e00d40f492c2e503172a8eb22433`
+- bit.analyze: `2192c61e514a7bb500500ab9fff63bd42940dc52`
 
-## Runtime cycle
+O branch operacional é `release/server-cognitive-rc1`.
 
-One RC1 cycle performs:
+## Autoridade operacional
 
-1. one distributed environmental tick;
-2. synchronized multimodal sensor frames;
-3. Nov autonomous decision;
-4. authoritative World Runtime action commit;
-5. Memoria.ia V2 learning;
-6. need-state update;
-7. observable status snapshot.
+Use:
 
-No LLM can write World State. TikTok and Godot are absent from this milestone.
+`apps/server-cognitive/server.py`
 
-## Service
+Os arquivos `server_cognitive_rc1_*` dentro de `apps/world-runtime` são harnesses de integração/teste, não um segundo serviço de produção.
 
-The standard-library HTTP service is:
+## Persistência RC1
 
-`apps/world-runtime/server_cognitive_rc1_service.py`
+Checkpoint JSON explícito, versionado e atômico.
 
-Default bind:
+O cold-reopen preserva:
 
-`127.0.0.1:8091`
+- World State;
+- Nov needs;
+- episódios causais e regimes;
+- memória temporal;
+- higher-order context memory;
+- admission-state;
+- pairwise/higher-order associators;
+- event-time watermark e slices pendentes;
+- provenance e atividade operacional.
 
-Endpoints:
+O CI exige que o próximo ciclo pós-restore seja igual ao próximo ciclo de uma execução ininterrupta.
+
+## Servidor
+
+Padrão:
+
+`127.0.0.1:8090`
+
+Dashboard:
+
+`GET /`
+
+Observabilidade:
 
 - `GET /health`
-- `GET /api/v1/status`
-- `POST /api/v1/step`
-- `POST /api/v1/run?cycles=N`
+- `GET /snapshot`
+- `GET /soak`
+- `GET /activity`
+- `GET /debug/world`
+- `GET /debug/memory`
 
-The run endpoint limits one request to 1000 cycles.
+Controle:
 
-## Server smoke sequence
+- `POST /step`
+- `POST /run`
+- `POST /checkpoint`
+- `POST /flush`
+- `POST /control`
 
-After dependencies are available on `PYTHONPATH`:
+## Critério para primeiro soak real
 
-```bash
-cd ~/live.infinita/apps/world-runtime
-python server_cognitive_rc1_service.py --host 127.0.0.1 --port 8091
-```
+1. bootstrap das dependências passa;
+2. smoke HTTP + restart passa;
+3. serviço systemd inicia em autorun;
+4. rodar pelo menos 1000 ciclos;
+5. processo continua saudável;
+6. memórias e world tick crescem sem explosão;
+7. watermark permanece monotônico;
+8. fluxo interno não produz late rejection;
+9. checkpoint é atualizado;
+10. reiniciar o serviço e confirmar que `loaded_from_checkpoint=true` e o cycle continua.
 
-From another shell:
+## Fora do RC1
 
-```bash
-curl -s http://127.0.0.1:8091/health
-curl -s http://127.0.0.1:8091/api/v1/status
-curl -s -X POST 'http://127.0.0.1:8091/api/v1/run?cycles=100'
-curl -s http://127.0.0.1:8091/api/v1/status
-```
-
-## First acceptance target
-
-The first server session should run at least 1000 cycles without TikTok, LLM or renderer authority.
-
-Observe:
-
-- world tick/version continue increasing;
-- Water distribution changes according to World Runtime;
-- Nov continues selecting only world-offered actions;
-- Memoria.ia episode count grows;
-- process remains responsive through `/health` and `/api/v1/status`;
-- deterministic test runs remain reproducible.
-
-Persistence across process restart is deliberately the next RC1 increment. The first increment establishes the long-running in-process integration boundary before adding durable snapshots.
+TikTok, LLM e Godot ficam desligados. Problemas descobertos no soak real passam a orientar os próximos gates, em vez de continuar estendendo o laboratório indefinidamente.
