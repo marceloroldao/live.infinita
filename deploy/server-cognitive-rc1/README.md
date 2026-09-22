@@ -113,3 +113,27 @@ Critérios durante o primeiro soak:
 - `errors_in_activity_window = 0`;
 - pairwise/causal memory devem aparecer sem explosão abrupta;
 - o processo deve permanecer acessível por `/health`, `/snapshot` e `/soak`.
+
+
+## 7. Soak real
+
+O CI executa somente um **pre-soak determinístico de 100 ciclos**. O soak longo pertence ao servidor real, porque o objetivo é observar estabilidade contínua sem transformar cada commit em um benchmark demorado.
+
+Com o serviço em autorun:
+
+```bash
+systemctl --user enable --now live-infinita-cognitive.service
+./deploy/server-cognitive-rc1/watch.sh
+```
+
+Para acelerar um teste controlado sem esperar o relógio de 1 segundo:
+
+```bash
+curl -fsS -X POST \
+  -H 'content-type: application/json' \
+  -d '{"count":1000}' \
+  http://127.0.0.1:8090/run
+curl -fsS http://127.0.0.1:8090/soak
+```
+
+A execução contínua é a evidência principal. O pre-soak de CI existe apenas para impedir regressões óbvias antes do deploy.
