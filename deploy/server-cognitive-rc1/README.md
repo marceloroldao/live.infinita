@@ -1,139 +1,128 @@
 # Deploy — Server Cognitive RC1
 
-Este diretório prepara o primeiro teste real do núcleo cognitivo sem TikTok, LLM ou Godot.
+Primeiro teste real do núcleo cognitivo persistente, sem TikTok, LLM ou Godot.
 
-## 1. Branch
+## 1. Atualizar o repositório
+
+Depois da primeira instalação, o caminho recomendado é:
 
 ```bash
+cd ~/live.infinita
+chmod +x deploy/update.sh
+./deploy/update.sh
+```
+
+O script:
+
+- aborta se houver alterações rastreadas locais;
+- atualiza apenas por fast-forward;
+- executa o bootstrap das dependências congeladas;
+- reinicia o serviço se ele já estiver instalado.
+
+## 2. Primeira instalação
+
+```bash
+cd ~/live.infinita
 git fetch origin
 git checkout release/server-cognitive-rc1
 git pull --ff-only
-```
 
-## 2. Dependências fixadas
-
-```bash
-chmod +x deploy/server-cognitive-rc1/*.sh
+chmod +x deploy/server-cognitive-rc1/*.sh deploy/update.sh
 ./deploy/server-cognitive-rc1/bootstrap.sh
+./deploy/server-cognitive-rc1/smoke.sh
 ```
 
-O script faz checkout exato de:
+Dependências fixadas em `.vendor/`:
 
 - Memoria.ia `45fdbe5b2404e00d40f492c2e503172a8eb22433`
 - bit.analyze `2192c61e514a7bb500500ab9fff63bd42940dc52`
 
-em `.vendor/`.
+## 3. Checkpoint
 
-## 3. Smoke sem serviço
-
-```bash
-./deploy/server-cognitive-rc1/smoke.sh
-```
-
-Isso sobe temporariamente em `127.0.0.1:18090`, executa ciclos e encerra.
-
-## 4. Execução manual
-
-```bash
-./deploy/server-cognitive-rc1/run.sh
-```
-
-Admin local:
+Padrão:
 
 ```text
-http://127.0.0.1:8090/
+~/live.infinita/var/server-cognitive-rc1/checkpoint.json
 ```
 
-Para acessar remotamente sem abrir a porta pública:
+O autosave padrão ocorre a cada 10 ciclos e o serviço tenta resume automaticamente.
+
+O smoke valida restart real antes da instalação do systemd.
+
+## 4. Instalar systemd user
+
+```bash
+./deploy/server-cognitive-rc1/install-service.sh
+```
+
+Depois:
+
+```bash
+systemctl --user status live-infinita-cognitive.service
+journalctl --user -u live-infinita-cognitive.service -f
+```
+
+## 5. Admin
+
+O serviço escuta somente:
+
+```text
+127.0.0.1:8090
+```
+
+Para acessar remotamente sem publicar a porta:
 
 ```bash
 ssh -L 8090:127.0.0.1:8090 USUARIO@SERVIDOR
 ```
 
-e abra localmente:
+No navegador local:
 
 ```text
 http://127.0.0.1:8090/
 ```
 
-## 5. systemd user
+## 6. Acompanhar soak
 
 ```bash
-mkdir -p ~/.config/systemd/user
-cp deploy/server-cognitive-rc1/live-infinita-cognitive.service ~/.config/systemd/user/
-systemctl --user daemon-reload
-systemctl --user enable --now live-infinita-cognitive.service
-systemctl --user status live-infinita-cognitive.service
-```
-
-Logs:
-
-```bash
-journalctl --user -u live-infinita-cognitive.service -f
-```
-
-## Critério do primeiro teste
-
-Antes de conectar qualquer entrada externa:
-
-- `/health` permanece `ok`;
-- `cycle_id` cresce sozinho;
-- World tick/version crescem;
-- Water ocupa/muda regiões;
-- Nov produz ações `curiosity` ou `need`;
-- pairwise links surgem;
-- watermark avança monotonicamente;
-- nenhuma rejeição tardia ocorre no fluxo interno ordenado;
-- memória causal cresce;
-- processo permanece estável por execução prolongada.
-
-Restart/cold-reopen da cognição completa ainda não faz parte do RC1. Isso será adicionado depois que bit.analyze tiver snapshot/restore explícito dos associators.
-
-
-## 6. Acompanhar o soak
-
-Com o serviço em execução:
-
-```bash
-chmod +x deploy/server-cognitive-rc1/watch.sh
 ./deploy/server-cognitive-rc1/watch.sh
 ```
 
-O watcher consulta `GET /soak` a cada 10 segundos. Para outro intervalo:
+Critérios:
 
-```bash
-LIVE_COGNITIVE_WATCH_SECONDS=60 ./deploy/server-cognitive-rc1/watch.sh
-```
-
-Critérios durante o primeiro soak:
-
-- `cycle_id`, world tick/version e `simulation_time` devem crescer;
+- `cycle_id`, tick/version e simulation_time crescem;
 - `max_event_time >= watermark`;
-- `late_rejections = 0` no fluxo interno;
+- fluxo interno mantém `late_rejections = 0`;
 - `errors_in_activity_window = 0`;
-- pairwise/causal memory devem aparecer sem explosão abrupta;
-- o processo deve permanecer acessível por `/health`, `/snapshot` e `/soak`.
+- memórias causal/temporal/estrutural evoluem;
+- checkpoint continua sendo atualizado;
+- restart do serviço volta do cycle anterior, não de zero;
+- endpoints permanecem responsivos.
 
-
-## 7. Soak real
-
-O CI executa somente um **pre-soak determinístico de 100 ciclos**. O soak longo pertence ao servidor real, porque o objetivo é observar estabilidade contínua sem transformar cada commit em um benchmark demorado.
-
-Com o serviço em autorun:
-
-```bash
-systemctl --user enable --now live-infinita-cognitive.service
-./deploy/server-cognitive-rc1/watch.sh
-```
-
-Para acelerar um teste controlado sem esperar o relógio de 1 segundo:
+## 7. Teste acelerado
 
 ```bash
 curl -fsS -X POST \
   -H 'content-type: application/json' \
   -d '{"count":1000}' \
   http://127.0.0.1:8090/run
+
 curl -fsS http://127.0.0.1:8090/soak
+curl -fsS http://127.0.0.1:8090/health
 ```
 
-A execução contínua é a evidência principal. O pre-soak de CI existe apenas para impedir regressões óbvias antes do deploy.
+Para checkpoint manual:
+
+```bash
+curl -fsS -X POST -H 'content-type: application/json' -d '{}' \
+  http://127.0.0.1:8090/checkpoint
+```
+
+## 8. O que ainda fica desligado
+
+- TikTok;
+- LLM;
+- Godot/renderer;
+- entrada humana externa.
+
+Essas camadas entram somente depois do soak cognitivo persistente.
