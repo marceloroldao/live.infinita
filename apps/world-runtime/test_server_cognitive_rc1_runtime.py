@@ -34,3 +34,51 @@ def test_server_cognitive_rc1_is_deterministic():
 
     assert a.run(8) == b.run(8)
     assert a.status() == b.status()
+
+
+
+def test_server_cognitive_rc1_structural_pipeline_is_live():
+    runtime = ServerCognitiveRC1Runtime.create(episode_id=704)
+    runtime.run(6)
+    status = runtime.status()
+
+    assert status["event_time"]["slices_offered"] == 6
+    assert status["event_time"]["slices_ingested"] >= 4
+    assert status["event_time"]["watermark"] is not None
+    assert status["event_time"]["max_event_time"] is not None
+    assert (
+        status["event_time"]["max_event_time"]
+        >= status["event_time"]["watermark"]
+    )
+    assert status["event_time"]["late_rejection_count"] == 0
+    assert status["cognition"]["structural"]["pairwise_links"] > 0
+    assert status["cognition"]["structural"]["higher_order_links"] >= 0
+    assert status["persistence"] == {
+        "mode": "memory-only",
+        "restart_safe": False,
+    }
+
+
+def test_server_cognitive_rc1_frames_advance_world_time_between_samples():
+    runtime = ServerCognitiveRC1Runtime.create(episode_id=705)
+    before_tick = runtime.status()["world"]["tick"]
+    status = runtime.step()
+
+    assert len(status["sensors"]["frame_ids"]) == 3
+    assert status["world"]["tick"] > before_tick + 3
+    assert status["simulation_time"] == 1.0
+    assert status["event_time"]["slices_offered"] == 1
+
+
+def test_server_cognitive_rc1_status_separates_causal_and_structural_cognition():
+    runtime = ServerCognitiveRC1Runtime.create(episode_id=706)
+    runtime.run(5)
+    cognition = runtime.status()["cognition"]
+
+    assert set(cognition) == {"causal", "structural"}
+    assert cognition["causal"]["memory_episodes"] >= 1
+    assert set(cognition["structural"]["resolution_counts"]) >= {
+        "resolved",
+        "ambiguous",
+        "unsupported",
+    }
