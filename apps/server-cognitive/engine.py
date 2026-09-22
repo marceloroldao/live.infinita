@@ -396,6 +396,46 @@ class ServerCognitiveEngine:
                 },
             }
 
+    def soak_summary(self) -> dict[str, Any]:
+        """Compact invariant-oriented view for unattended RC1 soak monitoring."""
+        with self.lock:
+            snapshot = self.snapshot()
+            activity = tuple(self.activity)
+            curiosity_cycles = sum(
+                1
+                for item in activity
+                if item.get("kind") == "cycle" and item.get("nov_mode") == "curiosity"
+            )
+            need_cycles = sum(
+                1
+                for item in activity
+                if item.get("kind") == "cycle" and item.get("nov_mode") == "need"
+            )
+            errors = sum(
+                1 for item in activity if item.get("kind") == "error"
+            )
+            event_time = snapshot["event_time"]
+            return {
+                "profile": snapshot["profile"],
+                "cycle_id": snapshot["cycle_id"],
+                "simulation_time": snapshot["simulation_time"],
+                "world_tick": snapshot["world"]["tick"],
+                "world_version": snapshot["world"]["version"],
+                "pairwise_links": snapshot["bit_analyze"]["pairwise_links"],
+                "higher_order_links": snapshot["bit_analyze"]["higher_order_links"],
+                "causal_memory_observations": snapshot["nov"]["causal_memory_observations"],
+                "temporal_observations": snapshot["memoria_v2"]["temporal_observations"],
+                "context_observations": snapshot["memoria_v2"]["context_observations"],
+                "current_resolution_counts": snapshot["memoria_v2"]["current_resolution_counts"],
+                "watermark": event_time["watermark"],
+                "max_event_time": event_time["max_event_time"],
+                "pending_slice_ids": event_time["pending_slice_ids"],
+                "late_rejections": event_time["late_rejections"],
+                "curiosity_cycles_in_activity_window": curiosity_cycles,
+                "need_cycles_in_activity_window": need_cycles,
+                "errors_in_activity_window": errors,
+            }
+
     def activity_snapshot(self, limit: int = 50) -> tuple[dict[str, Any], ...]:
         with self.lock:
             limit = max(1, min(int(limit), len(self.activity) or 1))
