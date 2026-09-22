@@ -28,9 +28,16 @@ git checkout release/server-cognitive-rc1
 git pull --ff-only
 
 chmod +x deploy/server-cognitive-rc1/*.sh deploy/update.sh
-./deploy/server-cognitive-rc1/bootstrap.sh
-./deploy/server-cognitive-rc1/smoke.sh
+./deploy/server-cognitive-rc1/install.sh
 ```
+
+O `install.sh` executa, nesta ordem:
+
+1. bootstrap das dependências fixadas;
+2. smoke HTTP + checkpoint + restart real;
+3. instalação/ativação do serviço `systemd --user`.
+
+Se qualquer etapa falhar, a instalação para antes da seguinte.
 
 Dependências fixadas em `.vendor/`:
 
