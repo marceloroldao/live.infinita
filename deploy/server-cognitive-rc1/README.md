@@ -88,3 +88,28 @@ Antes de conectar qualquer entrada externa:
 - processo permanece estável por execução prolongada.
 
 Restart/cold-reopen da cognição completa ainda não faz parte do RC1. Isso será adicionado depois que bit.analyze tiver snapshot/restore explícito dos associators.
+
+
+## 6. Acompanhar o soak
+
+Com o serviço em execução:
+
+```bash
+chmod +x deploy/server-cognitive-rc1/watch.sh
+./deploy/server-cognitive-rc1/watch.sh
+```
+
+O watcher consulta `GET /soak` a cada 10 segundos. Para outro intervalo:
+
+```bash
+LIVE_COGNITIVE_WATCH_SECONDS=60 ./deploy/server-cognitive-rc1/watch.sh
+```
+
+Critérios durante o primeiro soak:
+
+- `cycle_id`, world tick/version e `simulation_time` devem crescer;
+- `max_event_time >= watermark`;
+- `late_rejections = 0` no fluxo interno;
+- `errors_in_activity_window = 0`;
+- pairwise/causal memory devem aparecer sem explosão abrupta;
+- o processo deve permanecer acessível por `/health`, `/snapshot` e `/soak`.
