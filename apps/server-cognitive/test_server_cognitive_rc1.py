@@ -56,6 +56,31 @@ def test_server_cognitive_rc1_step_advances_world_and_commits_nov_action():
     assert len(engine.activity_snapshot()) == 1
 
 
+def test_server_cognitive_rc1_frames_span_distinct_world_ticks():
+    engine = ServerCognitiveEngine()
+    result = engine.step()
+
+    frame_events = [
+        event
+        for event in (engine.world.get("events") or {}).values()
+        if isinstance(event, dict)
+        and event.get("type") == "multimodal_sensor_frame_sampled"
+    ]
+    latest = sorted(
+        frame_events,
+        key=lambda item: (
+            int(item.get("tick_id", -1)),
+            str(item.get("event_id") or ""),
+        ),
+    )[-3:]
+    ticks = tuple(int(item["tick_id"]) for item in latest)
+
+    assert result.cycle_id == 1
+    assert len(ticks) == 3
+    assert len(set(ticks)) == 3
+    assert ticks == tuple(sorted(ticks))
+
+
 def test_server_cognitive_rc1_multiple_cycles_feed_bit_analyze_and_event_time():
     engine = ServerCognitiveEngine()
     results = engine.run_steps(6)
@@ -169,5 +194,5 @@ def test_server_cognitive_rc1_ci_pre_soak_100_cycles():
     assert (
         soak["curiosity_cycles_in_activity_window"]
         + soak["need_cycles_in_activity_window"]
-        == 1000
+        == 100
     )
