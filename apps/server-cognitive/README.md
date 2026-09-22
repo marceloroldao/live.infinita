@@ -62,6 +62,7 @@ LIVE_COGNITIVE_STEP_SECONDS=1.0
 - `GET /` — Admin Web mínimo.
 - `GET /health` — saúde/autorun.
 - `GET /snapshot` — estado resumido de mundo, Nov, cognition e watermark.
+- `GET /soak` — invariantes compactos para acompanhamento de execução prolongada.
 - `GET /activity?limit=50` — ciclos recentes.
 - `GET /debug/world` — World State completo.
 - `GET /debug/memory` — snapshots das memórias estruturais/causais.
