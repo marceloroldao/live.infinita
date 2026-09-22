@@ -104,7 +104,7 @@ jobs:
           export XDG_DATA_HOME="$HOME/.local/share"
           export XDG_CACHE_HOME="$HOME/.cache"
           export XDG_CONFIG_HOME="$HOME/.config"
-          GODOT_USER_DIR="$XDG_DATA_HOME/godot/app_userdata/Live Infinita Renderer"
+          GODOT_USER_DIR="$XDG_DATA_HOME/godot/app_userdata/Live Infinita Showcase"
           mkdir -p "$XDG_DATA_HOME" "$XDG_CACHE_HOME" "$XDG_CONFIG_HOME" "$GODOT_USER_DIR"
           test -w "$GODOT_USER_DIR"
 
