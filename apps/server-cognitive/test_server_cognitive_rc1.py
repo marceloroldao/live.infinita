@@ -196,3 +196,78 @@ def test_server_cognitive_rc1_ci_pre_soak_100_cycles():
         + soak["need_cycles_in_activity_window"]
         == 100
     )
+
+
+
+def test_server_cognitive_rc1_checkpoint_roundtrip(tmp_path):
+    path = tmp_path / "server-cognitive.json"
+    original = ServerCognitiveEngine(episode_id=88)
+    original.run_steps(12)
+
+    original.save_checkpoint(str(path))
+    restored = ServerCognitiveEngine.load_checkpoint(str(path))
+
+    assert path.is_file()
+    assert restored.snapshot() == original.snapshot()
+    assert restored.debug_memory() == original.debug_memory()
+    assert restored.activity_snapshot(100) == original.activity_snapshot(100)
+    assert tuple(restored.rejections) == tuple(original.rejections)
+
+
+def test_server_cognitive_rc1_restart_next_cycle_matches_uninterrupted(tmp_path):
+    path = tmp_path / "server-cognitive.json"
+    uninterrupted = ServerCognitiveEngine(episode_id=89)
+    uninterrupted.run_steps(12)
+    uninterrupted.save_checkpoint(str(path))
+
+    restarted = ServerCognitiveEngine.load_checkpoint(str(path))
+
+    expected = uninterrupted.step()
+    actual = restarted.step()
+
+    assert actual == expected
+    assert restarted.snapshot() == uninterrupted.snapshot()
+    assert restarted.debug_memory() == uninterrupted.debug_memory()
+
+
+def test_server_cognitive_rc1_checkpoint_preserves_pending_event_time(tmp_path):
+    path = tmp_path / "server-cognitive.json"
+    original = ServerCognitiveEngine(episode_id=90)
+    original.step()
+    pending = original.reorder.pending_slice_ids()
+
+    assert pending
+    original.save_checkpoint(str(path))
+    restored = ServerCognitiveEngine.load_checkpoint(str(path))
+
+    assert restored.reorder.pending_slice_ids() == pending
+    assert restored.reorder.watermark == original.reorder.watermark
+    assert restored.reorder.max_event_time == original.reorder.max_event_time
+
+
+def test_server_cognitive_rc1_checkpoint_rejects_unknown_version(tmp_path):
+    import json
+
+    path = tmp_path / "server-cognitive.json"
+    engine = ServerCognitiveEngine(episode_id=91)
+    engine.run_steps(2)
+    engine.save_checkpoint(str(path))
+
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    raw["version"] = 999
+    path.write_text(json.dumps(raw), encoding="utf-8")
+
+    try:
+        ServerCognitiveEngine.load_checkpoint(str(path))
+    except ValueError as exc:
+        assert "unsupported server cognitive checkpoint version" in str(exc)
+    else:
+        raise AssertionError("unsupported checkpoint version must fail")
+
+
+def test_server_cognitive_rc1_snapshot_declares_restart_safe_persistence():
+    engine = ServerCognitiveEngine(episode_id=92)
+    assert engine.snapshot()["persistence"] == {
+        "mode": "versioned-json-checkpoint",
+        "restart_safe": True,
+    }
