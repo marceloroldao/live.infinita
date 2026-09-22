@@ -13,7 +13,7 @@ def test_server_cognitive_rc1_runs_without_llm_tiktok_or_renderer():
     assert first["nov"]["action"] in ("probe", "walk", "rest")
     assert first["sensors"]["frame_ids"]
     assert first["world"]["events"] > 0
-    assert first["cognition"]["memory_episodes"] >= 1
+    assert first["cognition"]["causal"]["memory_episodes"] >= 1
 
 
 def test_server_cognitive_rc1_water_evolves_while_nov_learns():
@@ -25,7 +25,7 @@ def test_server_cognitive_rc1_water_evolves_while_nov_learns():
     assert len(samples) == 6
     assert runtime.cycles == 6
     assert after != before
-    assert runtime.status()["cognition"]["memory_episodes"] >= 2
+    assert runtime.status()["cognition"]["causal"]["memory_episodes"] >= 2
 
 
 def test_server_cognitive_rc1_is_deterministic():
