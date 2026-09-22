@@ -146,6 +146,9 @@ class Handler(BaseHTTPRequestHandler):
         if parsed.path == "/snapshot":
             self._json(SERVICE.engine.snapshot())
             return
+        if parsed.path == "/soak":
+            self._json(SERVICE.engine.soak_summary())
+            return
         if parsed.path == "/activity":
             query = parse_qs(parsed.query)
             limit = int((query.get("limit") or ["50"])[0])
