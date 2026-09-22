@@ -11,6 +11,9 @@ Environment=LIVE_COGNITIVE_HOST=127.0.0.1
 Environment=LIVE_COGNITIVE_PORT=8090
 Environment=LIVE_COGNITIVE_AUTORUN=1
 Environment=LIVE_COGNITIVE_STEP_SECONDS=1.0
+Environment=LIVE_COGNITIVE_CHECKPOINT=%h/live.infinita/var/server-cognitive-rc1/checkpoint.json
+Environment=LIVE_COGNITIVE_AUTOSAVE_EVERY=10
+Environment=LIVE_COGNITIVE_RESUME=1
 Restart=on-failure
 RestartSec=3
 
