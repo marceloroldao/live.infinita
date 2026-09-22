@@ -150,13 +150,16 @@ def test_server_cognitive_rc1_soak_summary_exposes_long_run_invariants():
     assert soak["errors_in_activity_window"] == 0
 
 
-def test_server_cognitive_rc1_1000_cycle_soak():
-    engine = ServerCognitiveEngine(activity_limit=1000)
-    results = engine.run_steps(1000)
+def test_server_cognitive_rc1_ci_pre_soak_100_cycles():
+    # CI is a bounded pre-soak. The real server soak remains intentionally
+    # long-running through autorun + /soak instead of making every commit
+    # execute a 1000-cycle in-process benchmark.
+    engine = ServerCognitiveEngine(activity_limit=100)
+    results = engine.run_steps(100)
     soak = engine.soak_summary()
 
-    assert len(results) == 1000
-    assert soak["cycle_id"] == 1000
+    assert len(results) == 100
+    assert soak["cycle_id"] == 100
     assert soak["world_tick"] == soak["world_version"]
     assert soak["pairwise_links"] > 0
     assert soak["causal_memory_observations"] >= 1
