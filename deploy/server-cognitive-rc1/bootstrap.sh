@@ -6,7 +6,7 @@ VENDOR="$ROOT/.vendor"
 MEMORIA_SHA="45fdbe5b2404e00d40f492c2e503172a8eb22433"
 BIT_SHA="2192c61e514a7bb500500ab9fff63bd42940dc52"
 
-mkdir -p "$VENDOR"
+mkdir -p "$VENDOR" "$ROOT/var/server-cognitive-rc1"
 
 checkout_pin() {
   local url="$1"
