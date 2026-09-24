@@ -55,6 +55,9 @@ audience_lock = asyncio.Lock()
 actor_lock = asyncio.Lock()
 ai_lock = asyncio.Lock()
 engine = DeterministicWorldEngine(BOOTSTRAP_FILE, DATA_DIR)
+# Verify deterministic history once at process startup. Health reports this cached
+# result; explicit /api/replay/verify remains the deep current-state verification.
+STARTUP_REPLAY_OK = bool(engine.verify_replay()["ok"])
 pipeline = GatewayPipeline()
 aggregator = AudienceAggregator()
 actors = ActorStore(ACTOR_OBSERVATIONS_FILE)
@@ -326,7 +329,7 @@ async def health() -> JSONResponse:
         "mvp": "011",
         "version": "0.12.0",
         "replay_ok": replay_status,
-        "replay_check": "deferred",
+        "replay_check": "startup-cached",
         "state_hash": current_hash,
         "pipeline": ["real-source-bridge", "actor-state", "audience-side-channel", "audience-aggregator", "proposal-gate", "ai-router", "ai-proposal-gate", "intent", "validator", "runtime"],
         "audience_events": ["join", "like", "gift"],
