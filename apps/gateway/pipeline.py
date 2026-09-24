@@ -3,14 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-
-@dataclass(frozen=True)
-class NormalizedEvent:
-    source: str
-    actor_id: str
-    kind: str
-    text: str
-    metadata: dict[str, Any]
+from adapters import adapt_source
+from envelope import UniversalEventEnvelope
 
 
 @dataclass(frozen=True)
@@ -28,20 +22,15 @@ class ValidationResult:
 
 
 class EventGateway:
-    """Normaliza qualquer fonte externa para um contrato único."""
+    """Converte payloads de fontes distintas para UniversalEventEnvelope v1.0."""
 
-    def normalize(self, payload: dict[str, Any]) -> NormalizedEvent:
+    def normalize(self, payload: dict[str, Any]) -> UniversalEventEnvelope:
         source = str(payload.get("source", "simulator")).strip().lower()
-        actor_id = str(payload.get("actor_id", "local-user")).strip()
-        kind = str(payload.get("kind", "text")).strip().lower()
-        text = str(payload.get("text", "")).strip()
-        if not text:
-            raise ValueError("evento sem conteúdo")
-        return NormalizedEvent(source, actor_id, kind, text, dict(payload.get("metadata") or {}))
+        return adapt_source(source, payload)
 
 
 class IntentEngine:
-    """MVP-003: interpretação determinística; LLM poderá ser plugada depois."""
+    """Interpretação determinística do MVP-004; LLM continua fora do caminho crítico."""
 
     RULES = {
         "+ visitante": "spawn_person",
@@ -58,28 +47,34 @@ class IntentEngine:
         "dia": "set_day",
         "day": "set_day",
         "reset": "reset",
+        "nov fogueira": "nov_to_fire",
+        "nov abrigo": "nov_to_shelter",
+        "nov floresta": "nov_to_forest",
+        "nov explorar": "nov_explore",
     }
 
-    def propose(self, event: NormalizedEvent) -> ProposedAction:
-        text = event.text.strip().lower()
-        action = self.RULES.get(text)
+    def propose(self, event: UniversalEventEnvelope) -> ProposedAction:
+        action = self.RULES.get(event.text.strip().lower())
         if action is None:
             return ProposedAction("unknown", 0.0, "nenhuma intenção determinística reconhecida")
-        return ProposedAction(action, 1.0, "regra determinística MVP-003")
+        return ProposedAction(action, 1.0, "regra determinística MVP-004")
 
 
 class RuleValidator:
     ALLOWED_SOURCES = {"simulator", "api", "tiktok", "youtube", "agent"}
-    ALLOWED_ACTIONS = {"spawn_person", "move_tree", "toggle_fire", "set_night", "set_day", "reset"}
+    ALLOWED_ACTIONS = {
+        "spawn_person", "move_tree", "toggle_fire", "set_night", "set_day", "reset",
+        "nov_to_fire", "nov_to_shelter", "nov_to_forest", "nov_explore",
+    }
 
-    def validate(self, event: NormalizedEvent, proposed: ProposedAction) -> ValidationResult:
+    def validate(self, event: UniversalEventEnvelope, proposed: ProposedAction) -> ValidationResult:
         if event.source not in self.ALLOWED_SOURCES:
             return ValidationResult(False, None, f"fonte não permitida: {event.source}")
         if proposed.action not in self.ALLOWED_ACTIONS:
             return ValidationResult(False, None, proposed.reason)
         if proposed.confidence < 1.0:
             return ValidationResult(False, None, "confiança insuficiente para commit determinístico")
-        return ValidationResult(True, proposed.action, "ação aceita pelas regras do MVP-003")
+        return ValidationResult(True, proposed.action, "ação aceita pelas regras do MVP-004")
 
 
 class GatewayPipeline:
@@ -88,7 +83,7 @@ class GatewayPipeline:
         self.intent = IntentEngine()
         self.validator = RuleValidator()
 
-    def process(self, payload: dict[str, Any]) -> tuple[NormalizedEvent, ProposedAction, ValidationResult]:
+    def process(self, payload: dict[str, Any]) -> tuple[UniversalEventEnvelope, ProposedAction, ValidationResult]:
         event = self.gateway.normalize(payload)
         proposed = self.intent.propose(event)
         validation = self.validator.validate(event, proposed)
