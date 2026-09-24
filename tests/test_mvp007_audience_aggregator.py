@@ -47,6 +47,34 @@ class AudienceAggregatorTest(unittest.TestCase):
         self.assertEqual(len(proposals), 1)
         self.assertEqual(proposals[0]["status"], "pending")
 
+    def test_old_events_are_pruned_instead_of_growing_forever(self):
+        agg = AudienceAggregator()
+        for second in range(5000):
+            agg.ingest({"kind": "like"}, now=float(second))
+        # At one event/second and a 30s maximum window, only roughly the live window remains.
+        self.assertLessEqual(agg.retained_event_count(), 31)
+
+    def test_threshold_can_trigger_again_after_window_expires(self):
+        agg = AudienceAggregator()
+        first = []
+        for i in range(10):
+            first.extend(agg.ingest({"kind": "join"}, now=1000 + i))
+        self.assertEqual(len(first), 1)
+
+        # Advance beyond the 30-second window, then form a new independent group.
+        agg.ingest({"kind": "join"}, now=1100)
+        second = []
+        for i in range(1, 10):
+            second.extend(agg.ingest({"kind": "join"}, now=1100 + i))
+        self.assertEqual(len(second), 1)
+
+    def test_late_event_keeps_window_order_valid(self):
+        agg = AudienceAggregator()
+        agg.ingest({"kind": "join"}, now=100)
+        agg.ingest({"kind": "join"}, now=102)
+        agg.ingest({"kind": "join"}, now=101)
+        self.assertEqual(agg.retained_event_count(), 3)
+
 
 if __name__ == "__main__":
     unittest.main()
