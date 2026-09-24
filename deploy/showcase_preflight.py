@@ -125,9 +125,9 @@ def _service_inactive_check(service: str) -> Check:
     return Check(f"host:service-inactive:{service}", result.returncode != 0, detail)
 
 
-def _json_endpoint(name: str, url: str, required_key: str) -> Check:
+def _json_endpoint(name: str, url: str, required_key: str, timeout: float = 5) -> Check:
     try:
-        with urllib.request.urlopen(url, timeout=5) as response:
+        with urllib.request.urlopen(url, timeout=timeout) as response:
             payload = json.loads(response.read().decode("utf-8"))
     except (OSError, urllib.error.URLError, json.JSONDecodeError) as exc:
         return Check(name, False, type(exc).__name__)
@@ -145,7 +145,7 @@ def host_checks() -> list[Check]:
         _service_check("live-infinita-renderer.service"),
         _service_inactive_check("live-infinita-broadcaster.service"),
         _json_endpoint("host:runtime-health", "http://127.0.0.1:8080/api/health", "ok"),
-        _json_endpoint("host:replay", "http://127.0.0.1:8080/api/replay/verify", "ok"),
+        _json_endpoint("host:replay", "http://127.0.0.1:8080/api/replay/verify", "ok", timeout=15),
         _json_endpoint("host:audio-web-health", "http://127.0.0.1:8092/health", "ok"),
     ])
     return checks

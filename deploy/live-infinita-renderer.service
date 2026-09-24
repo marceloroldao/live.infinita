@@ -15,7 +15,8 @@ Environment=LIVE_INFINITA_GODOT_BIN=/opt/live-infinita-godot/engine/Godot_v4.7.2
 Environment=LIVE_INFINITA_RENDER_DISPLAY=:99
 Environment=LIVE_INFINITA_RENDER_WIDTH=720
 Environment=LIVE_INFINITA_RENDER_HEIGHT=1280
-Environment=LIVE_INFINITA_RENDER_FPS=30
+Environment=LIVE_INFINITA_RENDER_FPS=20
+Environment=LIVE_INFINITA_RENDER_BITRATE_KBPS=3000
 Environment=LIVE_INFINITA_VIDEO_BUS=udp://127.0.0.1:5600?pkt_size=1316
 ExecStart=/opt/live.infinita/.venv/bin/python /opt/live.infinita/apps/headless-renderer/headless_renderer.py
 Restart=always
