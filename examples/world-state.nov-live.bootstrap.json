@@ -1,0 +1,182 @@
+{
+  "world_id": "nov-live-autonomous-001",
+  "version": 1,
+  "title": "Live Infinita — Mundo Autônomo de Nov",
+  "environment": {
+    "period": "day",
+    "weather": "clear",
+    "biome": "forest",
+    "atmosphere_intensity": 0.58,
+    "danger_level": 0.05
+  },
+  "simulation": {
+    "scheduled_events": [
+      {
+        "id": "night-cycle",
+        "due_tick": 120,
+        "recurrence_every_ticks": 240,
+        "operations": [
+          {"op": "set_world", "path": ["environment", "period"], "value": "night"},
+          {"op": "set_world", "path": ["environment", "danger_level"], "value": 0.35}
+        ],
+        "narration": "A luz diminui. A noite toma a floresta e Nov fica mais atento ao caminho."
+      },
+      {
+        "id": "day-cycle",
+        "due_tick": 240,
+        "recurrence_every_ticks": 240,
+        "operations": [
+          {"op": "set_world", "path": ["environment", "period"], "value": "day"},
+          {"op": "set_world", "path": ["environment", "danger_level"], "value": 0.05}
+        ],
+        "narration": "A manhã retorna à floresta e Nov volta a explorar com mais tranquilidade."
+      }
+    ],
+    "conditional_events": [
+      {
+        "id": "campfire-on-at-night",
+        "condition": {
+          "kind": "all",
+          "conditions": [
+            {"kind": "world_equals", "path": ["environment", "period"], "value": "night"},
+            {"kind": "entity_property_equals", "entity_id": "fire_01", "path": ["properties", "lit"], "value": false}
+          ]
+        },
+        "trigger_mode": "edge",
+        "operations": [
+          {"op": "set", "entity_id": "fire_01", "path": ["properties", "lit"], "value": true}
+        ],
+        "narration": "Com a chegada da noite, a fogueira da clareira se acende."
+      },
+      {
+        "id": "campfire-off-at-day",
+        "condition": {
+          "kind": "all",
+          "conditions": [
+            {"kind": "world_equals", "path": ["environment", "period"], "value": "day"},
+            {"kind": "entity_property_equals", "entity_id": "fire_01", "path": ["properties", "lit"], "value": true}
+          ]
+        },
+        "trigger_mode": "edge",
+        "operations": [
+          {"op": "set", "entity_id": "fire_01", "path": ["properties", "lit"], "value": false}
+        ],
+        "narration": "A luz do dia retorna e a fogueira descansa."
+      }
+    ]
+  },
+  "regions": [
+    {
+      "id": "clearing",
+      "center": {"x": 640, "y": 360},
+      "radius": 150,
+      "biome": "forest",
+      "neighbors": ["shelter", "deep_forest"],
+      "metadata": {"label": "Clareira Central"}
+    },
+    {
+      "id": "shelter",
+      "center": {"x": 930, "y": 390},
+      "radius": 120,
+      "biome": "forest",
+      "neighbors": ["clearing"],
+      "metadata": {"label": "Abrigo de Nov"}
+    },
+    {
+      "id": "deep_forest",
+      "center": {"x": 350, "y": 340},
+      "radius": 170,
+      "biome": "forest",
+      "neighbors": ["clearing"],
+      "metadata": {"label": "Floresta Profunda"}
+    }
+  ],
+  "entities": [
+    {
+      "id": "nov",
+      "type": "human",
+      "region_id": "clearing",
+      "position": {"x": 640, "y": 360},
+      "scale": 1.0,
+      "properties": {
+        "label": "Nov",
+        "observer": true,
+        "needs": {
+          "safety": 0.20,
+          "energy": 0.86,
+          "social": 0.10,
+          "curiosity": 0.74
+        },
+        "rest_target_entity_id": "bed_nov",
+        "safety_target_entity_id": "shelter_marker",
+        "curiosity_target_entity_id": "ancient_tree",
+        "strategy_shelter_entity_id": "shelter_marker",
+        "strategy_wait_ticks": 3
+      }
+    },
+    {
+      "id": "fire_01",
+      "type": "campfire",
+      "region_id": "clearing",
+      "position": {"x": 700, "y": 405},
+      "scale": 1.0,
+      "properties": {
+        "label": "Fogueira",
+        "lit": false,
+        "risk_level": 0.08
+      }
+    },
+    {
+      "id": "tree_01",
+      "type": "tree",
+      "region_id": "clearing",
+      "position": {"x": 560, "y": 330},
+      "scale": 1.15,
+      "properties": {
+        "label": "Árvore da Clareira",
+        "risk_level": 0.02
+      }
+    },
+    {
+      "id": "bed_nov",
+      "type": "rest_point",
+      "region_id": "shelter",
+      "position": {"x": 950, "y": 390},
+      "scale": 1.0,
+      "properties": {
+        "label": "Descanso de Nov",
+        "risk_level": 0.01
+      }
+    },
+    {
+      "id": "shelter_marker",
+      "type": "safe_place",
+      "region_id": "shelter",
+      "position": {"x": 900, "y": 375},
+      "scale": 1.0,
+      "properties": {
+        "label": "Abrigo",
+        "risk_level": 0.01
+      }
+    },
+    {
+      "id": "ancient_tree",
+      "type": "tree",
+      "region_id": "deep_forest",
+      "position": {"x": 320, "y": 335},
+      "scale": 1.35,
+      "properties": {
+        "label": "Árvore Antiga",
+        "risk_level": 0.18
+      }
+    }
+  ],
+  "narration": {
+    "text": "Nov desperta na clareira. Há um abrigo a leste e uma floresta profunda a oeste. Mesmo sem espectadores, o mundo continua.",
+    "tts_enabled": true
+  },
+  "provenance": {
+    "source": "nov-live-autonomous-bootstrap",
+    "authority": "world-runtime"
+  }
+}
