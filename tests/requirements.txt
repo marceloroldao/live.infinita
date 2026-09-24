@@ -1,0 +1,2 @@
+-r ../apps/world-runtime/requirements.txt
+httpx==0.28.1

@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Live Infinita — Monitor</title>
+  <link rel="stylesheet" href="/monitor/style.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div><span class="eyebrow">LIVE INFINITA</span><h1>Monitor de transmissão</h1><p>Programa e telemetria. Esta tela não faz parte da transmissão.</p></div>
+      <div class="master"><span id="master-dot" class="dot muted"></span><strong id="master-state">BLOQUEADO</strong></div>
+    </header>
+
+    <section id="unlock-card" class="unlock card">
+      <div><h2>Acesso do operador</h2><p>Use a mesma chave da área de Gerência. Ela permanece somente nesta aba.</p></div>
+      <div class="unlock-row"><input id="operator" type="password" autocomplete="current-password" placeholder="Chave do operador"><button id="unlock">Abrir monitor</button></div>
+      <p id="unlock-message" class="message"></p>
+    </section>
+
+    <div id="monitor" hidden>
+      <section class="program card">
+        <div class="section-head"><div><span class="eyebrow">PROGRAM</span><h2>Imagem da Live</h2></div><div class="actions"><button id="audio" class="secondary">Ativar áudio</button><button id="refresh" class="ghost">Atualizar</button></div></div>
+        <div class="phone-wrap"><div class="phone"><iframe id="preview" title="Preview da Live Infinita" src="/godot/?capture=1" allow="autoplay"></iframe></div></div>
+        <audio id="program-audio" preload="none"></audio>
+      </section>
+
+      <aside class="telemetry">
+        <section class="card status-card">
+          <div class="section-head"><div><span class="eyebrow">STATUS</span><h2>Operação</h2></div><span id="updated">—</span></div>
+          <div class="status-grid">
+            <div class="status"><span id="runtime-dot" class="dot muted"></span><div><small>Runtime</small><strong id="runtime-state">—</strong></div></div>
+            <div class="status"><span id="replay-dot" class="dot muted"></span><div><small>Replay</small><strong id="replay-state">—</strong></div></div>
+            <div class="status"><span id="audio-dot" class="dot muted"></span><div><small>Áudio</small><strong id="audio-state">—</strong></div></div>
+            <div class="status"><span id="broadcaster-dot" class="dot muted"></span><div><small>Broadcaster</small><strong id="broadcaster-state">—</strong></div></div>
+            <div class="status"><span id="tiktok-dot" class="dot muted"></span><div><small>TikTok</small><strong id="tiktok-state">—</strong></div></div>
+            <div class="status"><span id="openai-dot" class="dot muted"></span><div><small>OpenAI</small><strong id="openai-state">—</strong></div></div>
+            <div class="status"><span class="dot info"></span><div><small>Formato</small><strong>720×1280 · 30 fps</strong></div></div>
+            <div class="status"><span id="spatial-alert-dot" class="dot muted"></span><div><small>Spatial</small><strong id="spatial-alert-state">AGUARDANDO</strong></div></div>
+          </div>
+        </section>
+
+        <section class="card world-card">
+          <span class="eyebrow">WORLD STATE</span><h2>Mundo atual</h2>
+          <dl><div><dt>Sequência</dt><dd id="sequence">—</dd></div><div><dt>Versão</dt><dd id="version">—</dd></div><div><dt>Entidades</dt><dd id="entities">—</dd></div><div><dt>Período</dt><dd id="period">—</dd></div></dl>
+          <p id="narration" class="narration">Aguardando estado do mundo…</p>
+        </section>
+
+        <section class="card counters-card">
+          <span class="eyebrow">SPATIAL</span><h2>Slice local</h2>
+          <div class="counters"><div><strong id="spatial-hot">—</strong><span>hot</span></div><div><strong id="spatial-warm">—</strong><span>warm</span></div><div><strong id="spatial-hit-rate">—</strong><span>prefetch</span></div></div>
+          <dl><div><dt>Promoções previstas</dt><dd id="spatial-predicted">—</dd></div><div><dt>Promoções inesperadas</dt><dd id="spatial-unexpected">—</dd></div><div><dt>Transições ativas</dt><dd id="spatial-transitions">—</dd></div><div><dt>Cold</dt><dd id="spatial-cold">—</dd></div></dl>
+        </section>
+
+        <section class="card history-card">
+          <div class="section-head"><div><span class="eyebrow">HISTÓRICO</span><h2>Janela espacial</h2></div><span id="history-window">0 min</span></div>
+          <svg id="spatial-history" viewBox="0 0 600 180" role="img" aria-label="Histórico de entidades hot e warm">
+            <path id="history-grid" d="M0 45H600 M0 90H600 M0 135H600" />
+            <polyline id="history-hot" points="" />
+            <polyline id="history-warm" points="" />
+          </svg>
+          <div class="history-legend"><span><i class="legend-hot"></i>HOT</span><span><i class="legend-warm"></i>WARM</span><span id="history-hit">Prefetch —</span></div>
+          <p class="history-note">Buffer local limitado; ao fechar a aba, o histórico é descartado.</p>
+        </section>
+
+        <section class="card alerts-card">
+          <div class="section-head"><div><span class="eyebrow">ALERTAS</span><h2>Saúde espacial</h2></div><span class="thresholds">HOT 80/96 · WARM 160/192 · PREFETCH ≥70%</span></div>
+          <div class="alert-filters" aria-label="Filtros de alertas">
+            <div><span>Severidade</span><button type="button" class="filter active" data-alert-level="all">Todos</button><button type="button" class="filter" data-alert-level="warn">Warning</button><button type="button" class="filter" data-alert-level="critical">Critical</button></div>
+            <div><span>Origem</span><button type="button" class="filter active" data-alert-kind="all">Todos</button><button type="button" class="filter" data-alert-kind="hot">HOT</button><button type="button" class="filter" data-alert-kind="warm">WARM</button><button type="button" class="filter" data-alert-kind="prefetch">Prefetch</button></div>
+          </div>
+          <ul id="alert-history" class="alert-list"><li class="alert-empty">Nenhum alerta espacial nesta sessão.</li></ul>
+          <p class="history-note">Warning: cooldown 60 s. Critical: cooldown 20 s. Escalada warn→critical é imediata. Máximo de 40 ocorrências nesta aba.</p>
+        </section>
+
+        <section class="card counters-card">
+          <span class="eyebrow">AUDIÊNCIA</span><h2>Atividade</h2>
+          <div class="counters"><div><strong id="audience-events">—</strong><span>eventos</span></div><div><strong id="actors">—</strong><span>atores</span></div><div><strong id="proposals">—</strong><span>propostas</span></div></div>
+        </section>
+      </aside>
+    </div>
+  </main>
+  <script src="/monitor/app.js"></script>
+</body>
+</html>
