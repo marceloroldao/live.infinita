@@ -1,0 +1,6 @@
+[Unit]
+Description=Apply Live Infinita integration settings
+
+[Service]
+Type=oneshot
+ExecStart=/opt/live.infinita/deploy/reload-integrations.sh
