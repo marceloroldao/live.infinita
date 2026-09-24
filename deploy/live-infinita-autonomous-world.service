@@ -1,0 +1,25 @@
+[Unit]
+Description=Live Infinita Autonomous World Single Writer
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=liveinfinita
+Group=liveinfinita
+WorkingDirectory=/opt/live.infinita
+Environment="PYTHONUNBUFFERED=1"
+Environment="PYTHONPATH=/opt/live.infinita:/opt/live.infinita/apps/world-runtime"
+EnvironmentFile=/etc/live-infinita/autonomous-world.env
+ExecStart=/opt/live.infinita/.venv/bin/python /opt/live.infinita/apps/world-runtime/autonomous_runtime_main.py
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=15
+KillMode=control-group
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

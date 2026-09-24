@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import os
 import sys
@@ -7,6 +8,7 @@ import time
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 from TikTokLive import TikTokLiveClient
@@ -16,6 +18,9 @@ from tiktok_audience_mapping import gift_to_payload, join_to_payload, like_to_pa
 from tiktok_mapping import comment_to_payload
 
 
+RESTART_EXIT_CODE = 75
+
+
 @dataclass(frozen=True)
 class BridgeConfig:
     unique_id: str
@@ -23,10 +28,19 @@ class BridgeConfig:
     audience_url: str
     timeout_seconds: float = 5.0
     retry_seconds: float = 30.0
+    sign_api_key: str | None = None
+    status_file: Path = Path("/var/lib/live-infinita/tiktok-status.json")
 
     @classmethod
     def from_env(cls) -> "BridgeConfig":
-        unique_id = os.environ.get("TIKTOK_UNIQUE_ID", "").strip()
+        stored: dict[str, Any] = {}
+        config_path = Path(os.environ.get("LIVE_INFINITA_INTEGRATIONS_FILE", "/var/lib/live-infinita/integrations.json"))
+        if config_path.exists():
+            with config_path.open(encoding="utf-8") as fh:
+                candidate = json.load(fh)
+            if isinstance(candidate, dict):
+                stored = candidate
+        unique_id = str(stored.get("tiktok_unique_id") or os.environ.get("TIKTOK_UNIQUE_ID", "")).strip()
         if not unique_id:
             raise RuntimeError("TIKTOK_UNIQUE_ID não configurado")
         if not unique_id.startswith("@"):
@@ -47,7 +61,20 @@ class BridgeConfig:
             audience_url=audience_url,
             timeout_seconds=timeout,
             retry_seconds=max(retry, 5.0),
+            sign_api_key=str(stored.get("tiktok_sign_api_key") or "") or None,
+            status_file=Path(os.environ.get("LIVE_INFINITA_TIKTOK_STATUS_FILE", "/var/lib/live-infinita/tiktok-status.json")),
         )
+
+
+def write_status(config: BridgeConfig, state: str, **fields: Any) -> None:
+    payload = {"state": state, "unique_id": config.unique_id, "updated_at_unix": time.time(), **fields}
+    try:
+        config.status_file.parent.mkdir(parents=True, exist_ok=True)
+        temporary = config.status_file.with_suffix(config.status_file.suffix + ".tmp")
+        temporary.write_text(json.dumps(payload, ensure_ascii=False, sort_keys=True) + "\n", encoding="utf-8")
+        temporary.replace(config.status_file)
+    except OSError as exc:
+        print(f"[tiktok] monitor indisponível ({type(exc).__name__})", file=sys.stderr, flush=True)
 
 
 def post_json(url: str, payload: dict[str, Any], timeout: float) -> tuple[int, dict[str, Any]]:
@@ -64,13 +91,22 @@ def post_json(url: str, payload: dict[str, Any], timeout: float) -> tuple[int, d
         except json.JSONDecodeError:
             data = {"raw": raw}
         return exc.code, data
+    except (urllib.error.URLError, TimeoutError, OSError) as exc:
+        return 0, {"ok": False, "transport_error": type(exc).__name__}
+
+
+async def post_json_async(url: str, payload: dict[str, Any], timeout: float) -> tuple[int, dict[str, Any]]:
+    return await asyncio.to_thread(post_json, url, payload, timeout)
 
 
 def build_client(config: BridgeConfig) -> TikTokLiveClient:
+    from TikTokLive.client.web.web_settings import WebDefaults
+    WebDefaults.tiktok_sign_api_key = config.sign_api_key
     client = TikTokLiveClient(unique_id=config.unique_id)
 
     @client.on(ConnectEvent)
     async def on_connect(_: ConnectEvent) -> None:
+        write_status(config, "connected", room_id=str(client.room_id or ""))
         print(f"[tiktok] conectado a {config.unique_id} room_id={client.room_id}", flush=True)
 
     @client.on(CommentEvent)
@@ -78,13 +114,15 @@ def build_client(config: BridgeConfig) -> TikTokLiveClient:
         payload = comment_to_payload(event, room_id=client.room_id)
         if not payload["text"]:
             return
-        status, result = post_json(config.gateway_url, payload, config.timeout_seconds)
+        status, result = await post_json_async(config.gateway_url, payload, config.timeout_seconds)
         accepted = bool(result.get("ok")) if isinstance(result, dict) else False
+        write_status(config, "connected", room_id=str(client.room_id or ""), last_event="comment")
         print(f"[tiktok] comentário actor={payload['display_name']!r} text={payload['text']!r} http={status} accepted={accepted}", flush=True)
 
     async def send_audience(payload: dict[str, Any]) -> None:
-        status, result = post_json(config.audience_url, payload, config.timeout_seconds)
+        status, result = await post_json_async(config.audience_url, payload, config.timeout_seconds)
         duplicate = bool(result.get("duplicate")) if isinstance(result, dict) else False
+        write_status(config, "connected", room_id=str(client.room_id or ""), last_event=payload["kind"])
         print(
             f"[tiktok] audience kind={payload['kind']} actor={payload['display_name']!r} "
             f"http={status} duplicate={duplicate}",
@@ -101,17 +139,18 @@ def build_client(config: BridgeConfig) -> TikTokLiveClient:
 
     @client.on(GiftEvent)
     async def on_gift(event: GiftEvent) -> None:
-        # Gifts em streak geram eventos intermediários. Só persiste o fechamento da sequência.
         if bool(getattr(event, "streaking", False)):
             return
         await send_audience(gift_to_payload(event, room_id=client.room_id))
 
     @client.on(DisconnectEvent)
     async def on_disconnect(_: DisconnectEvent) -> None:
+        write_status(config, "disconnected")
         print("[tiktok] desconectado", flush=True)
 
     @client.on(LiveEndEvent)
     async def on_live_end(_: LiveEndEvent) -> None:
+        write_status(config, "live_ended")
         print("[tiktok] live encerrada", flush=True)
 
     return client
@@ -129,21 +168,36 @@ def main() -> int:
         flush=True,
     )
 
-    while True:
-        try:
-            print(f"[tiktok] procurando LIVE de {config.unique_id}...", flush=True)
-            client = build_client(config)
-            client.run()
-            print(f"[tiktok] conexão encerrada; nova tentativa em {config.retry_seconds:.0f}s", flush=True)
-        except KeyboardInterrupt:
-            print("[tiktok] encerrado", flush=True)
-            return 0
-        except Exception as exc:
-            name = type(exc).__name__
-            message = str(exc).replace("\n", " ")
-            print(f"[tiktok] LIVE indisponível ou consulta recusada ({name}): {message}", flush=True)
-            print(f"[tiktok] aguardando {config.retry_seconds:.0f}s antes de tentar novamente", flush=True)
-        time.sleep(config.retry_seconds)
+    try:
+        write_status(config, "searching")
+        print(f"[tiktok] procurando LIVE de {config.unique_id}...", flush=True)
+        client = build_client(config)
+        client.run()
+        write_status(config, "waiting_retry", retry_seconds=round(config.retry_seconds))
+        print(
+            f"[tiktok] conexão encerrada; systemd iniciará um processo limpo em {config.retry_seconds:.0f}s",
+            flush=True,
+        )
+        return RESTART_EXIT_CODE
+    except KeyboardInterrupt:
+        write_status(config, "stopped")
+        print("[tiktok] encerrado", flush=True)
+        return 0
+    except Exception as exc:
+        name = type(exc).__name__
+        message = str(exc).replace("\n", " ")
+        write_status(
+            config,
+            "waiting_retry",
+            error_type=name,
+            retry_seconds=round(config.retry_seconds),
+        )
+        print(f"[tiktok] LIVE indisponível ou consulta recusada ({name}): {message}", flush=True)
+        print(
+            f"[tiktok] systemd iniciará um processo limpo em {config.retry_seconds:.0f}s",
+            flush=True,
+        )
+        return RESTART_EXIT_CODE
 
 
 if __name__ == "__main__":
