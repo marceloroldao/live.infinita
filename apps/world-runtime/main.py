@@ -317,15 +317,18 @@ async def process_gateway_payload(payload: dict[str, Any]) -> JSONResponse:
 
 @app.get("/api/health")
 async def health() -> JSONResponse:
-    verification = engine.verify_replay()
+    current_world = engine.load_world()
+    current_hash = current_world.get("state_hash")
+    replay_status = current_world.get("replay_ok")
     ai_current = ai_proposals.current()
     return JSONResponse({
         "ok": True,
         "service": "live-infinita",
         "mvp": "011",
         "version": "0.12.0",
-        "replay_ok": verification["ok"],
-        "state_hash": verification["current_hash"],
+        "replay_ok": replay_status,
+        "replay_check": "deferred",
+        "state_hash": current_hash,
         "pipeline": ["real-source-bridge", "actor-state", "audience-side-channel", "audience-aggregator", "proposal-gate", "ai-router", "ai-proposal-gate", "intent", "validator", "runtime"],
         "audience_events": ["join", "like", "gift"],
         "audience_events_total": len(read_jsonl(AUDIENCE_EVENTS_FILE)),
