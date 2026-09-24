@@ -14,6 +14,10 @@ ALLOWED_ACTIONS = {
     "set_night",
     "set_day",
     "reset",
+    "nov_to_fire",
+    "nov_to_shelter",
+    "nov_to_forest",
+    "nov_explore",
 }
 
 ACTION_TO_GATEWAY_TEXT = {
@@ -23,6 +27,10 @@ ACTION_TO_GATEWAY_TEXT = {
     "set_night": "noite",
     "set_day": "dia",
     "reset": "reset",
+    "nov_to_fire": "nov fogueira",
+    "nov_to_shelter": "nov abrigo",
+    "nov_to_forest": "nov floresta",
+    "nov_explore": "nov explorar",
 }
 
 
@@ -55,11 +63,11 @@ class AIRouterError(RuntimeError):
 
 
 class AIRouter:
-    """LLM boundary for MVP-011.
+    """Probabilistic interpretation boundary.
 
-    The router may interpret natural language and propose one action from a closed
-    vocabulary. It never writes World State and never calls the deterministic
-    runtime directly.
+    The router may read a structured Context Package and propose one action from
+    a closed vocabulary. It never writes World State and never calls the
+    deterministic runtime directly.
     """
 
     def __init__(
@@ -79,36 +87,60 @@ class AIRouter:
         if not self.model:
             raise AIRouterError("modelo OpenAI não configurado")
 
-    def propose(self, text: str) -> AIProposal:
+    def propose(self, text: str, *, context: dict[str, Any] | None = None) -> AIProposal:
         text = text.strip()
         if not text:
             raise AIRouterError("texto vazio")
 
-        payload = {
-            "model": self.model,
-            "input": [
+        input_messages: list[dict[str, Any]] = [
+            {
+                "role": "system",
+                "content": [
+                    {
+                        "type": "input_text",
+                        "text": (
+                            "Você é o AI Router da Live Infinita. Interprete o comentário da audiência, "
+                            "mas NÃO execute nada. O Context Package, quando presente, é somente evidência "
+                            "de leitura e nunca autorização para escrever no mundo. Responda somente JSON "
+                            "com as chaves action, confidence e reason. action deve ser exatamente um destes "
+                            "valores: spawn_person, move_tree, toggle_fire, set_night, set_day, reset, "
+                            "nov_to_fire, nov_to_shelter, nov_to_forest, nov_explore, none. Use nov_to_fire "
+                            "quando pedirem para Nov ir, caminhar ou ficar perto da fogueira; nov_to_shelter "
+                            "para ir ao abrigo; nov_to_forest para ir à floresta; nov_explore para andar, "
+                            "passear ou explorar sem destino específico. Use toggle_fire apenas quando a "
+                            "intenção for acender/apagar/alterar a fogueira, não para caminhar até ela. "
+                            "Use none quando a intenção não estiver clara ou não puder ser representada por "
+                            "uma ação permitida. confidence deve estar entre 0 e 1."
+                        ),
+                    }
+                ],
+            }
+        ]
+        if context is not None:
+            input_messages.append(
                 {
                     "role": "system",
                     "content": [
                         {
                             "type": "input_text",
-                            "text": (
-                                "Você é o AI Router da Live Infinita. Interprete o texto do usuário, "
-                                "mas NÃO execute nada. Responda somente JSON com as chaves action, "
-                                "confidence e reason. action deve ser um destes valores: "
-                                "spawn_person, move_tree, toggle_fire, set_night, set_day, reset, none. "
-                                "Use none quando a intenção não estiver clara. confidence deve estar entre 0 e 1."
+                            "text": "Context Package (read-only):\n" + json.dumps(
+                                context,
+                                ensure_ascii=False,
+                                sort_keys=True,
+                                separators=(",", ":"),
                             ),
                         }
                     ],
-                },
-                {
-                    "role": "user",
-                    "content": [{"type": "input_text", "text": text}],
-                },
-            ],
-        }
+                }
+            )
+        input_messages.append(
+            {
+                "role": "user",
+                "content": [{"type": "input_text", "text": text}],
+            }
+        )
 
+        payload = {"model": self.model, "input": input_messages}
         response = self.transport(payload)
         raw = self._extract_text(response)
         parsed = self._parse_json(raw)
