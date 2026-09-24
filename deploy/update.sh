@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-BRANCH="${BRANCH:-hardening/live-showcase-002}"
+BRANCH="${BRANCH:-main}"
 SOURCE_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 INSTALL_DIR="${INSTALL_DIR:-/opt/live.infinita}"
 SERVICE_USER="${SERVICE_USER:-liveinfinita}"
