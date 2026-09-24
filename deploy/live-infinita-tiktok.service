@@ -1,5 +1,5 @@
 [Unit]
-Description=Live Infinita MVP-005 TikTok Live Source Bridge
+Description=Live Infinita TikTok Live Source Bridge
 After=network-online.target live-infinita.service
 Wants=network-online.target
 Requires=live-infinita.service
@@ -13,7 +13,8 @@ EnvironmentFile=/etc/live-infinita/tiktok.env
 Environment="PYTHONUNBUFFERED=1"
 ExecStart=/opt/live.infinita/.venv/bin/python /opt/live.infinita/apps/sources/tiktok_live_bridge.py
 Restart=on-failure
-RestartSec=5
+RestartSec=30
+LimitNOFILE=65536
 
 [Install]
 WantedBy=multi-user.target
