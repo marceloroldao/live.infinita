@@ -322,7 +322,11 @@ async def process_gateway_payload(payload: dict[str, Any]) -> JSONResponse:
 async def health() -> JSONResponse:
     current_world = engine.load_world()
     current_hash = current_world.get("state_hash")
-    # Full deterministic replay is intentionally deferred to /api/replay/verify.\n    # Preserve replay_ok as the verification result captured at startup.\n    replay_status = STARTUP_REPLAY_OK\n    ai_current = ai_proposals.current()\n    return JSONResponse({
+    # Full deterministic replay is intentionally deferred to /api/replay/verify.
+    # Preserve replay_ok as the verification result captured at startup.
+    replay_status = STARTUP_REPLAY_OK
+    ai_current = ai_proposals.current()
+    return JSONResponse({
         "ok": True,
         "service": "live-infinita",
         "mvp": "011",
