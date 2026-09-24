@@ -10,6 +10,14 @@ AUTONOMOUS_DATA_DIR="${AUTONOMOUS_DATA_DIR:-$DATA_DIR/autonomous-world}"
 AUTONOMOUS_ENV_FILE="${AUTONOMOUS_ENV_FILE:-/etc/live-infinita/autonomous-world.env}"
 READY_TIMEOUT="${READY_TIMEOUT:-25}"
 
+# Git fetch/pull must run as the checkout owner. Running the whole deploy through
+# sudo switches SSH identity to root and commonly breaks private-repo access.
+if [[ "${EUID:-$(id -u)}" -eq 0 ]]; then
+  printf '[FAIL] Não execute update.sh com sudo. Use: bash deploy/update.sh\n' >&2
+  printf '       O script usa sudo apenas nas etapas que realmente precisam de root.\n' >&2
+  exit 2
+fi
+
 ok(){ printf '[ OK ] %s\n' "$*"; }
 warn(){ printf '[WARN] %s\n' "$*"; }
 fail(){ printf '[FAIL] %s\n' "$*"; }
