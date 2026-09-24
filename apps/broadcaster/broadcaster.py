@@ -78,7 +78,7 @@ class BroadcasterConfig:
         if not 1 <= self.keyframe_seconds <= 10:
             raise BroadcasterConfigError("intervalo de keyframe inválido")
 
-    def command(self, include_output: bool = True, duration_seconds: float | None = None) -> list[str]:
+    def command(self, include_output: bool = True, duration_seconds: float | None = None, output_format: str | None = None) -> list[str]:
         self.validate(require_output=include_output)
         if duration_seconds is not None and duration_seconds <= 0:
             raise BroadcasterConfigError("duração de probe deve ser positiva")
@@ -100,13 +100,14 @@ class BroadcasterConfig:
         if duration_seconds is not None:
             cmd.extend(["-t", f"{duration_seconds:g}"])
         if include_output:
-            cmd.extend(["-f", "flv", self.output_url])
+            fmt = output_format or ("mpegts" if self.output_url.lower().startswith("srt://") else "flv")
+            cmd.extend(["-f", fmt, self.output_url])
         else:
             cmd.extend(["-f", "null", "-"])
         return cmd
 
-    def safe_command_text(self, include_output: bool = True, duration_seconds: float | None = None) -> str:
-        command = self.command(include_output=include_output, duration_seconds=duration_seconds)
+    def safe_command_text(self, include_output: bool = True, duration_seconds: float | None = None, output_format: str | None = None) -> str:
+        command = self.command(include_output=include_output, duration_seconds=duration_seconds, output_format=output_format)
         if include_output and self.output_url:
             command[-1] = redact_url(self.output_url)
         return shlex.join(command)
