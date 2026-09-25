@@ -51,12 +51,20 @@ class ConditionalEventScheduler:
             return []
         rows: list[dict[str, Any]] = []
         with self.path.open("r", encoding="utf-8") as fh:
-            for line in fh:
-                line = line.strip()
-                if line:
-                    value = json.loads(line)
-                    if isinstance(value, dict):
-                        rows.append(value)
+            lines = fh.readlines()
+        nonempty = [(index, line.strip()) for index, line in enumerate(lines) if line.strip()]
+        for position, (index, line) in enumerate(nonempty):
+            try:
+                value = json.loads(line)
+            except json.JSONDecodeError:
+                # A process can be killed between opening an append and completing
+                # the final JSONL record. Only that trailing record is recoverable;
+                # corruption inside the durable history remains a hard failure.
+                if position == len(nonempty) - 1:
+                    break
+                raise
+            if isinstance(value, dict):
+                rows.append(value)
         return rows
 
     def current(self) -> list[dict[str, Any]]:
