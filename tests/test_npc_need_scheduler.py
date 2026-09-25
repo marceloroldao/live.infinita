@@ -129,6 +129,33 @@ class NpcNeedSchedulerTest(unittest.TestCase):
         )
         return scheduler, proposals, plans
 
+    def test_constructor_repairs_one_legacy_middle_jsonl_fragment(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            path = tmp / "needs.jsonl"
+            original = (
+                '{"npc_id":"npc","need":"energy","status":"scheduled","tick":1}\n'
+                '{"npc_id":\n'
+                '{"npc_id":"npc","need":"energy","status":"scheduled","tick":2}\n'
+            )
+            path.write_text(original, encoding="utf-8")
+            store = FakeStore([{
+                "id": "npc", "type": "human", "region_id": "r0",
+                "position": {"x": 0, "y": 0}, "properties": {"needs": {}},
+            }])
+            scheduler = NpcNeedScheduler(
+                path, FakeProposalLedger(), FakePlanScheduler(store), npc_ids=["npc"]
+            )
+            self.assertEqual([row["tick"] for row in scheduler.history()], [1, 2])
+            self.assertEqual(
+                path.with_suffix(".jsonl.legacy-repair-v1.bak").read_text(encoding="utf-8"),
+                original,
+            )
+            self.assertEqual(
+                path.with_suffix(".jsonl.legacy-repair-v1.corrupt").read_text(encoding="utf-8"),
+                '{"npc_id":\n',
+            )
+
     def test_safety_utility_beats_higher_curiosity_severity(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             scheduler, proposals, plans = self.make(
