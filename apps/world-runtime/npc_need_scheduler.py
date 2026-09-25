@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import os
+import shutil
 import time
 from copy import deepcopy
 from pathlib import Path
@@ -60,23 +62,87 @@ class NpcNeedScheduler:
         self.composite_strategy_provider = composite_strategy_provider
         self.strategy_compiler = strategy_compiler
         self.strategy_executor = strategy_executor
+        # Recover exactly one malformed legacy record left by the historical
+        # crash-tail-then-append bug. Preserve evidence; broader corruption is fatal.
+        self.repair_legacy_single_invalid_record()
+
+    def repair_legacy_single_invalid_record(self) -> dict[str, Any]:
+        marker = self.path.with_suffix(self.path.suffix + ".legacy-repair-v1.json")
+        if marker.exists() or not self.path.exists():
+            return {"repaired": False, "reason": "already_checked" if marker.exists() else "missing"}
+        invalid: list[tuple[int, bytes]] = []
+        with self.path.open("rb") as fh:
+            for line_number, raw in enumerate(fh, start=1):
+                if not raw.strip():
+                    continue
+                try:
+                    json.loads(raw.strip().decode("utf-8"))
+                except (UnicodeDecodeError, json.JSONDecodeError):
+                    invalid.append((line_number, raw))
+                    if len(invalid) > 1:
+                        raise ValueError("npc need JSONL repair found multiple invalid records")
+        if not invalid:
+            marker.write_text(json.dumps({"repaired": False, "reason": "clean"}, sort_keys=True) + "\\n", encoding="utf-8")
+            return {"repaired": False, "reason": "clean"}
+        bad_line, bad_raw = invalid[0]
+        backup = self.path.with_suffix(self.path.suffix + ".legacy-repair-v1.bak")
+        quarantine = self.path.with_suffix(self.path.suffix + ".legacy-repair-v1.corrupt")
+        temporary = self.path.with_suffix(self.path.suffix + ".legacy-repair-v1.tmp")
+        shutil.copy2(self.path, backup)
+        quarantine.write_bytes(bad_raw)
+        with self.path.open("rb") as source, temporary.open("wb") as target:
+            for line_number, raw in enumerate(source, start=1):
+                if line_number != bad_line:
+                    target.write(raw)
+            target.flush()
+            os.fsync(target.fileno())
+        os.replace(temporary, self.path)
+        marker.write_text(json.dumps({"repaired": True, "removed_line": bad_line, "backup": backup.name, "quarantine": quarantine.name}, sort_keys=True) + "\\n", encoding="utf-8")
+        return {"repaired": True, "removed_line": bad_line}
+
+    def _iter_history(self):
+        if not self.path.exists():
+            return
+        pending: tuple[int, bytes] | None = None
+        with self.path.open("rb") as fh:
+            while True:
+                offset = fh.tell()
+                raw = fh.readline()
+                if not raw:
+                    break
+                if not raw.strip():
+                    continue
+                if pending is not None:
+                    _, previous = pending
+                    value = json.loads(previous.strip().decode("utf-8"))
+                    if isinstance(value, dict):
+                        yield value
+                pending = (offset, raw)
+        if pending is None:
+            return
+        offset, raw = pending
+        try:
+            value = json.loads(raw.strip().decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            quarantine = self.path.with_suffix(self.path.suffix + ".truncated")
+            quarantine.write_bytes(raw)
+            with self.path.open("r+b") as fh:
+                fh.truncate(offset)
+                fh.flush()
+                os.fsync(fh.fileno())
+            return
+        if isinstance(value, dict):
+            yield value
+
 
     def history(self) -> list[dict[str, Any]]:
-        if not self.path.exists():
-            return []
-        rows: list[dict[str, Any]] = []
-        with self.path.open("r", encoding="utf-8") as fh:
-            for line in fh:
-                line = line.strip()
-                if line:
-                    value = json.loads(line)
-                    if isinstance(value, dict):
-                        rows.append(value)
-        return rows
+        return list(self._iter_history())
 
     def _append(self, row: dict[str, Any]) -> dict[str, Any]:
         with self.path.open("a", encoding="utf-8") as fh:
-            fh.write(json.dumps(row, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n")
+            fh.write(json.dumps(row, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\\n")
+            fh.flush()
+            os.fsync(fh.fileno())
         return row
 
     def _entity(self, entity_id: str) -> dict[str, Any] | None:
