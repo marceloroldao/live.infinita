@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import sys
 import tempfile
 import unittest
@@ -86,6 +87,31 @@ PRINCIPAL = {"source": "system", "actor_id": "world", "authority": "system"}
 
 
 class ConditionalEventSchedulerTest(unittest.TestCase):
+    def test_history_ignores_only_truncated_final_record(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            guarded = FakeGuarded()
+            path = Path(tmp) / "conditional.jsonl"
+            path.write_text('{"conditional_event_id":"cev_ok","status":"active"}\n{"conditional_event_id":', encoding="utf-8")
+            scheduler = ConditionalEventScheduler(path, guarded)
+            self.assertEqual(
+                scheduler.history(),
+                [{"conditional_event_id": "cev_ok", "status": "active"}],
+            )
+
+    def test_history_rejects_corruption_before_final_record(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            guarded = FakeGuarded()
+            path = Path(tmp) / "conditional.jsonl"
+            path.write_text(
+                '{"conditional_event_id":"cev_1","status":"active"}\n'
+                '{"conditional_event_id":\n'
+                '{"conditional_event_id":"cev_2","status":"active"}\n',
+                encoding="utf-8",
+            )
+            scheduler = ConditionalEventScheduler(path, guarded)
+            with self.assertRaises(json.JSONDecodeError):
+                scheduler.history()
+
     def test_entity_region_edge_fires_once_until_false_then_true(self):
         with tempfile.TemporaryDirectory() as tmp:
             guarded = FakeGuarded()
