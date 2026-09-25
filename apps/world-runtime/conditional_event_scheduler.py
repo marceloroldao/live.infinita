@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 import math
+import os
+import shutil
 import time
 import uuid
 from copy import deepcopy
@@ -46,34 +48,103 @@ class ConditionalEventScheduler:
         self.guarded = guarded_mutations
         self.plan_dispatcher = plan_dispatcher
 
-    def history(self) -> list[dict[str, Any]]:
+    def _iter_history(self):
+        """Stream durable JSONL records and repair only a malformed final record."""
         if not self.path.exists():
-            return []
-        rows: list[dict[str, Any]] = []
-        with self.path.open("r", encoding="utf-8") as fh:
-            lines = fh.readlines()
-        nonempty = [(index, line.strip()) for index, line in enumerate(lines) if line.strip()]
-        for position, (index, line) in enumerate(nonempty):
-            try:
-                value = json.loads(line)
-            except json.JSONDecodeError:
-                # A crash can leave only the final append incomplete. Repair that
-                # tail before any later append can turn it into mid-log corruption.
-                if position != len(nonempty) - 1:
-                    raise
-                valid_prefix = "".join(lines[:index])
-                quarantine = self.path.with_suffix(self.path.suffix + ".truncated")
-                quarantine.write_text(lines[index], encoding="utf-8")
-                self.path.write_text(valid_prefix, encoding="utf-8")
-                break
-            if isinstance(value, dict):
-                rows.append(value)
-        return rows
+            return
+        pending: tuple[int, bytes] | None = None
+        with self.path.open("rb") as fh:
+            while True:
+                offset = fh.tell()
+                raw = fh.readline()
+                if not raw:
+                    break
+                if not raw.strip():
+                    continue
+                if pending is not None:
+                    _, previous = pending
+                    try:
+                        value = json.loads(previous.strip().decode("utf-8"))
+                    except (UnicodeDecodeError, json.JSONDecodeError):
+                        # Once a later durable record exists, corruption is not a
+                        # recoverable crash tail and must remain a hard failure.
+                        raise
+                    if isinstance(value, dict):
+                        yield value
+                pending = (offset, raw)
+
+        if pending is None:
+            return
+        offset, raw = pending
+        try:
+            value = json.loads(raw.strip().decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            quarantine = self.path.with_suffix(self.path.suffix + ".truncated")
+            quarantine.write_bytes(raw)
+            with self.path.open("r+b") as fh:
+                fh.truncate(offset)
+                fh.flush()
+                os.fsync(fh.fileno())
+            return
+        if isinstance(value, dict):
+            yield value
+
+    def repair_legacy_single_invalid_record(self) -> dict[str, Any]:
+        """One-time migration for the historical tail-then-append corruption bug.
+
+        Older builds could ignore a truncated tail and later append a valid row,
+        converting the fragment into mid-log corruption. Preserve a full backup
+        and quarantine the exact invalid bytes before removing one such record.
+        Multiple invalid records remain a hard failure.
+        """
+        marker = self.path.with_suffix(self.path.suffix + ".legacy-repair-v1.json")
+        if marker.exists() or not self.path.exists():
+            return {"repaired": False, "reason": "already_checked" if marker.exists() else "missing"}
+
+        invalid: list[tuple[int, bytes]] = []
+        with self.path.open("rb") as fh:
+            for line_number, raw in enumerate(fh, start=1):
+                if not raw.strip():
+                    continue
+                try:
+                    json.loads(raw.strip().decode("utf-8"))
+                except (UnicodeDecodeError, json.JSONDecodeError):
+                    invalid.append((line_number, raw))
+                    if len(invalid) > 1:
+                        raise ConditionalEventError("legacy JSONL repair found multiple invalid records")
+
+        if not invalid:
+            marker.write_text(json.dumps({"repaired": False, "reason": "clean"}, sort_keys=True) + "\\n", encoding="utf-8")
+            return {"repaired": False, "reason": "clean"}
+
+        bad_line, bad_raw = invalid[0]
+        backup = self.path.with_suffix(self.path.suffix + ".legacy-repair-v1.bak")
+        quarantine = self.path.with_suffix(self.path.suffix + ".legacy-repair-v1.corrupt")
+        temporary = self.path.with_suffix(self.path.suffix + ".legacy-repair-v1.tmp")
+        shutil.copy2(self.path, backup)
+        quarantine.write_bytes(bad_raw)
+        with self.path.open("rb") as source, temporary.open("wb") as target:
+            for line_number, raw in enumerate(source, start=1):
+                if line_number != bad_line:
+                    target.write(raw)
+            target.flush()
+            os.fsync(target.fileno())
+        os.replace(temporary, self.path)
+        marker.write_text(json.dumps({
+            "repaired": True,
+            "removed_line": bad_line,
+            "backup": backup.name,
+            "quarantine": quarantine.name,
+        }, sort_keys=True) + "\\n", encoding="utf-8")
+        return {"repaired": True, "removed_line": bad_line}
+
+    def history(self) -> list[dict[str, Any]]:
+        return list(self._iter_history())
 
     def current(self) -> list[dict[str, Any]]:
         latest: dict[str, dict[str, Any]] = {}
         order: list[str] = []
-        for row in self.history():
+        for row in self._iter_history():
             event_id = str(row.get("conditional_event_id") or "").strip()
             if not event_id:
                 continue
