@@ -82,7 +82,7 @@ class NpcNeedScheduler:
                     if len(invalid) > 1:
                         raise ValueError("npc need JSONL repair found multiple invalid records")
         if not invalid:
-            marker.write_text(json.dumps({"repaired": False, "reason": "clean"}, sort_keys=True) + "\\n", encoding="utf-8")
+            marker.write_text(json.dumps({"repaired": False, "reason": "clean"}, sort_keys=True) + "\n", encoding="utf-8")
             return {"repaired": False, "reason": "clean"}
         bad_line, bad_raw = invalid[0]
         backup = self.path.with_suffix(self.path.suffix + ".legacy-repair-v1.bak")
@@ -97,7 +97,7 @@ class NpcNeedScheduler:
             target.flush()
             os.fsync(target.fileno())
         os.replace(temporary, self.path)
-        marker.write_text(json.dumps({"repaired": True, "removed_line": bad_line, "backup": backup.name, "quarantine": quarantine.name}, sort_keys=True) + "\\n", encoding="utf-8")
+        marker.write_text(json.dumps({"repaired": True, "removed_line": bad_line, "backup": backup.name, "quarantine": quarantine.name}, sort_keys=True) + "\n", encoding="utf-8")
         return {"repaired": True, "removed_line": bad_line}
 
     def _iter_history(self):
@@ -140,7 +140,7 @@ class NpcNeedScheduler:
 
     def _append(self, row: dict[str, Any]) -> dict[str, Any]:
         with self.path.open("a", encoding="utf-8") as fh:
-            fh.write(json.dumps(row, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\\n")
+            fh.write(json.dumps(row, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n")
             fh.flush()
             os.fsync(fh.fileno())
         return row
