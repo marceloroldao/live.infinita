@@ -25,6 +25,7 @@ def load(name: str, path: Path):
 
 conditional_module = load("conditional_event_scheduler_test_module", RUNTIME / "conditional_event_scheduler.py")
 ConditionalEventScheduler = conditional_module.ConditionalEventScheduler
+ConditionalEventError = conditional_module.ConditionalEventError
 
 
 class FakeStore:
