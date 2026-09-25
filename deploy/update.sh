@@ -282,7 +282,7 @@ PY
 
 check_autonomous_tick(){
   local i before after
-  for ((i=0; i<10; i++)); do
+  for ((i=0; i<15; i++)); do
     if [[ -f "$AUTONOMOUS_DATA_DIR/simulation-clock.json" ]]; then
       break
     fi
@@ -295,16 +295,24 @@ check_autonomous_tick(){
     return
   fi
   before="$(read_autonomous_tick 2>/dev/null || echo -1)"
-  sleep 2
-  after="$(read_autonomous_tick 2>/dev/null || echo -1)"
-  if [[ "$before" =~ ^[0-9]+$ && "$after" =~ ^[0-9]+$ && "$after" -gt "$before" ]]; then
-    AUTONOMY_STATUS="ok"
-    ok "Autonomia NOV: tick $before -> $after (mundo continua sem audiência)"
-  else
-    AUTONOMY_STATUS="failed"
-    AUTONOMY_FAIL=1
-    fail "Autonomia NOV não avançou: tick $before -> $after"
-  fi
+  after="$before"
+  # Startup may replay/repair persistent state before the first autonomous tick.
+  # Wait for observed logical progress instead of assuming it happens in 2 seconds.
+  for ((i=0; i<20; i++)); do
+    sleep 1
+    after="$(read_autonomous_tick 2>/dev/null || echo -1)"
+    if [[ "$before" =~ ^[0-9]+$ && "$after" =~ ^[0-9]+$ && "$after" -gt "$before" ]]; then
+      AUTONOMY_STATUS="ok"
+      ok "Autonomia NOV: tick $before -> $after (mundo continua sem audiência)"
+      return
+    fi
+    if ! systemctl is-active --quiet live-infinita-autonomous-world.service; then
+      break
+    fi
+  done
+  AUTONOMY_STATUS="failed"
+  AUTONOMY_FAIL=1
+  fail "Autonomia NOV não avançou no readiness: tick $before -> $after"
 }
 
 if ((AUTONOMY_WANTED)) && systemctl is-active --quiet live-infinita-autonomous-world.service; then
