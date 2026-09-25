@@ -132,9 +132,9 @@ class ConditionalEventSchedulerTest(unittest.TestCase):
             guarded = FakeGuarded()
             path = Path(tmp) / "conditional.jsonl"
             original = (
-                '{"conditional_event_id":"cev_1","status":"active"}\\n'
-                '{"conditional_event_id":\\n'
-                '{"conditional_event_id":"cev_2","status":"active"}\\n'
+                '{"conditional_event_id":"cev_1","status":"active"}\n'
+                '{"conditional_event_id":\n'
+                '{"conditional_event_id":"cev_2","status":"active"}\n'
             )
             path.write_text(original, encoding="utf-8")
             scheduler = ConditionalEventScheduler(path, guarded)
@@ -153,7 +153,7 @@ class ConditionalEventSchedulerTest(unittest.TestCase):
             )
             self.assertEqual(
                 path.with_suffix(".jsonl.legacy-repair-v1.corrupt").read_text(encoding="utf-8"),
-                '{"conditional_event_id":\\n',
+                '{"conditional_event_id":\n',
             )
             self.assertFalse(scheduler.repair_legacy_single_invalid_record()["repaired"])
 
@@ -162,9 +162,9 @@ class ConditionalEventSchedulerTest(unittest.TestCase):
             guarded = FakeGuarded()
             path = Path(tmp) / "conditional.jsonl"
             path.write_text(
-                '{"conditional_event_id":\\n'
-                'not-json\\n'
-                '{"conditional_event_id":"cev_2","status":"active"}\\n',
+                '{"conditional_event_id":\n'
+                'not-json\n'
+                '{"conditional_event_id":"cev_2","status":"active"}\n',
                 encoding="utf-8",
             )
             scheduler = ConditionalEventScheduler(path, guarded)
