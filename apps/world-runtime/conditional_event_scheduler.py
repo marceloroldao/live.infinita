@@ -57,12 +57,15 @@ class ConditionalEventScheduler:
             try:
                 value = json.loads(line)
             except json.JSONDecodeError:
-                # A process can be killed between opening an append and completing
-                # the final JSONL record. Only that trailing record is recoverable;
-                # corruption inside the durable history remains a hard failure.
-                if position == len(nonempty) - 1:
-                    break
-                raise
+                # A crash can leave only the final append incomplete. Repair that
+                # tail before any later append can turn it into mid-log corruption.
+                if position != len(nonempty) - 1:
+                    raise
+                valid_prefix = "".join(lines[:index])
+                quarantine = self.path.with_suffix(self.path.suffix + ".truncated")
+                quarantine.write_text(lines[index], encoding="utf-8")
+                self.path.write_text(valid_prefix, encoding="utf-8")
+                break
             if isinstance(value, dict):
                 rows.append(value)
         return rows
