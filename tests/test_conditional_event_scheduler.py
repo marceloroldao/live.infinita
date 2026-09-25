@@ -97,6 +97,20 @@ class ConditionalEventSchedulerTest(unittest.TestCase):
                 scheduler.history(),
                 [{"conditional_event_id": "cev_ok", "status": "active"}],
             )
+            self.assertEqual(
+                path.read_text(encoding="utf-8"),
+                '{"conditional_event_id":"cev_ok","status":"active"}\\n',
+            )
+            self.assertEqual(
+                path.with_suffix(".jsonl.truncated").read_text(encoding="utf-8"),
+                '{"conditional_event_id":',
+            )
+            scheduler.register(
+                condition={"kind": "world_equals", "path": ["environment", "period"], "value": "day"},
+                operations=[{"op": "set_world", "path": ["environment", "period"], "value": "day"}],
+                principal=PRINCIPAL,
+            )
+            self.assertEqual(len(scheduler.history()), 2)
 
     def test_history_rejects_corruption_before_final_record(self):
         with tempfile.TemporaryDirectory() as tmp:
