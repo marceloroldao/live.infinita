@@ -25,6 +25,7 @@ def load(name: str, path: Path):
 
 conditional_module = load("conditional_event_scheduler_test_module", RUNTIME / "conditional_event_scheduler.py")
 ConditionalEventScheduler = conditional_module.ConditionalEventScheduler
+ConditionalEventError = conditional_module.ConditionalEventError
 
 
 class FakeStore:
@@ -125,6 +126,51 @@ class ConditionalEventSchedulerTest(unittest.TestCase):
             scheduler = ConditionalEventScheduler(path, guarded)
             with self.assertRaises(json.JSONDecodeError):
                 scheduler.history()
+
+    def test_legacy_repair_removes_one_middle_fragment_and_preserves_backup(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            guarded = FakeGuarded()
+            path = Path(tmp) / "conditional.jsonl"
+            original = (
+                '{"conditional_event_id":"cev_1","status":"active"}\n'
+                '{"conditional_event_id":\n'
+                '{"conditional_event_id":"cev_2","status":"active"}\n'
+            )
+            path.write_text(original, encoding="utf-8")
+            scheduler = ConditionalEventScheduler(path, guarded)
+
+            result = scheduler.repair_legacy_single_invalid_record()
+
+            self.assertTrue(result["repaired"])
+            self.assertEqual(result["removed_line"], 2)
+            self.assertEqual(
+                [row["conditional_event_id"] for row in scheduler.history()],
+                ["cev_1", "cev_2"],
+            )
+            self.assertEqual(
+                path.with_suffix(".jsonl.legacy-repair-v1.bak").read_text(encoding="utf-8"),
+                original,
+            )
+            self.assertEqual(
+                path.with_suffix(".jsonl.legacy-repair-v1.corrupt").read_text(encoding="utf-8"),
+                '{"conditional_event_id":\n',
+            )
+            self.assertFalse(scheduler.repair_legacy_single_invalid_record()["repaired"])
+
+    def test_legacy_repair_rejects_multiple_invalid_records(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            guarded = FakeGuarded()
+            path = Path(tmp) / "conditional.jsonl"
+            path.write_text(
+                '{"conditional_event_id":\n'
+                'not-json\n'
+                '{"conditional_event_id":"cev_2","status":"active"}\n',
+                encoding="utf-8",
+            )
+            scheduler = ConditionalEventScheduler(path, guarded)
+            with self.assertRaises(ConditionalEventError):
+                scheduler.repair_legacy_single_invalid_record()
+            self.assertFalse(path.with_suffix(".jsonl.legacy-repair-v1.json").exists())
 
     def test_entity_region_edge_fires_once_until_false_then_true(self):
         with tempfile.TemporaryDirectory() as tmp:

@@ -257,6 +257,10 @@ def build_authoritative_autonomous_runtime(
     scheduler = PlanScheduler(plans, planner, resolver, guarded, proposal_ledger=proposals)
     event_scheduler = WorldEventScheduler(root / "world-event-schedule.jsonl", guarded)
     conditional_event_scheduler = ConditionalEventScheduler(root / "conditional-world-events.jsonl", guarded)
+    # One-time compatibility migration for files affected by the historical
+    # truncated-tail-then-append bug. The scheduler preserves a full backup and
+    # quarantines the invalid bytes; subsequent mid-log corruption stays fatal.
+    conditional_event_scheduler.repair_legacy_single_invalid_record()
     _install_bootstrap_schedules(bootstrap_value, event_scheduler)
     _install_bootstrap_conditionals(bootstrap_value, conditional_event_scheduler)
     world_provider = engine.load_world
