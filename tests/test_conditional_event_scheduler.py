@@ -99,7 +99,7 @@ class ConditionalEventSchedulerTest(unittest.TestCase):
             )
             self.assertEqual(
                 path.read_text(encoding="utf-8"),
-                '{"conditional_event_id":"cev_ok","status":"active"}\\n',
+                '{"conditional_event_id":"cev_ok","status":"active"}\n',
             )
             self.assertEqual(
                 path.with_suffix(".jsonl.truncated").read_text(encoding="utf-8"),
