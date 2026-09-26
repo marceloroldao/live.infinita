@@ -13,6 +13,7 @@ sys.path.insert(0, str(WORLD_RUNTIME))
 
 from conditional_event_scheduler import ConditionalEventScheduler
 from plan_ledger import PlanLedger
+from npc_strategy_executor import NpcStrategyExecutor
 
 
 def _row(kind: str, identity: str, status: str = "planned") -> dict:
@@ -84,6 +85,52 @@ class MaterializedLedgerViewTests(unittest.TestCase):
             os.replace(replacement, path)
             self.assertEqual([r[key] for r in ledger.current()], ["four"])
             self.assertEqual(replay.call_count, 3)
+
+
+    def test_plan_idempotency_uses_index_and_preserves_existing_latest_record(self) -> None:
+        ledger = PlanLedger(self.root / "plans.jsonl")
+        ledger._append({"plan_id": "one", "idempotency_key": "repeat", "status": "planned"})
+        self.assertEqual(ledger.get_by_idempotency_key("repeat")["plan_id"], "one")
+        with patch.object(ledger, "current", side_effect=AssertionError("full scan")):
+            existing = ledger.create(
+                proposal_id=None, proposer_id="tester", principal={}, intent={},
+                plan={}, idempotency_key="repeat",
+            )
+        self.assertEqual(existing["plan_id"], "one")
+        ledger._append({"plan_id": "one", "idempotency_key": "repeat", "status": "completed"})
+        self.assertEqual(ledger.get_by_idempotency_key("repeat")["status"], "completed")
+        self.assertIsNone(ledger.get_by_idempotency_key("missing"))
+        with (self.root / "plans.jsonl").open("ab") as fh:
+            fh.write(_encoded({"plan_id": "two", "idempotency_key": "external", "status": "planned"}))
+        self.assertEqual(ledger.get_by_idempotency_key("external")["plan_id"], "two")
+
+    def test_strategy_executor_index_avoids_replays_for_per_execution_lookup(self) -> None:
+        path = self.root / "strategy.jsonl"
+        executor = NpcStrategyExecutor(path, None)
+        plan = {"phases": [{"kind": "wait_ticks", "intent": {"ticks": 1}}]}
+        first = executor.start(plan, principal={}, proposer_id="test", idempotency_key="repeat")
+        with patch.object(executor, "_history", wraps=executor._history) as replay:
+            self.assertEqual(executor.get(first["strategy_execution_id"]), first)
+            self.assertEqual(replay.call_count, 0)
+            with patch.object(executor, "current", side_effect=AssertionError("full scan")):
+                self.assertEqual(
+                    executor.start(plan, principal={}, proposer_id="test", idempotency_key="repeat"),
+                    first,
+                )
+            updated = executor._update(first, phase_index=1)
+            self.assertEqual(executor.get(first["strategy_execution_id"]), updated)
+            self.assertEqual(replay.call_count, 0)
+            self.assertEqual(executor.get_by_idempotency_key("repeat"), updated)
+            external = {"strategy_execution_id": "external", "idempotency_key": "other", "status": "running"}
+            with path.open("ab") as fh:
+                fh.write(_encoded(external))
+            self.assertEqual(executor.get("external"), external)
+            self.assertEqual(replay.call_count, 1)
+            replacement = self.root / "other-strategy.jsonl"
+            replacement.write_bytes(_encoded({"strategy_execution_id": "replacement", "status": "completed"}))
+            os.replace(replacement, path)
+            self.assertEqual([x["strategy_execution_id"] for x in executor.current()], ["replacement"])
+            self.assertEqual(replay.call_count, 2)
 
 
 if __name__ == "__main__":
