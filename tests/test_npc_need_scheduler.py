@@ -301,5 +301,56 @@ class NpcNeedSchedulerTest(unittest.TestCase):
         )
 
 
+    def test_missing_target_episode_is_coalesced_and_resolution_is_audited(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            scheduler, proposals, plans = self.make(Path(tmpdir), {"social": 0.95})
+            self.assertEqual(scheduler.evaluate_tick(1)[0]["status"], "no_target")
+            self.assertEqual(scheduler.evaluate_tick(2)[0]["status"], "no_target")
+            self.assertEqual(len(scheduler.history()), 1)
+            # Reconstruct from durable history after a process restart.
+            restarted = NpcNeedScheduler(
+                scheduler.path, proposals, plans, npc_ids=["npc"], threshold=0.70,
+                cooldown_ticks=10,
+            )
+            self.assertEqual(restarted.evaluate_tick(3)[0]["status"], "no_target")
+            self.assertEqual(len(restarted.history()), 1)
+            # A changed unresolved target reference is a new observation.
+            plans.planner.store.entities["npc"]["properties"]["social_target_entity_id"] = "missing"
+            self.assertEqual(restarted.evaluate_tick(4)[0]["status"], "no_target")
+            self.assertEqual(len(restarted.history()), 2)
+            self.assertEqual(restarted.history()[-1]["target_references"], ["missing"])
+            self.assertEqual(restarted.evaluate_tick(5)[0]["status"], "no_target")
+            self.assertEqual(len(restarted.history()), 2)
+            plans.planner.store.entities["missing"] = {
+                "id": "missing", "type": "place", "region_id": "r0",
+                "position": {"x": 10, "y": 0}, "properties": {},
+            }
+            self.assertEqual(restarted.evaluate_tick(6)[0]["status"], "scheduled")
+            latest = restarted.history()[-1]
+            self.assertEqual(latest["resolved_no_target_since_tick"], 4)
+            self.assertEqual(latest["no_target_duration_ticks"], 2)
+            self.assertEqual(len(restarted.history()), 3)
+            self.assertEqual(restarted._last_tick("npc", "social"), 6)
+
+    def test_scheduled_lookup_index_replays_once_and_invalidates_on_external_append(self):
+        from unittest.mock import patch
+        import json
+        with tempfile.TemporaryDirectory() as tmpdir:
+            scheduler, _, _ = self.make(Path(tmpdir), {"energy": 0.9}, rest_target_entity_id="bed")
+            with patch.object(scheduler, "_iter_history", wraps=scheduler._iter_history) as replay:
+                self.assertIsNone(scheduler._last_tick("npc", "energy"))
+                self.assertIsNone(scheduler._last_tick("npc", "energy"))
+                self.assertEqual(replay.call_count, 1)
+                scheduler.evaluate_tick(5)
+                self.assertEqual(scheduler._last_tick("npc", "energy"), 5)
+                self.assertEqual(replay.call_count, 1)
+                with scheduler.path.open("a", encoding="utf-8") as fh:
+                    fh.write(json.dumps({
+                        "npc_id": "npc", "need": "energy", "status": "scheduled", "tick": 41,
+                    }) + "\\n")
+                self.assertEqual(scheduler._last_tick("npc", "energy"), 41)
+                self.assertEqual(replay.call_count, 2)
+
+
 if __name__ == "__main__":
     unittest.main()
