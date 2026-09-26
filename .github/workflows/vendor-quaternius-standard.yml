@@ -74,12 +74,12 @@ jobs:
         run: |
           set -euo pipefail
           GODOT_VERSION=4.7.2
-          ZIP="Godot_v\${GODOT_VERSION}-stable_linux.x86_64.zip"
+          ZIP="Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
           curl --fail --location --retry 4 --retry-delay 3 \
-            "https://github.com/godotengine/godot/releases/download/\${GODOT_VERSION}-stable/\${ZIP}" \
-            -o "/tmp/\${ZIP}"
+            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/${ZIP}" \
+            -o "/tmp/${ZIP}"
           mkdir -p /tmp/godot
-          unzip -q "/tmp/\${ZIP}" -d /tmp/godot
+          unzip -q "/tmp/${ZIP}" -d /tmp/godot
           GODOT_BIN="$(find /tmp/godot -maxdepth 1 -type f -name 'Godot_v*_linux.x86_64' | head -n 1)"
           chmod +x "$GODOT_BIN"
           "$GODOT_BIN" --headless --editor --quit --path apps/renderer-godot 2>&1 | tee /tmp/vendor-godot-import.log
@@ -98,4 +98,4 @@ jobs:
           git diff --cached --stat
           test "$(git diff --cached --name-only | wc -l)" -gt 2
           git commit -m "assets(godot): vendor Quaternius Standard nature glTF files (CC0)"
-          git push origin "HEAD:\${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
