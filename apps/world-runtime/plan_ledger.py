@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import time
 import uuid
 from copy import deepcopy
@@ -34,14 +35,46 @@ class PlanLedger:
         if not self.path.exists():
             return []
         rows: list[dict[str, Any]] = []
-        with self.path.open("r", encoding="utf-8") as fh:
-            for line in fh:
-                line = line.strip()
-                if line:
-                    value = json.loads(line)
-                    if isinstance(value, dict):
-                        rows.append(value)
+        with self.path.open("rb") as fh:
+            offset = 0
+            while True:
+                raw = fh.readline()
+                if not raw:
+                    break
+                next_offset = offset + len(raw)
+                try:
+                    line = raw.decode("utf-8").strip()
+                    if line:
+                        value = json.loads(line)
+                        if isinstance(value, dict):
+                            rows.append(value)
+                except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+                    # A crash/power loss can leave only the final append torn.
+                    # Never hide corruption in the committed middle of the ledger.
+                    if fh.read(1):
+                        raise PlanLedgerError(
+                            f"corrupt plan ledger at byte {offset}"
+                        ) from exc
+                    self._quarantine_torn_tail(offset, raw)
+                    break
+                offset = next_offset
         return rows
+
+    def _quarantine_torn_tail(self, offset: int, raw: bytes) -> None:
+        quarantine = self.path.with_name(self.path.name + ".torn-tail")
+        try:
+            with quarantine.open("ab") as fh:
+                fh.write(raw)
+                fh.flush()
+                os.fsync(fh.fileno())
+            with self.path.open("r+b") as fh:
+                fh.truncate(offset)
+                fh.flush()
+                os.fsync(fh.fileno())
+        except OSError as exc:
+            raise PlanLedgerError(
+                f"unable to recover torn plan-ledger tail at byte {offset}"
+            ) from exc
 
     def current(self) -> list[dict[str, Any]]:
         latest: dict[str, dict[str, Any]] = {}
@@ -63,8 +96,26 @@ class PlanLedger:
         return [row for row in self.current() if row.get("status") not in self.TERMINAL]
 
     def _append(self, row: dict[str, Any]) -> dict[str, Any]:
-        with self.path.open("a", encoding="utf-8") as fh:
-            fh.write(json.dumps(row, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n")
+        payload = (
+            json.dumps(row, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+            + "\n"
+        ).encode("utf-8")
+        # One low-level append write prevents TextIO from splitting a record.
+        # fsync makes an acknowledged lifecycle transition durable before return.
+        fd = os.open(
+            self.path,
+            os.O_WRONLY | os.O_CREAT | os.O_APPEND,
+            0o644,
+        )
+        try:
+            written = os.write(fd, payload)
+            if written != len(payload):
+                raise PlanLedgerError(
+                    f"short plan-ledger append: {written}/{len(payload)} bytes"
+                )
+            os.fsync(fd)
+        finally:
+            os.close(fd)
         return row
 
     def create(
