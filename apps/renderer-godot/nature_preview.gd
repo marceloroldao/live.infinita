@@ -60,7 +60,8 @@ func _spawn_model(entry: Dictionary, location: Vector3) -> bool:
     var resource: Resource = load(path)
     if not resource is PackedScene:
         return false
-    var node: Node = resource.instantiate()
+    var packed: PackedScene = resource as PackedScene
+    var node: Node = packed.instantiate()
     if not node is Node3D:
         node.queue_free()
         return false
