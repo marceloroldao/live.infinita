@@ -56,7 +56,7 @@ class WorldTickRunner:
             str(row.get("npc_id") or "")
             for row in need_results
             if str(row.get("npc_id") or "")
-            and str(row.get("status") or "") == "scheduled"
+            and str(row.get("status") or "") in {"scheduled", "already_active"}
         }
 
     def _tick_plan(self, plan_id: str, logical_tick: int) -> dict[str, Any]:
