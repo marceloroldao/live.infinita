@@ -4,8 +4,6 @@ import json
 import sys
 from pathlib import Path
 
-import pytest
-
 WORLD_RUNTIME = Path(__file__).resolve().parents[1] / "apps" / "world-runtime"
 sys.path.insert(0, str(WORLD_RUNTIME))
 
@@ -43,8 +41,12 @@ def test_history_refuses_corruption_in_middle(tmp_path: Path) -> None:
     path = tmp_path / "plans.jsonl"
     path.write_bytes(_valid_row("p1") + b"not-json\n" + _valid_row("p2"))
 
-    with pytest.raises(PlanLedgerError, match="corrupt plan ledger"):
+    try:
         PlanLedger(path).history()
+    except PlanLedgerError as exc:
+        assert "corrupt plan ledger" in str(exc)
+    else:
+        raise AssertionError("middle corruption must fail closed")
 
     assert path.read_bytes().endswith(_valid_row("p2"))
     assert not (tmp_path / "plans.jsonl.torn-tail").exists()
