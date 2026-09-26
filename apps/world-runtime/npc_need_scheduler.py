@@ -363,6 +363,31 @@ class NpcNeedScheduler:
         )
         return deepcopy(selected), deepcopy(ranking), deepcopy(compiled)
 
+    def _ongoing_goal(self, npc_id: str, need: str) -> dict[str, Any] | None:
+        # Reuse a still-running goal instead of creating a new strategy every
+        # cooldown window while its previous phases are awaiting resolution.
+        # These ledgers are durable, and terminal goals no longer block retries.
+        strategy_rows = getattr(self.strategy_executor, "current", None)
+        if callable(strategy_rows):
+            for row in strategy_rows():
+                if str(row.get("status") or "") in {"completed", "failed", "cancelled"}:
+                    continue
+                plan = row.get("strategy_plan") if isinstance(row.get("strategy_plan"), dict) else {}
+                if str(plan.get("actor_entity_id") or "") == npc_id and str(plan.get("need") or "") == need:
+                    return {
+                        "strategy_execution_id": row.get("strategy_execution_id"),
+                        "plan_id": row.get("child_plan_id"),
+                    }
+
+        ledger = getattr(self.plans, "ledger", None)
+        active_plans = getattr(ledger, "active", None)
+        if callable(active_plans):
+            for row in active_plans():
+                intent = row.get("intent") if isinstance(row.get("intent"), dict) else {}
+                if str(row.get("actor_entity_id") or intent.get("actor_entity_id") or "") == npc_id and str(intent.get("need") or "") == need:
+                    return {"strategy_execution_id": None, "plan_id": row.get("plan_id")}
+        return None
+
     def evaluate_tick(self, tick: int) -> list[dict[str, Any]]:
         tick = int(tick)
         results: list[dict[str, Any]] = []
@@ -376,6 +401,17 @@ class NpcNeedScheduler:
                 continue
             candidates.sort(key=lambda item: (-item[3], -item[2], item[0]))
             need, severity, priority, utility = candidates[0]
+            ongoing = self._ongoing_goal(npc_id, need)
+            if ongoing is not None:
+                results.append({
+                    "npc_id": npc_id,
+                    "need": need,
+                    "status": "already_active",
+                    "tick": tick,
+                    "plan_id": ongoing["plan_id"],
+                    "strategy_execution_id": ongoing["strategy_execution_id"],
+                })
+                continue
             last_tick = self._last_tick(npc_id, need)
             if last_tick is not None and tick - last_tick < self.cooldown_ticks:
                 results.append({"npc_id": npc_id, "need": need, "status": "cooldown", "tick": tick})
