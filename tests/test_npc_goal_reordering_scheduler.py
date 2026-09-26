@@ -12,6 +12,7 @@ for value in (str(ROOT), str(RUNTIME)):
         sys.path.insert(0, value)
 
 from npc_reordering_need_scheduler import NpcReorderingNeedScheduler
+from npc_audited_reordering_need_scheduler import NpcAuditedReorderingNeedScheduler
 from npc_strategy_compiler import NpcStrategyCompiler
 
 
@@ -60,10 +61,19 @@ class FakePlanScheduler:
 class FakeStrategyExecutor:
     def __init__(self):
         self.calls = []
+        self.rows = []
 
     def start(self, strategy_plan, **kwargs):
         self.calls.append({"strategy_plan": strategy_plan, **kwargs})
-        return {"strategy_execution_id": f"exec_{len(self.calls)}", "status": "running"}
+        row = {
+            "strategy_execution_id": f"exec_{len(self.calls)}", "status": "running",
+            "strategy_plan": strategy_plan, "child_plan_id": None,
+        }
+        self.rows.append(row)
+        return dict(row)
+
+    def current(self):
+        return [dict(row) for row in self.rows]
 
 
 class ReorderingCompositeProvider:
@@ -105,7 +115,7 @@ class ReorderingCompositeProvider:
 
 
 class NpcGoalReorderingSchedulerTest(unittest.TestCase):
-    def make_scheduler(self, tmp: Path, include_safe_target: bool = True):
+    def make_scheduler(self, tmp: Path, include_safe_target: bool = True, scheduler_type=NpcReorderingNeedScheduler):
         npc = {
             "id": "npc",
             "type": "human",
@@ -127,7 +137,7 @@ class NpcGoalReorderingSchedulerTest(unittest.TestCase):
         proposals = FakeProposalLedger()
         plans = FakePlanScheduler(store)
         executor = FakeStrategyExecutor()
-        scheduler = NpcReorderingNeedScheduler(
+        scheduler = scheduler_type(
             tmp / "needs.jsonl",
             proposals,
             plans,
@@ -175,6 +185,42 @@ class NpcGoalReorderingSchedulerTest(unittest.TestCase):
             proposal = next(iter(proposals.rows.values()))
             self.assertEqual(proposal["payload"]["intent"]["need"], "curiosity")
             self.assertEqual(len(executor.calls), 1)
+
+    def test_production_audited_scheduler_reuses_original_active_need(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            scheduler, proposals, plans, executor = self.make_scheduler(
+                Path(tmpdir), scheduler_type=NpcAuditedReorderingNeedScheduler
+            )
+            npc = plans.planner.store.entities["npc"]
+            npc["properties"]["needs"] = {"safety": 0.95, "curiosity": 0.0}
+            first = scheduler.evaluate_tick(1)[0]
+            self.assertEqual(first["need"], "safety")
+            second = scheduler.evaluate_tick(11)[0]
+            self.assertEqual(second["status"], "already_active")
+            self.assertEqual(second["strategy_execution_id"], first["strategy_execution_id"])
+            self.assertEqual(len(executor.calls), 1)
+            self.assertEqual(len(proposals.rows), 1)
+            self.assertEqual(len(scheduler.history()), 1)
+            executor.rows[0]["status"] = "completed"
+            third = scheduler.evaluate_tick(11)[0]
+            self.assertEqual(third["status"], "scheduled")
+            self.assertEqual(len(executor.calls), 2)
+
+    def test_production_audited_scheduler_reuses_projected_prerequisite(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            scheduler, proposals, plans, executor = self.make_scheduler(
+                Path(tmpdir), scheduler_type=NpcAuditedReorderingNeedScheduler
+            )
+            first = scheduler.evaluate_tick(1)[0]
+            self.assertEqual(first["original_need"], "curiosity")
+            self.assertEqual(first["need"], "safety")
+            second = scheduler.evaluate_tick(11)[0]
+            self.assertEqual(second["status"], "already_active")
+            self.assertTrue(second["horizon_reordered"])
+            self.assertEqual(second["strategy_execution_id"], first["strategy_execution_id"])
+            self.assertEqual(len(executor.calls), 1)
+            self.assertEqual(len(proposals.rows), 1)
+            self.assertEqual(len(scheduler.history()), 1)
 
 
 if __name__ == "__main__":
