@@ -132,6 +132,14 @@ class NpcNeedScheduler:
             self._scheduled_by_original[key] = snapshot
 
     def _ensure_index(self) -> None:
+        # Preserve the lightweight audited-scheduler fixture that initializes
+        # only the durable path and exercises append/provenance in isolation.
+        if not hasattr(self, "_index_ready"):
+            self._index_ready = False
+            self._index_signature = None
+            self._scheduled_ticks = {}
+            self._scheduled_by_original = {}
+            self._latest_audit = {}
         if self._index_ready and self._index_signature == self._signature():
             return
         # JSONL is authoritative. Build compact indexes once after startup or
