@@ -115,6 +115,17 @@ class NpcReorderingNeedScheduler(NpcNeedScheduler):
                 continue
             candidates.sort(key=lambda item: (-item[3], -item[2], item[0]))
             original_need, original_severity, original_priority, original_utility = candidates[0]
+            # The production stack uses this subclass rather than the base
+            # scheduler: keep the same no-duplicate in-flight goal contract.
+            ongoing = self._ongoing_goal(npc_id, original_need)
+            if ongoing is not None:
+                results.append({
+                    "npc_id": npc_id, "need": original_need, "original_need": original_need,
+                    "horizon_reordered": False, "status": "already_active", "tick": tick,
+                    "plan_id": ongoing["plan_id"],
+                    "strategy_execution_id": ongoing["strategy_execution_id"],
+                })
+                continue
             last_tick = self._last_tick(npc_id, original_need)
             if last_tick is not None and tick - last_tick < self.cooldown_ticks:
                 results.append({"npc_id": npc_id, "need": original_need, "status": "cooldown", "tick": tick})
@@ -194,6 +205,18 @@ class NpcReorderingNeedScheduler(NpcNeedScheduler):
             selected_target_id = str(prepared["selected_target_id"] or "")
             composite_plan = prepared["composite_plan"]
             horizon_reordered = need != original_need
+            # A projected prerequisite may differ from the originally selected
+            # need; never schedule a duplicate of that live prerequisite either.
+            if horizon_reordered:
+                ongoing = self._ongoing_goal(npc_id, need)
+                if ongoing is not None:
+                    results.append({
+                        "npc_id": npc_id, "need": need, "original_need": original_need,
+                        "horizon_reordered": True, "status": "already_active", "tick": tick,
+                        "plan_id": ongoing["plan_id"],
+                        "strategy_execution_id": ongoing["strategy_execution_id"],
+                    })
+                    continue
 
             strategy_id = str((strategy or {}).get("strategy_id") or "direct")
             goal_intent = {
