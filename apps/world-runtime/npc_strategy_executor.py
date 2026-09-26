@@ -26,6 +26,46 @@ class NpcStrategyExecutor:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.plan_scheduler = plan_scheduler
+        self._view_by_id: dict[str, dict[str, Any]] | None = None
+        self._view_order: list[str] = []
+        self._view_idempotency: dict[str, str] = {}
+        self._view_signature: tuple[int, int, int, int] | None = None
+
+    def _signature(self) -> tuple[int, int, int, int] | None:
+        try:
+            stat = self.path.stat()
+        except FileNotFoundError:
+            return None
+        return stat.st_dev, stat.st_ino, stat.st_size, stat.st_mtime_ns
+
+    def _ensure_view(self) -> None:
+        if self._view_by_id is not None and self._view_signature == self._signature():
+            return
+        # Rebuild from the durable JSONL after restart or external modification.
+        for _ in range(3):
+            before = self._signature()
+            latest: dict[str, dict[str, Any]] = {}
+            order: list[str] = []
+            for row in self._history():
+                execution_id = str(row.get("strategy_execution_id") or "").strip()
+                if not execution_id:
+                    continue
+                if execution_id not in latest:
+                    order.append(execution_id)
+                latest[execution_id] = row
+            after = self._signature()
+            if before == after:
+                idempotency: dict[str, str] = {}
+                for execution_id in order:
+                    key = str(latest[execution_id].get("idempotency_key") or "")
+                    if key:
+                        idempotency.setdefault(key, execution_id)
+                self._view_by_id = latest
+                self._view_order = order
+                self._view_idempotency = idempotency
+                self._view_signature = after
+                return
+        raise NpcStrategyExecutionError("strategy ledger changed during replay")
 
     def _history(self) -> list[dict[str, Any]]:
         if not self.path.exists():
@@ -41,25 +81,56 @@ class NpcStrategyExecutor:
         return rows
 
     def _append(self, row: dict[str, Any]) -> dict[str, Any]:
-        with self.path.open("a", encoding="utf-8") as fh:
-            fh.write(json.dumps(row, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n")
+        before = self._signature()
+        cached = self._view_by_id is not None and self._view_signature == before
+        payload = json.dumps(row, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n"
+        try:
+            with self.path.open("a", encoding="utf-8") as fh:
+                fh.write(payload)
+        except BaseException:
+            self._view_by_id = None
+            raise
+        after = self._signature()
+        expected_size = (before[2] if before else 0) + len(payload.encode("utf-8"))
+        if cached and after is not None and after[2] == expected_size and (
+            before is None or after[:2] == before[:2]
+        ):
+            assert self._view_by_id is not None
+            execution_id = str(row.get("strategy_execution_id") or "").strip()
+            if execution_id:
+                previous = self._view_by_id.get(execution_id)
+                previous_key = str(previous.get("idempotency_key") or "") if previous else ""
+                key = str(row.get("idempotency_key") or "")
+                if previous is not None and previous_key != key:
+                    self._view_by_id = None
+                else:
+                    if previous is None:
+                        self._view_order.append(execution_id)
+                    self._view_by_id[execution_id] = deepcopy(row)
+                    if key:
+                        self._view_idempotency.setdefault(key, execution_id)
+            self._view_signature = after
+        else:
+            self._view_by_id = None
         return row
 
     def current(self) -> list[dict[str, Any]]:
-        latest: dict[str, dict[str, Any]] = {}
-        order: list[str] = []
-        for row in self._history():
-            execution_id = str(row.get("strategy_execution_id") or "").strip()
-            if not execution_id:
-                continue
-            if execution_id not in latest:
-                order.append(execution_id)
-            latest[execution_id] = row
-        return [deepcopy(latest[key]) for key in order]
+        self._ensure_view()
+        assert self._view_by_id is not None
+        return [deepcopy(self._view_by_id[key]) for key in self._view_order]
 
     def get(self, execution_id: str) -> dict[str, Any] | None:
-        execution_id = str(execution_id or "").strip()
-        return next((row for row in self.current() if row.get("strategy_execution_id") == execution_id), None)
+        self._ensure_view()
+        assert self._view_by_id is not None
+        row = self._view_by_id.get(str(execution_id or "").strip())
+        return deepcopy(row) if row is not None else None
+
+    def get_by_idempotency_key(self, key: str) -> dict[str, Any] | None:
+        self._ensure_view()
+        assert self._view_by_id is not None
+        execution_id = self._view_idempotency.get(str(key or ""))
+        row = self._view_by_id.get(execution_id) if execution_id else None
+        return deepcopy(row) if row is not None else None
 
     def start(
         self,
@@ -75,9 +146,9 @@ class NpcStrategyExecutor:
         if not phases:
             raise NpcStrategyExecutionError("strategy plan requires phases")
         if idempotency_key:
-            for row in self.current():
-                if row.get("idempotency_key") == idempotency_key:
-                    return row
+            existing = self.get_by_idempotency_key(idempotency_key)
+            if existing is not None:
+                return existing
         now = time.time()
         row = {
             "strategy_execution_schema": "npc_strategy_execution_v2",
