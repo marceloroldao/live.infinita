@@ -30,6 +30,40 @@ class PlanLedger:
     def __init__(self, path: Path) -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
+        self._view_by_id: dict[str, dict[str, Any]] | None = None
+        self._view_order: list[str] = []
+        self._view_signature: tuple[int, int, int, int] | None = None
+
+    def _signature(self) -> tuple[int, int, int, int] | None:
+        try:
+            stat = self.path.stat()
+        except FileNotFoundError:
+            return None
+        return stat.st_dev, stat.st_ino, stat.st_size, stat.st_mtime_ns
+
+    def _ensure_view(self) -> None:
+        if self._view_by_id is not None and self._view_signature == self._signature():
+            return
+        # The append-only JSONL remains authoritative. Rebuild on restart,
+        # external append, replacement or truncation, not on every lookup.
+        for _ in range(3):
+            before = self._signature()
+            latest: dict[str, dict[str, Any]] = {}
+            order: list[str] = []
+            for row in self.history():
+                plan_id = str(row.get("plan_id") or "").strip()
+                if not plan_id:
+                    continue
+                if plan_id not in latest:
+                    order.append(plan_id)
+                latest[plan_id] = row
+            after = self._signature()
+            if before == after:
+                self._view_by_id = latest
+                self._view_order = order
+                self._view_signature = after
+                return
+        raise PlanLedgerError("plan ledger changed while rebuilding current state")
 
     def history(self) -> list[dict[str, Any]]:
         if not self.path.exists():
@@ -77,23 +111,24 @@ class PlanLedger:
             ) from exc
 
     def current(self) -> list[dict[str, Any]]:
-        latest: dict[str, dict[str, Any]] = {}
-        order: list[str] = []
-        for row in self.history():
-            plan_id = str(row.get("plan_id") or "").strip()
-            if not plan_id:
-                continue
-            if plan_id not in latest:
-                order.append(plan_id)
-            latest[plan_id] = row
-        return [latest[plan_id] for plan_id in order]
+        self._ensure_view()
+        assert self._view_by_id is not None
+        return [deepcopy(self._view_by_id[plan_id]) for plan_id in self._view_order]
 
     def get(self, plan_id: str) -> dict[str, Any] | None:
-        plan_id = str(plan_id or "").strip()
-        return next((row for row in self.current() if row.get("plan_id") == plan_id), None)
+        self._ensure_view()
+        assert self._view_by_id is not None
+        row = self._view_by_id.get(str(plan_id or "").strip())
+        return deepcopy(row) if row is not None else None
 
     def active(self) -> list[dict[str, Any]]:
-        return [row for row in self.current() if row.get("status") not in self.TERMINAL]
+        self._ensure_view()
+        assert self._view_by_id is not None
+        return [
+            deepcopy(self._view_by_id[plan_id])
+            for plan_id in self._view_order
+            if self._view_by_id[plan_id].get("status") not in self.TERMINAL
+        ]
 
     def _append(self, row: dict[str, Any]) -> dict[str, Any]:
         payload = (
@@ -102,6 +137,8 @@ class PlanLedger:
         ).encode("utf-8")
         # One low-level append write prevents TextIO from splitting a record.
         # fsync makes an acknowledged lifecycle transition durable before return.
+        before = self._signature()
+        cached = self._view_by_id is not None and self._view_signature == before
         fd = os.open(
             self.path,
             os.O_WRONLY | os.O_CREAT | os.O_APPEND,
@@ -114,8 +151,26 @@ class PlanLedger:
                     f"short plan-ledger append: {written}/{len(payload)} bytes"
                 )
             os.fsync(fd)
+        except BaseException:
+            self._view_by_id = None
+            raise
         finally:
             os.close(fd)
+
+        after = self._signature()
+        expected_size = (before[2] if before else 0) + len(payload)
+        if cached and after is not None and after[2] == expected_size and (
+            before is None or after[:2] == before[:2]
+        ):
+            assert self._view_by_id is not None
+            plan_id = str(row.get("plan_id") or "").strip()
+            if plan_id:
+                if plan_id not in self._view_by_id:
+                    self._view_order.append(plan_id)
+                self._view_by_id[plan_id] = deepcopy(row)
+            self._view_signature = after
+        else:
+            self._view_by_id = None
         return row
 
     def create(

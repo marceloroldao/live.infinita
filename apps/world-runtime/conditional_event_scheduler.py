@@ -47,6 +47,40 @@ class ConditionalEventScheduler:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.guarded = guarded_mutations
         self.plan_dispatcher = plan_dispatcher
+        self._view_by_id: dict[str, dict[str, Any]] | None = None
+        self._view_order: list[str] = []
+        self._view_signature: tuple[int, int, int, int] | None = None
+
+    def _signature(self) -> tuple[int, int, int, int] | None:
+        try:
+            stat = self.path.stat()
+        except FileNotFoundError:
+            return None
+        return stat.st_dev, stat.st_ino, stat.st_size, stat.st_mtime_ns
+
+    def _ensure_view(self) -> None:
+        if self._view_by_id is not None and self._view_signature == self._signature():
+            return
+        # Only active/latest records are materialized; the full JSONL stays
+        # authoritative for history and recovery. External changes invalidate.
+        for _ in range(3):
+            before = self._signature()
+            latest: dict[str, dict[str, Any]] = {}
+            order: list[str] = []
+            for row in self._iter_history():
+                event_id = str(row.get("conditional_event_id") or "").strip()
+                if not event_id:
+                    continue
+                if event_id not in latest:
+                    order.append(event_id)
+                latest[event_id] = row
+            after = self._signature()
+            if before == after:
+                self._view_by_id = latest
+                self._view_order = order
+                self._view_signature = after
+                return
+        raise ConditionalEventError("conditional ledger changed while rebuilding current state")
 
     def _iter_history(self):
         """Stream durable JSONL records and repair only a malformed final record."""
@@ -142,23 +176,40 @@ class ConditionalEventScheduler:
         return list(self._iter_history())
 
     def current(self) -> list[dict[str, Any]]:
-        latest: dict[str, dict[str, Any]] = {}
-        order: list[str] = []
-        for row in self._iter_history():
-            event_id = str(row.get("conditional_event_id") or "").strip()
-            if not event_id:
-                continue
-            if event_id not in latest:
-                order.append(event_id)
-            latest[event_id] = row
-        return [latest[event_id] for event_id in order]
+        self._ensure_view()
+        assert self._view_by_id is not None
+        return [deepcopy(self._view_by_id[event_id]) for event_id in self._view_order]
 
     def get(self, conditional_event_id: str) -> dict[str, Any] | None:
-        return next((row for row in self.current() if row.get("conditional_event_id") == conditional_event_id), None)
+        self._ensure_view()
+        assert self._view_by_id is not None
+        row = self._view_by_id.get(str(conditional_event_id or "").strip())
+        return deepcopy(row) if row is not None else None
 
     def _append(self, row: dict[str, Any]) -> dict[str, Any]:
-        with self.path.open("a", encoding="utf-8") as fh:
-            fh.write(json.dumps(row, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n")
+        before = self._signature()
+        cached = self._view_by_id is not None and self._view_signature == before
+        payload = json.dumps(row, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n"
+        try:
+            with self.path.open("a", encoding="utf-8") as fh:
+                fh.write(payload)
+        except BaseException:
+            self._view_by_id = None
+            raise
+        after = self._signature()
+        expected_size = (before[2] if before else 0) + len(payload.encode("utf-8"))
+        if cached and after is not None and after[2] == expected_size and (
+            before is None or after[:2] == before[:2]
+        ):
+            assert self._view_by_id is not None
+            event_id = str(row.get("conditional_event_id") or "").strip()
+            if event_id:
+                if event_id not in self._view_by_id:
+                    self._view_order.append(event_id)
+                self._view_by_id[event_id] = deepcopy(row)
+            self._view_signature = after
+        else:
+            self._view_by_id = None
         return row
 
     @staticmethod
