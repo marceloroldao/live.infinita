@@ -1,0 +1,101 @@
+name: Vendor Quaternius Standard nature assets
+
+on:
+  push:
+    branches:
+      - feature/vendor-quaternius-standard
+    paths:
+      - .github/workflows/vendor-quaternius-standard.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  vendor-standard:
+    # One-shot: commits using GITHUB_TOKEN do not retrigger workflows.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout source branch
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Download Standard archive from the author's public OpenGameArt upload
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL="https://opengameart.org/sites/default/files/stylized_nature_megakitstandard.zip"
+          mkdir -p /tmp/live-infinita-vendor
+          curl --fail --location --retry 4 --retry-delay 5 --retry-all-errors \
+            --connect-timeout 30 --max-time 600 \
+            "$URL" -o /tmp/live-infinita-vendor/standard.zip
+          file /tmp/live-infinita-vendor/standard.zip | grep -q 'Zip archive data'
+          sha256sum /tmp/live-infinita-vendor/standard.zip
+          python -m zipfile -t /tmp/live-infinita-vendor/standard.zip
+
+      - name: Extract Godot-compatible models only and record provenance
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tools/import_quaternius_nature.py /tmp/live-infinita-vendor/standard.zip
+          python - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          archive = Path("/tmp/live-infinita-vendor/standard.zip")
+          folder = Path("apps/renderer-godot/assets/quaternius/stylized_nature_megakit")
+          catalog = json.loads((folder / "catalog.json").read_text())
+          models = catalog["assets"]
+          assert len(models) >= 1, "No models imported"
+          files = sorted((folder / "models").rglob("*"))
+          files = [p for p in files if p.is_file()]
+          assert files, "No vendor files imported"
+          assert not any(p.stat().st_size > 95 * 1024 * 1024 for p in files), "Individual file too large for Git"
+          manifest = {
+              "pack": "Stylized Nature MegaKit",
+              "edition": "Standard (free)",
+              "author": "Quaternius",
+              "license": "CC0-1.0",
+              "source_page": "https://opengameart.org/content/stylized-nature-megakit",
+              "archive_url": "https://opengameart.org/sites/default/files/stylized_nature_megakitstandard.zip",
+              "archive_sha256": hashlib.sha256(archive.read_bytes()).hexdigest(),
+              "model_count": len(models),
+              "extracted_file_count": len(files),
+              "selection": "glB, or glTF with referenced buffers/textures (not FBX/OBJ/Source edition)",
+          }
+          (folder / "SOURCE.json").write_text(json.dumps(manifest, indent=2) + "\n")
+          print(json.dumps(manifest, indent=2))
+          PY
+          du -sh apps/renderer-godot/assets/quaternius/stylized_nature_megakit/
+
+      - name: Test imported models in Godot 4
+        shell: bash
+        run: |
+          set -euo pipefail
+          GODOT_VERSION=4.7.2
+          ZIP="Godot_v\${GODOT_VERSION}-stable_linux.x86_64.zip"
+          curl --fail --location --retry 4 --retry-delay 3 \
+            "https://github.com/godotengine/godot/releases/download/\${GODOT_VERSION}-stable/\${ZIP}" \
+            -o "/tmp/\${ZIP}"
+          mkdir -p /tmp/godot
+          unzip -q "/tmp/\${ZIP}" -d /tmp/godot
+          GODOT_BIN="$(find /tmp/godot -maxdepth 1 -type f -name 'Godot_v*_linux.x86_64' | head -n 1)"
+          chmod +x "$GODOT_BIN"
+          "$GODOT_BIN" --headless --editor --quit --path apps/renderer-godot 2>&1 | tee /tmp/vendor-godot-import.log
+          ! grep -E 'SCRIPT ERROR|^ERROR:' /tmp/vendor-godot-import.log
+          "$GODOT_BIN" --headless --path apps/renderer-godot \
+            res://nature_preview.tscn --quit-after 3 2>&1 | tee /tmp/vendor-godot-preview.log
+          ! grep -E 'SCRIPT ERROR|^ERROR:|Parser Error' /tmp/vendor-godot-preview.log
+
+      - name: Commit imported models and catalog to feature branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/renderer-godot/assets/quaternius/stylized_nature_megakit/
+          git diff --cached --stat
+          test "$(git diff --cached --name-only | wc -l)" -gt 2
+          git commit -m "assets(godot): vendor Quaternius Standard nature glTF files (CC0)"
+          git push origin "HEAD:\${GITHUB_REF_NAME}"
