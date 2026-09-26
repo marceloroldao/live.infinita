@@ -1,0 +1,12 @@
+{
+  "pack": "Stylized Nature MegaKit",
+  "edition": "Standard (free)",
+  "author": "Quaternius",
+  "license": "CC0-1.0",
+  "source_page": "https://opengameart.org/content/stylized-nature-megakit",
+  "archive_url": "https://opengameart.org/sites/default/files/stylized_nature_megakitstandard.zip",
+  "archive_sha256": "298f6732b872e4cf7b30e6e7abf9641c7f6dc6b326df37ac089533ed7e3d58c9",
+  "model_count": 68,
+  "extracted_file_count": 151,
+  "selection": "glB, or glTF with referenced buffers/textures (not FBX/OBJ/Source edition)"
+}
