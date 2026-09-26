@@ -44,9 +44,9 @@ class WorldTickRunner:
 
     @staticmethod
     def _idle_blocked_npc_ids(need_results: list[dict[str, Any]]) -> set[str]:
-        """Block idle walking only when this tick actually scheduled need work.
+        """Block idle walking while need-driven work is scheduled or already running.
 
-        `cooldown` is not active work; an already-running plan is detected by
+        `cooldown` is not active work; an already-running direct plan is detected by
         NpcIdleWander._has_active_plan(). `no_target` explicitly means the need
         could not produce a plan, so freezing the NPC would deadlock presentation
         forever when a target is absent. Idle movement may therefore continue
