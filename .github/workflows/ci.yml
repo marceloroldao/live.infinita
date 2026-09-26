@@ -85,6 +85,11 @@ jobs:
           for script in apps/renderer-godot/*.gd; do
             "$GODOT_BIN" --headless --path apps/renderer-godot --check-only --script "$(basename "$script")"
           done
+          # This optional 3D scene must boot with no vendor ZIP present, and must
+          # never replace the 2D main scene used for the broadcast.
+          "$GODOT_BIN" --headless --path apps/renderer-godot \
+            res://nature_preview.tscn --quit-after 2 2>&1 | tee /tmp/godot-nature-preview.log
+          ! grep -E 'SCRIPT ERROR|Parser Error' /tmp/godot-nature-preview.log
           "$GODOT_BIN" --headless --path apps/renderer-godot \
             --script ../../tests/godot_presentation_smoke.gd 2>&1 | tee /tmp/godot-contracts.log
           ! grep -E 'SCRIPT ERROR|^ERROR:' /tmp/godot-contracts.log

@@ -112,3 +112,7 @@ live.infinita/
 **Fase:** arquitetura / MVP inicial.
 
 Próximo marco: executar um mundo mínimo local com Simulator -> Intent -> World Runtime -> Delta -> Renderer Web, sem depender de uma Live real.
+
+## Biblioteca visual Quaternius
+
+A primeira integração opcional de natureza para Godot 4 usa o **Stylized Nature MegaKit Standard**. O importador, catálogo e pré-visualizador 3D são independentes do renderer 2D em produção. Veja [instalação, licença e limites atuais](docs/ASSETS_QUATERNIUS.md). O download do fornecedor não está incluído no Git.
