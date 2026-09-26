@@ -223,5 +223,33 @@ class NpcGoalReorderingSchedulerTest(unittest.TestCase):
             self.assertEqual(len(scheduler.history()), 1)
 
 
+    def test_audited_reconsideration_uses_latest_scheduled_index(self):
+        from unittest.mock import patch
+        with tempfile.TemporaryDirectory() as tmpdir:
+            scheduler, _, _, _ = self.make_scheduler(
+                Path(tmpdir), scheduler_type=NpcAuditedReorderingNeedScheduler,
+            )
+            with patch.object(scheduler, "_iter_history", wraps=scheduler._iter_history) as replay:
+                initial = scheduler.evaluate_tick(1)[0]
+                self.assertEqual(replay.call_count, 1)
+                self.assertEqual(initial["need"], "safety")
+                self.assertEqual(
+                    scheduler._pending_reorder_for("npc", "curiosity")["proposal_id"],
+                    initial["proposal_id"],
+                )
+                self.assertEqual(scheduler._pending_reorder_for("npc", "curiosity")["tick"], 1)
+                self.assertEqual(replay.call_count, 1)
+                followup = scheduler._append({
+                    "npc_id": "npc", "need": "curiosity", "original_need": "curiosity",
+                    "status": "scheduled", "tick": 15,
+                })
+                self.assertEqual(
+                    followup["reconsidered_from_proposal_id"], initial["proposal_id"]
+                )
+                self.assertIsNone(scheduler._pending_reorder_for("npc", "curiosity"))
+                self.assertEqual(scheduler._last_tick("npc", "curiosity"), 15)
+                self.assertEqual(replay.call_count, 1)
+
+
 if __name__ == "__main__":
     unittest.main()
