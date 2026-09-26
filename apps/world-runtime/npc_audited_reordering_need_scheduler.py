@@ -20,17 +20,11 @@ class NpcAuditedReorderingNeedScheduler(NpcReorderingNeedScheduler):
         need = str(need or "").strip().lower()
         if not npc_id or not need:
             return None
-        for row in reversed(self.history()):
-            if row.get("npc_id") != npc_id or row.get("status") != "scheduled":
-                continue
-            original_need = str(row.get("original_need") or row.get("need") or "").strip().lower()
-            if original_need != need:
-                continue
-            if bool(row.get("horizon_reordered")):
-                return deepcopy(row)
-            # The latest scheduled decision for this original need was already a
-            # normal reconsideration; do not link across multiple decision cycles.
-            return None
+        row = self._last_scheduled_original(npc_id, need)
+        if row is not None and bool(row.get("horizon_reordered")):
+            return row
+        # The latest scheduled decision for this original need was already a
+        # normal reconsideration; do not link across multiple decision cycles.
         return None
 
     def _append(self, row: dict[str, Any]) -> dict[str, Any]:

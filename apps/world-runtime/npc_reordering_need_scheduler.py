@@ -156,6 +156,7 @@ class NpcReorderingNeedScheduler(NpcNeedScheduler):
                     "status": "no_target",
                     "learning_context": deepcopy(context),
                     "target_ranking": prepared["target_ranking"],
+                    "target_references": self._target_references(entity, original_need),
                     "strategy": prepared["strategy"],
                     "strategy_ranking": prepared["strategy_ranking"],
                     "proposal_id": None,

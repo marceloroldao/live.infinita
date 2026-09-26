@@ -62,6 +62,11 @@ class NpcNeedScheduler:
         self.composite_strategy_provider = composite_strategy_provider
         self.strategy_compiler = strategy_compiler
         self.strategy_executor = strategy_executor
+        self._index_ready = False
+        self._index_signature: tuple[int, int, int, int] | None = None
+        self._scheduled_ticks: dict[tuple[str, str], int] = {}
+        self._scheduled_by_original: dict[tuple[str, str], dict[str, Any]] = {}
+        self._latest_audit: dict[tuple[str, str], dict[str, Any]] = {}
         # Recover exactly one malformed legacy record left by the historical
         # crash-tail-then-append bug. Preserve evidence; broader corruption is fatal.
         self.repair_legacy_single_invalid_record()
@@ -99,6 +104,95 @@ class NpcNeedScheduler:
         os.replace(temporary, self.path)
         marker.write_text(json.dumps({"repaired": True, "removed_line": bad_line, "backup": backup.name, "quarantine": quarantine.name}, sort_keys=True) + "\n", encoding="utf-8")
         return {"repaired": True, "removed_line": bad_line}
+
+    def _signature(self) -> tuple[int, int, int, int] | None:
+        try:
+            stat = self.path.stat()
+        except FileNotFoundError:
+            return None
+        return stat.st_dev, stat.st_ino, stat.st_size, stat.st_mtime_ns
+
+    @staticmethod
+    def _audit_key(row: dict[str, Any]) -> tuple[str, str]:
+        return (
+            str(row.get("npc_id") or ""),
+            str(row.get("original_need") or row.get("need") or ""),
+        )
+
+    def _index_row(self, row: dict[str, Any]) -> None:
+        key = self._audit_key(row)
+        if not all(key):
+            return
+        snapshot = deepcopy(row)
+        self._latest_audit[key] = snapshot
+        if row.get("status") == "scheduled":
+            actual_need = str(row.get("need") or "")
+            if actual_need:
+                self._scheduled_ticks[(key[0], actual_need)] = int(row.get("tick", 0))
+            self._scheduled_by_original[key] = snapshot
+
+    def _ensure_index(self) -> None:
+        # Preserve the lightweight audited-scheduler fixture that initializes
+        # only the durable path and exercises append/provenance in isolation.
+        if not hasattr(self, "_index_ready"):
+            self._index_ready = False
+            self._index_signature = None
+            self._scheduled_ticks = {}
+            self._scheduled_by_original = {}
+            self._latest_audit = {}
+        if self._index_ready and self._index_signature == self._signature():
+            return
+        # JSONL is authoritative. Build compact indexes once after startup or
+        # external append/replacement/truncation; no full history per world tick.
+        self._index_ready = False
+        for _ in range(3):
+            before = self._signature()
+            ticks: dict[tuple[str, str], int] = {}
+            original: dict[tuple[str, str], dict[str, Any]] = {}
+            latest: dict[tuple[str, str], dict[str, Any]] = {}
+            for row in self._iter_history():
+                key = self._audit_key(row)
+                if not all(key):
+                    continue
+                latest[key] = row
+                if row.get("status") == "scheduled":
+                    actual = str(row.get("need") or "")
+                    if actual:
+                        ticks[(key[0], actual)] = int(row.get("tick", 0))
+                    original[key] = row
+            after = self._signature()
+            if before == after:
+                self._scheduled_ticks = ticks
+                self._scheduled_by_original = original
+                self._latest_audit = latest
+                self._index_signature = after
+                self._index_ready = True
+                return
+        raise ValueError("NPC need ledger changed during index rebuild")
+
+    def _last_scheduled_original(self, npc_id: str, need: str) -> dict[str, Any] | None:
+        self._ensure_index()
+        row = self._scheduled_by_original.get((str(npc_id), str(need)))
+        return deepcopy(row) if row is not None else None
+
+    @classmethod
+    def _target_references(cls, entity: dict[str, Any], need: str) -> list[str]:
+        props = entity.get("properties") if isinstance(entity.get("properties"), dict) else {}
+        values = props.get(cls.TARGET_LIST_FIELDS[need])
+        references = [str(value).strip() for value in values] if isinstance(values, list) else []
+        singular = str(props.get(cls.TARGET_FIELDS[need]) or "").strip()
+        if singular:
+            references.append(singular)
+        return sorted({value for value in references if value})
+
+    @staticmethod
+    def _missing_target_signature(row: dict[str, Any]) -> tuple[str, str, tuple[str, ...]]:
+        context = row.get("learning_context") if isinstance(row.get("learning_context"), dict) else {}
+        return (
+            str(row.get("need") or ""),
+            str(context.get("region_id") or ""),
+            tuple(str(value) for value in (row.get("target_references") or [])),
+        )
 
     def _iter_history(self):
         if not self.path.exists():
@@ -139,11 +233,42 @@ class NpcNeedScheduler:
         return list(self._iter_history())
 
     def _append(self, row: dict[str, Any]) -> dict[str, Any]:
-        with self.path.open("a", encoding="utf-8") as fh:
-            fh.write(json.dumps(row, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n")
-            fh.flush()
-            os.fsync(fh.fileno())
-        return row
+        self._ensure_index()
+        key = self._audit_key(row)
+        previous = self._latest_audit.get(key)
+        if row.get("status") == "no_target" and previous is not None:
+            if (previous.get("status") == "no_target"
+                    and self._missing_target_signature(previous) == self._missing_target_signature(row)):
+                # One durable observation per unchanged missing-target episode;
+                # each logical tick still produces a transient scheduler result.
+                return deepcopy(previous)
+        value = deepcopy(row)
+        if (value.get("status") == "scheduled" and previous is not None
+                and previous.get("status") == "no_target"):
+            started = int(previous.get("tick", value.get("tick", 0)))
+            value["resolved_no_target_since_tick"] = started
+            value["no_target_duration_ticks"] = max(0, int(value.get("tick", 0)) - started)
+        payload = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n"
+        before = self._signature()
+        cached = self._index_ready and self._index_signature == before
+        try:
+            with self.path.open("a", encoding="utf-8") as fh:
+                fh.write(payload)
+                fh.flush()
+                os.fsync(fh.fileno())
+        except BaseException:
+            self._index_ready = False
+            raise
+        after = self._signature()
+        expected = (before[2] if before else 0) + len(payload.encode("utf-8"))
+        if cached and after is not None and after[2] == expected and (
+            before is None or before[:2] == after[:2]
+        ):
+            self._index_row(value)
+            self._index_signature = after
+        else:
+            self._index_ready = False
+        return value
 
     def _entity(self, entity_id: str) -> dict[str, Any] | None:
         planner = self.plans.planner
@@ -210,10 +335,8 @@ class NpcNeedScheduler:
         return values
 
     def _last_tick(self, npc_id: str, need: str) -> int | None:
-        for row in reversed(self.history()):
-            if row.get("npc_id") == npc_id and row.get("need") == need and row.get("status") == "scheduled":
-                return int(row.get("tick", 0))
-        return None
+        self._ensure_index()
+        return self._scheduled_ticks.get((str(npc_id), str(need)))
 
     def _candidate_targets(self, entity: dict[str, Any], need: str) -> list[str]:
         properties = entity.get("properties") if isinstance(entity.get("properties"), dict) else {}
@@ -425,6 +548,7 @@ class NpcNeedScheduler:
                     "npc_id": npc_id, "need": need, "severity": severity, "priority": priority,
                     "utility": utility, "tick": tick, "status": "no_target",
                     "learning_context": deepcopy(context), "target_ranking": target_ranking,
+                    "target_references": self._target_references(entity, need),
                     "strategy": strategy, "strategy_ranking": strategy_ranking,
                     "proposal_id": None, "plan_id": None, "strategy_execution_id": None,
                     "created_at_unix": time.time(),
