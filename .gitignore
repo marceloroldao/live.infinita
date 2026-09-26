@@ -8,3 +8,6 @@ __pycache__/
 **/*.gd.uid
 **/*.gdshader.uid
 artifacts/godot/
+
+# Imported vendor binaries/catalog remain local, not source-controlled.
+apps/renderer-godot/assets/quaternius/stylized_nature_megakit/
