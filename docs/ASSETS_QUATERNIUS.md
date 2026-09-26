@@ -14,6 +14,11 @@
 - Do not copy a Source edition asset or its example project into this repository
   unless that edition has actually been obtained.
 
+The selected import contains **68 glTF models**, 68 referenced binary buffers and
+15 PNG textures (151 extracted source files), with Godot import sidecars as
+needed. The source ZIP SHA-256 is
+`298f6732b872e4cf7b30e6e7abf9641c7f6dc6b326df37ac089533ed7e3d58c9`.
+
 The original upstream ZIP is not committed. The **Standard** glTF models,
 their referenced textures/buffers, and the generated catalog are committed to
 this repository in `apps/renderer-godot/assets/quaternius/stylized_nature_megakit/`.
