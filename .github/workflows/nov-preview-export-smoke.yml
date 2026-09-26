@@ -1,0 +1,59 @@
+name: Nov Web preview smoke
+
+on:
+  push:
+    branches: [feature/nov-browser-preview-001]
+    paths:
+      - deploy/export-nov-preview-web.sh
+      - .github/workflows/nov-preview-export-smoke.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-isolated-preview:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Godot editor, templates and rsync
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq rsync unzip libfontconfig1
+          VERSION=4.7.2
+          TAG="${VERSION}-stable"
+          ENGINE="Godot_v${TAG}_linux.x86_64.zip"
+          TEMPLATES="Godot_v${TAG}_export_templates.tpz"
+          curl -fLsS --retry 5 --retry-delay 3 \
+            "https://github.com/godotengine/godot/releases/download/${TAG}/${ENGINE}" -o "/tmp/${ENGINE}"
+          curl -fLsS --retry 5 --retry-delay 3 \
+            "https://github.com/godotengine/godot/releases/download/${TAG}/${TEMPLATES}" -o "/tmp/${TEMPLATES}"
+          sudo mkdir -p /tmp/nov-godot/engine /tmp/nov-templates /root/.local/share/godot/export_templates/${VERSION}.stable
+          sudo unzip -q "/tmp/${ENGINE}" -d /tmp/nov-godot/engine
+          sudo chmod +x /tmp/nov-godot/engine/Godot_v*_linux.x86_64
+          sudo unzip -q "/tmp/${TEMPLATES}" -d /tmp/nov-templates
+          sudo cp -a /tmp/nov-templates/templates/. /root/.local/share/godot/export_templates/${VERSION}.stable/
+
+      - name: Publish preview to disposable document root
+        shell: bash
+        run: |
+          set -euo pipefail
+          WEB_ROOT="$RUNNER_TEMP/live-godot-static"
+          mkdir -p "$WEB_ROOT"
+          printf 'PRODUCTION_INDEX_UNTOUCHED\n' > "$WEB_ROOT/index.html"
+          sudo env \
+            PROJECT_DIR="$GITHUB_WORKSPACE/apps/renderer-godot" \
+            WEB_ROOT="$WEB_ROOT" \
+            GODOT_ENGINE_ROOT="/tmp/nov-godot/engine" \
+            LIVE_INFINITA_SOURCE_SHA="$GITHUB_SHA" \
+            bash deploy/export-nov-preview-web.sh
+          grep -qx 'PRODUCTION_INDEX_UNTOUCHED' "$WEB_ROOT/index.html"
+          test -s "$WEB_ROOT/nov-preview/index.html"
+          test -s "$WEB_ROOT/nov-preview/build.json"
+          find "$WEB_ROOT/nov-preview" -maxdepth 1 -name '*.wasm' -size +0c | grep -q .
+          find "$WEB_ROOT/nov-preview" -maxdepth 1 -name '*.pck' -size +0c | grep -q .
+          grep -q 'run/main_scene="res://main.tscn"' apps/renderer-godot/project.godot
+          echo 'Nov Web preview export OK; existing broadcast untouched.'
