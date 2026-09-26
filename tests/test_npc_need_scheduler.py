@@ -347,7 +347,7 @@ class NpcNeedSchedulerTest(unittest.TestCase):
                 with scheduler.path.open("a", encoding="utf-8") as fh:
                     fh.write(json.dumps({
                         "npc_id": "npc", "need": "energy", "status": "scheduled", "tick": 41,
-                    }) + "\\n")
+                    }) + "\n")
                 self.assertEqual(scheduler._last_tick("npc", "energy"), 41)
                 self.assertEqual(replay.call_count, 2)
 
