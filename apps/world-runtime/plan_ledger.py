@@ -32,6 +32,7 @@ class PlanLedger:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self._view_by_id: dict[str, dict[str, Any]] | None = None
         self._view_order: list[str] = []
+        self._view_idempotency: dict[str, str] = {}
         self._view_signature: tuple[int, int, int, int] | None = None
 
     def _signature(self) -> tuple[int, int, int, int] | None:
@@ -59,8 +60,14 @@ class PlanLedger:
                 latest[plan_id] = row
             after = self._signature()
             if before == after:
+                idempotency: dict[str, str] = {}
+                for plan_id in order:
+                    key = str(latest[plan_id].get("idempotency_key") or "")
+                    if key:
+                        idempotency.setdefault(key, plan_id)
                 self._view_by_id = latest
                 self._view_order = order
+                self._view_idempotency = idempotency
                 self._view_signature = after
                 return
         raise PlanLedgerError("plan ledger changed while rebuilding current state")
@@ -121,6 +128,13 @@ class PlanLedger:
         row = self._view_by_id.get(str(plan_id or "").strip())
         return deepcopy(row) if row is not None else None
 
+    def get_by_idempotency_key(self, key: str) -> dict[str, Any] | None:
+        self._ensure_view()
+        assert self._view_by_id is not None
+        plan_id = self._view_idempotency.get(str(key or ""))
+        row = self._view_by_id.get(plan_id) if plan_id else None
+        return deepcopy(row) if row is not None else None
+
     def active(self) -> list[dict[str, Any]]:
         self._ensure_view()
         assert self._view_by_id is not None
@@ -165,9 +179,19 @@ class PlanLedger:
             assert self._view_by_id is not None
             plan_id = str(row.get("plan_id") or "").strip()
             if plan_id:
-                if plan_id not in self._view_by_id:
-                    self._view_order.append(plan_id)
-                self._view_by_id[plan_id] = deepcopy(row)
+                previous = self._view_by_id.get(plan_id)
+                previous_key = str(previous.get("idempotency_key") or "") if previous else ""
+                key = str(row.get("idempotency_key") or "")
+                if previous is not None and previous_key != key:
+                    # An unusual key change requires rebuilding first-match
+                    # semantics in original plan-creation order.
+                    self._view_by_id = None
+                else:
+                    if previous is None:
+                        self._view_order.append(plan_id)
+                    self._view_by_id[plan_id] = deepcopy(row)
+                    if key:
+                        self._view_idempotency.setdefault(key, plan_id)
             self._view_signature = after
         else:
             self._view_by_id = None
@@ -186,9 +210,9 @@ class PlanLedger:
         actor_entity_id: str | None = None,
     ) -> dict[str, Any]:
         if idempotency_key:
-            for row in self.current():
-                if row.get("idempotency_key") == idempotency_key:
-                    return row
+            existing = self.get_by_idempotency_key(idempotency_key)
+            if existing is not None:
+                return existing
         now = time.time()
         actor = str(actor_entity_id or intent.get("actor_entity_id") or principal.get("subject_entity_id") or "").strip() or None
         row = {
