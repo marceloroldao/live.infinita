@@ -1,0 +1,40 @@
+name: Probe public Nov character pack
+
+on:
+  push:
+    branches: [feature/nov-universal-character]
+    paths: [.github/workflows/nov-asset-probe.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - name: Inspect free Standard download links
+        shell: bash
+        run: |
+          python - <<'PY'
+          import re, urllib.request, html
+          for slug in ["universal-base-characters", "universal-animation-library"]:
+              for suffix in ["", "/purchase", "/download"]:
+                  u=f"https://quaternius.itch.io/{slug}{suffix}"
+                  try:
+                      req=urllib.request.Request(u,headers={"User-Agent":"Mozilla/5.0"})
+                      with urllib.request.urlopen(req,timeout=20) as r:
+                          s=r.read().decode("utf-8","replace")
+                      print("PAGE",slug,suffix,"bytes",len(s))
+                      matches=[]
+                      for m in re.finditer(r"(?i)standard.{0,200}",s):
+                          v=re.sub(r"<[^>]+>"," ",html.unescape(m.group(0)))
+                          matches.append(v[:180])
+                      print("STANDARD_CONTEXT",matches[:4])
+                      print("FILE_ENDPOINTS",list(dict.fromkeys(re.findall(r"/file/(\d+)",s)))[:15])
+                      print("UPLOAD_IDS",list(dict.fromkeys(re.findall(r'(?:upload_id|data-upload_id)[^0-9]{0,30}(\d{5,})',s)))[:15])
+                      print("GAME_IDS",list(dict.fromkeys(re.findall(r'(?:game_id|data-game_id)[^0-9]{0,30}(\d{5,})',s)))[:10])
+                  except Exception as e:
+                      print("FETCH_FAILED",slug,suffix,type(e).__name__,str(e)[:180])
+          PY
