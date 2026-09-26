@@ -24,6 +24,7 @@ def load(name: str, path: Path):
 NpcNeedScheduler = load("npc_need_scheduler_test", RUNTIME / "npc_need_scheduler.py").NpcNeedScheduler
 NpcCompositeStrategy = load("npc_composite_strategy_test_sched", RUNTIME / "npc_composite_strategy.py").NpcCompositeStrategy
 NpcStrategyCompiler = load("npc_strategy_compiler_test_sched", RUNTIME / "npc_strategy_compiler.py").NpcStrategyCompiler
+WorldTickRunner = load("world_tick_test_need", RUNTIME / "world_tick.py").WorldTickRunner
 
 
 class FakeStore:
@@ -289,6 +290,15 @@ class NpcNeedSchedulerTest(unittest.TestCase):
             third = scheduler.evaluate_tick(11)[0]
             self.assertEqual(third["status"], "scheduled")
             self.assertEqual(len(plans.calls), 2)
+
+    def test_running_need_blocks_idle_wandering_even_without_child_plan(self):
+        self.assertEqual(
+            WorldTickRunner._idle_blocked_npc_ids([
+                {"npc_id": "npc", "status": "already_active", "strategy_execution_id": "exec_1", "plan_id": None},
+                {"npc_id": "other", "status": "cooldown"},
+            ]),
+            {"npc"},
+        )
 
 
 if __name__ == "__main__":
