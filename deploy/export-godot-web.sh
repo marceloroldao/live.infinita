@@ -56,7 +56,8 @@ if [[ ! -s "$TMP_DIR/index.html" ]]; then
 fi
 
 mkdir -p "$WEB_DIR"
-rsync -a --delete "$TMP_DIR/" "$WEB_DIR/"
+# The optional 3D preview is a separate deployment. Never wipe it while updating the 2D live.
+rsync -a --delete --exclude '/nov-preview/' --exclude '/.nov-preview.*/' "$TMP_DIR/" "$WEB_DIR/"
 
 BUILD_TIME="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 cat > "$WEB_DIR/build.json" <<EOF
