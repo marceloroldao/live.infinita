@@ -9,5 +9,5 @@ __pycache__/
 **/*.gdshader.uid
 artifacts/godot/
 
-# Imported vendor binaries/catalog remain local, not source-controlled.
-apps/renderer-godot/assets/quaternius/stylized_nature_megakit/
+# Keep downloaded ZIPs out of Git; selected glTF models and textures are versioned.
+assets/_downloads/
