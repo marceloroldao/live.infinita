@@ -1,0 +1,417 @@
+{
+  "schema_version": 1,
+  "pack": "Quaternius Stylized Nature MegaKit",
+  "edition": "Standard",
+  "license": "CC0-1.0",
+  "source": "https://quaternius.com/packs/stylizednaturemegakit.html",
+  "assets": [
+    {
+      "id": "plant/bush-common-feb3aa8a",
+      "kind": "plant",
+      "label": "Bush_Common",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Bush_Common.gltf"
+    },
+    {
+      "id": "plant/bush-common-flowers-b1bac392",
+      "kind": "plant",
+      "label": "Bush_Common_Flowers",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Bush_Common_Flowers.gltf"
+    },
+    {
+      "id": "nature/clover-1-3c3515ee",
+      "kind": "nature",
+      "label": "Clover_1",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Clover_1.gltf"
+    },
+    {
+      "id": "nature/clover-2-2049e30e",
+      "kind": "nature",
+      "label": "Clover_2",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Clover_2.gltf"
+    },
+    {
+      "id": "tree/commontree-1-420fbc4d",
+      "kind": "tree",
+      "label": "CommonTree_1",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/CommonTree_1.gltf"
+    },
+    {
+      "id": "tree/commontree-2-c9b4b194",
+      "kind": "tree",
+      "label": "CommonTree_2",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/CommonTree_2.gltf"
+    },
+    {
+      "id": "tree/commontree-3-37171d33",
+      "kind": "tree",
+      "label": "CommonTree_3",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/CommonTree_3.gltf"
+    },
+    {
+      "id": "tree/commontree-4-55a627d1",
+      "kind": "tree",
+      "label": "CommonTree_4",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/CommonTree_4.gltf"
+    },
+    {
+      "id": "tree/commontree-5-5b66ee5e",
+      "kind": "tree",
+      "label": "CommonTree_5",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/CommonTree_5.gltf"
+    },
+    {
+      "id": "tree/deadtree-1-47023a09",
+      "kind": "tree",
+      "label": "DeadTree_1",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/DeadTree_1.gltf"
+    },
+    {
+      "id": "tree/deadtree-2-9e9a1350",
+      "kind": "tree",
+      "label": "DeadTree_2",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/DeadTree_2.gltf"
+    },
+    {
+      "id": "tree/deadtree-3-f882671b",
+      "kind": "tree",
+      "label": "DeadTree_3",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/DeadTree_3.gltf"
+    },
+    {
+      "id": "tree/deadtree-4-fdcc6dbc",
+      "kind": "tree",
+      "label": "DeadTree_4",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/DeadTree_4.gltf"
+    },
+    {
+      "id": "tree/deadtree-5-0fc75997",
+      "kind": "tree",
+      "label": "DeadTree_5",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/DeadTree_5.gltf"
+    },
+    {
+      "id": "plant/fern-1-14bee521",
+      "kind": "plant",
+      "label": "Fern_1",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Fern_1.gltf"
+    },
+    {
+      "id": "plant/flower-3-group-38a55f35",
+      "kind": "plant",
+      "label": "Flower_3_Group",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Flower_3_Group.gltf"
+    },
+    {
+      "id": "plant/flower-3-single-08dd9e79",
+      "kind": "plant",
+      "label": "Flower_3_Single",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Flower_3_Single.gltf"
+    },
+    {
+      "id": "plant/flower-4-group-12e99bad",
+      "kind": "plant",
+      "label": "Flower_4_Group",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Flower_4_Group.gltf"
+    },
+    {
+      "id": "plant/flower-4-single-64a7c612",
+      "kind": "plant",
+      "label": "Flower_4_Single",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Flower_4_Single.gltf"
+    },
+    {
+      "id": "plant/grass-common-short-71c5f563",
+      "kind": "plant",
+      "label": "Grass_Common_Short",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Grass_Common_Short.gltf"
+    },
+    {
+      "id": "plant/grass-common-tall-25158371",
+      "kind": "plant",
+      "label": "Grass_Common_Tall",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Grass_Common_Tall.gltf"
+    },
+    {
+      "id": "plant/grass-wispy-short-1468838c",
+      "kind": "plant",
+      "label": "Grass_Wispy_Short",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Grass_Wispy_Short.gltf"
+    },
+    {
+      "id": "plant/grass-wispy-tall-ad0599b1",
+      "kind": "plant",
+      "label": "Grass_Wispy_Tall",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Grass_Wispy_Tall.gltf"
+    },
+    {
+      "id": "plant/mushroom-common-b77bdce0",
+      "kind": "plant",
+      "label": "Mushroom_Common",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Mushroom_Common.gltf"
+    },
+    {
+      "id": "plant/mushroom-laetiporus-880251eb",
+      "kind": "plant",
+      "label": "Mushroom_Laetiporus",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Mushroom_Laetiporus.gltf"
+    },
+    {
+      "id": "nature/pebble-round-1-1e0dfb9b",
+      "kind": "nature",
+      "label": "Pebble_Round_1",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Pebble_Round_1.gltf"
+    },
+    {
+      "id": "nature/pebble-round-2-38fa0dc5",
+      "kind": "nature",
+      "label": "Pebble_Round_2",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Pebble_Round_2.gltf"
+    },
+    {
+      "id": "nature/pebble-round-3-844c5107",
+      "kind": "nature",
+      "label": "Pebble_Round_3",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Pebble_Round_3.gltf"
+    },
+    {
+      "id": "nature/pebble-round-4-54ae23ca",
+      "kind": "nature",
+      "label": "Pebble_Round_4",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Pebble_Round_4.gltf"
+    },
+    {
+      "id": "nature/pebble-round-5-c30224d5",
+      "kind": "nature",
+      "label": "Pebble_Round_5",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Pebble_Round_5.gltf"
+    },
+    {
+      "id": "nature/pebble-square-1-2523a15a",
+      "kind": "nature",
+      "label": "Pebble_Square_1",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Pebble_Square_1.gltf"
+    },
+    {
+      "id": "nature/pebble-square-2-3fd00fc4",
+      "kind": "nature",
+      "label": "Pebble_Square_2",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Pebble_Square_2.gltf"
+    },
+    {
+      "id": "nature/pebble-square-3-d1544094",
+      "kind": "nature",
+      "label": "Pebble_Square_3",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Pebble_Square_3.gltf"
+    },
+    {
+      "id": "nature/pebble-square-4-41031883",
+      "kind": "nature",
+      "label": "Pebble_Square_4",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Pebble_Square_4.gltf"
+    },
+    {
+      "id": "nature/pebble-square-5-c529dff4",
+      "kind": "nature",
+      "label": "Pebble_Square_5",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Pebble_Square_5.gltf"
+    },
+    {
+      "id": "nature/pebble-square-6-932c1448",
+      "kind": "nature",
+      "label": "Pebble_Square_6",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Pebble_Square_6.gltf"
+    },
+    {
+      "id": "nature/petal-1-c0e820e4",
+      "kind": "nature",
+      "label": "Petal_1",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Petal_1.gltf"
+    },
+    {
+      "id": "nature/petal-2-c51fc6c0",
+      "kind": "nature",
+      "label": "Petal_2",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Petal_2.gltf"
+    },
+    {
+      "id": "nature/petal-3-91f3cd1f",
+      "kind": "nature",
+      "label": "Petal_3",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Petal_3.gltf"
+    },
+    {
+      "id": "nature/petal-4-42ad444f",
+      "kind": "nature",
+      "label": "Petal_4",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Petal_4.gltf"
+    },
+    {
+      "id": "nature/petal-5-2f1697cf",
+      "kind": "nature",
+      "label": "Petal_5",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Petal_5.gltf"
+    },
+    {
+      "id": "tree/pine-1-f689d61d",
+      "kind": "tree",
+      "label": "Pine_1",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Pine_1.gltf"
+    },
+    {
+      "id": "tree/pine-2-44162077",
+      "kind": "tree",
+      "label": "Pine_2",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Pine_2.gltf"
+    },
+    {
+      "id": "tree/pine-3-10604c80",
+      "kind": "tree",
+      "label": "Pine_3",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Pine_3.gltf"
+    },
+    {
+      "id": "tree/pine-4-38024dbf",
+      "kind": "tree",
+      "label": "Pine_4",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Pine_4.gltf"
+    },
+    {
+      "id": "tree/pine-5-a25e491c",
+      "kind": "tree",
+      "label": "Pine_5",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Pine_5.gltf"
+    },
+    {
+      "id": "plant/plant-1-d2dda5b7",
+      "kind": "plant",
+      "label": "Plant_1",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Plant_1.gltf"
+    },
+    {
+      "id": "plant/plant-1-big-422173d2",
+      "kind": "plant",
+      "label": "Plant_1_Big",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Plant_1_Big.gltf"
+    },
+    {
+      "id": "plant/plant-7-43c14d5b",
+      "kind": "plant",
+      "label": "Plant_7",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Plant_7.gltf"
+    },
+    {
+      "id": "plant/plant-7-big-885f5571",
+      "kind": "plant",
+      "label": "Plant_7_Big",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Plant_7_Big.gltf"
+    },
+    {
+      "id": "rock/rockpath-round-small-1-346fd708",
+      "kind": "rock",
+      "label": "RockPath_Round_Small_1",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/RockPath_Round_Small_1.gltf"
+    },
+    {
+      "id": "rock/rockpath-round-small-2-35ee3fa5",
+      "kind": "rock",
+      "label": "RockPath_Round_Small_2",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/RockPath_Round_Small_2.gltf"
+    },
+    {
+      "id": "rock/rockpath-round-small-3-4ea77179",
+      "kind": "rock",
+      "label": "RockPath_Round_Small_3",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/RockPath_Round_Small_3.gltf"
+    },
+    {
+      "id": "rock/rockpath-round-thin-cc90dd82",
+      "kind": "rock",
+      "label": "RockPath_Round_Thin",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/RockPath_Round_Thin.gltf"
+    },
+    {
+      "id": "rock/rockpath-round-wide-5c3a03d4",
+      "kind": "rock",
+      "label": "RockPath_Round_Wide",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/RockPath_Round_Wide.gltf"
+    },
+    {
+      "id": "rock/rockpath-square-small-1-332bcea2",
+      "kind": "rock",
+      "label": "RockPath_Square_Small_1",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/RockPath_Square_Small_1.gltf"
+    },
+    {
+      "id": "rock/rockpath-square-small-2-fccae0f4",
+      "kind": "rock",
+      "label": "RockPath_Square_Small_2",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/RockPath_Square_Small_2.gltf"
+    },
+    {
+      "id": "rock/rockpath-square-small-3-496f6a62",
+      "kind": "rock",
+      "label": "RockPath_Square_Small_3",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/RockPath_Square_Small_3.gltf"
+    },
+    {
+      "id": "rock/rockpath-square-thin-20b31828",
+      "kind": "rock",
+      "label": "RockPath_Square_Thin",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/RockPath_Square_Thin.gltf"
+    },
+    {
+      "id": "rock/rockpath-square-wide-c8047da0",
+      "kind": "rock",
+      "label": "RockPath_Square_Wide",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/RockPath_Square_Wide.gltf"
+    },
+    {
+      "id": "rock/rock-medium-1-1d4c58af",
+      "kind": "rock",
+      "label": "Rock_Medium_1",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Rock_Medium_1.gltf"
+    },
+    {
+      "id": "rock/rock-medium-2-3191759c",
+      "kind": "rock",
+      "label": "Rock_Medium_2",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Rock_Medium_2.gltf"
+    },
+    {
+      "id": "rock/rock-medium-3-9a5edaa7",
+      "kind": "rock",
+      "label": "Rock_Medium_3",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/Rock_Medium_3.gltf"
+    },
+    {
+      "id": "tree/twistedtree-1-5e9db86d",
+      "kind": "tree",
+      "label": "TwistedTree_1",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/TwistedTree_1.gltf"
+    },
+    {
+      "id": "tree/twistedtree-2-d2b33bf1",
+      "kind": "tree",
+      "label": "TwistedTree_2",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/TwistedTree_2.gltf"
+    },
+    {
+      "id": "tree/twistedtree-3-d57cfdad",
+      "kind": "tree",
+      "label": "TwistedTree_3",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/TwistedTree_3.gltf"
+    },
+    {
+      "id": "tree/twistedtree-4-51eff1fa",
+      "kind": "tree",
+      "label": "TwistedTree_4",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/TwistedTree_4.gltf"
+    },
+    {
+      "id": "tree/twistedtree-5-7cd4cbcb",
+      "kind": "tree",
+      "label": "TwistedTree_5",
+      "path": "res://assets/quaternius/stylized_nature_megakit/models/glTF/TwistedTree_5.gltf"
+    }
+  ]
+}
