@@ -6,9 +6,9 @@ const NatureCatalog = preload("res://nature_asset_catalog.gd")
 func _ready() -> void:
     _stage()
     _forest()
-    var nov: Node3D = get_node("NovVisual")
-    nov.apply_visual_intent("idle")
-    var status: Dictionary = nov.visual_status()
+    var nov: Node = get_node("NovVisual")
+    nov.call("apply_visual_intent", "idle")
+    var status: Dictionary = nov.call("visual_status")
     var label := Label.new()
     label.position = Vector2(18, 24)
     label.text = (
