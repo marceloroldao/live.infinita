@@ -24,6 +24,7 @@ def load(name: str, path: Path):
 NpcNeedScheduler = load("npc_need_scheduler_test", RUNTIME / "npc_need_scheduler.py").NpcNeedScheduler
 NpcCompositeStrategy = load("npc_composite_strategy_test_sched", RUNTIME / "npc_composite_strategy.py").NpcCompositeStrategy
 NpcStrategyCompiler = load("npc_strategy_compiler_test_sched", RUNTIME / "npc_strategy_compiler.py").NpcStrategyCompiler
+WorldTickRunner = load("world_tick_test_need", RUNTIME / "world_tick.py").WorldTickRunner
 
 
 class FakeStore:
@@ -96,10 +97,16 @@ class FakeCompositeProvider:
 class FakeStrategyExecutor:
     def __init__(self):
         self.calls = []
+        self.rows = []
 
     def start(self, strategy_plan, **kwargs):
         self.calls.append({"strategy_plan": strategy_plan, **kwargs})
-        return {"strategy_execution_id": f"exec_{len(self.calls)}", "status": "running"}
+        row = {"strategy_execution_id": f"exec_{len(self.calls)}", "status": "running", "strategy_plan": strategy_plan, "child_plan_id": None}
+        self.rows.append(row)
+        return dict(row)
+
+    def current(self):
+        return [dict(row) for row in self.rows]
 
 
 class NpcNeedSchedulerTest(unittest.TestCase):
@@ -234,6 +241,64 @@ class NpcNeedSchedulerTest(unittest.TestCase):
             phases = executor.calls[0]["strategy_plan"]["phases"]
             self.assertFalse(phases[0]["intent"]["need_outcome_eligible"])
             self.assertTrue(phases[1]["intent"]["need_outcome_eligible"])
+
+
+    def test_running_composite_need_is_reused_after_cooldown_and_terminal_can_retry(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            scheduler, proposals, plans = self.make(
+                Path(tmpdir), {"energy": 0.90}, rest_target_entity_id="bed"
+            )
+            executor = FakeStrategyExecutor()
+            scheduler.composite_strategy_provider = FakeCompositeProvider()
+            scheduler.strategy_compiler = NpcStrategyCompiler()
+            scheduler.strategy_executor = executor
+
+            first = scheduler.evaluate_tick(1)[0]
+            self.assertEqual(first["status"], "scheduled")
+            second = scheduler.evaluate_tick(11)[0]
+            self.assertEqual(second["status"], "already_active")
+            self.assertEqual(second["strategy_execution_id"], first["strategy_execution_id"])
+            self.assertEqual(len(executor.calls), 1)
+            self.assertEqual(len(proposals.rows), 1)
+            executor.rows[0]["status"] = "completed"
+            third = scheduler.evaluate_tick(11)[0]
+            self.assertEqual(third["status"], "scheduled")
+            self.assertEqual(len(executor.calls), 2)
+
+    def test_running_direct_need_is_reused_without_creating_duplicate_proposal(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            scheduler, proposals, plans = self.make(
+                Path(tmpdir), {"energy": 0.90}, rest_target_entity_id="bed"
+            )
+            first = scheduler.evaluate_tick(1)[0]
+            class Ledger:
+                rows = [{
+                    "actor_entity_id": "npc",
+                    "intent": {"need": "energy"},
+                    "status": "waiting",
+                    "plan_id": first["plan_id"],
+                }]
+                def active(self):
+                    return list(self.rows)
+            plans.ledger = Ledger()
+            second = scheduler.evaluate_tick(11)[0]
+            self.assertEqual(second["status"], "already_active")
+            self.assertEqual(second["plan_id"], first["plan_id"])
+            self.assertEqual(len(plans.calls), 1)
+            self.assertEqual(len(proposals.rows), 1)
+            plans.ledger.rows = []
+            third = scheduler.evaluate_tick(11)[0]
+            self.assertEqual(third["status"], "scheduled")
+            self.assertEqual(len(plans.calls), 2)
+
+    def test_running_need_blocks_idle_wandering_even_without_child_plan(self):
+        self.assertEqual(
+            WorldTickRunner._idle_blocked_npc_ids([
+                {"npc_id": "npc", "status": "already_active", "strategy_execution_id": "exec_1", "plan_id": None},
+                {"npc_id": "other", "status": "cooldown"},
+            ]),
+            {"npc"},
+        )
 
 
 if __name__ == "__main__":
