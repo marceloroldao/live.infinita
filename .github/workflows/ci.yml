@@ -90,6 +90,10 @@ jobs:
           "$GODOT_BIN" --headless --path apps/renderer-godot \
             res://nature_preview.tscn --quit-after 2 2>&1 | tee /tmp/godot-nature-preview.log
           ! grep -E 'SCRIPT ERROR|Parser Error' /tmp/godot-nature-preview.log
+          # Nov's independent visual component is safe without the vendor ZIP.
+          "$GODOT_BIN" --headless --path apps/renderer-godot \
+            res://nov_character_preview.tscn --quit-after 2 2>&1 | tee /tmp/godot-nov-preview.log
+          ! grep -E 'SCRIPT ERROR|Parser Error|^ERROR:' /tmp/godot-nov-preview.log
           "$GODOT_BIN" --headless --path apps/renderer-godot \
             --script ../../tests/godot_presentation_smoke.gd 2>&1 | tee /tmp/godot-contracts.log
           ! grep -E 'SCRIPT ERROR|^ERROR:' /tmp/godot-contracts.log
