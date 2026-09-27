@@ -42,6 +42,7 @@ class NpcNeedOutcomeProcessor:
         self.episodic_memory_provider = episodic_memory_provider
         self.belief_provider = belief_provider
         self._processed_cache: set[str] | None = None
+        self._applied_cache: dict[str, dict[str, Any]] | None = None
         self._processed_signature: tuple[int, int, int, int] | None = None
         self.satisfaction = dict(self.DEFAULT_SATISFACTION)
         for key, value in dict(satisfaction or {}).items():
@@ -70,13 +71,14 @@ class NpcNeedOutcomeProcessor:
 
     def _append(self, row: dict[str, Any]) -> dict[str, Any]:
         before = self._signature()
-        cached = self._processed_cache is not None and self._processed_signature == before
+        cached = self._processed_cache is not None and self._applied_cache is not None and self._processed_signature == before
         payload = json.dumps(row, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n"
         try:
             with self.path.open("a", encoding="utf-8") as fh:
                 fh.write(payload)
         except BaseException:
             self._processed_cache = None
+            self._applied_cache = None
             raise
         after = self._signature()
         expected_size = (before[2] if before else 0) + len(payload.encode("utf-8"))
@@ -87,29 +89,45 @@ class NpcNeedOutcomeProcessor:
             if plan_id:
                 assert self._processed_cache is not None
                 self._processed_cache.add(plan_id)
+                if row.get("status") == "applied":
+                    assert self._applied_cache is not None
+                    self._applied_cache[plan_id] = deepcopy(row)
             self._processed_signature = after
         else:
             self._processed_cache = None
+            self._applied_cache = None
         return row
 
     def _processed_ids(self) -> set[str]:
-        if self._processed_cache is not None and self._processed_signature == self._signature():
+        if self._processed_cache is not None and self._applied_cache is not None and self._processed_signature == self._signature():
             return self._processed_cache
         # An externally appended/replaced outcome file invalidates the index.
         # Never reuse a stale processed set and re-apply satisfaction.
         for _ in range(3):
             before = self._signature()
-            processed = {
-                str(row.get("plan_id"))
-                for row in self.history()
-                if row.get("plan_id")
-            }
+            processed: set[str] = set()
+            applied: dict[str, dict[str, Any]] = {}
+            for row in self.history():
+                plan_id = str(row.get("plan_id") or "")
+                if not plan_id:
+                    continue
+                processed.add(plan_id)
+                if row.get("status") == "applied":
+                    applied[plan_id] = row
             after = self._signature()
             if before == after:
                 self._processed_cache = processed
+                self._applied_cache = applied
                 self._processed_signature = after
                 return processed
         raise RuntimeError("need outcome ledger changed while rebuilding processed IDs")
+
+    def get_applied(self, plan_id: str) -> dict[str, Any] | None:
+        """Last applied audit for the plan, reconstructed from durable JSONL."""
+        self._processed_ids()
+        assert self._applied_cache is not None
+        row = self._applied_cache.get(str(plan_id or ""))
+        return deepcopy(row) if row is not None else None
 
     def _learn(self, record: dict[str, Any], outcome: dict[str, Any], *, npc_id: str, need: str, plan_id: str) -> dict[str, Any] | None:
         if self.learning_provider is None:
