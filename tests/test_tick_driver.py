@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import gc
 import tempfile
+import weakref
 import unittest
 from pathlib import Path
 
@@ -86,6 +88,48 @@ class TickDriverTests(unittest.TestCase):
         self.assertEqual(runner.calls, 3)
         self.assertEqual(runner.clock.state().tick, 3)
         self.assertEqual(sleeps, [0.5, 0.5, 0.5])
+
+    def test_infinite_serve_does_not_retain_historical_tick_payloads(self) -> None:
+        class Payload:
+            pass
+
+        class ProbeRunner(FakeRunner):
+            def __init__(self):
+                super().__init__()
+                self.references = []
+
+            def tick(self):
+                result = super().tick()
+                marker = Payload()
+                self.references.append(weakref.ref(marker))
+                result["payload"] = marker
+                return result
+
+        runner = ProbeRunner()
+        calls = []
+
+        class StopTest(Exception):
+            pass
+
+        def stop_after_four(_seconds: float) -> None:
+            calls.append(1)
+            if len(calls) == 4:
+                gc.collect()
+                # Only the currently executing tick may still be referenced.
+                self.assertEqual(sum(ref() is not None for ref in runner.references), 1)
+                raise StopTest
+
+        driver = WorldTickDriver(
+            runner,
+            lease=SingleWriterTickLease(self.tmp / "tick.lock"),
+            sleeper=stop_after_four,
+        )
+        with self.assertRaises(StopTest):
+            driver.serve()  # Production mode has no max_ticks.
+        self.assertEqual(runner.calls, 4)
+        self.assertEqual(runner.clock.state().tick, 4)
+        self.assertTrue(driver.lease.acquire())
+        driver.lease.release()
 
     def test_tick_observer_reports_budget_without_changing_cadence(self) -> None:
         runner = FakeRunner()
