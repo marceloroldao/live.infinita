@@ -43,6 +43,8 @@ class NpcNeedOutcomeProcessor:
         self.belief_provider = belief_provider
         self._processed_cache: set[str] | None = None
         self._processed_signature: tuple[int, int, int, int] | None = None
+        self._applied_by_plan: dict[str, dict[str, Any]] | None = None
+        self._applied_signature: tuple[int, int, int, int] | None = None
         self.satisfaction = dict(self.DEFAULT_SATISFACTION)
         for key, value in dict(satisfaction or {}).items():
             if key in self.satisfaction:
@@ -71,12 +73,14 @@ class NpcNeedOutcomeProcessor:
     def _append(self, row: dict[str, Any]) -> dict[str, Any]:
         before = self._signature()
         cached = self._processed_cache is not None and self._processed_signature == before
+        applied_cached = self._applied_by_plan is not None and self._applied_signature == before
         payload = json.dumps(row, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n"
         try:
             with self.path.open("a", encoding="utf-8") as fh:
                 fh.write(payload)
         except BaseException:
             self._processed_cache = None
+            self._applied_by_plan = None
             raise
         after = self._signature()
         expected_size = (before[2] if before else 0) + len(payload.encode("utf-8"))
@@ -90,7 +94,38 @@ class NpcNeedOutcomeProcessor:
             self._processed_signature = after
         else:
             self._processed_cache = None
+        if applied_cached and after is not None and after[2] == expected_size and (
+            before is None or before[:2] == after[:2]
+        ):
+            plan_id = str(row.get("plan_id") or "")
+            if plan_id and row.get("status") == "applied":
+                assert self._applied_by_plan is not None
+                self._applied_by_plan[plan_id] = deepcopy(row)
+            self._applied_signature = after
+        else:
+            self._applied_by_plan = None
         return row
+
+    def get_applied(self, plan_id: str) -> dict[str, Any] | None:
+        """Latest durable applied outcome, avoiding replay per composite result."""
+        if self._applied_by_plan is None or self._applied_signature != self._signature():
+            for _ in range(3):
+                before = self._signature()
+                applied = {
+                    str(row["plan_id"]): row
+                    for row in self.history()
+                    if row.get("plan_id") and row.get("status") == "applied"
+                }
+                after = self._signature()
+                if before == after:
+                    self._applied_by_plan = applied
+                    self._applied_signature = after
+                    break
+            else:
+                raise RuntimeError("need outcome ledger changed while indexing applied rows")
+        assert self._applied_by_plan is not None
+        row = self._applied_by_plan.get(str(plan_id or ""))
+        return deepcopy(row) if row is not None else None
 
     def _processed_ids(self) -> set[str]:
         if self._processed_cache is not None and self._processed_signature == self._signature():
