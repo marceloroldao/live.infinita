@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import importlib.util
+import json
+import os
+from unittest.mock import patch
 import sys
 import tempfile
 import unittest
@@ -192,6 +195,64 @@ class WorldEventSchedulerTest(unittest.TestCase):
             self.assertFalse(result["advanced"])
             self.assertEqual(result["events"], [])
             self.assertEqual(guarded.calls, [])
+
+
+    def test_due_event_view_avoids_history_replay_and_updates_recurring_row(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "events.jsonl"
+            guarded = FakeGuarded()
+            scheduler = WorldEventScheduler(path, guarded)
+            def schedule(tick, key):
+                return scheduler.schedule(
+                    due_tick=tick,
+                    operations=[{"op": "set_world", "path": ["environment", "period"], "value": key}],
+                    principal=PRINCIPAL, idempotency_key=key,
+                )
+            late = schedule(9, "late")
+            first = schedule(2, "early")
+            scheduled = scheduler.get(first["scheduled_event_id"])
+            with (
+                patch.object(scheduler, "history", side_effect=AssertionError("replay on warm view")),
+                patch.object(scheduler, "current", side_effect=AssertionError("full copy")),
+            ):
+                self.assertEqual(scheduler.get_by_idempotency_key("early"), scheduled)
+                self.assertEqual(scheduler.due(1), [])
+                self.assertEqual([r["scheduled_event_id"] for r in scheduler.due(9)],
+                                 [first["scheduled_event_id"], late["scheduled_event_id"]])
+                self.assertEqual(schedule(2, "early"), scheduled)
+                result = scheduler.fire_due(2)
+                self.assertEqual(result[0]["status"], "fired")
+                self.assertEqual(scheduler.get(first["scheduled_event_id"])["status"], "fired")
+                self.assertEqual([r["scheduled_event_id"] for r in scheduler.due(9)],
+                                 [late["scheduled_event_id"]])
+            external = dict(late, scheduled_event_id="external", due_tick=1, idempotency_key="ext")
+            with path.open("ab") as fh:
+                fh.write((json.dumps(external) + "\n").encode("utf-8"))
+            self.assertEqual([r["scheduled_event_id"] for r in scheduler.due(9)],
+                             ["external", late["scheduled_event_id"]])
+            replacement = Path(tmp) / "replacement.jsonl"
+            replacement.write_text(json.dumps(dict(late, scheduled_event_id="replacement", due_tick=3)) + "\n",
+                                   encoding="utf-8")
+            os.replace(replacement, path)
+            self.assertEqual([r["scheduled_event_id"] for r in scheduler.due(9)], ["replacement"])
+            self.assertIsNone(scheduler.get("external"))
+
+    def test_recurring_event_warm_view_preserves_one_fire_per_call(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            scheduler = WorldEventScheduler(Path(tmp) / "events.jsonl", FakeGuarded())
+            row = scheduler.schedule(
+                due_tick=1, recurrence_every_ticks=3,
+                operations=[{"op": "set_world", "path": ["environment", "period"], "value": "day"}],
+                principal=PRINCIPAL, idempotency_key="period",
+            )
+            self.assertEqual(len(scheduler.due(1)), 1)
+            with patch.object(scheduler, "history", side_effect=AssertionError("warm full replay")):
+                first = scheduler.fire_due(30)
+                self.assertEqual(len(first), 1)
+                self.assertEqual(first[0]["fire_count"], 1)
+                self.assertEqual(first[0]["due_tick"], 4)
+                self.assertEqual(len(scheduler.fire_due(30)), 1)
+                self.assertEqual(scheduler.get_by_idempotency_key("period")["fire_count"], 2)
 
 
 if __name__ == "__main__":
