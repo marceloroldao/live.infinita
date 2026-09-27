@@ -20,6 +20,29 @@ class ShadowToken:
     frame: CognitiveFrame
     world_version: int
     world_sequence: int
+    observer_snapshot: dict[str, Any]
+    target_snapshots: dict[str, dict[str, Any]]
+
+
+def _finite_number(value: Any) -> float | None:
+    if isinstance(value, bool):
+        return None
+    try:
+        number = float(value)
+    except (TypeError, ValueError, OverflowError):
+        return None
+    return number if math.isfinite(number) else None
+
+
+def _need_levels(observer: dict[str, Any]) -> dict[str, float]:
+    properties = observer.get("properties") if isinstance(observer.get("properties"), dict) else {}
+    raw = properties.get("needs") if isinstance(properties.get("needs"), dict) else {}
+    result: dict[str, float] = {}
+    for name, value in raw.items():
+        parsed = _finite_number(value)
+        if parsed is not None:
+            result[str(name)] = parsed
+    return result
 
 
 class CognitiveShadowRecorder:
@@ -67,15 +90,30 @@ class CognitiveShadowRecorder:
         observer = self._entity(self.observer_id)
         if observer is None:
             return None
+        targets = self._targets(observer)
         frame = build_nov_cognitive_frame(
             world=world,
             observer=observer,
-            targets=self._targets(observer),
+            targets=targets,
         )
         return ShadowToken(
             frame=frame,
             world_version=int(world.get("version", 0) or 0),
             world_sequence=int(world.get("sequence", 0) or 0),
+            observer_snapshot={
+                "id": observer.get("id"),
+                "region_id": observer.get("region_id"),
+                "position": dict(observer.get("position") or {}),
+                "needs": _need_levels(observer),
+            },
+            target_snapshots={
+                key: {
+                    "id": target.get("id"),
+                    "region_id": target.get("region_id"),
+                    "position": dict(target.get("position") or {}),
+                }
+                for key, target in targets.items()
+            },
         )
 
     @staticmethod
@@ -150,6 +188,8 @@ class CognitiveShadowRecorder:
         best = [item for item in scored if item[0] == best_score]
         result = dict(best[0][2])
         result["ambiguous"] = len(best) > 1
+        result["selection_phase"] = "posthoc"
+        result["predictive_accuracy_evaluable"] = False
         return result
 
     def complete_tick(
@@ -170,6 +210,83 @@ class CognitiveShadowRecorder:
         shadow_seed = f"{token.frame.frame_id}|{after_tick}|{world.get('version', 0)}|{world.get('sequence', 0)}"
         shadow_id = "shadow_" + sha256(shadow_seed.encode("utf-8")).hexdigest()[:24]
 
+        before_observer = token.observer_snapshot
+        before_position = dict(before_observer.get("position") or {})
+        after_position = dict(observer.get("position") or {})
+        movement_distance = self._distance(before_observer, observer)
+        target_id = best.get("target_entity_id") if isinstance(best, dict) else None
+        predicted_target_before = token.target_snapshots.get(target_id) if target_id else None
+        predicted_target_after = targets.get(target_id) if target_id else None
+        distance_before = self._distance(before_observer, predicted_target_before) if predicted_target_before else None
+        distance_after = self._distance(observer, predicted_target_before) if predicted_target_before else None
+        target_movement = (
+            self._distance(predicted_target_before, predicted_target_after)
+            if predicted_target_before and predicted_target_after else None
+        )
+        target_stable = target_movement == 0 if target_movement is not None else None
+        target_progress = None
+        if target_stable and distance_before is not None and distance_after is not None:
+            target_progress = distance_before - distance_after
+        needs_before = before_observer.get("needs") or {}
+        needs_after = _need_levels(observer)
+        need_deltas = {
+            name: needs_after[name] - before
+            for name, before in needs_before.items()
+            if name in needs_after
+        }
+
+        terminal = {"completed", "failed", "cancelled", "canceled"}
+        plan_outcomes = [
+            {
+                "plan_id": row.get("plan_id"),
+                "status": str(row.get("status") or "").lower(),
+                "actor_entity_id": row.get("actor_entity_id"),
+                "preemption_count": row.get("preemption_count"),
+                "replan_count": row.get("replan_count"),
+            }
+            for row in (tick_result.get("plans") or [])
+            if isinstance(row, dict)
+            and str(row.get("status") or "").lower() in terminal
+            and row.get("actor_entity_id") in (None, self.observer_id)
+        ]
+        need_outcomes = [
+            {"status": str(row.get("status") or "").lower(), "npc_id": row.get("npc_id") or row.get("actor_entity_id")}
+            for row in (tick_result.get("npc_needs") or [])
+            if isinstance(row, dict) and str(row.get("status") or "").lower() in {"scheduled", "completed", "failed"}
+        ]
+
+        completed_plan_ids = {
+            str(row["plan_id"]) for row in plan_outcomes
+            if row.get("status") == "completed" and row.get("plan_id")
+        }
+        satisfaction_outcomes: list[dict[str, Any]] = []
+        for row in (tick_result.get("npc_need_outcomes") or []):
+            if not isinstance(row, dict) or row.get("npc_id") != self.observer_id:
+                continue
+            experience = row.get("strategy_experience") if isinstance(row.get("strategy_experience"), dict) else {}
+            observed_target_id = experience.get("target_entity_id")
+            before = _finite_number(row.get("before"))
+            after = _finite_number(row.get("after"))
+            delta = before - after if before is not None and after is not None else None
+            plan_id = row.get("plan_id")
+            satisfaction_outcomes.append({
+                "plan_id": plan_id,
+                "proposal_id": row.get("proposal_id"),
+                "npc_id": row.get("npc_id"),
+                "need": row.get("need"),
+                "status": row.get("status"),
+                "target_entity_id": observed_target_id,
+                "before": before,
+                "after": after,
+                "reported_amount": _finite_number(row.get("amount")),
+                "observed_satisfaction_delta": delta,
+                "matched_terminal_plan_in_tick": bool(plan_id and str(plan_id) in completed_plan_ids),
+                "matches_posthoc_target": (
+                    observed_target_id == target_id
+                    if observed_target_id and target_id else None
+                ),
+            })
+
         record = {
             "shadow_id": shadow_id,
             "frame_id": token.frame.frame_id,
@@ -188,9 +305,33 @@ class CognitiveShadowRecorder:
             },
             "candidate_count": len(token.frame.candidate_outcomes),
             "best_candidate": best,
+            "evaluation_schema": "posthoc-trajectory-need-v1",
+            "predictive_accuracy_evaluable": False,
+            "trajectory_observation": {
+                "before_position": before_position,
+                "after_position": after_position,
+                "movement_distance": movement_distance,
+                "before_region_id": before_observer.get("region_id"),
+                "after_region_id": observer.get("region_id"),
+                "need_levels_before": needs_before,
+                "need_levels_after": needs_after,
+                "need_level_deltas": need_deltas,
+                "region_changed": str(before_observer.get("region_id") or "") != str(observer.get("region_id") or ""),
+                "predicted_target_entity_id": best.get("target_entity_id") if isinstance(best, dict) else None,
+                "distance_to_predicted_target_before": distance_before,
+                "distance_to_predicted_target_after": distance_after,
+                "predicted_target_movement_distance": target_movement,
+                "predicted_target_stable": target_stable,
+                "progress_toward_predicted_target": target_progress,
+                "moved_toward_predicted_target": target_progress is not None and target_progress > 0.0,
+                "plan_outcomes": plan_outcomes,
+                "need_outcomes": need_outcomes,
+                "need_satisfaction_outcomes": satisfaction_outcomes,
+            },
             "tick_activity": {
                 "plans": len(tick_result.get("plans") or []),
                 "npc_needs": len(tick_result.get("npc_needs") or []),
+                "npc_need_outcomes": len(tick_result.get("npc_need_outcomes") or []),
                 "npc_strategies": len(tick_result.get("npc_strategies") or []),
                 "events": len(tick_result.get("events") or []),
                 "conditional_events": len(tick_result.get("conditional_events") or []),
@@ -212,12 +353,21 @@ def summarize_shadow_file(path: Path) -> dict[str, Any]:
             "exact_structural_matches": 0,
             "ambiguous_matches": 0,
             "exact_match_rate": None,
+            "trajectory_records": 0,
+            "stable_target_records": 0,
+            "positive_target_progress_records": 0,
+            "need_satisfaction_outcomes": 0,
+            "positive_need_satisfaction_outcomes": 0,
+            "linked_terminal_plan_outcomes": 0,
+            "posthoc_target_matches": 0,
             "last": None,
         }
 
     records = 0
     exact = 0
     ambiguous = 0
+    trajectory_records = stable_target_records = positive_target_progress_records = 0
+    satisfaction_records = positive_satisfaction = linked_outcomes = target_matches = 0
     last: dict[str, Any] | None = None
     with file_path.open("r", encoding="utf-8") as fh:
         for raw in fh:
@@ -236,6 +386,25 @@ def summarize_shadow_file(path: Path) -> dict[str, Any]:
                 exact += 1
             if bool(best.get("ambiguous")):
                 ambiguous += 1
+            trajectory = row.get("trajectory_observation")
+            if isinstance(trajectory, dict):
+                trajectory_records += 1
+                if trajectory.get("predicted_target_stable") is True:
+                    stable_target_records += 1
+                progress = _finite_number(trajectory.get("progress_toward_predicted_target"))
+                if progress is not None and progress > 0:
+                    positive_target_progress_records += 1
+                for outcome in trajectory.get("need_satisfaction_outcomes") or []:
+                    if not isinstance(outcome, dict):
+                        continue
+                    satisfaction_records += 1
+                    delta = _finite_number(outcome.get("observed_satisfaction_delta"))
+                    if delta is not None and delta > 0:
+                        positive_satisfaction += 1
+                    if outcome.get("matched_terminal_plan_in_tick") is True:
+                        linked_outcomes += 1
+                    if outcome.get("matches_posthoc_target") is True:
+                        target_matches += 1
             last = row
 
     return {
@@ -243,5 +412,12 @@ def summarize_shadow_file(path: Path) -> dict[str, Any]:
         "exact_structural_matches": exact,
         "ambiguous_matches": ambiguous,
         "exact_match_rate": (exact / records) if records else None,
+        "trajectory_records": trajectory_records,
+        "stable_target_records": stable_target_records,
+        "positive_target_progress_records": positive_target_progress_records,
+        "need_satisfaction_outcomes": satisfaction_records,
+        "positive_need_satisfaction_outcomes": positive_satisfaction,
+        "linked_terminal_plan_outcomes": linked_outcomes,
+        "posthoc_target_matches": target_matches,
         "last": last,
     }
