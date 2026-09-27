@@ -6,6 +6,7 @@ from typing import Any
 
 from npc_cognitive_stack import NpcCognitiveStack, build_npc_cognitive_stack
 from tick_driver import SingleWriterTickLease, WorldTickDriver
+from tick_profiler import WorldTickProfiler
 from world_tick import WorldTickRunner
 
 
@@ -52,12 +53,19 @@ def build_autonomous_world_tick(
 
 
 def build_driver(world_tick_runner, data_dir: Path, owner_id: str | None = None) -> WorldTickDriver:
+    tick_observer = None
+    if str(os.getenv("LIVE_INFINITA_TICK_PROFILER", "0")).lower() in {"1", "true", "yes", "on"}:
+        profiler = WorldTickProfiler(Path(data_dir) / "world-tick-profile.json")
+        authoritative = getattr(world_tick_runner, "runner", world_tick_runner)
+        authoritative.stage_observer = profiler.observe_stage
+        tick_observer = profiler.observe_tick
     return WorldTickDriver(
         world_tick_runner,
         lease=SingleWriterTickLease(
             data_dir / "world-tick.lock",
             owner_id=owner_id or os.getenv("LIVE_INFINITA_TICK_OWNER") or None,
         ),
+        tick_observer=tick_observer,
     )
 
 
