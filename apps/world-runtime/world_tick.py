@@ -117,7 +117,7 @@ class WorldTickRunner:
             }
 
         after = self._stage("clock.advance", self.clock.advance)
-        causal_before = self._causal_snapshot()
+        causal_before = self._stage("causal.snapshot_before", self._causal_snapshot)
 
         event_results: list[dict[str, Any]] = []
         if self.event_scheduler is not None:
@@ -149,15 +149,18 @@ class WorldTickRunner:
 
         causal_results: list[dict[str, Any]] = []
         if self.npc_causal_model is not None and causal_before is not None:
-            causal_after = self._causal_snapshot()
+            causal_after = self._stage("causal.snapshot_after", self._causal_snapshot)
             observer = getattr(self.npc_causal_model, "observe_environment_transition", None)
             if callable(observer) and causal_after is not None:
-                relation = observer(
-                    observation_id=f"world-tick:{after.tick}",
-                    logical_tick=after.tick,
-                    before=causal_before,
-                    after=causal_after,
-                    source_events=event_results + conditional_results,
+                relation = self._stage(
+                    "causal.observe",
+                    lambda: observer(
+                        observation_id=f"world-tick:{after.tick}",
+                        logical_tick=after.tick,
+                        before=causal_before,
+                        after=causal_after,
+                        source_events=event_results + conditional_results,
+                    ),
                 )
                 if isinstance(relation, dict):
                     causal_results.append({
@@ -243,7 +246,7 @@ class WorldTickRunner:
             plan_id = str(record.get("plan_id") or "").strip()
             if not plan_id:
                 continue
-            result = self._tick_plan(plan_id, after.tick)
+            result = self._stage("plans.tick", lambda: self._tick_plan(plan_id, after.tick))
             results.append({
                 "plan_id": plan_id,
                 "actor_entity_id": result.get("actor_entity_id"),
