@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import math
 import os
+import time
 from collections import deque
 from pathlib import Path
 from typing import Any
@@ -80,6 +81,8 @@ class WorldTickProfiler:
         over_budget = sum(bool(row["over_budget"]) for row in samples)
         return {
             "profile_schema": "world_tick_profile_v1",
+            "generated_at_unix": time.time(),
+            "process_pid": os.getpid(),
             "window_samples": len(samples),
             "total_observed_ticks": self.seen,
             "tick_budget_ms": round(samples[-1]["interval_ms"], 3) if samples else None,
