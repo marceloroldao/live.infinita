@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from cognitive_exante import build_exante_forecast, evaluate_exante_forecast
+from cognitive_contextual import freeze_contextual_forecast, evaluate_contextual_forecast, stationary_evidence
 from memoria_v2_adapter import (
     CognitiveFrame,
     NOV_ACTIONS,
@@ -24,6 +25,8 @@ class ShadowToken:
     observer_snapshot: dict[str, Any]
     target_snapshots: dict[str, dict[str, Any]]
     exante_forecast: dict[str, Any]
+    contextual_forecast: dict[str, Any]
+    contextual_target_snapshot: dict[str, Any] | None
 
 
 def _finite_number(value: Any) -> float | None:
@@ -63,12 +66,31 @@ class CognitiveShadowRecorder:
         store: Any,
         observer_id: str = "nov",
         enabled: bool = False,
+        needs_provider: Callable[[str], dict[str, Any] | None] | None = None,
+        experience_provider: Any | None = None,
+        need_threshold: float = 0.70,
     ) -> None:
         self.path = Path(path)
         self.world_provider = world_provider
         self.store = store
         self.observer_id = observer_id
         self.enabled = bool(enabled)
+        self.needs_provider = needs_provider
+        self.experience_provider = experience_provider
+        self.need_threshold = float(need_threshold)
+
+    def _need_snapshot(self, observer: dict[str, Any]) -> tuple[dict[str, float], str]:
+        getter = self.needs_provider
+        if callable(getter):
+            observed = getter(self.observer_id)
+            if isinstance(observed, dict):
+                values = {}
+                for key, value in observed.items():
+                    parsed = _finite_number(value)
+                    if parsed is not None:
+                        values[str(key)] = parsed
+                return values, "npc_need_dynamics"
+        return _need_levels(observer), "entity_properties_bootstrap"
 
     def _entity(self, entity_id: str) -> dict[str, Any] | None:
         value = self.store.get_entity(entity_id)
@@ -98,11 +120,13 @@ class CognitiveShadowRecorder:
             observer=observer,
             targets=targets,
         )
+        needs_before, needs_source = self._need_snapshot(observer)
         before_observer = {
             "id": observer.get("id"),
             "region_id": observer.get("region_id"),
             "position": dict(observer.get("position") or {}),
-            "needs": _need_levels(observer),
+            "needs": needs_before,
+            "needs_source": needs_source,
         }
         target_snapshots = {
             key: {
@@ -121,6 +145,18 @@ class CognitiveShadowRecorder:
             environment=world.get("environment"),
             need_levels=before_observer["needs"],
         )
+        contextual_forecast, contextual_target = freeze_contextual_forecast(
+            frame_id=frame.frame_id,
+            world_version=int(world.get("version", 0) or 0),
+            world_sequence=int(world.get("sequence", 0) or 0),
+            observer=observer,
+            needs=needs_before,
+            target_provider=self._entity,
+            threshold=self.need_threshold,
+            environment=world.get("environment"),
+            experience_provider=self.experience_provider,
+            need_source=needs_source,
+        )
         return ShadowToken(
             frame=frame,
             world_version=int(world.get("version", 0) or 0),
@@ -128,6 +164,8 @@ class CognitiveShadowRecorder:
             observer_snapshot=before_observer,
             target_snapshots=target_snapshots,
             exante_forecast=forecast,
+            contextual_forecast=contextual_forecast,
+            contextual_target_snapshot=contextual_target,
         )
 
     @staticmethod
@@ -242,7 +280,7 @@ class CognitiveShadowRecorder:
         if target_stable and distance_before is not None and distance_after is not None:
             target_progress = distance_before - distance_after
         needs_before = before_observer.get("needs") or {}
-        needs_after = _need_levels(observer)
+        needs_after, needs_after_source = self._need_snapshot(observer)
         need_deltas = {
             name: needs_after[name] - before
             for name, before in needs_before.items()
@@ -309,6 +347,20 @@ class CognitiveShadowRecorder:
             target_after=targets.get(exante_target),
         )
 
+        contextual_target_id = token.contextual_forecast.get("target_entity_id")
+        contextual_evaluation = evaluate_contextual_forecast(
+            token.contextual_forecast,
+            before=token.observer_snapshot,
+            after=observer,
+            target_after=self._entity(str(contextual_target_id)) if contextual_target_id else None,
+        )
+        stationary = stationary_evidence(
+            movement_distance=movement_distance,
+            tick_result=tick_result,
+            contextual_forecast=token.contextual_forecast,
+            observer_id=self.observer_id,
+        )
+
         record = {
             "shadow_id": shadow_id,
             "frame_id": token.frame.frame_id,
@@ -331,6 +383,9 @@ class CognitiveShadowRecorder:
             "predictive_accuracy_evaluable": False,
             "exante_forecast": token.exante_forecast,
             "exante_evaluation": exante_evaluation,
+            "contextual_forecast": token.contextual_forecast,
+            "contextual_evaluation": contextual_evaluation,
+            "stationary_observation": stationary,
             "trajectory_observation": {
                 "before_position": before_position,
                 "after_position": after_position,
@@ -339,6 +394,8 @@ class CognitiveShadowRecorder:
                 "after_region_id": observer.get("region_id"),
                 "need_levels_before": needs_before,
                 "need_levels_after": needs_after,
+                "need_levels_source_before": before_observer.get("needs_source"),
+                "need_levels_source_after": needs_after_source,
                 "need_level_deltas": need_deltas,
                 "region_changed": str(before_observer.get("region_id") or "") != str(observer.get("region_id") or ""),
                 "predicted_target_entity_id": best.get("target_entity_id") if isinstance(best, dict) else None,
@@ -393,6 +450,22 @@ def summarize_shadow_file(path: Path) -> dict[str, Any]:
             "exante_forecast_abstentions": 0,
             "exante_not_evaluable": 0,
             "exante_directional_alignment_rate": None,
+            "contextual_forecasts": 0,
+            "contextual_issued": 0,
+            "contextual_evaluated": 0,
+            "contextual_hits": 0,
+            "contextual_misses": 0,
+            "contextual_abstained": 0,
+            "contextual_not_evaluable": 0,
+            "contextual_hit_rate": None,
+            "paired_evaluated": 0,
+            "paired_baseline_hits": 0,
+            "paired_contextual_hits": 0,
+            "need_source_dynamic_records": 0,
+            "need_source_bootstrap_records": 0,
+            "stationary_records": 0,
+            "stationary_evidence_counts": {},
+            "contextual_abstention_reasons": {},
             "last": None,
         }
 
@@ -403,6 +476,12 @@ def summarize_shadow_file(path: Path) -> dict[str, Any]:
     satisfaction_records = positive_satisfaction = linked_outcomes = target_matches = 0
     exante_forecasts = exante_issued = exante_evaluated = exante_aligned = exante_misaligned = 0
     exante_abstained = exante_forecast_abstentions = exante_not_evaluable = 0
+    contextual_forecasts = contextual_issued = contextual_evaluated = contextual_hits = contextual_misses = 0
+    contextual_abstained = contextual_not_evaluable = paired_evaluated = 0
+    paired_baseline_hits = paired_contextual_hits = 0
+    dynamic_needs = bootstrap_needs = stationary_records = 0
+    stationary_counts: dict[str, int] = {}
+    contextual_reasons: dict[str, int] = {}
     last: dict[str, Any] | None = None
     with file_path.open("r", encoding="utf-8") as fh:
         for raw in fh:
@@ -440,8 +519,44 @@ def summarize_shadow_file(path: Path) -> dict[str, Any]:
                         linked_outcomes += 1
                     if outcome.get("matches_posthoc_target") is True:
                         target_matches += 1
+            if isinstance(trajectory, dict):
+                source = trajectory.get("need_levels_source_before")
+                if source == "npc_need_dynamics":
+                    dynamic_needs += 1
+                elif source == "entity_properties_bootstrap":
+                    bootstrap_needs += 1
+            stationary = row.get("stationary_observation")
+            if isinstance(stationary, dict) and stationary.get("stationary") is True:
+                stationary_records += 1
+                label = str(stationary.get("evidence_label") or "unclassified")
+                stationary_counts[label] = stationary_counts.get(label, 0) + 1
+            contextual = row.get("contextual_forecast")
+            contextual_result = row.get("contextual_evaluation")
+            if isinstance(contextual, dict) and isinstance(contextual_result, dict):
+                contextual_forecasts += 1
+                if contextual.get("status") == "issued":
+                    contextual_issued += 1
+                status = contextual_result.get("status")
+                if status in {"hit", "miss"}:
+                    contextual_evaluated += 1
+                    if status == "hit":
+                        contextual_hits += 1
+                    else:
+                        contextual_misses += 1
+                elif status == "abstained":
+                    contextual_abstained += 1
+                    reason = str(contextual_result.get("reason") or "unspecified")
+                    contextual_reasons[reason] = contextual_reasons.get(reason, 0) + 1
+                elif status == "not_evaluable":
+                    contextual_not_evaluable += 1
             exante = row.get("exante_forecast")
             evaluation = row.get("exante_evaluation")
+            if (isinstance(evaluation, dict) and isinstance(contextual_result, dict)
+                    and evaluation.get("status") in {"hit", "miss"}
+                    and contextual_result.get("status") in {"hit", "miss"}):
+                paired_evaluated += 1
+                paired_baseline_hits += int(evaluation.get("status") == "hit")
+                paired_contextual_hits += int(contextual_result.get("status") == "hit")
             if isinstance(exante, dict) and isinstance(evaluation, dict):
                 exante_forecasts += 1
                 if exante.get("status") == "issued":
@@ -481,5 +596,21 @@ def summarize_shadow_file(path: Path) -> dict[str, Any]:
         "exante_forecast_abstentions": exante_forecast_abstentions,
         "exante_not_evaluable": exante_not_evaluable,
         "exante_directional_alignment_rate": (exante_aligned / exante_evaluated) if exante_evaluated else None,
+        "contextual_forecasts": contextual_forecasts,
+        "contextual_issued": contextual_issued,
+        "contextual_evaluated": contextual_evaluated,
+        "contextual_hits": contextual_hits,
+        "contextual_misses": contextual_misses,
+        "contextual_abstained": contextual_abstained,
+        "contextual_not_evaluable": contextual_not_evaluable,
+        "contextual_hit_rate": contextual_hits / contextual_evaluated if contextual_evaluated else None,
+        "paired_evaluated": paired_evaluated,
+        "paired_baseline_hits": paired_baseline_hits,
+        "paired_contextual_hits": paired_contextual_hits,
+        "need_source_dynamic_records": dynamic_needs,
+        "need_source_bootstrap_records": bootstrap_needs,
+        "stationary_records": stationary_records,
+        "stationary_evidence_counts": stationary_counts,
+        "contextual_abstention_reasons": contextual_reasons,
         "last": last,
     }
