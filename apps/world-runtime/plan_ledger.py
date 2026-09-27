@@ -173,6 +173,19 @@ class PlanLedger:
             if plan_id in self._view_need_candidates
         ]
 
+    def pending_need_outcome_candidates(self, processed_ids: set[str]) -> list[dict[str, Any]]:
+        """Only unprocessed completed need records, in plan creation order.
+
+        JSONL remains authoritative. A warm tick with no new completions
+        copies no old plan payloads; invalidated views are rebuilt first.
+        """
+        self._ensure_view()
+        return [
+            deepcopy(self._view_need_candidates[plan_id])
+            for plan_id in self._view_order
+            if plan_id not in processed_ids and plan_id in self._view_need_candidates
+        ]
+
     def _append(self, row: dict[str, Any]) -> dict[str, Any]:
         payload = (
             json.dumps(row, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
