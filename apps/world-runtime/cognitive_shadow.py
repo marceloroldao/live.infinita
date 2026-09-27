@@ -20,6 +20,7 @@ class ShadowToken:
     frame: CognitiveFrame
     world_version: int
     world_sequence: int
+    observer_snapshot: dict[str, Any]
 
 
 class CognitiveShadowRecorder:
@@ -76,6 +77,11 @@ class CognitiveShadowRecorder:
             frame=frame,
             world_version=int(world.get("version", 0) or 0),
             world_sequence=int(world.get("sequence", 0) or 0),
+            observer_snapshot={
+                "id": observer.get("id"),
+                "region_id": observer.get("region_id"),
+                "position": dict(observer.get("position") or {}),
+            },
         )
 
     @staticmethod
@@ -170,6 +176,29 @@ class CognitiveShadowRecorder:
         shadow_seed = f"{token.frame.frame_id}|{after_tick}|{world.get('version', 0)}|{world.get('sequence', 0)}"
         shadow_id = "shadow_" + sha256(shadow_seed.encode("utf-8")).hexdigest()[:24]
 
+        before_observer = token.observer_snapshot
+        before_position = dict(before_observer.get("position") or {})
+        after_position = dict(observer.get("position") or {})
+        movement_distance = self._distance(before_observer, observer)
+        predicted_target = targets.get(best.get("target_entity_id")) if isinstance(best, dict) else None
+        distance_before = self._distance(before_observer, predicted_target) if isinstance(predicted_target, dict) else None
+        distance_after = self._distance(observer, predicted_target) if isinstance(predicted_target, dict) else None
+        target_progress = None
+        if distance_before is not None and distance_after is not None:
+            target_progress = distance_before - distance_after
+
+        terminal = {"completed", "failed", "cancelled", "canceled"}
+        plan_outcomes = [
+            {"status": str(row.get("status") or "").lower(), "actor_entity_id": row.get("actor_entity_id")}
+            for row in (tick_result.get("plans") or [])
+            if isinstance(row, dict) and str(row.get("status") or "").lower() in terminal
+        ]
+        need_outcomes = [
+            {"status": str(row.get("status") or "").lower(), "npc_id": row.get("npc_id") or row.get("actor_entity_id")}
+            for row in (tick_result.get("npc_needs") or [])
+            if isinstance(row, dict) and str(row.get("status") or "").lower() in {"scheduled", "completed", "failed"}
+        ]
+
         record = {
             "shadow_id": shadow_id,
             "frame_id": token.frame.frame_id,
@@ -188,6 +217,19 @@ class CognitiveShadowRecorder:
             },
             "candidate_count": len(token.frame.candidate_outcomes),
             "best_candidate": best,
+            "trajectory_observation": {
+                "before_position": before_position,
+                "after_position": after_position,
+                "movement_distance": movement_distance,
+                "region_changed": str(before_observer.get("region_id") or "") != str(observer.get("region_id") or ""),
+                "predicted_target_entity_id": best.get("target_entity_id") if isinstance(best, dict) else None,
+                "distance_to_predicted_target_before": distance_before,
+                "distance_to_predicted_target_after": distance_after,
+                "progress_toward_predicted_target": target_progress,
+                "moved_toward_predicted_target": target_progress is not None and target_progress > 0.0,
+                "plan_outcomes": plan_outcomes,
+                "need_outcomes": need_outcomes,
+            },
             "tick_activity": {
                 "plans": len(tick_result.get("plans") or []),
                 "npc_needs": len(tick_result.get("npc_needs") or []),
