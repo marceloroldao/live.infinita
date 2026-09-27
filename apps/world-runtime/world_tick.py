@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import inspect
-from typing import Any
+import time
+from typing import Any, Callable
 
 from conditional_event_scheduler import ConditionalEventScheduler
 from plan_arbiter import PlanArbiter
@@ -27,6 +28,8 @@ class WorldTickRunner:
         npc_strategy_executor: Any | None = None,
         npc_composite_strategy_outcomes: Any | None = None,
         npc_causal_model: Any | None = None,
+        stage_observer: Callable[[str, int], None] | None = None,
+        monotonic_ns: Callable[[], int] = time.perf_counter_ns,
     ) -> None:
         self.clock = clock
         self.scheduler = scheduler
@@ -39,6 +42,8 @@ class WorldTickRunner:
         self.npc_strategy_executor = npc_strategy_executor
         self.npc_composite_strategy_outcomes = npc_composite_strategy_outcomes
         self.npc_causal_model = npc_causal_model
+        self.stage_observer = stage_observer
+        self.monotonic_ns = monotonic_ns
         resume_evaluator = getattr(scheduler, "assess_resume", None)
         self.plan_arbiter = plan_arbiter or PlanArbiter(scheduler.ledger, resume_evaluator=resume_evaluator)
 
@@ -75,6 +80,16 @@ class WorldTickRunner:
             return None
         value = snapshot()
         return value if isinstance(value, dict) else None
+
+    def _stage(self, name: str, fn: Callable[[], Any]) -> Any:
+        """Observe stage latency without changing authority or tick results."""
+        if self.stage_observer is None:
+            return fn()
+        started = self.monotonic_ns()
+        try:
+            return fn()
+        finally:
+            self.stage_observer(name, max(0, self.monotonic_ns() - started))
 
     def tick(self) -> dict[str, Any]:
         before = self.clock.state()
