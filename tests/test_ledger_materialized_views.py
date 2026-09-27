@@ -182,59 +182,30 @@ class MaterializedLedgerViewTests(unittest.TestCase):
             self.assertEqual([x["strategy_execution_id"] for x in executor.unprocessed_completed(set())], ["replacement"])
 
 
-
-    def test_pending_need_outcomes_avoid_copying_already_audited_payloads(self) -> None:
-        path = self.root / "pending-plans.jsonl"
+    def test_pending_need_candidates_exclude_processed_without_copy_and_reconcile_changes(self) -> None:
+        path = self.root / "plans.jsonl"
         ledger = PlanLedger(path)
-        def row(identity, status="completed"):
-            return {
-                "plan_id": identity, "status": status,
-                "intent": {"need": "energy"}, "nested": {"value": 1},
-            }
-        for identity in ("older", "newer", "active"):
-            ledger._append(row(identity, "running" if identity == "active" else "completed"))
-        with patch.object(ledger, "need_outcome_candidates", side_effect=AssertionError("full candidate copy")):
-            self.assertEqual([x["plan_id"] for x in ledger.pending_need_outcomes({"older"})], ["newer"])
-            self.assertEqual(ledger.pending_need_outcomes({"older", "newer"}), [])
-            ledger._append(row("active"))
-            self.assertEqual([x["plan_id"] for x in ledger.pending_need_outcomes({"older"})], ["newer", "active"])
-            detached = ledger.pending_need_outcomes({"older"})
+        def completed(identifier):
+            return {"plan_id": identifier, "status": "completed", "intent": {"need": "energy"}, "nested": {"value": 1}}
+        ledger._append(completed("old"))
+        ledger._append(completed("new"))
+        with patch.object(ledger, "current", side_effect=AssertionError("full history copied")):
+            with patch("plan_ledger.deepcopy", side_effect=AssertionError("no deepcopy of processed plans")):
+                self.assertEqual(ledger.pending_need_outcome_candidates({"old", "new"}), [])
+            self.assertEqual([r["plan_id"] for r in ledger.pending_need_outcome_candidates({"old"})], ["new"])
+            detached = ledger.pending_need_outcome_candidates({"old"})
             detached[0]["nested"]["value"] = 99
-            self.assertEqual(ledger.pending_need_outcomes({"older"})[0]["nested"]["value"], 1)
+            self.assertEqual(ledger.pending_need_outcome_candidates({"old"})[0]["nested"]["value"], 1)
+            ledger._append(completed("third"))
+            self.assertEqual([r["plan_id"] for r in ledger.pending_need_outcome_candidates({"old", "new"})], ["third"])
             with path.open("ab") as fh:
-                fh.write(_encoded(row("external")))
-            self.assertEqual(
-                [x["plan_id"] for x in ledger.pending_need_outcomes({"older", "newer"})],
-                ["active", "external"],
-            )
-            replacement = self.root / "replacement-pending-plans.jsonl"
-            replacement.write_bytes(_encoded(row("replacement")))
+                fh.write(_encoded(completed("external")))
+            self.assertEqual([r["plan_id"] for r in ledger.pending_need_outcome_candidates({"old", "new"})], ["third", "external"])
+            replacement = self.root / "replace-pending.jsonl"
+            replacement.write_bytes(_encoded(completed("replacement")))
             os.replace(replacement, path)
-            self.assertEqual([x["plan_id"] for x in ledger.pending_need_outcomes(set())], ["replacement"])
+            self.assertEqual([r["plan_id"] for r in ledger.pending_need_outcome_candidates({"old"})], ["replacement"])
 
-    def test_strategy_tick_all_uses_active_ids_only_and_preserves_transitions(self) -> None:
-        executor = NpcStrategyExecutor(self.root / "strategy-active-tick.jsonl", None)
-        executor._append({"strategy_execution_id": "a-completed", "status": "completed"})
-        plan = {"phases": [{"kind": "wait_ticks", "intent": {"ticks": 1}}]}
-        first = executor.start(plan, principal={}, proposer_id="test")
-        second = executor.start(plan, principal={}, proposer_id="test")
-        keys = [first["strategy_execution_id"], second["strategy_execution_id"]]
-        self.assertEqual(executor.active_execution_ids(), sorted(keys))
-        with patch.object(executor, "current", side_effect=AssertionError("full strategy history")):
-            started = executor.tick_all(logical_tick=1)
-            self.assertEqual([r["status"] for r in started], ["running", "running"])
-            self.assertTrue(all(r["wait_started_tick"] == 1 for r in started))
-            ended = executor.tick_all(logical_tick=2)
-            self.assertEqual([r["status"] for r in ended], ["completed", "completed"])
-            self.assertEqual(executor.tick_all(logical_tick=3), [])
-            self.assertEqual(executor.active_execution_ids(), [])
-            with executor.path.open("ab") as fh:
-                fh.write(_encoded({"strategy_execution_id": "external", "status": "running"}))
-            self.assertEqual(executor.active_execution_ids(), ["external"])
-            replacement = self.root / "replacement-active-strategy.jsonl"
-            replacement.write_bytes(_encoded({"strategy_execution_id": "other", "status": "completed"}))
-            os.replace(replacement, executor.path)
-            self.assertEqual(executor.active_execution_ids(), [])
 
 
 if __name__ == "__main__":

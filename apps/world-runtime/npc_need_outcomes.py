@@ -263,7 +263,7 @@ class NpcNeedOutcomeProcessor:
     def process_completed(self) -> list[dict[str, Any]]:
         processed = self._processed_ids()
         results: list[dict[str, Any]] = []
-        pending = getattr(self.plan_ledger, "pending_need_outcomes", None)
+        pending = getattr(self.plan_ledger, "pending_need_outcome_candidates", None)
         candidates = getattr(self.plan_ledger, "need_outcome_candidates", None)
         rows = (
             pending(processed) if callable(pending)
