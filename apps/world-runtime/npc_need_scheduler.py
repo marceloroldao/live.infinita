@@ -490,18 +490,26 @@ class NpcNeedScheduler:
         # Reuse a still-running goal instead of creating a new strategy every
         # cooldown window while its previous phases are awaiting resolution.
         # These ledgers are durable, and terminal goals no longer block retries.
-        strategy_rows = getattr(self.strategy_executor, "current", None)
-        if callable(strategy_rows):
-            for row in strategy_rows():
-                if str(row.get("status") or "") in {"completed", "failed", "cancelled"}:
-                    continue
-                plan = row.get("strategy_plan") if isinstance(row.get("strategy_plan"), dict) else {}
-                if str(plan.get("actor_entity_id") or "") == npc_id and str(plan.get("need") or "") == need:
-                    return {
-                        "strategy_execution_id": row.get("strategy_execution_id"),
-                        "plan_id": row.get("child_plan_id"),
-                    }
-
+        ongoing_lookup = getattr(self.strategy_executor, "ongoing_for_need", None)
+        if callable(ongoing_lookup):
+            row = ongoing_lookup(npc_id, need)
+            if isinstance(row, dict):
+                return {
+                    "strategy_execution_id": row.get("strategy_execution_id"),
+                    "plan_id": row.get("child_plan_id"),
+                }
+        else:
+            strategy_rows = getattr(self.strategy_executor, "current", None)
+            if callable(strategy_rows):
+                for row in strategy_rows():
+                    if str(row.get("status") or "") in {"completed", "failed", "cancelled"}:
+                        continue
+                    plan = row.get("strategy_plan") if isinstance(row.get("strategy_plan"), dict) else {}
+                    if str(plan.get("actor_entity_id") or "") == npc_id and str(plan.get("need") or "") == need:
+                        return {
+                            "strategy_execution_id": row.get("strategy_execution_id"),
+                            "plan_id": row.get("child_plan_id"),
+                        }
         ledger = getattr(self.plans, "ledger", None)
         active_plans = getattr(ledger, "active", None)
         if callable(active_plans):
