@@ -115,6 +115,24 @@ class TickProfilerTests(unittest.TestCase):
         self.assertIsNone(driver.tick_observer)
         self.assertFalse((self.root / "world-tick-profile.json").exists())
 
+    def test_driver_lease_spans_are_in_existing_opt_in_report(self) -> None:
+        runner = FakeRunner()
+        with patch.dict(os.environ, {"LIVE_INFINITA_TICK_PROFILER": "1"}):
+            driver = build_driver(runner, self.root)
+        self.assertIsNotNone(driver.stage_observer)
+        self.assertTrue(driver.run_once()["executed"])
+        driver.tick_observer({
+            "elapsed_seconds": 0.1,
+            "interval_seconds": 0.5,
+            "executed": True,
+            "logical_tick": 1,
+        })
+        report = driver.tick_observer.__self__.snapshot()
+        self.assertIn("driver.lease_acquire", report["stages"])
+        self.assertIn("driver.lease_release", report["stages"])
+        self.assertEqual(report["window_samples"], 1)
+        self.assertEqual(report["total_observed_ticks"], 1)
+
     def test_enabled_profiler_on_shadow_wrapper_is_observational(self) -> None:
         authoritative = FakeRunner()
         class Wrapper:
