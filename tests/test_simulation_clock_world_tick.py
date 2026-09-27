@@ -97,5 +97,28 @@ class SimulationClockWorldTickTest(unittest.TestCase):
             self.assertEqual(result["clock"]["tick"], 0)
 
 
+    def test_stage_observer_is_passive_and_reports_plan_stages(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            clock = SimulationClock(Path(tmp) / "clock.json")
+            scheduler = FakeScheduler()
+            samples = []
+            now = iter(range(0, 1000000, 1000))
+            runner = WorldTickRunner(
+                clock,
+                scheduler,
+                stage_observer=lambda name, ns: samples.append((name, ns)),
+                monotonic_ns=lambda: next(now),
+            )
+            result = runner.tick()
+            self.assertTrue(result["advanced"])
+            self.assertEqual(result["clock"]["tick"], 1)
+            self.assertEqual(scheduler.calls, ["plan_a", "plan_b"])
+            names = [name for name, _ in samples]
+            self.assertIn("clock.advance", names)
+            self.assertIn("plans.arbitrate", names)
+            self.assertEqual(names.count("plans.tick"), 2)
+            self.assertTrue(all(ns >= 0 for _, ns in samples))
+
+
 if __name__ == "__main__":
     unittest.main()
