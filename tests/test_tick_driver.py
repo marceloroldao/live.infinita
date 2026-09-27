@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import gc
+import os
 import tempfile
 import weakref
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 from tick_driver import SingleWriterTickLease, WorldTickDriver
@@ -130,6 +132,94 @@ class TickDriverTests(unittest.TestCase):
         self.assertEqual(runner.clock.state().tick, 4)
         self.assertTrue(driver.lease.acquire())
         driver.lease.release()
+
+    def test_infinite_service_holds_one_lease_across_tick_and_sleep(self) -> None:
+        runner = FakeRunner()
+        path = self.tmp / "continuous.lock"
+        lease = SingleWriterTickLease(path)
+        contender = SingleWriterTickLease(path, owner_id="contender")
+        observed_ticks = []
+
+        class StopTest(Exception):
+            pass
+
+        def sleeper(_seconds: float) -> None:
+            observed_ticks.append(runner.clock.state().tick)
+            self.assertFalse(contender.acquire())
+            if len(observed_ticks) == 4:
+                raise StopTest
+
+        driver = WorldTickDriver(runner, lease=lease, sleeper=sleeper)
+        with patch("tick_driver.os.fsync", wraps=os.fsync) as sync:
+            with self.assertRaises(StopTest):
+                driver.serve()
+        self.assertEqual(observed_ticks, [1, 2, 3, 4])
+        self.assertEqual(sync.call_count, 1)
+        self.assertTrue(contender.acquire())
+        contender.release()
+        self.assertEqual(runner.calls, 4)
+        self.assertEqual(runner.clock.state().tick, 4)
+
+    def test_infinite_service_releases_lease_on_runner_exception(self) -> None:
+        class FailingRunner(FakeRunner):
+            def tick(self):
+                if self.calls == 1:
+                    raise RuntimeError("simulated runner fault")
+                return super().tick()
+
+        path = self.tmp / "fault.lock"
+        runner = FailingRunner()
+        driver = WorldTickDriver(
+            runner, lease=SingleWriterTickLease(path), sleeper=lambda _: None,
+        )
+        with self.assertRaisesRegex(RuntimeError, "simulated runner fault"):
+            driver.serve()
+        other = SingleWriterTickLease(path, owner_id="restart")
+        self.assertTrue(other.acquire())
+        other.release()
+        self.assertEqual(runner.calls, 1)
+        self.assertEqual(runner.clock.state().tick, 1)
+
+    def test_finite_service_retains_per_tick_lock_and_result_contract(self) -> None:
+        runner = FakeRunner()
+        path = self.tmp / "finite.lock"
+        other = SingleWriterTickLease(path, owner_id="finite-contender")
+        sleeps = []
+        def sleeper(_seconds: float) -> None:
+            self.assertTrue(other.acquire())
+            other.release()
+            sleeps.append(1)
+
+        driver = WorldTickDriver(
+            runner, lease=SingleWriterTickLease(path), sleeper=sleeper,
+        )
+        with patch("tick_driver.os.fsync", wraps=os.fsync) as sync:
+            rows = driver.serve(max_ticks=3)
+        self.assertEqual(len(rows), 3)
+        self.assertEqual([r["tick"]["clock"]["tick"] for r in rows], [1, 2, 3])
+        self.assertEqual(sync.call_count, 3)
+        self.assertEqual(len(sleeps), 3)
+
+    def test_competing_writer_prevents_continuous_service_ticks(self) -> None:
+        path = self.tmp / "busy-continuous.lock"
+        other = SingleWriterTickLease(path, owner_id="already-authoritative")
+        self.assertTrue(other.acquire())
+        runner = FakeRunner()
+        results = []
+        class StopTest(Exception):
+            pass
+        def sleeper(_seconds: float) -> None:
+            results.append(runner.calls)
+            if len(results) == 2:
+                raise StopTest
+        driver = WorldTickDriver(
+            runner, lease=SingleWriterTickLease(path), sleeper=sleeper,
+        )
+        with self.assertRaises(StopTest):
+            driver.serve()
+        self.assertEqual(results, [0, 0])
+        self.assertEqual(runner.clock.state().tick, 0)
+        other.release()
 
     def test_passive_lease_spans_measure_acquire_and_release(self) -> None:
         runner = FakeRunner()
