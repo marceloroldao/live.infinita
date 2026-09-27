@@ -83,42 +83,74 @@ def freeze_contextual_forecast(
     if not ranked:
         forecast["reason"] = "no_urgent_need"
         return forecast, None
-    ranked.sort(key=lambda row: (-row[0], row[1]))
-    pressure, need, value = ranked[0]
-    forecast.update(selected_need=need, need_pressure=value, weighted_pressure=pressure)
+    ranked.sort(key=lambda row: (-row[0], -NpcNeedScheduler.DEFAULT_PRIORITIES[row[1]], row[1]))
+    forecast["highest_urgent_need"] = ranked[0][1]
+    skipped_unresolved: list[dict[str, Any]] = []
+    forecast["skipped_unresolved_needs"] = skipped_unresolved
+    target: dict[str, Any] | None = None
+    target_id = ""
+    need = ""
+    distance = None
+    for rank, (pressure, candidate_need, value) in enumerate(ranked):
+        references = set()
+        singular = str(entity_props.get(NpcNeedScheduler.TARGET_FIELDS[candidate_need]) or "").strip()
+        if singular:
+            references.add(singular)
+        plural = entity_props.get(NpcNeedScheduler.TARGET_LIST_FIELDS[candidate_need])
+        if isinstance(plural, list):
+            references.update(str(item).strip() for item in plural if str(item).strip())
+        reference_ids = sorted(references)
+        # Capture each reference only once; concurrent world ticks must never
+        # mix a target from two different read moments in a frozen forecast.
+        resolved = {}
+        for key in reference_ids:
+            candidate = target_provider(key)
+            if isinstance(candidate, dict):
+                resolved[key] = deepcopy(candidate)
+        if not resolved:
+            # This is the only safe fallback: authoritative scheduler would
+            # also find no viable configured target, so inspect the next need.
+            reason = "no_configured_target" if not reference_ids else "target_unavailable"
+            skipped_unresolved.append({
+                "need": candidate_need, "rank": rank,
+                "reason": reason, "target_references": reference_ids,
+            })
+            if rank == 0:
+                forecast.update(
+                    selected_need=candidate_need, need_pressure=value,
+                    weighted_pressure=pressure, configured_target_ids=reference_ids,
+                    reason=reason,
+                )
+            continue
 
-    references = set()
-    singular = str(entity_props.get(NpcNeedScheduler.TARGET_FIELDS[need]) or "").strip()
-    if singular:
-        references.add(singular)
-    plural = entity_props.get(NpcNeedScheduler.TARGET_LIST_FIELDS[need])
-    if isinstance(plural, list):
-        references.update(str(item).strip() for item in plural if str(item).strip())
-    forecast["configured_target_ids"] = sorted(references)
-    if not references:
-        forecast["reason"] = "no_configured_target"
+        # Multiple distinct valid destinations require the scheduler's own
+        # learned ranking. This baseline cannot claim it knows the choice.
+        forecast.update(
+            selected_need=candidate_need, need_pressure=value,
+            weighted_pressure=pressure, configured_target_ids=reference_ids,
+        )
+        if len(resolved) != 1:
+            forecast["reason"] = "multiple_targets_without_ranked_evidence"
+            return forecast, None
+        need = candidate_need
+        target_id, target = next(iter(resolved.items()))
+        distance = _distance(observer, target)
+        if distance is None:
+            forecast["reason"] = "target_position_unavailable"
+            return forecast, None
+        forecast.update(
+            target_entity_id=target_id,
+            target_region_id=target.get("region_id"),
+            target_position=deepcopy(target.get("position")),
+            distance_before=distance,
+        )
+        if distance <= EPSILON:
+            forecast["reason"] = "already_at_target"
+            return forecast, deepcopy(target)
+        break
+    if target is None:
         return forecast, None
-    if len(references) != 1:
-        forecast["reason"] = "multiple_targets_without_ranked_evidence"
-        return forecast, None
-    target_id = next(iter(references))
-    target = target_provider(target_id)
-    if not isinstance(target, dict):
-        forecast["reason"] = "target_unavailable"
-        return forecast, None
-    distance = _distance(observer, target)
-    if distance is None:
-        forecast["reason"] = "target_position_unavailable"
-        return forecast, None
-    forecast.update(
-        target_entity_id=target_id,
-        target_region_id=target.get("region_id"),
-        target_position=deepcopy(target.get("position")),
-        distance_before=distance,
-    )
-    if distance <= EPSILON:
-        forecast["reason"] = "already_at_target"
-        return forecast, deepcopy(target)
+
     context = {
         "period": env.get("period"),
         "weather": env.get("weather") or env.get("weather_state"),
@@ -192,12 +224,16 @@ def stationary_evidence(
     ]
     result["need_statuses"] = sorted(needs)
     result["plan_statuses"] = sorted(plans)
-    if "no_target" in needs:
+    if "scheduled" in needs:
+        # An earlier unresolved need can coexist with a later viable plan.
+        # Such a tick must not be labelled only as "no target".
+        label = "need_scheduled_without_displacement"
+    elif "already_active" in needs:
+        label = "need_active_observed"
+    elif "no_target" in needs:
         label = "need_no_target_observed"
     elif "cooldown" in needs:
         label = "need_cooldown_observed"
-    elif "already_active" in needs:
-        label = "need_active_observed"
     elif plans:
         label = "plan_status_without_displacement"
     else:

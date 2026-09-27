@@ -114,51 +114,82 @@ class NpcReorderingNeedScheduler(NpcNeedScheduler):
             if not candidates:
                 continue
             candidates.sort(key=lambda item: (-item[3], -item[2], item[0]))
-            original_need, original_severity, original_priority, original_utility = candidates[0]
-            # The production stack uses this subclass rather than the base
-            # scheduler: keep the same no-duplicate in-flight goal contract.
-            ongoing = self._ongoing_goal(npc_id, original_need)
-            if ongoing is not None:
-                results.append({
-                    "npc_id": npc_id, "need": original_need, "original_need": original_need,
-                    "horizon_reordered": False, "status": "already_active", "tick": tick,
-                    "plan_id": ongoing["plan_id"],
-                    "strategy_execution_id": ongoing["strategy_execution_id"],
-                })
-                continue
-            last_tick = self._last_tick(npc_id, original_need)
-            if last_tick is not None and tick - last_tick < self.cooldown_ticks:
-                results.append({"npc_id": npc_id, "need": original_need, "status": "cooldown", "tick": tick})
-                continue
-
+            highest_urgent_need = candidates[0][0]
             context = self._context_for(entity, tick=tick)
-            prepared = self._prepare_need(
-                entity=entity,
-                need=original_need,
-                severity=original_severity,
-                priority=original_priority,
-                utility=original_utility,
-                values=values,
-                context=context,
-                tick=tick,
-            )
-            if prepared["intent"] is None:
+            skipped_unresolved: list[dict[str, Any]] = []
+            chosen: tuple[str, float, int, float, dict[str, Any]] | None = None
+            for candidate_rank, (candidate_need, candidate_severity, candidate_priority, candidate_utility) in enumerate(candidates):
+                # Preserve active/cooldown semantics even after skipping a missing
+                # target: never open a competing goal just because a previous
+                # urgent need could not resolve its configured destination.
+                ongoing = self._ongoing_goal(npc_id, candidate_need)
+                if ongoing is not None:
+                    results.append({
+                        "npc_id": npc_id, "need": candidate_need,
+                        "original_need": candidate_need,
+                        "horizon_reordered": False, "status": "already_active",
+                        "tick": tick, "plan_id": ongoing["plan_id"],
+                        "strategy_execution_id": ongoing["strategy_execution_id"],
+                        "viability_selection_schema": "npc_need_viability_v1",
+                        "highest_urgent_need": highest_urgent_need,
+                        "skipped_unresolved_needs": deepcopy(skipped_unresolved),
+                    })
+                    break
+                last_tick = self._last_tick(npc_id, candidate_need)
+                if last_tick is not None and tick - last_tick < self.cooldown_ticks:
+                    results.append({
+                        "npc_id": npc_id, "need": candidate_need,
+                        "original_need": candidate_need, "status": "cooldown",
+                        "tick": tick,
+                        "viability_selection_schema": "npc_need_viability_v1",
+                        "highest_urgent_need": highest_urgent_need,
+                        "skipped_unresolved_needs": deepcopy(skipped_unresolved),
+                    })
+                    break
+
+                prepared = self._prepare_need(
+                    entity=entity,
+                    need=candidate_need,
+                    severity=candidate_severity,
+                    priority=candidate_priority,
+                    utility=candidate_utility,
+                    values=values,
+                    context=context,
+                    tick=tick,
+                )
+                if prepared["intent"] is not None:
+                    chosen = (
+                        candidate_need, candidate_severity,
+                        candidate_priority, candidate_utility, prepared,
+                    )
+                    break
+
+                missing = {
+                    "need": candidate_need,
+                    "rank": candidate_rank,
+                    "reason": "no_viable_target",
+                    "target_references": self._target_references(entity, candidate_need),
+                }
                 row = {
                     "need_schema": "npc_need_v7",
                     "npc_id": npc_id,
-                    "need": original_need,
-                    "original_need": original_need,
+                    "need": candidate_need,
+                    "original_need": candidate_need,
                     "horizon_reordered": False,
-                    "severity": original_severity,
-                    "priority": original_priority,
-                    "utility": original_utility,
+                    "severity": candidate_severity,
+                    "priority": candidate_priority,
+                    "utility": candidate_utility,
                     "tick": tick,
                     "status": "no_target",
                     "learning_context": deepcopy(context),
                     "target_ranking": prepared["target_ranking"],
-                    "target_references": self._target_references(entity, original_need),
+                    "target_references": missing["target_references"],
                     "strategy": prepared["strategy"],
                     "strategy_ranking": prepared["strategy_ranking"],
+                    "viability_selection_schema": "npc_need_viability_v1",
+                    "candidate_rank": candidate_rank,
+                    "highest_urgent_need": highest_urgent_need,
+                    "skipped_unresolved_needs": deepcopy(skipped_unresolved),
                     "proposal_id": None,
                     "plan_id": None,
                     "strategy_execution_id": None,
@@ -166,8 +197,10 @@ class NpcReorderingNeedScheduler(NpcNeedScheduler):
                 }
                 self._append(row)
                 results.append(row)
+                skipped_unresolved.append(missing)
+            if chosen is None:
                 continue
-
+            original_need, original_severity, original_priority, original_utility, prepared = chosen
             reorder_source_sequence = None
             prerequisite = self._horizon_prerequisite(prepared["strategy"], original_need)
             if prerequisite is not None:
@@ -244,6 +277,9 @@ class NpcReorderingNeedScheduler(NpcNeedScheduler):
                     "original_need": original_need,
                     "horizon_reordered": horizon_reordered,
                     "reorder_source_sequence": deepcopy(reorder_source_sequence),
+                    "viability_selection_schema": "npc_need_viability_v1",
+                    "highest_urgent_need": highest_urgent_need,
+                    "skipped_unresolved_needs": deepcopy(skipped_unresolved),
                     "severity": severity,
                     "utility": utility,
                     "tick": tick,
@@ -306,6 +342,9 @@ class NpcReorderingNeedScheduler(NpcNeedScheduler):
                 "original_need": original_need,
                 "horizon_reordered": horizon_reordered,
                 "reorder_source_sequence": deepcopy(reorder_source_sequence),
+                "viability_selection_schema": "npc_need_viability_v1",
+                "highest_urgent_need": highest_urgent_need,
+                "skipped_unresolved_needs": deepcopy(skipped_unresolved),
                 "severity": severity,
                 "priority": priority,
                 "utility": utility,
