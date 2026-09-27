@@ -183,6 +183,21 @@ class NpcNeedOutcomeTest(unittest.TestCase):
             self.assertEqual(processor.get_applied("replacement")["status"], "applied")
 
 
+    def test_pending_plan_api_does_not_copy_processed_candidates(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            dynamics, ledger, processor = self.make(Path(tmpdir))
+            first = self.complete_plan(ledger, need="energy")
+            self.assertEqual(len(processor.process_completed()), 1)
+            with patch.object(ledger, "need_outcome_candidates", side_effect=AssertionError("old complete candidate copy")), \
+                 patch.object(ledger, "current", side_effect=AssertionError("full plan copy")):
+                self.assertEqual(processor.process_completed(), [])
+                second = self.complete_plan(ledger, need="social")
+                results = processor.process_completed()
+                self.assertEqual([r["plan_id"] for r in results], [second["plan_id"]])
+                self.assertEqual(processor.process_completed(), [])
+            self.assertEqual(len(processor.history()), 2)
+
+
 
 if __name__ == "__main__":
     unittest.main()
