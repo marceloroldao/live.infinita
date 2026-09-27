@@ -31,6 +31,15 @@ class NpcCompositeStrategyOutcomeProcessor:
         self.need_outcomes = need_outcomes
         self.strategy_experience_provider = strategy_experience_provider
         self.episodic_memory_provider = episodic_memory_provider
+        self._processed_cache: set[str] | None = None
+        self._processed_signature: tuple[int, int, int, int] | None = None
+
+    def _signature(self) -> tuple[int, int, int, int] | None:
+        try:
+            stat = self.path.stat()
+        except FileNotFoundError:
+            return None
+        return stat.st_dev, stat.st_ino, stat.st_size, stat.st_mtime_ns
 
     def history(self) -> list[dict[str, Any]]:
         if not self.path.exists():
@@ -46,16 +55,46 @@ class NpcCompositeStrategyOutcomeProcessor:
         return rows
 
     def _append(self, row: dict[str, Any]) -> dict[str, Any]:
-        with self.path.open("a", encoding="utf-8") as fh:
-            fh.write(json.dumps(row, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n")
+        before = self._signature()
+        cached = self._processed_cache is not None and self._processed_signature == before
+        payload = json.dumps(row, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n"
+        try:
+            with self.path.open("a", encoding="utf-8") as fh:
+                fh.write(payload)
+        except BaseException:
+            self._processed_cache = None
+            raise
+        after = self._signature()
+        expected_size = (before[2] if before else 0) + len(payload.encode("utf-8"))
+        if cached and after is not None and after[2] == expected_size and (
+            before is None or before[:2] == after[:2]
+        ):
+            execution_id = str(row.get("strategy_execution_id") or "")
+            if execution_id:
+                assert self._processed_cache is not None
+                self._processed_cache.add(execution_id)
+            self._processed_signature = after
+        else:
+            self._processed_cache = None
         return row
 
     def _processed(self) -> set[str]:
-        return {
-            str(row.get("strategy_execution_id") or "")
-            for row in self.history()
-            if row.get("strategy_execution_id")
-        }
+        if self._processed_cache is not None and self._processed_signature == self._signature():
+            return self._processed_cache
+        # Reconcile external append/replacement before using idempotency state.
+        for _ in range(3):
+            before = self._signature()
+            processed = {
+                str(row.get("strategy_execution_id") or "")
+                for row in self.history()
+                if row.get("strategy_execution_id")
+            }
+            after = self._signature()
+            if before == after:
+                self._processed_cache = processed
+                self._processed_signature = after
+                return processed
+        raise RuntimeError("composite outcome ledger changed during index rebuild")
 
     @staticmethod
     def _terminal_plan_id(execution: dict[str, Any]) -> str | None:
@@ -69,6 +108,9 @@ class NpcCompositeStrategyOutcomeProcessor:
         return None
 
     def _need_outcome(self, plan_id: str) -> dict[str, Any] | None:
+        indexed = getattr(self.need_outcomes, "get_applied", None)
+        if callable(indexed):
+            return indexed(plan_id)
         history = getattr(self.need_outcomes, "history", None)
         if not callable(history):
             return None
@@ -113,14 +155,18 @@ class NpcCompositeStrategyOutcomeProcessor:
 
     def process_completed(self) -> list[dict[str, Any]]:
         processed = self._processed()
+        pending = getattr(self.strategy_executor, "completed_unprocessed", None)
         current = getattr(self.strategy_executor, "current", None)
         observer = getattr(self.strategy_experience_provider, "observe_strategy", None)
-        if not callable(current) or not callable(observer):
+        if (not callable(pending) and not callable(current)) or not callable(observer):
             return []
 
         remember = getattr(self.episodic_memory_provider, "remember", None)
         results: list[dict[str, Any]] = []
-        for execution in current():
+        # Modern executor copies only unprocessed completed records. Legacy/fake
+        # executors retain the original current() contract.
+        executions = pending(processed) if callable(pending) else current()
+        for execution in executions:
             if not isinstance(execution, dict) or execution.get("status") != "completed":
                 continue
             execution_id = str(execution.get("strategy_execution_id") or "").strip()
