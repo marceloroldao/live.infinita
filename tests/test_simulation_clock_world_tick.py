@@ -120,5 +120,18 @@ class SimulationClockWorldTickTest(unittest.TestCase):
             self.assertTrue(all(ns >= 0 for _, ns in samples))
 
 
+    def test_failing_stage_profiler_does_not_block_world_tick(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            clock = SimulationClock(Path(tmp) / "clock.json")
+            scheduler = FakeScheduler()
+            def broken(_stage, _elapsed_ns):
+                raise RuntimeError("observer unavailable")
+            runner = WorldTickRunner(clock, scheduler, stage_observer=broken)
+            result = runner.tick()
+            self.assertTrue(result["advanced"])
+            self.assertEqual(result["clock"]["tick"], 1)
+            self.assertEqual(scheduler.calls, ["plan_a", "plan_b"])
+
+
 if __name__ == "__main__":
     unittest.main()
