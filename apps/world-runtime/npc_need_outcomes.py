@@ -41,10 +41,19 @@ class NpcNeedOutcomeProcessor:
         self.strategy_experience_provider = strategy_experience_provider
         self.episodic_memory_provider = episodic_memory_provider
         self.belief_provider = belief_provider
+        self._processed_cache: set[str] | None = None
+        self._processed_signature: tuple[int, int, int, int] | None = None
         self.satisfaction = dict(self.DEFAULT_SATISFACTION)
         for key, value in dict(satisfaction or {}).items():
             if key in self.satisfaction:
                 self.satisfaction[key] = max(0.0, float(value))
+
+    def _signature(self) -> tuple[int, int, int, int] | None:
+        try:
+            stat = self.path.stat()
+        except FileNotFoundError:
+            return None
+        return stat.st_dev, stat.st_ino, stat.st_size, stat.st_mtime_ns
 
     def history(self) -> list[dict[str, Any]]:
         if not self.path.exists():
@@ -60,12 +69,47 @@ class NpcNeedOutcomeProcessor:
         return rows
 
     def _append(self, row: dict[str, Any]) -> dict[str, Any]:
-        with self.path.open("a", encoding="utf-8") as fh:
-            fh.write(json.dumps(row, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n")
+        before = self._signature()
+        cached = self._processed_cache is not None and self._processed_signature == before
+        payload = json.dumps(row, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n"
+        try:
+            with self.path.open("a", encoding="utf-8") as fh:
+                fh.write(payload)
+        except BaseException:
+            self._processed_cache = None
+            raise
+        after = self._signature()
+        expected_size = (before[2] if before else 0) + len(payload.encode("utf-8"))
+        if cached and after is not None and after[2] == expected_size and (
+            before is None or before[:2] == after[:2]
+        ):
+            plan_id = str(row.get("plan_id") or "")
+            if plan_id:
+                assert self._processed_cache is not None
+                self._processed_cache.add(plan_id)
+            self._processed_signature = after
+        else:
+            self._processed_cache = None
         return row
 
     def _processed_ids(self) -> set[str]:
-        return {str(row.get("plan_id")) for row in self.history() if row.get("plan_id")}
+        if self._processed_cache is not None and self._processed_signature == self._signature():
+            return self._processed_cache
+        # An externally appended/replaced outcome file invalidates the index.
+        # Never reuse a stale processed set and re-apply satisfaction.
+        for _ in range(3):
+            before = self._signature()
+            processed = {
+                str(row.get("plan_id"))
+                for row in self.history()
+                if row.get("plan_id")
+            }
+            after = self._signature()
+            if before == after:
+                self._processed_cache = processed
+                self._processed_signature = after
+                return processed
+        raise RuntimeError("need outcome ledger changed while rebuilding processed IDs")
 
     def _learn(self, record: dict[str, Any], outcome: dict[str, Any], *, npc_id: str, need: str, plan_id: str) -> dict[str, Any] | None:
         if self.learning_provider is None:
@@ -184,7 +228,9 @@ class NpcNeedOutcomeProcessor:
     def process_completed(self) -> list[dict[str, Any]]:
         processed = self._processed_ids()
         results: list[dict[str, Any]] = []
-        for record in self.plan_ledger.current():
+        candidates = getattr(self.plan_ledger, "need_outcome_candidates", None)
+        rows = candidates() if callable(candidates) else self.plan_ledger.current()
+        for record in rows:
             plan_id = str(record.get("plan_id") or "").strip()
             if not plan_id or plan_id in processed or str(record.get("status") or "") != "completed":
                 continue
