@@ -32,6 +32,9 @@ class PlanLedger:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self._view_by_id: dict[str, dict[str, Any]] | None = None
         self._view_order: list[str] = []
+        # Preserve original creation order without rescanning all historical
+        # plans each tick. Terminal lifecycle transitions remove the ID.
+        self._view_active_ids: dict[str, None] = {}
         self._view_idempotency: dict[str, str] = {}
         self._view_need_candidates: dict[str, dict[str, Any]] = {}
         self._view_signature: tuple[int, int, int, int] | None = None
@@ -78,6 +81,10 @@ class PlanLedger:
                         idempotency.setdefault(key, plan_id)
                 self._view_by_id = latest
                 self._view_order = order
+                self._view_active_ids = {
+                    plan_id: None for plan_id in order
+                    if latest[plan_id].get("status") not in self.TERMINAL
+                }
                 self._view_idempotency = idempotency
                 self._view_need_candidates = {
                     plan_id: latest[plan_id]
@@ -156,9 +163,21 @@ class PlanLedger:
         assert self._view_by_id is not None
         return [
             deepcopy(self._view_by_id[plan_id])
-            for plan_id in self._view_order
-            if self._view_by_id[plan_id].get("status") not in self.TERMINAL
+            for plan_id in self._view_active_ids
         ]
+
+    def has_active_plan_for_actor(self, actor_entity_id: str) -> bool:
+        """Membership lookup without copying payloads or historical plans.
+
+        Matches the idle NPC's previous actor_entity_id comparison exactly.
+        """
+        self._ensure_view()
+        assert self._view_by_id is not None
+        actor = str(actor_entity_id or "")
+        return any(
+            str(self._view_by_id[plan_id].get("actor_entity_id") or "") == actor
+            for plan_id in self._view_active_ids
+        )
 
     def need_outcome_candidates(self) -> list[dict[str, Any]]:
         """Latest completed need plans, in original plan creation order.
@@ -233,6 +252,10 @@ class PlanLedger:
                         self._view_order.append(plan_id)
                     snapshot = deepcopy(row)
                     self._view_by_id[plan_id] = snapshot
+                    if snapshot.get("status") not in self.TERMINAL:
+                        self._view_active_ids.setdefault(plan_id, None)
+                    else:
+                        self._view_active_ids.pop(plan_id, None)
                     if self._eligible_need_candidate(snapshot):
                         self._view_need_candidates[plan_id] = snapshot
                     else:
