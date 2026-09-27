@@ -125,6 +125,12 @@ class WorldTickDriver:
                         "interval_seconds": interval,
                         "over_budget": elapsed > interval,
                         "executed": bool(result.get("executed")),
+                        "logical_tick": (
+                            result.get("tick", {}).get("clock", {}).get("tick")
+                            if isinstance(result.get("tick"), dict)
+                            and isinstance(result["tick"].get("clock"), dict)
+                            else None
+                        ),
                     })
                 except Exception:
                     # Metrics may fail; the authoritative tick must not.

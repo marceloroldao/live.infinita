@@ -52,6 +52,12 @@ class WorldTickProfiler:
             "over_budget": elapsed_ms > interval_ms,
             "stages": stage_ms,
             "unaccounted_ms": max(0.0, elapsed_ms - sum(stage_ms.values())),
+            "logical_tick": (
+                int(result["logical_tick"])
+                if result.get("logical_tick") is not None
+                else None
+            ),
+            "sample_index": self.seen + 1,
         })
         self.seen += 1
         if self.seen % self.report_every == 0:
@@ -79,6 +85,25 @@ class WorldTickProfiler:
             for name in stage_names
         }
         over_budget = sum(bool(row["over_budget"]) for row in samples)
+        # Keep only the slowest 12 within the same 256-sample rolling window.
+        # This is an aggregate report, never a per-tick append-only journal.
+        slowest = sorted(
+            (row for row in samples if row["elapsed_ms"] >= 1000.0),
+            key=lambda row: (-row["elapsed_ms"], row["sample_index"]),
+        )[:12]
+        slow_ticks = [
+            {
+                "sample_index": row["sample_index"],
+                "logical_tick": row["logical_tick"],
+                "elapsed_ms": round(row["elapsed_ms"], 3),
+                "unaccounted_ms": round(row["unaccounted_ms"], 3),
+                "stages_ms": {
+                    name: round(duration, 3)
+                    for name, duration in sorted(row["stages"].items())
+                },
+            }
+            for row in slowest
+        ]
         return {
             "profile_schema": "world_tick_profile_v1",
             "generated_at_unix": time.time(),
@@ -90,6 +115,9 @@ class WorldTickProfiler:
             "over_budget_ratio": round(over_budget / len(samples), 4) if samples else 0.0,
             "total": self._stats([row["elapsed_ms"] for row in samples]),
             "unaccounted": self._stats([row["unaccounted_ms"] for row in samples]),
+            "slow_threshold_ms": 1000.0,
+            "slow_tick_count": sum(row["elapsed_ms"] >= 1000.0 for row in samples),
+            "slowest_ticks": slow_ticks,
             "stages": stages,
         }
 

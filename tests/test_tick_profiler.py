@@ -59,6 +59,54 @@ class TickProfilerTests(unittest.TestCase):
         self.assertEqual(saved["total_observed_ticks"], 2)
         self.assertNotIn("payload", path.read_text())
 
+    def test_slowest_ticks_are_bounded_correlated_and_payload_free(self) -> None:
+        path = self.root / "slow.json"
+        profiler = WorldTickProfiler(path, window=4, report_every=1)
+        for tick, elapsed in enumerate((2.0, 0.2, 1.5, 3.0, 0.1), 1):
+            profiler.observe_stage("events.fire_due", 100_000_000)
+            profiler.observe_tick({
+                "elapsed_seconds": elapsed,
+                "interval_seconds": 0.5,
+                "executed": True,
+                "logical_tick": 80000 + tick,
+                "payload": {"private": "must never persist"},
+            })
+        report = profiler.snapshot()
+        self.assertEqual(report["window_samples"], 4)
+        self.assertEqual(report["slow_tick_count"], 2)
+        slow = report["slowest_ticks"]
+        self.assertEqual([row["logical_tick"] for row in slow], [80004, 80003])
+        self.assertEqual([row["sample_index"] for row in slow], [4, 3])
+        self.assertEqual([row["elapsed_ms"] for row in slow], [3000.0, 1500.0])
+        self.assertEqual([row["unaccounted_ms"] for row in slow], [2900.0, 1400.0])
+        self.assertEqual(slow[0]["stages_ms"], {"events.fire_due": 100.0})
+        self.assertNotIn("private", path.read_text())
+        self.assertNotIn("payload", path.read_text())
+        self.assertEqual(report["total_observed_ticks"], 5)
+
+    def test_slowest_trace_is_capped_to_twelve_and_ignores_failed_lease(self) -> None:
+        profiler = WorldTickProfiler(self.root / "cap.json", window=32, report_every=32)
+        for tick in range(20):
+            profiler.observe_stage("clock.advance", 10_000_000)
+            profiler.observe_tick({
+                "elapsed_seconds": float(1 + tick / 10),
+                "interval_seconds": 0.5,
+                "executed": True,
+                "logical_tick": tick,
+            })
+        profiler.observe_stage("clock.advance", 10_000_000)
+        profiler.observe_tick({
+            "elapsed_seconds": 20.0, "interval_seconds": 0.5,
+            "executed": False, "logical_tick": None,
+        })
+        report = profiler.snapshot()
+        self.assertEqual(report["total_observed_ticks"], 20)
+        self.assertEqual(report["slow_tick_count"], 20)
+        self.assertEqual(len(report["slowest_ticks"]), 12)
+        self.assertEqual(report["slowest_ticks"][0]["logical_tick"], 19)
+        self.assertEqual(report["slowest_ticks"][-1]["logical_tick"], 8)
+        self.assertEqual(report["stages"]["clock.advance"]["observed_ticks"], 20)
+
     def test_disabled_profiler_does_not_modify_runner(self) -> None:
         runner = FakeRunner()
         with patch.dict(os.environ, {"LIVE_INFINITA_TICK_PROFILER": "0"}):

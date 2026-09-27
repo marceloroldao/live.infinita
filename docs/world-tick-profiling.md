@@ -18,7 +18,8 @@ next restart stops recording. Existing reports are historical snapshots and
 should not be mistaken for live state.
 
 Fields:
-- `generated_at_unix` and `process_pid`: distinguish a live report from a stale prior-process snapshot.\n- `total_observed_ticks`: since the current process started (resets on restart).
+- `generated_at_unix` and `process_pid`: distinguish a live report from a stale prior-process snapshot.
+- `total_observed_ticks`: since the current process started (resets on restart).
 - `window_samples`: rolling sample count, at most 256.
 - `tick_budget_ms`: configured tick interval (normally 500 ms).
 - `total`: observed wall-clock tick duration, p50/p95/p99/max.
@@ -28,6 +29,12 @@ Fields:
 - `unaccounted`: total duration minus measured stage durations (clamped to
   zero). This includes result projection, uninstrumented work and observation
   overhead; it must not automatically be attributed to one subsystem.
+- `slow_threshold_ms` is 1000 ms. `slow_tick_count` counts all such
+  ticks in the rolling window; `slowest_ticks` includes at most the 12 slowest,
+  identified by authoritative `logical_tick` and `sample_index`. Each row
+  includes total wall time, unaccounted time and measured `stages_ms`.
+  This is correlation evidence, not a CPU stack or proof of a stage's cause.
+  No world payloads, NPC identity, memory text or actions are persisted.
 
 The optional telemetry must never mutate or pause the world. If a metric callback
 fails, the driver proceeds; persistence errors do not restart the service.
