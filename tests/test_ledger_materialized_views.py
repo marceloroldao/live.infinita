@@ -182,6 +182,31 @@ class MaterializedLedgerViewTests(unittest.TestCase):
             self.assertEqual([x["strategy_execution_id"] for x in executor.unprocessed_completed(set())], ["replacement"])
 
 
+    def test_pending_need_candidates_exclude_processed_without_copy_and_reconcile_changes(self) -> None:
+        path = self.root / "plans.jsonl"
+        ledger = PlanLedger(path)
+        def completed(identifier):
+            return {"plan_id": identifier, "status": "completed", "intent": {"need": "energy"}, "nested": {"value": 1}}
+        ledger._append(completed("old"))
+        ledger._append(completed("new"))
+        with patch.object(ledger, "current", side_effect=AssertionError("full history copied")):
+            with patch("plan_ledger.deepcopy", side_effect=AssertionError("no deepcopy of processed plans")):
+                self.assertEqual(ledger.pending_need_outcome_candidates({"old", "new"}), [])
+            self.assertEqual([r["plan_id"] for r in ledger.pending_need_outcome_candidates({"old"})], ["new"])
+            detached = ledger.pending_need_outcome_candidates({"old"})
+            detached[0]["nested"]["value"] = 99
+            self.assertEqual(ledger.pending_need_outcome_candidates({"old"})[0]["nested"]["value"], 1)
+            ledger._append(completed("third"))
+            self.assertEqual([r["plan_id"] for r in ledger.pending_need_outcome_candidates({"old", "new"})], ["third"])
+            with path.open("ab") as fh:
+                fh.write(_encoded(completed("external")))
+            self.assertEqual([r["plan_id"] for r in ledger.pending_need_outcome_candidates({"old", "new"})], ["third", "external"])
+            replacement = self.root / "replace-pending.jsonl"
+            replacement.write_bytes(_encoded(completed("replacement")))
+            os.replace(replacement, path)
+            self.assertEqual([r["plan_id"] for r in ledger.pending_need_outcome_candidates({"old"})], ["replacement"])
+
+
 
 if __name__ == "__main__":
     unittest.main()
