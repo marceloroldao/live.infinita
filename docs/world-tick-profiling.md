@@ -18,7 +18,7 @@ next restart stops recording. Existing reports are historical snapshots and
 should not be mistaken for live state.
 
 Fields:
-- `total_observed_ticks`: since the current process started (resets on restart).
+- `generated_at_unix` and `process_pid`: distinguish a live report from a stale prior-process snapshot.\n- `total_observed_ticks`: since the current process started (resets on restart).
 - `window_samples`: rolling sample count, at most 256.
 - `tick_budget_ms`: configured tick interval (normally 500 ms).
 - `total`: observed wall-clock tick duration, p50/p95/p99/max.
