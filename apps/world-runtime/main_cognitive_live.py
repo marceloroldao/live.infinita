@@ -303,6 +303,10 @@ async def cognitive_health() -> JSONResponse:
         "shadow_observer": {
             "records": shadow_summary.get("records", 0),
             "exact_match_rate": shadow_summary.get("exact_match_rate"),
+            "exante_forecasts": shadow_summary.get("exante_forecasts", 0),
+            "exante_evaluated": shadow_summary.get("exante_evaluated", 0),
+            "exante_directional_alignment_rate": shadow_summary.get("exante_directional_alignment_rate"),
+            "exante_abstained": shadow_summary.get("exante_abstained", 0),
             "direct_world_write": False,
             "selection_authority": False,
         },
