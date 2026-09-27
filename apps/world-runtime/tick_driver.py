@@ -119,11 +119,15 @@ class WorldTickDriver:
             elapsed = max(0.0, self.monotonic() - started)
             interval = self.interval_seconds
             if self.tick_observer is not None:
-                self.tick_observer({
-                    "elapsed_seconds": elapsed,
-                    "interval_seconds": interval,
-                    "over_budget": elapsed > interval,
-                    "executed": bool(result.get("executed")),
-                })
+                try:
+                    self.tick_observer({
+                        "elapsed_seconds": elapsed,
+                        "interval_seconds": interval,
+                        "over_budget": elapsed > interval,
+                        "executed": bool(result.get("executed")),
+                    })
+                except Exception:
+                    # Metrics may fail; the authoritative tick must not.
+                    pass
             self.sleeper(max(0.0, interval - elapsed))
         return results
