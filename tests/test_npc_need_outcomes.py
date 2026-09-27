@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import importlib.util
+import json
+import os
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -120,6 +123,44 @@ class NpcNeedOutcomeTest(unittest.TestCase):
             second = dynamics.satisfy("npc", "social", 0.20, outcome_id="same")
             self.assertEqual(first, second)
             self.assertAlmostEqual(dynamics.get_needs("npc")["social"], max(0.0, before - 0.20))
+
+
+    def test_second_pass_uses_candidate_and_processed_indexes_without_replaying(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            dynamics, ledger, processor = self.make(Path(tmpdir))
+            self.complete_plan(ledger, need="energy")
+            self.assertEqual(len(processor.process_completed()), 1)
+            with patch.object(ledger, "current", side_effect=AssertionError("full plan copy")), \
+                 patch.object(processor, "history", side_effect=AssertionError("full outcome replay")):
+                self.assertEqual(processor.process_completed(), [])
+            self.assertEqual(len(processor.history()), 1)
+
+    def test_external_outcome_append_invalidates_index_and_avoids_reapplying(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            dynamics, ledger, processor = self.make(Path(tmpdir))
+            completed = self.complete_plan(ledger, need="social")
+            before = dynamics.get_needs("npc")["social"]
+            self.assertEqual(processor._processed_ids(), set())
+            with processor.path.open("ab") as fh:
+                fh.write((json.dumps({"plan_id": completed["plan_id"], "status": "applied"}) + "\n").encode("utf-8"))
+            self.assertEqual(processor.process_completed(), [])
+            self.assertAlmostEqual(dynamics.get_needs("npc")["social"], before)
+            self.assertEqual(processor._processed_ids(), {completed["plan_id"]})
+            replacement = Path(tmpdir) / "other-outcomes.jsonl"
+            replacement.write_text("", encoding="utf-8")
+            os.replace(replacement, processor.path)
+            self.assertEqual(processor._processed_ids(), set())
+            self.assertEqual(len(processor.process_completed()), 1)
+
+    def test_restart_recovers_processed_ids_from_durable_outcomes(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            dynamics, ledger, processor = self.make(Path(tmpdir))
+            self.complete_plan(ledger, need="energy")
+            self.assertEqual(len(processor.process_completed()), 1)
+            rebooted = NpcNeedOutcomeProcessor(processor.path, ledger, dynamics)
+            with patch.object(ledger, "current", side_effect=AssertionError("full plan copy")):
+                self.assertEqual(rebooted.process_completed(), [])
+            self.assertEqual(len(rebooted.history()), 1)
 
 
 if __name__ == "__main__":

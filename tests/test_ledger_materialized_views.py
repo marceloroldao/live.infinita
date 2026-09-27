@@ -133,5 +133,29 @@ class MaterializedLedgerViewTests(unittest.TestCase):
             self.assertEqual(replay.call_count, 2)
 
 
+    def test_completed_need_candidate_index_keeps_creation_order_without_full_current_copy(self) -> None:
+        path = self.root / "plans.jsonl"
+        ledger = PlanLedger(path)
+        ledger._append({"plan_id": "older", "status": "planned", "intent": {"need": "energy"}})
+        ledger._append({"plan_id": "newer", "status": "completed", "intent": {"need": "social"}})
+        ledger._append({"plan_id": "excluded", "status": "completed", "intent": {"need": "safety", "need_outcome_eligible": False}})
+        ledger._append({"plan_id": "irrelevant", "status": "completed", "intent": {}})
+        with patch.object(ledger, "current", side_effect=AssertionError("must not copy full ledger")):
+            self.assertEqual([r["plan_id"] for r in ledger.need_outcome_candidates()], ["newer"])
+            ledger._append({"plan_id": "older", "status": "completed", "intent": {"need": "energy"}})
+            self.assertEqual([r["plan_id"] for r in ledger.need_outcome_candidates()], ["older", "newer"])
+            detached = ledger.need_outcome_candidates()
+            detached[0]["intent"]["need"] = "changed"
+            self.assertEqual(ledger.need_outcome_candidates()[0]["intent"]["need"], "energy")
+            with path.open("ab") as fh:
+                fh.write(_encoded({"plan_id": "external", "status": "completed", "intent": {"need": "curiosity"}}))
+            self.assertEqual([r["plan_id"] for r in ledger.need_outcome_candidates()], ["older", "newer", "external"])
+            replacement = self.root / "replacement-plans.jsonl"
+            replacement.write_bytes(_encoded({"plan_id": "replacement", "status": "completed", "intent": {"need": "safety"}}))
+            os.replace(replacement, path)
+            self.assertEqual([r["plan_id"] for r in ledger.need_outcome_candidates()], ["replacement"])
+
+
+
 if __name__ == "__main__":
     unittest.main()

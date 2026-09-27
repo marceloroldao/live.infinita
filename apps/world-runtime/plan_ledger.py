@@ -33,7 +33,18 @@ class PlanLedger:
         self._view_by_id: dict[str, dict[str, Any]] | None = None
         self._view_order: list[str] = []
         self._view_idempotency: dict[str, str] = {}
+        self._view_need_candidates: dict[str, dict[str, Any]] = {}
         self._view_signature: tuple[int, int, int, int] | None = None
+
+    @staticmethod
+    def _eligible_need_candidate(row: dict[str, Any]) -> bool:
+        intent = row.get("intent")
+        return (
+            row.get("status") == "completed"
+            and isinstance(intent, dict)
+            and bool(intent.get("need"))
+            and intent.get("need_outcome_eligible") is not False
+        )
 
     def _signature(self) -> tuple[int, int, int, int] | None:
         try:
@@ -68,6 +79,11 @@ class PlanLedger:
                 self._view_by_id = latest
                 self._view_order = order
                 self._view_idempotency = idempotency
+                self._view_need_candidates = {
+                    plan_id: latest[plan_id]
+                    for plan_id in order
+                    if self._eligible_need_candidate(latest[plan_id])
+                }
                 self._view_signature = after
                 return
         raise PlanLedgerError("plan ledger changed while rebuilding current state")
@@ -144,6 +160,19 @@ class PlanLedger:
             if self._view_by_id[plan_id].get("status") not in self.TERMINAL
         ]
 
+    def need_outcome_candidates(self) -> list[dict[str, Any]]:
+        """Latest completed need plans, in original plan creation order.
+
+        Unlike current(), only eligible candidate payloads are deep-copied.
+        The authoritative JSONL remains the source on cache invalidation.
+        """
+        self._ensure_view()
+        return [
+            deepcopy(self._view_need_candidates[plan_id])
+            for plan_id in self._view_order
+            if plan_id in self._view_need_candidates
+        ]
+
     def _append(self, row: dict[str, Any]) -> dict[str, Any]:
         payload = (
             json.dumps(row, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
@@ -189,7 +218,12 @@ class PlanLedger:
                 else:
                     if previous is None:
                         self._view_order.append(plan_id)
-                    self._view_by_id[plan_id] = deepcopy(row)
+                    snapshot = deepcopy(row)
+                    self._view_by_id[plan_id] = snapshot
+                    if self._eligible_need_candidate(snapshot):
+                        self._view_need_candidates[plan_id] = snapshot
+                    else:
+                        self._view_need_candidates.pop(plan_id, None)
                     if key:
                         self._view_idempotency.setdefault(key, plan_id)
             self._view_signature = after
