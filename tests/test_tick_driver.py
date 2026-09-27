@@ -111,6 +111,7 @@ class TickDriverTests(unittest.TestCase):
         self.assertAlmostEqual(samples[0]["elapsed_seconds"], 0.3)
         self.assertAlmostEqual(samples[0]["interval_seconds"], 0.5)
         self.assertFalse(samples[0]["over_budget"])
+        self.assertEqual(samples[0]["logical_tick"], 1)
         self.assertAlmostEqual(sleeps[0], 0.2)
 
     def test_tick_observer_failure_cannot_kill_world(self) -> None:
