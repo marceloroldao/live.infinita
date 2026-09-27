@@ -107,11 +107,110 @@ class MemoriaV2ShadowModeTests(unittest.TestCase):
             self.assertEqual(rows[0]["authority"], "shadow-observer")
             self.assertEqual(rows[0]["best_candidate"]["action"], "nov_to_shelter")
             self.assertTrue(rows[0]["best_candidate"]["exact_structural_match"])
+            trajectory = rows[0]["trajectory_observation"]
+            self.assertEqual(trajectory["before_position"], {"x": 640, "y": 360})
+            self.assertEqual(trajectory["after_position"], {"x": 900, "y": 375})
+            self.assertTrue(trajectory["region_changed"])
+            self.assertEqual(trajectory["predicted_target_entity_id"], "shelter_marker")
+            self.assertTrue(trajectory["moved_toward_predicted_target"])
+            self.assertGreater(trajectory["progress_toward_predicted_target"], 0.0)
+            self.assertEqual(trajectory["plan_outcomes"][0]["status"], "completed")
 
             summary = summarize_shadow_file(path)
             self.assertEqual(summary["records"], 1)
             self.assertEqual(summary["exact_structural_matches"], 1)
             self.assertEqual(summary["exact_match_rate"], 1.0)
+
+    def test_satisfaction_evidence_is_linked_by_plan_without_claiming_prediction(self) -> None:
+        class OutcomeRunner(FakeRunner):
+            def tick(self):
+                result = super().tick()
+                self.store.entities["nov"]["properties"]["needs"]["curiosity"] = 0.6
+                result["npc_need_outcomes"] = [
+                    {
+                        "npc_id": "nov",
+                        "need": "curiosity",
+                        "plan_id": "plan-1",
+                        "status": "applied",
+                        "before": 0.8,
+                        "after": 0.6,
+                        "amount": 0.2,
+                        "strategy_experience": {"target_entity_id": "shelter_marker"},
+                    },
+                    {
+                        "npc_id": "other",
+                        "need": "safety",
+                        "plan_id": "other-plan",
+                        "status": "applied",
+                        "before": 0.8,
+                        "after": 0.2,
+                    },
+                ]
+                return result
+
+        with tempfile.TemporaryDirectory() as directory:
+            world, store = self._world(), FakeStore()
+            path = Path(directory) / "shadow.jsonl"
+            wrapper = ShadowWorldTickRunner(
+                OutcomeRunner(world, store),
+                CognitiveShadowRecorder(path, world_provider=lambda: deepcopy(world), store=store, enabled=True),
+            )
+            result = wrapper.tick()
+            self.assertEqual(result["cognitive_shadow"]["status"], "recorded")
+            row = json.loads(path.read_text(encoding="utf-8").strip())
+            trajectory = row["trajectory_observation"]
+            self.assertEqual(trajectory["need_levels_before"]["curiosity"], 0.8)
+            self.assertEqual(trajectory["need_levels_after"]["curiosity"], 0.6)
+            self.assertAlmostEqual(trajectory["need_level_deltas"]["curiosity"], -0.2)
+            evidence = trajectory["need_satisfaction_outcomes"]
+            self.assertEqual(len(evidence), 1)
+            self.assertEqual(evidence[0]["plan_id"], "plan-1")
+            self.assertTrue(evidence[0]["matched_terminal_plan_in_tick"])
+            self.assertTrue(evidence[0]["matches_posthoc_target"])
+            self.assertAlmostEqual(evidence[0]["observed_satisfaction_delta"], 0.2)
+            self.assertFalse(row["predictive_accuracy_evaluable"])
+            self.assertEqual(row["best_candidate"]["selection_phase"], "posthoc")
+            summary = summarize_shadow_file(path)
+            self.assertEqual(summary["need_satisfaction_outcomes"], 1)
+            self.assertEqual(summary["positive_need_satisfaction_outcomes"], 1)
+            self.assertEqual(summary["linked_terminal_plan_outcomes"], 1)
+            self.assertEqual(summary["posthoc_target_matches"], 1)
+
+    def test_moving_target_does_not_inflate_trajectory_progress(self) -> None:
+        class MovingTargetRunner(FakeRunner):
+            def tick(self):
+                result = super().tick()
+                self.store.entities["shelter_marker"]["position"] = {"x": 901, "y": 375}
+                return result
+
+        with tempfile.TemporaryDirectory() as directory:
+            world, store = self._world(), FakeStore()
+            path = Path(directory) / "shadow.jsonl"
+            wrapper = ShadowWorldTickRunner(
+                MovingTargetRunner(world, store),
+                CognitiveShadowRecorder(path, world_provider=lambda: deepcopy(world), store=store, enabled=True),
+            )
+            wrapper.tick()
+            row = json.loads(path.read_text(encoding="utf-8").strip())
+            trajectory = row["trajectory_observation"]
+            self.assertEqual(trajectory["predicted_target_movement_distance"], 1.0)
+            self.assertFalse(trajectory["predicted_target_stable"])
+            self.assertIsNone(trajectory["progress_toward_predicted_target"])
+            self.assertFalse(trajectory["moved_toward_predicted_target"])
+
+    def test_mixed_legacy_rows_are_summarized_without_assuming_prediction(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "shadow.jsonl"
+            path.write_text(
+                json.dumps({"best_candidate": {"exact_structural_match": True}}) + "\n" +
+                json.dumps({"best_candidate": {"exact_structural_match": False},
+                    "trajectory_observation": {"need_satisfaction_outcomes": []}}) + "\n",
+                encoding="utf-8",
+            )
+            summary = summarize_shadow_file(path)
+            self.assertEqual(summary["records"], 2)
+            self.assertEqual(summary["trajectory_records"], 1)
+            self.assertEqual(summary["need_satisfaction_outcomes"], 0)
 
     def test_disabled_shadow_is_a_noop(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
