@@ -197,7 +197,8 @@ class TickDriverTests(unittest.TestCase):
             rows = driver.serve(max_ticks=3)
         self.assertEqual(len(rows), 3)
         self.assertEqual([r["tick"]["clock"]["tick"] for r in rows], [1, 2, 3])
-        self.assertEqual(sync.call_count, 3)
+        # Three driver acquisitions plus three contender acquisitions.
+        self.assertEqual(sync.call_count, 6)
         self.assertEqual(len(sleeps), 3)
 
     def test_competing_writer_prevents_continuous_service_ticks(self) -> None:
