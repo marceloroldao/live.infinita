@@ -131,6 +131,37 @@ class TickDriverTests(unittest.TestCase):
         self.assertTrue(driver.lease.acquire())
         driver.lease.release()
 
+    def test_passive_lease_spans_measure_acquire_and_release(self) -> None:
+        runner = FakeRunner()
+        now = iter((0, 100, 200, 300))
+        spans: list[tuple[str, int]] = []
+        driver = WorldTickDriver(
+            runner,
+            lease=SingleWriterTickLease(self.tmp / "timed.lock"),
+            stage_observer=lambda name, duration: spans.append((name, duration)),
+            monotonic_ns=lambda: next(now),
+        )
+        self.assertTrue(driver.run_once()["executed"])
+        self.assertEqual(
+            spans, [("driver.lease_acquire", 100), ("driver.lease_release", 100)]
+        )
+        self.assertEqual(runner.calls, 1)
+        self.assertEqual(runner.clock.state().tick, 1)
+
+    def test_failed_lease_profiler_is_not_authoritative(self) -> None:
+        runner = FakeRunner()
+        def broken(_stage: str, _duration: int) -> None:
+            raise RuntimeError("telemetry failure")
+        lease = SingleWriterTickLease(self.tmp / "fail-open.lock")
+        driver = WorldTickDriver(
+            runner, lease=lease, stage_observer=broken,
+        )
+        result = driver.run_once()
+        self.assertTrue(result["executed"])
+        self.assertEqual(runner.calls, 1)
+        self.assertTrue(lease.acquire())
+        lease.release()
+
     def test_tick_observer_reports_budget_without_changing_cadence(self) -> None:
         runner = FakeRunner()
         now = [0.0]
