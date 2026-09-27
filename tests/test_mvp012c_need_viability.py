@@ -132,6 +132,21 @@ class NeedFallbackTests(unittest.TestCase):
                              ["no_target", "already_active"])
             self.assertEqual(len(plans.calls), 1)
 
+    def test_contextual_target_is_read_once_before_tick(self):
+        with tempfile.TemporaryDirectory() as directory:
+            _, store, needs, _, _ = self.build(Path(directory) / "needs.jsonl")
+            calls = []
+            def provider(key):
+                calls.append(key)
+                return store.get_entity(key)
+            forecast, _ = freeze_contextual_forecast(
+                frame_id="f", world_version=1, world_sequence=2,
+                observer=store.get_entity("nov"), needs=needs.get_needs("nov"),
+                target_provider=provider,
+            )
+            self.assertEqual(forecast["status"], "issued")
+            self.assertEqual(calls, ["ancient_tree"])
+
     def test_contextual_observer_skips_only_unresolvable_target(self):
         with tempfile.TemporaryDirectory() as directory:
             scheduler, store, needs, _, _ = self.build(Path(directory) / "needs.jsonl")
