@@ -1,5 +1,8 @@
 import tempfile
+import json
+import os
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 import sys
 
@@ -121,6 +124,81 @@ class NpcCompositeStrategyOutcomeProcessorTest(unittest.TestCase):
             )
             self.assertEqual(processor.process_completed(), [])
             self.assertIsNone(experience.strategy_stats("npc", "energy", "goal", "direct", {}))
+
+    def test_indexed_incremental_completions_learn_once_without_full_history(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            execution = {
+                "strategy_execution_id": "sx-incremental",
+                "status": "completed",
+                "principal": {"actor_id": "npc"},
+                "strategy_plan": {
+                    "strategy_id": "direct", "actor_entity_id": "npc", "need": "energy",
+                    "target_entity_id": "goal", "context": {},
+                },
+                "completed_phases": [
+                    {"kind": "move_to_entity", "child_plan_id": "terminal", "completed_logical_tick": 9},
+                ],
+            }
+            outcome = {
+                "plan_id": "terminal", "status": "applied", "need": "energy",
+                "target_entity_id": "goal", "outcome": {"before": 0.9, "after": 0.5},
+            }
+            class IndexedExecutions:
+                def __init__(self):
+                    self.calls = 0
+                def unprocessed_completed(self, processed):
+                    self.calls += 1
+                    return [] if execution["strategy_execution_id"] in processed else [execution]
+                def current(self):
+                    raise AssertionError("full strategy copy")
+            class IndexedNeedOutcomes:
+                def get_applied(self, plan_id):
+                    return outcome if plan_id == "terminal" else None
+                def history(self):
+                    raise AssertionError("full need-outcome replay")
+            executor = IndexedExecutions()
+            experience = NpcStrategyExperience(Path(tmpdir) / "experience.json", min_samples=1)
+            audit = Path(tmpdir) / "audit.jsonl"
+            plans = FakePlanLedger({"terminal": {
+                "plan_id": "terminal", "started_logical_tick": 5, "completed_logical_tick": 9,
+                "preemption_count": 0, "replan_count": 0,
+            }})
+            processor = NpcCompositeStrategyOutcomeProcessor(
+                audit, executor, plans, IndexedNeedOutcomes(), experience
+            )
+            self.assertEqual(len(processor.process_completed()), 1)
+            with patch.object(processor, "history", side_effect=AssertionError("full composite replay")):
+                self.assertEqual(processor.process_completed(), [])
+            rebooted = NpcCompositeStrategyOutcomeProcessor(
+                audit, executor, plans, IndexedNeedOutcomes(), experience
+            )
+            self.assertEqual(rebooted.process_completed(), [])
+            self.assertEqual(len(rebooted.history()), 1)
+            self.assertEqual(executor.calls, 3)
+            self.assertEqual(
+                experience.strategy_stats("npc", "energy", "goal", "direct", {})["count"], 1
+            )
+
+    def test_composite_processed_index_invalidates_on_external_append_and_replace(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            audit = Path(tmpdir) / "audit.jsonl"
+            experience = NpcStrategyExperience(Path(tmpdir) / "experience.json")
+            processor = NpcCompositeStrategyOutcomeProcessor(
+                audit, FakeStrategyExecutor([]), FakePlanLedger({}),
+                FakeNeedOutcomes([]), experience,
+            )
+            self.assertEqual(processor._processed(), set())
+            with audit.open("ab") as fh:
+                fh.write((json.dumps({"strategy_execution_id": "external"}) + "\n").encode("utf-8"))
+            self.assertEqual(processor._processed(), {"external"})
+            replacement = Path(tmpdir) / "replacement.jsonl"
+            replacement.write_text(json.dumps({"strategy_execution_id": "new"}) + "\n", encoding="utf-8")
+            os.replace(replacement, audit)
+            self.assertEqual(processor._processed(), {"new"})
+            processor._append({"strategy_execution_id": "local", "status": "applied"})
+            with patch.object(processor, "history", side_effect=AssertionError("unexpected replay")):
+                self.assertEqual(processor._processed(), {"new", "local"})
+
 
 
 if __name__ == "__main__":
