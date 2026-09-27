@@ -97,3 +97,30 @@ def test_serve_uses_current_interval_without_accumulated_backlog(tmp_path: Path)
     assert runner.clock.state().tick == 3
     assert len(sleeps) == 3
     assert all(value == 0.5 for value in sleeps)
+
+
+def test_tick_observer_reports_budget_without_changing_cadence(tmp_path: Path) -> None:
+    runner = FakeRunner()
+    now = [0.0]
+    sleeps: list[float] = []
+    samples: list[dict] = []
+
+    def monotonic() -> float:
+        value = now[0]
+        now[0] += 0.3
+        return value
+
+    driver = WorldTickDriver(
+        runner,
+        lease=SingleWriterTickLease(tmp_path / "tick.lock"),
+        monotonic=monotonic,
+        sleeper=lambda seconds: sleeps.append(seconds),
+        tick_observer=samples.append,
+    )
+    driver.serve(max_ticks=1)
+    assert runner.calls == 1
+    assert len(samples) == 1
+    assert samples[0]["elapsed_seconds"] == 0.3
+    assert samples[0]["interval_seconds"] == 0.5
+    assert samples[0]["over_budget"] is False
+    assert sleeps == [0.2]
