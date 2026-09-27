@@ -107,6 +107,14 @@ class MemoriaV2ShadowModeTests(unittest.TestCase):
             self.assertEqual(rows[0]["authority"], "shadow-observer")
             self.assertEqual(rows[0]["best_candidate"]["action"], "nov_to_shelter")
             self.assertTrue(rows[0]["best_candidate"]["exact_structural_match"])
+            trajectory = rows[0]["trajectory_observation"]
+            self.assertEqual(trajectory["before_position"], {"x": 640, "y": 360})
+            self.assertEqual(trajectory["after_position"], {"x": 900, "y": 375})
+            self.assertTrue(trajectory["region_changed"])
+            self.assertEqual(trajectory["predicted_target_entity_id"], "shelter_marker")
+            self.assertTrue(trajectory["moved_toward_predicted_target"])
+            self.assertGreater(trajectory["progress_toward_predicted_target"], 0.0)
+            self.assertEqual(trajectory["plan_outcomes"][0]["status"], "completed")
 
             summary = summarize_shadow_file(path)
             self.assertEqual(summary["records"], 1)
