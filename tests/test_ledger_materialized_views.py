@@ -156,6 +156,42 @@ class MaterializedLedgerViewTests(unittest.TestCase):
             self.assertEqual([r["plan_id"] for r in ledger.need_outcome_candidates()], ["replacement"])
 
 
+    def test_strategy_active_need_and_unprocessed_completion_views(self) -> None:
+        path = self.root / "strategy-active.jsonl"
+        executor = NpcStrategyExecutor(path, None)
+        def row(identifier, status, need="safety"):
+            return {
+                "strategy_execution_id": identifier, "status": status,
+                "strategy_plan": {"actor_entity_id": "nov", "need": need},
+                "nested": {"count": 1},
+            }
+        executor._append(row("first", "running"))
+        executor._append(row("completed", "completed"))
+        executor._append(row("second", "running"))
+        with patch.object(executor, "current", side_effect=AssertionError("full-history payload copy")):
+            self.assertEqual(executor.find_active_need("nov", "safety")["strategy_execution_id"], "first")
+            self.assertEqual([r["strategy_execution_id"] for r in executor.completed_unprocessed(set())], ["completed"])
+            self.assertEqual(executor.completed_unprocessed({"completed"}), [])
+            detached = executor.find_active_need("nov", "safety")
+            detached["nested"]["count"] = 99
+            self.assertEqual(executor.find_active_need("nov", "safety")["nested"]["count"], 1)
+            executor._append(row("first", "completed"))
+            self.assertEqual(executor.find_active_need("nov", "safety")["strategy_execution_id"], "second")
+            self.assertEqual([r["strategy_execution_id"] for r in executor.completed_unprocessed(set())], ["first", "completed"])
+            with path.open("ab") as fh:
+                fh.write(_encoded(row("external", "completed")))
+            self.assertEqual(
+                [r["strategy_execution_id"] for r in executor.completed_unprocessed({"first", "completed"})],
+                ["external"],
+            )
+            replacement = self.root / "replacement-strategies.jsonl"
+            replacement.write_bytes(_encoded(row("replaced", "running", "energy")))
+            os.replace(replacement, path)
+            self.assertIsNone(executor.find_active_need("nov", "safety"))
+            self.assertEqual(executor.find_active_need("nov", "energy")["strategy_execution_id"], "replaced")
+            self.assertEqual(executor.completed_unprocessed(set()), [])
+
+
 
 if __name__ == "__main__":
     unittest.main()
