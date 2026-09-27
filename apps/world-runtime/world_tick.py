@@ -116,12 +116,12 @@ class WorldTickRunner:
                 "npc_composite_strategy_outcomes": [],
             }
 
-        after = self.clock.advance()
+        after = self._stage("clock.advance", self.clock.advance)
         causal_before = self._causal_snapshot()
 
         event_results: list[dict[str, Any]] = []
         if self.event_scheduler is not None:
-            for row in self.event_scheduler.fire_due(after.tick):
+            for row in self._stage("events.fire_due", lambda: self.event_scheduler.fire_due(after.tick)):
                 event_results.append({
                     "scheduled_event_id": row.get("scheduled_event_id"),
                     "status": row.get("status"),
@@ -133,7 +133,7 @@ class WorldTickRunner:
 
         conditional_results: list[dict[str, Any]] = []
         if self.conditional_event_scheduler is not None:
-            for row in self.conditional_event_scheduler.evaluate_tick(after.tick):
+            for row in self._stage("conditional_events.evaluate", lambda: self.conditional_event_scheduler.evaluate_tick(after.tick)):
                 conditional_results.append({
                     "conditional_event_id": row.get("conditional_event_id"),
                     "effect_kind": row.get("effect_kind"),
@@ -175,7 +175,7 @@ class WorldTickRunner:
 
         need_dynamics_results: list[dict[str, Any]] = []
         if self.npc_need_dynamics is not None:
-            for row in self.npc_need_dynamics.advance_tick(after.tick):
+            for row in self._stage("npc_need_dynamics.advance", lambda: self.npc_need_dynamics.advance_tick(after.tick)):
                 need_dynamics_results.append({
                     "npc_id": row.get("npc_id"),
                     "tick": row.get("tick"),
@@ -185,7 +185,7 @@ class WorldTickRunner:
 
         need_results: list[dict[str, Any]] = []
         if self.npc_need_scheduler is not None:
-            for row in self.npc_need_scheduler.evaluate_tick(after.tick):
+            for row in self._stage("npc_needs.evaluate", lambda: self.npc_need_scheduler.evaluate_tick(after.tick)):
                 need_results.append({
                     "npc_id": row.get("npc_id"),
                     "need": row.get("need"),
@@ -201,7 +201,7 @@ class WorldTickRunner:
         idle_results: list[dict[str, Any]] = []
         if self.npc_idle_wander is not None:
             blocked_npcs = self._idle_blocked_npc_ids(need_results)
-            for row in self.npc_idle_wander.evaluate_tick(after.tick, blocked_npc_ids=blocked_npcs):
+            for row in self._stage("npc_idle_wander.evaluate", lambda: self.npc_idle_wander.evaluate_tick(after.tick, blocked_npc_ids=blocked_npcs)):
                 idle_results.append({
                     "npc_id": row.get("npc_id"),
                     "tick": row.get("tick"),
@@ -214,7 +214,7 @@ class WorldTickRunner:
 
         strategy_results: list[dict[str, Any]] = []
         if self.npc_strategy_executor is not None:
-            for row in self.npc_strategy_executor.tick_all(logical_tick=after.tick):
+            for row in self._stage("npc_strategies.tick_all", lambda: self.npc_strategy_executor.tick_all(logical_tick=after.tick)):
                 strategy_results.append({
                     "strategy_execution_id": row.get("strategy_execution_id"),
                     "strategy_id": (row.get("strategy_plan") or {}).get("strategy_id") if isinstance(row.get("strategy_plan"), dict) else None,
@@ -228,7 +228,7 @@ class WorldTickRunner:
         replan_results: list[dict[str, Any]] = []
         replan_all = getattr(self.scheduler, "replan_all", None)
         if callable(replan_all):
-            for row in replan_all():
+            for row in self._stage("plans.replan_all", replan_all):
                 replan_results.append({
                     "plan_id": row.get("plan_id"),
                     "status": row.get("status"),
@@ -237,7 +237,7 @@ class WorldTickRunner:
                     "last_error": row.get("last_error"),
                 })
 
-        arbitration = self.plan_arbiter.reconcile()
+        arbitration = self._stage("plans.arbitrate", self.plan_arbiter.reconcile)
         results: list[dict[str, Any]] = []
         for record in arbitration.get("runnable", []):
             plan_id = str(record.get("plan_id") or "").strip()
@@ -261,7 +261,7 @@ class WorldTickRunner:
 
         outcome_results: list[dict[str, Any]] = []
         if self.npc_need_outcomes is not None:
-            for row in self.npc_need_outcomes.process_completed():
+            for row in self._stage("npc_need_outcomes.process", self.npc_need_outcomes.process_completed):
                 outcome = row.get("outcome") if isinstance(row.get("outcome"), dict) else {}
                 outcome_results.append({
                     "plan_id": row.get("plan_id"),
@@ -277,7 +277,7 @@ class WorldTickRunner:
 
         composite_outcome_results: list[dict[str, Any]] = []
         if self.npc_composite_strategy_outcomes is not None:
-            for row in self.npc_composite_strategy_outcomes.process_completed():
+            for row in self._stage("npc_composite_outcomes.process", self.npc_composite_strategy_outcomes.process_completed):
                 composite_outcome_results.append({
                     "strategy_execution_id": row.get("strategy_execution_id"),
                     "strategy_id": row.get("strategy_id"),
