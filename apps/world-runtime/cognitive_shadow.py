@@ -7,6 +7,7 @@ from hashlib import sha256
 from pathlib import Path
 from typing import Any, Callable
 
+from cognitive_exante import build_exante_forecast, evaluate_exante_forecast
 from memoria_v2_adapter import (
     CognitiveFrame,
     NOV_ACTIONS,
@@ -22,6 +23,7 @@ class ShadowToken:
     world_sequence: int
     observer_snapshot: dict[str, Any]
     target_snapshots: dict[str, dict[str, Any]]
+    exante_forecast: dict[str, Any]
 
 
 def _finite_number(value: Any) -> float | None:
@@ -96,24 +98,36 @@ class CognitiveShadowRecorder:
             observer=observer,
             targets=targets,
         )
+        before_observer = {
+            "id": observer.get("id"),
+            "region_id": observer.get("region_id"),
+            "position": dict(observer.get("position") or {}),
+            "needs": _need_levels(observer),
+        }
+        target_snapshots = {
+            key: {
+                "id": target.get("id"),
+                "region_id": target.get("region_id"),
+                "position": dict(target.get("position") or {}),
+            }
+            for key, target in targets.items()
+        }
+        forecast = build_exante_forecast(
+            frame=frame,
+            observer=before_observer,
+            targets=target_snapshots,
+            world_version=int(world.get("version", 0) or 0),
+            world_sequence=int(world.get("sequence", 0) or 0),
+            environment=world.get("environment"),
+            need_levels=before_observer["needs"],
+        )
         return ShadowToken(
             frame=frame,
             world_version=int(world.get("version", 0) or 0),
             world_sequence=int(world.get("sequence", 0) or 0),
-            observer_snapshot={
-                "id": observer.get("id"),
-                "region_id": observer.get("region_id"),
-                "position": dict(observer.get("position") or {}),
-                "needs": _need_levels(observer),
-            },
-            target_snapshots={
-                key: {
-                    "id": target.get("id"),
-                    "region_id": target.get("region_id"),
-                    "position": dict(target.get("position") or {}),
-                }
-                for key, target in targets.items()
-            },
+            observer_snapshot=before_observer,
+            target_snapshots=target_snapshots,
+            exante_forecast=forecast,
         )
 
     @staticmethod
@@ -287,6 +301,14 @@ class CognitiveShadowRecorder:
                 ),
             })
 
+        exante_target = token.exante_forecast.get("target_entity_id")
+        exante_evaluation = evaluate_exante_forecast(
+            token.exante_forecast,
+            observer_before=token.observer_snapshot,
+            observer_after=observer,
+            target_after=targets.get(exante_target),
+        )
+
         record = {
             "shadow_id": shadow_id,
             "frame_id": token.frame.frame_id,
@@ -307,6 +329,8 @@ class CognitiveShadowRecorder:
             "best_candidate": best,
             "evaluation_schema": "posthoc-trajectory-need-v1",
             "predictive_accuracy_evaluable": False,
+            "exante_forecast": token.exante_forecast,
+            "exante_evaluation": exante_evaluation,
             "trajectory_observation": {
                 "before_position": before_position,
                 "after_position": after_position,
@@ -360,6 +384,15 @@ def summarize_shadow_file(path: Path) -> dict[str, Any]:
             "positive_need_satisfaction_outcomes": 0,
             "linked_terminal_plan_outcomes": 0,
             "posthoc_target_matches": 0,
+            "exante_forecasts": 0,
+            "exante_issued": 0,
+            "exante_evaluated": 0,
+            "exante_directional_aligned": 0,
+            "exante_directional_misaligned": 0,
+            "exante_abstained": 0,
+            "exante_forecast_abstentions": 0,
+            "exante_not_evaluable": 0,
+            "exante_directional_alignment_rate": None,
             "last": None,
         }
 
@@ -368,6 +401,8 @@ def summarize_shadow_file(path: Path) -> dict[str, Any]:
     ambiguous = 0
     trajectory_records = stable_target_records = positive_target_progress_records = 0
     satisfaction_records = positive_satisfaction = linked_outcomes = target_matches = 0
+    exante_forecasts = exante_issued = exante_evaluated = exante_aligned = exante_misaligned = 0
+    exante_abstained = exante_forecast_abstentions = exante_not_evaluable = 0
     last: dict[str, Any] | None = None
     with file_path.open("r", encoding="utf-8") as fh:
         for raw in fh:
@@ -405,6 +440,24 @@ def summarize_shadow_file(path: Path) -> dict[str, Any]:
                         linked_outcomes += 1
                     if outcome.get("matches_posthoc_target") is True:
                         target_matches += 1
+            exante = row.get("exante_forecast")
+            evaluation = row.get("exante_evaluation")
+            if isinstance(exante, dict) and isinstance(evaluation, dict):
+                exante_forecasts += 1
+                if exante.get("status") == "issued":
+                    exante_issued += 1
+                if evaluation.get("status") in {"hit", "miss"}:
+                    exante_evaluated += 1
+                    if evaluation.get("hit") is True:
+                        exante_aligned += 1
+                    else:
+                        exante_misaligned += 1
+                else:
+                    exante_abstained += 1
+                    if evaluation.get("status") == "abstained":
+                        exante_forecast_abstentions += 1
+                    elif evaluation.get("status") == "not_evaluable":
+                        exante_not_evaluable += 1
             last = row
 
     return {
@@ -419,5 +472,14 @@ def summarize_shadow_file(path: Path) -> dict[str, Any]:
         "positive_need_satisfaction_outcomes": positive_satisfaction,
         "linked_terminal_plan_outcomes": linked_outcomes,
         "posthoc_target_matches": target_matches,
+        "exante_forecasts": exante_forecasts,
+        "exante_issued": exante_issued,
+        "exante_evaluated": exante_evaluated,
+        "exante_directional_aligned": exante_aligned,
+        "exante_directional_misaligned": exante_misaligned,
+        "exante_abstained": exante_abstained,
+        "exante_forecast_abstentions": exante_forecast_abstentions,
+        "exante_not_evaluable": exante_not_evaluable,
+        "exante_directional_alignment_rate": (exante_aligned / exante_evaluated) if exante_evaluated else None,
         "last": last,
     }
