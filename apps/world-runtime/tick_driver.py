@@ -82,25 +82,47 @@ class WorldTickDriver:
         monotonic: Callable[[], float] = time.monotonic,
         sleeper: Callable[[float], None] = time.sleep,
         tick_observer: Callable[[dict[str, Any]], None] | None = None,
+        stage_observer: Callable[[str, int], None] | None = None,
+        monotonic_ns: Callable[[], int] = time.perf_counter_ns,
     ) -> None:
         self.runner = runner
         self.lease = lease
         self.monotonic = monotonic
         self.sleeper = sleeper
         self.tick_observer = tick_observer
+        self.stage_observer = stage_observer
+        self.monotonic_ns = monotonic_ns
+
+    def _observe_lease(self, name: str, start_ns: int) -> None:
+        if self.stage_observer is None:
+            return
+        try:
+            self.stage_observer(name, max(0, self.monotonic_ns() - start_ns))
+        except Exception:
+            # Optional timing never changes lease ownership or world authority.
+            pass
 
     @property
     def interval_seconds(self) -> float:
         return max(0.001, self.runner.clock.state().tick_duration_ms / 1000.0)
 
     def run_once(self) -> dict[str, Any]:
-        if not self.lease.acquire():
+        started_ns = self.monotonic_ns()
+        try:
+            acquired = self.lease.acquire()
+        finally:
+            self._observe_lease("driver.lease_acquire", started_ns)
+        if not acquired:
             return {"executed": False, "reason": "lease_busy", "tick": None}
         try:
             result = self.runner.tick()
             return {"executed": True, "reason": None, "tick": result}
         finally:
-            self.lease.release()
+            started_ns = self.monotonic_ns()
+            try:
+                self.lease.release()
+            finally:
+                self._observe_lease("driver.lease_release", started_ns)
 
     def serve(self, *, max_ticks: int | None = None) -> list[dict[str, Any]]:
         """Run a cadence loop. Intended for an explicit dedicated process only.

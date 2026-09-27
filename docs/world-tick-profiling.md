@@ -29,6 +29,11 @@ Fields:
 - `unaccounted`: total duration minus measured stage durations (clamped to
   zero). This includes result projection, uninstrumented work and observation
   overhead; it must not automatically be attributed to one subsystem.
+- `driver.lease_acquire` and `driver.lease_release` are opt-in
+  single-writer-lock spans (including the current file flush/fsync on acquire).
+  They are included in the same per-tick attribution, not a second logger.
+  A slow lease span can explain part of `unaccounted`; it does not by itself
+  prove a storage-device fault.
 - `slow_threshold_ms` is 1000 ms. `slow_tick_count` counts all such
   ticks in the rolling window; `slowest_ticks` includes at most the 12 slowest,
   identified by authoritative `logical_tick` and `sample_index`. Each row
