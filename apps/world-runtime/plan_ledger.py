@@ -253,7 +253,16 @@ class PlanLedger:
                     snapshot = deepcopy(row)
                     self._view_by_id[plan_id] = snapshot
                     if snapshot.get("status") not in self.TERMINAL:
-                        self._view_active_ids.setdefault(plan_id, None)
+                        if previous is not None and plan_id not in self._view_active_ids:
+                            # A rare externally restored terminal plan must
+                            # retain its original creation position, too.
+                            old_active = self._view_active_ids
+                            self._view_active_ids = {
+                                existing: None for existing in self._view_order
+                                if existing == plan_id or existing in old_active
+                            }
+                        else:
+                            self._view_active_ids.setdefault(plan_id, None)
                     else:
                         self._view_active_ids.pop(plan_id, None)
                     if self._eligible_need_candidate(snapshot):
