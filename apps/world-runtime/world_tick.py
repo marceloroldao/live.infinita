@@ -89,7 +89,11 @@ class WorldTickRunner:
         try:
             return fn()
         finally:
-            self.stage_observer(name, max(0, self.monotonic_ns() - started))
+            try:
+                self.stage_observer(name, max(0, self.monotonic_ns() - started))
+            except Exception:
+                # Optional observation never controls authoritative execution.
+                pass
 
     def tick(self) -> dict[str, Any]:
         before = self.clock.state()
