@@ -277,7 +277,11 @@ class MaterializedLedgerViewTests(unittest.TestCase):
         path.write_bytes(b"".join(_encoded(row) for row in rows))
         ledger = PlanLedger(path)
         self.assertEqual([r["plan_id"] for r in ledger.active()], ["live-other", "live-nov"])
-        with patch.object(ledger, "_view_order", side_effect=AssertionError("history scan")):
+        class ForbiddenOrder:
+            def __iter__(self):
+                raise AssertionError("active query scanned full historical order")
+
+        with patch.object(ledger, "_view_order", ForbiddenOrder()):
             with patch("plan_ledger.deepcopy", side_effect=AssertionError("membership copied payload")):
                 self.assertTrue(ledger.has_active_plan_for_actor("nov"))
                 self.assertFalse(ledger.has_active_plan_for_actor("unknown"))
