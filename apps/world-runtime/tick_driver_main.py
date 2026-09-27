@@ -54,11 +54,13 @@ def build_autonomous_world_tick(
 
 def build_driver(world_tick_runner, data_dir: Path, owner_id: str | None = None) -> WorldTickDriver:
     tick_observer = None
+    stage_observer = None
     if str(os.getenv("LIVE_INFINITA_TICK_PROFILER", "0")).lower() in {"1", "true", "yes", "on"}:
         profiler = WorldTickProfiler(Path(data_dir) / "world-tick-profile.json")
         authoritative = getattr(world_tick_runner, "runner", world_tick_runner)
         authoritative.stage_observer = profiler.observe_stage
         tick_observer = profiler.observe_tick
+        stage_observer = profiler.observe_stage
     return WorldTickDriver(
         world_tick_runner,
         lease=SingleWriterTickLease(
@@ -66,6 +68,7 @@ def build_driver(world_tick_runner, data_dir: Path, owner_id: str | None = None)
             owner_id=owner_id or os.getenv("LIVE_INFINITA_TICK_OWNER") or None,
         ),
         tick_observer=tick_observer,
+        stage_observer=stage_observer,
     )
 
 
