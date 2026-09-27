@@ -58,6 +58,9 @@ def _runner_with_optional_shadow(runtime, data_dir: Path):
         store=runtime.store,
         observer_id="nov",
         enabled=True,
+        needs_provider=runtime.cognition.need_dynamics.get_needs,
+        experience_provider=runtime.cognition.strategy_experience,
+        need_threshold=runtime.cognition.need_scheduler.threshold,
     )
     return ShadowWorldTickRunner(runtime.world_tick, recorder)
 
