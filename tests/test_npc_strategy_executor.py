@@ -1,5 +1,7 @@
 import tempfile
 import unittest
+import json
+from unittest.mock import patch
 from pathlib import Path
 import sys
 
@@ -196,6 +198,33 @@ class NpcStrategyExecutorTest(unittest.TestCase):
         failed = self.executor.tick(execution_id, logical_tick=2)
         self.assertEqual(failed["status"], "failed")
         self.assertEqual(failed["phase_index"], 0)
+
+    def test_tick_all_skips_terminal_history_without_current_copy(self):
+        self.executor._append({"strategy_execution_id": "done", "status": "completed", "strategy_plan": {"phases": []}})
+        self.executor._append({"strategy_execution_id": "failed", "status": "failed", "strategy_plan": {"phases": []}})
+        with patch.object(self.executor, "current", side_effect=AssertionError("copies history")):
+            self.assertEqual(self.executor.tick_all(logical_tick=5), [])
+            execution = self.executor.start(
+                self._plan([{
+                    "phase_index": 0, "kind": "wait_ticks",
+                    "intent": {"intent": "wait_ticks", "actor_entity_id": "npc", "ticks": 1},
+                }]),
+                principal=self.principal, proposer_id="npc:npc",
+            )
+            self.assertEqual(len(self.executor.tick_all(logical_tick=6)), 1)
+            self.assertEqual(len(self.executor.tick_all(logical_tick=7)), 1)
+            self.assertEqual(self.executor.get(execution["strategy_execution_id"])["status"], "completed")
+            self.assertEqual(self.executor.tick_all(logical_tick=8), [])
+            with self.path.open("ab") as fh:
+                fh.write((json.dumps({
+                    "strategy_execution_id": "externally-active", "status": "running",
+                    "strategy_plan": {"phases": [{"kind": "wait_ticks", "intent": {"ticks": 1}}]},
+                    "phase_index": 0, "wait_started_tick": None, "completed_phases": [],
+                    "principal": {}, "proposer_id": "test", "priority": 0,
+                }) + "\n").encode())
+            self.assertEqual([r["strategy_execution_id"] for r in self.executor.tick_all(logical_tick=9)], ["externally-active"])
+            self.assertEqual(self.executor.get("externally-active")["wait_started_tick"], 9)
+
 
 
 if __name__ == "__main__":
