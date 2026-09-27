@@ -100,8 +100,14 @@ def freeze_contextual_forecast(
         if isinstance(plural, list):
             references.update(str(item).strip() for item in plural if str(item).strip())
         reference_ids = sorted(references)
-        resolved_ids = [key for key in reference_ids if isinstance(target_provider(key), dict)]
-        if not resolved_ids:
+        # Capture each reference only once; concurrent world ticks must never
+        # mix a target from two different read moments in a frozen forecast.
+        resolved = {}
+        for key in reference_ids:
+            candidate = target_provider(key)
+            if isinstance(candidate, dict):
+                resolved[key] = deepcopy(candidate)
+        if not resolved:
             # This is the only safe fallback: authoritative scheduler would
             # also find no viable configured target, so inspect the next need.
             reason = "no_configured_target" if not reference_ids else "target_unavailable"
@@ -123,13 +129,11 @@ def freeze_contextual_forecast(
             selected_need=candidate_need, need_pressure=value,
             weighted_pressure=pressure, configured_target_ids=reference_ids,
         )
-        if len(resolved_ids) != 1:
+        if len(resolved) != 1:
             forecast["reason"] = "multiple_targets_without_ranked_evidence"
             return forecast, None
         need = candidate_need
-        target_id = resolved_ids[0]
-        target = target_provider(target_id)
-        assert isinstance(target, dict)
+        target_id, target = next(iter(resolved.items()))
         distance = _distance(observer, target)
         if distance is None:
             forecast["reason"] = "target_position_unavailable"
