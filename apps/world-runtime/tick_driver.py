@@ -114,7 +114,11 @@ class WorldTickDriver:
         while max_ticks is None or count < max_ticks:
             started = self.monotonic()
             result = self.run_once()
-            results.append(result)
+            # An unbounded autonomous service must not retain every historical
+            # world tick (which can contain plans, events and shadow payloads).
+            # Finite test/CLI runs still return their explicit result sequence.
+            if max_ticks is not None:
+                results.append(result)
             count += 1
             elapsed = max(0.0, self.monotonic() - started)
             interval = self.interval_seconds
