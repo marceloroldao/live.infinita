@@ -4,6 +4,7 @@ import json
 import sys
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 from types import SimpleNamespace
 
 
@@ -85,6 +86,18 @@ class LiveAutonomyAudienceAITests(unittest.TestCase):
         rows = wander.evaluate_tick(8, blocked_npc_ids={"nov"})
         self.assertEqual(rows[0]["status"], "need_active")
         self.assertEqual(scheduler.scheduled, [])
+
+    def test_idle_wander_uses_indexed_actor_check_without_copying_active_plans(self) -> None:
+        scheduler = _FakeScheduler()
+        wander = NpcIdleWander(scheduler, npc_ids=["nov"], interval_ticks=8, priority=25)
+        scheduler.ledger.has_active_plan_for_actor = lambda npc: npc == "nov"
+        with patch.object(scheduler.ledger, "active", side_effect=AssertionError("copied active payloads")):
+            self.assertEqual(wander.evaluate_tick(8)[0]["status"], "busy")
+            self.assertEqual(scheduler.scheduled, [])
+            scheduler.ledger.has_active_plan_for_actor = lambda npc: False
+            result = wander.evaluate_tick(16)
+            self.assertEqual(result[0]["status"], "scheduled")
+            self.assertEqual(scheduler.scheduled[0]["priority"], 25)
 
     def test_ai_router_maps_natural_walk_request_to_closed_action(self) -> None:
         router = AIRouter(

@@ -33,6 +33,12 @@ class NpcIdleWander:
         return self.plans.planner.store.get_entity(entity_id)
 
     def _has_active_plan(self, npc_id: str) -> bool:
+        # The ledger keeps a creation-ordered active view; avoid copying its
+        # plan payloads when the idle scheduler needs only an actor membership
+        # check. Retain compatibility with external/fake ledger implementations.
+        indexed = getattr(self.plans.ledger, "has_active_plan_for_actor", None)
+        if callable(indexed):
+            return bool(indexed(npc_id))
         for record in self.plans.ledger.active():
             if str(record.get("actor_entity_id") or "") == npc_id:
                 return True
