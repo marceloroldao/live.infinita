@@ -156,6 +156,32 @@ class MaterializedLedgerViewTests(unittest.TestCase):
             self.assertEqual([r["plan_id"] for r in ledger.need_outcome_candidates()], ["replacement"])
 
 
+    def test_strategy_completed_and_ongoing_queries_skip_full_snapshot_copy(self) -> None:
+        path = self.root / "strategy.jsonl"
+        executor = NpcStrategyExecutor(path, None)
+        rows = [
+            {"strategy_execution_id": "done1", "status": "completed", "strategy_plan": {"actor_entity_id": "nov", "need": "safety"}},
+            {"strategy_execution_id": "running", "status": "running", "strategy_plan": {"actor_entity_id": "nov", "need": "social"}},
+            {"strategy_execution_id": "done2", "status": "completed", "strategy_plan": {"actor_entity_id": "nov", "need": "energy"}},
+        ]
+        for row in rows:
+            executor._append(row)
+        with patch.object(executor, "current", side_effect=AssertionError("full current copied")):
+            self.assertEqual([x["strategy_execution_id"] for x in executor.unprocessed_completed({"done1"})], ["done2"])
+            active = executor.ongoing_for_need("nov", "social")
+            self.assertEqual(active["strategy_execution_id"], "running")
+            active["strategy_plan"]["need"] = "corrupted"
+            self.assertEqual(executor.ongoing_for_need("nov", "social")["strategy_plan"]["need"], "social")
+            self.assertIsNone(executor.ongoing_for_need("nov", "safety"))
+            with path.open("ab") as fh:
+                fh.write(_encoded({"strategy_execution_id": "external", "status": "completed", "strategy_plan": {"actor_entity_id": "nov", "need": "curiosity"}}))
+            self.assertEqual([x["strategy_execution_id"] for x in executor.unprocessed_completed({"done1"})], ["done2", "external"])
+            replacement = self.root / "replacement-strategy.jsonl"
+            replacement.write_bytes(_encoded({"strategy_execution_id": "replacement", "status": "completed"}))
+            os.replace(replacement, path)
+            self.assertEqual([x["strategy_execution_id"] for x in executor.unprocessed_completed(set())], ["replacement"])
+
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -162,6 +162,27 @@ class NpcNeedOutcomeTest(unittest.TestCase):
                 self.assertEqual(rebooted.process_completed(), [])
             self.assertEqual(len(rebooted.history()), 1)
 
+    def test_applied_lookup_is_detached_and_tracks_external_ledger_changes(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            dynamics, ledger, processor = self.make(Path(tmpdir))
+            plan = self.complete_plan(ledger, need="energy")
+            applied = processor.process_completed()[0]
+            self.assertEqual(processor.get_applied(plan["plan_id"]), applied)
+            with patch.object(processor, "history", side_effect=AssertionError("unexpected replay")):
+                cached = processor.get_applied(plan["plan_id"])
+                cached["outcome"]["before"] = 999
+                self.assertEqual(processor.get_applied(plan["plan_id"]), applied)
+            new_id = "external-plan"
+            with processor.path.open("ab") as fh:
+                fh.write((json.dumps({"plan_id": new_id, "status": "applied", "outcome": {"before": 0.8}}) + "\n").encode("utf-8"))
+            self.assertEqual(processor.get_applied(new_id)["outcome"]["before"], 0.8)
+            replacement = Path(tmpdir) / "replacement-audit.jsonl"
+            replacement.write_text(json.dumps({"plan_id": "replacement", "status": "applied"}) + "\n", encoding="utf-8")
+            os.replace(replacement, processor.path)
+            self.assertIsNone(processor.get_applied(new_id))
+            self.assertEqual(processor.get_applied("replacement")["status"], "applied")
+
+
 
 if __name__ == "__main__":
     unittest.main()
