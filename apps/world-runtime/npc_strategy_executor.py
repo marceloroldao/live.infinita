@@ -119,6 +119,31 @@ class NpcStrategyExecutor:
         assert self._view_by_id is not None
         return [deepcopy(self._view_by_id[key]) for key in self._view_order]
 
+    def unprocessed_completed(self, processed_ids: set[str]) -> list[dict[str, Any]]:
+        """Only detached completed executions not yet audited as outcomes."""
+        self._ensure_view()
+        assert self._view_by_id is not None
+        return [
+            deepcopy(self._view_by_id[execution_id])
+            for execution_id in self._view_order
+            if execution_id not in processed_ids
+            and self._view_by_id[execution_id].get("status") == "completed"
+        ]
+
+    def ongoing_for_need(self, npc_id: str, need: str) -> dict[str, Any] | None:
+        """Avoid copying every historical execution to find an active goal."""
+        self._ensure_view()
+        assert self._view_by_id is not None
+        for execution_id in self._view_order:
+            row = self._view_by_id[execution_id]
+            if row.get("status") in self.TERMINAL:
+                continue
+            plan = row.get("strategy_plan")
+            plan = plan if isinstance(plan, dict) else {}
+            if str(plan.get("actor_entity_id") or "") == npc_id and str(plan.get("need") or "") == need:
+                return deepcopy(row)
+        return None
+
     def get(self, execution_id: str) -> dict[str, Any] | None:
         self._ensure_view()
         assert self._view_by_id is not None
