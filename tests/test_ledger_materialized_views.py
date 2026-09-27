@@ -207,6 +207,82 @@ class MaterializedLedgerViewTests(unittest.TestCase):
             self.assertEqual([r["plan_id"] for r in ledger.pending_need_outcome_candidates({"old"})], ["replacement"])
 
 
+    def test_active_plan_index_matches_original_order_and_is_detached(self) -> None:
+        path = self.root / "active-plans.jsonl"
+        ledger = PlanLedger(path)
+        for plan_id, status, actor in (
+            ("old", "planned", "nov"),
+            ("other", "running", "someone"),
+            ("done", "completed", "nov"),
+            ("late", "waiting", "nov"),
+        ):
+            ledger._append({
+                "plan_id": plan_id, "status": status,
+                "actor_entity_id": actor, "nested": {"count": 1},
+            })
+        self.assertEqual([r["plan_id"] for r in ledger.active()], ["old", "other", "late"])
+        with patch.object(ledger, "history", side_effect=AssertionError("unexpected replay")):
+            with patch.object(ledger, "current", side_effect=AssertionError("all history copied")):
+                self.assertTrue(ledger.has_active_plan_for_actor("nov"))
+                self.assertFalse(ledger.has_active_plan_for_actor("missing"))
+                ledger._append({
+                    "plan_id": "old", "status": "waiting",
+                    "actor_entity_id": "nov", "nested": {"count": 2},
+                })
+                self.assertEqual([r["plan_id"] for r in ledger.active()], ["old", "other", "late"])
+                ledger._append({
+                    "plan_id": "old", "status": "completed",
+                    "actor_entity_id": "nov", "nested": {"count": 3},
+                })
+                self.assertEqual([r["plan_id"] for r in ledger.active()], ["other", "late"])
+                detached = ledger.active()
+                detached[0]["nested"]["count"] = 999
+                self.assertEqual(ledger.active()[0]["nested"]["count"], 1)
+                ledger._append({
+                    "plan_id": "new", "status": "planned",
+                    "actor_entity_id": "nov", "nested": {"count": 4},
+                })
+                self.assertEqual([r["plan_id"] for r in ledger.active()], ["other", "late", "new"])
+                self.assertTrue(ledger.has_active_plan_for_actor("nov"))
+
+    def test_active_plan_index_rebuilds_on_external_append_and_replacement(self) -> None:
+        path = self.root / "active-external.jsonl"
+        ledger = PlanLedger(path)
+        ledger._append({"plan_id": "old", "status": "planned", "actor_entity_id": "nov"})
+        self.assertTrue(ledger.has_active_plan_for_actor("nov"))
+        with path.open("ab") as fh:
+            fh.write(_encoded({"plan_id": "old", "status": "completed", "actor_entity_id": "nov"}))
+            fh.write(_encoded({"plan_id": "external", "status": "running", "actor_entity_id": "guest"}))
+        self.assertFalse(ledger.has_active_plan_for_actor("nov"))
+        self.assertEqual([r["plan_id"] for r in ledger.active()], ["external"])
+        replacement = self.root / "replacement-active.jsonl"
+        replacement.write_bytes(
+            _encoded({"plan_id": "replacement", "status": "waiting", "actor_entity_id": "nov"})
+        )
+        os.replace(replacement, path)
+        self.assertEqual([r["plan_id"] for r in ledger.active()], ["replacement"])
+        self.assertTrue(ledger.has_active_plan_for_actor("nov"))
+        self.assertFalse(ledger.has_active_plan_for_actor("guest"))
+
+    def test_active_view_does_not_scan_historical_id_order_or_copy_for_membership(self) -> None:
+        path = self.root / "active-large.jsonl"
+        rows = [
+            {"plan_id": f"terminal-{i}", "status": "completed", "actor_entity_id": "nov"}
+            for i in range(2000)
+        ]
+        rows.extend([
+            {"plan_id": "live-other", "status": "running", "actor_entity_id": "other"},
+            {"plan_id": "live-nov", "status": "waiting", "actor_entity_id": "nov"},
+        ])
+        path.write_bytes(b"".join(_encoded(row) for row in rows))
+        ledger = PlanLedger(path)
+        self.assertEqual([r["plan_id"] for r in ledger.active()], ["live-other", "live-nov"])
+        with patch.object(ledger, "_view_order", side_effect=AssertionError("history scan")):
+            with patch("plan_ledger.deepcopy", side_effect=AssertionError("membership copied payload")):
+                self.assertTrue(ledger.has_active_plan_for_actor("nov"))
+                self.assertFalse(ledger.has_active_plan_for_actor("unknown"))
+            self.assertEqual([r["plan_id"] for r in ledger.active()], ["live-other", "live-nov"])
+
 
 if __name__ == "__main__":
     unittest.main()
