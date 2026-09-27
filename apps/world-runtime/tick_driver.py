@@ -106,7 +106,7 @@ class WorldTickDriver:
     def interval_seconds(self) -> float:
         return max(0.001, self.runner.clock.state().tick_duration_ms / 1000.0)
 
-    def run_once(self) -> dict[str, Any]:
+    def run_once(self, *, _retain_lease: bool = False) -> dict[str, Any]:
         started_ns = self.monotonic_ns()
         try:
             acquired = self.lease.acquire()
@@ -118,11 +118,12 @@ class WorldTickDriver:
             result = self.runner.tick()
             return {"executed": True, "reason": None, "tick": result}
         finally:
-            started_ns = self.monotonic_ns()
-            try:
-                self.lease.release()
-            finally:
-                self._observe_lease("driver.lease_release", started_ns)
+            if not _retain_lease:
+                started_ns = self.monotonic_ns()
+                try:
+                    self.lease.release()
+                finally:
+                    self._observe_lease("driver.lease_release", started_ns)
 
     def serve(self, *, max_ticks: int | None = None) -> list[dict[str, Any]]:
         """Run a cadence loop. Intended for an explicit dedicated process only.
@@ -133,33 +134,41 @@ class WorldTickDriver:
         """
         results: list[dict[str, Any]] = []
         count = 0
-        while max_ticks is None or count < max_ticks:
-            started = self.monotonic()
-            result = self.run_once()
-            # An unbounded autonomous service must not retain every historical
-            # world tick (which can contain plans, events and shadow payloads).
-            # Finite test/CLI runs still return their explicit result sequence.
-            if max_ticks is not None:
-                results.append(result)
-            count += 1
-            elapsed = max(0.0, self.monotonic() - started)
-            interval = self.interval_seconds
-            if self.tick_observer is not None:
-                try:
-                    self.tick_observer({
-                        "elapsed_seconds": elapsed,
-                        "interval_seconds": interval,
-                        "over_budget": elapsed > interval,
-                        "executed": bool(result.get("executed")),
-                        "logical_tick": (
-                            result.get("tick", {}).get("clock", {}).get("tick")
-                            if isinstance(result.get("tick"), dict)
-                            and isinstance(result["tick"].get("clock"), dict)
-                            else None
-                        ),
-                    })
-                except Exception:
-                    # Metrics may fail; the authoritative tick must not.
-                    pass
-            self.sleeper(max(0.0, interval - elapsed))
+        # The unbounded service holds one kernel flock across its entire life:
+        # no unlock gap and no truncate/flush/fsync of metadata every 500 ms.
+        # Finite test/CLI runs preserve their per-tick lease contract.
+        continuous = max_ticks is None
+        try:
+            while max_ticks is None or count < max_ticks:
+                started = self.monotonic()
+                result = self.run_once(_retain_lease=continuous)
+                # Never retain historical production tick payloads.
+                if max_ticks is not None:
+                    results.append(result)
+                count += 1
+                elapsed = max(0.0, self.monotonic() - started)
+                interval = self.interval_seconds
+                if self.tick_observer is not None:
+                    try:
+                        self.tick_observer({
+                            "elapsed_seconds": elapsed,
+                            "interval_seconds": interval,
+                            "over_budget": elapsed > interval,
+                            "executed": bool(result.get("executed")),
+                            "logical_tick": (
+                                result.get("tick", {}).get("clock", {}).get("tick")
+                                if isinstance(result.get("tick"), dict)
+                                and isinstance(result["tick"].get("clock"), dict)
+                                else None
+                            ),
+                        })
+                    except Exception:
+                        # Metrics may fail; the authoritative tick must not.
+                        pass
+                self.sleeper(max(0.0, interval - elapsed))
+        finally:
+            if continuous:
+                # Even if runner/observer/sleeper raises, the process gives up
+                # its persistent lease. A crash also releases kernel flock.
+                self.lease.release()
         return results
