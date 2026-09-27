@@ -81,11 +81,13 @@ class WorldTickDriver:
         lease: SingleWriterTickLease,
         monotonic: Callable[[], float] = time.monotonic,
         sleeper: Callable[[float], None] = time.sleep,
+        tick_observer: Callable[[dict[str, Any]], None] | None = None,
     ) -> None:
         self.runner = runner
         self.lease = lease
         self.monotonic = monotonic
         self.sleeper = sleeper
+        self.tick_observer = tick_observer
 
     @property
     def interval_seconds(self) -> float:
@@ -111,8 +113,17 @@ class WorldTickDriver:
         count = 0
         while max_ticks is None or count < max_ticks:
             started = self.monotonic()
-            results.append(self.run_once())
+            result = self.run_once()
+            results.append(result)
             count += 1
             elapsed = max(0.0, self.monotonic() - started)
-            self.sleeper(max(0.0, self.interval_seconds - elapsed))
+            interval = self.interval_seconds
+            if self.tick_observer is not None:
+                self.tick_observer({
+                    "elapsed_seconds": elapsed,
+                    "interval_seconds": interval,
+                    "over_budget": elapsed > interval,
+                    "executed": bool(result.get("executed")),
+                })
+            self.sleeper(max(0.0, interval - elapsed))
         return results
