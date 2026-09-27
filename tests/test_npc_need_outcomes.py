@@ -162,6 +162,31 @@ class NpcNeedOutcomeTest(unittest.TestCase):
                 self.assertEqual(rebooted.process_completed(), [])
             self.assertEqual(len(rebooted.history()), 1)
 
+    def test_applied_lookup_tracks_restart_external_append_and_replacement(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            dynamics, ledger, processor = self.make(Path(tmpdir))
+            self.complete_plan(ledger, need="energy")
+            applied = processor.process_completed()[0]
+            plan_id = applied["plan_id"]
+            with patch.object(processor, "history", side_effect=AssertionError("full outcome replay")):
+                self.assertEqual(processor.get_applied(plan_id), applied)
+                detached = processor.get_applied(plan_id)
+                detached["outcome"]["before"] = -42
+                self.assertEqual(processor.get_applied(plan_id), applied)
+                self.assertIsNone(processor.get_applied("missing"))
+            rebooted = NpcNeedOutcomeProcessor(processor.path, ledger, dynamics)
+            self.assertEqual(rebooted.get_applied(plan_id), applied)
+            newer = dict(applied, status="applied", outcome=dict(applied["outcome"], before=0.123))
+            with rebooted.path.open("ab") as fh:
+                fh.write((json.dumps(newer) + "\n").encode("utf-8"))
+            self.assertEqual(rebooted.get_applied(plan_id)["outcome"]["before"], 0.123)
+            replacement = Path(tmpdir) / "replacement-need-outcomes.jsonl"
+            replacement.write_bytes((json.dumps({"plan_id": "new", "status": "applied", "outcome": {}}) + "\n").encode())
+            os.replace(replacement, rebooted.path)
+            self.assertIsNone(rebooted.get_applied(plan_id))
+            self.assertEqual(rebooted.get_applied("new")["plan_id"], "new")
+
+
 
 if __name__ == "__main__":
     unittest.main()
