@@ -303,9 +303,18 @@ class NpcStrategyExecutor:
             )
         return record
 
-    def tick_all(self, *, logical_tick: int) -> list[dict[str, Any]]:
-        rows = sorted(
-            [row for row in self.current() if str(row.get("status") or "") not in self.TERMINAL],
-            key=lambda row: str(row.get("strategy_execution_id") or ""),
+    def active_execution_ids(self) -> list[str]:
+        """Stable sorted IDs; do not copy historical completed strategies."""
+        self._ensure_view()
+        assert self._view_by_id is not None
+        return sorted(
+            execution_id for execution_id in self._view_order
+            if str(self._view_by_id[execution_id].get("status") or "") not in self.TERMINAL
         )
-        return [self.tick(str(row["strategy_execution_id"]), logical_tick=logical_tick) for row in rows]
+
+    def tick_all(self, *, logical_tick: int) -> list[dict[str, Any]]:
+        # Snapshot IDs before ticking: transitions may append new ledger rows.
+        return [
+            self.tick(execution_id, logical_tick=logical_tick)
+            for execution_id in self.active_execution_ids()
+        ]
