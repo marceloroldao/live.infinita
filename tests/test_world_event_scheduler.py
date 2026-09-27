@@ -211,8 +211,10 @@ class WorldEventSchedulerTest(unittest.TestCase):
             late = schedule(9, "late")
             first = schedule(2, "early")
             scheduled = scheduler.get(first["scheduled_event_id"])
-            with patch.object(scheduler, "history", side_effect=AssertionError("replay on warm view")), \\
-                 patch.object(scheduler, "current", side_effect=AssertionError("full copy")):
+            with (
+                patch.object(scheduler, "history", side_effect=AssertionError("replay on warm view")),
+                patch.object(scheduler, "current", side_effect=AssertionError("full copy")),
+            ):
                 self.assertEqual(scheduler.get_by_idempotency_key("early"), scheduled)
                 self.assertEqual(scheduler.due(1), [])
                 self.assertEqual([r["scheduled_event_id"] for r in scheduler.due(9)],
