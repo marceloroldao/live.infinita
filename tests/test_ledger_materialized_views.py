@@ -244,6 +244,15 @@ class MaterializedLedgerViewTests(unittest.TestCase):
                 })
                 self.assertEqual([r["plan_id"] for r in ledger.active()], ["other", "late", "new"])
                 self.assertTrue(ledger.has_active_plan_for_actor("nov"))
+                # An unusual raw restoration must not reorder the old ID.
+                ledger._append({
+                    "plan_id": "old", "status": "running",
+                    "actor_entity_id": "nov", "nested": {"count": 5},
+                })
+                self.assertEqual(
+                    [r["plan_id"] for r in ledger.active()],
+                    ["old", "other", "late", "new"],
+                )
 
     def test_active_plan_index_rebuilds_on_external_append_and_replacement(self) -> None:
         path = self.root / "active-external.jsonl"
