@@ -3,7 +3,7 @@ set -Eeuo pipefail
 
 REPO=/home/etbra/live.infinita
 INSTALL=/opt/live.infinita
-REQUIRED=cf4f5950f5a98355b5bff2a8236d9a92bdc12d8e
+REQUIRED=72c3499489cc68486483c365ff04f1d74255b08b
 WORLD=live-infinita-autonomous-world.service
 API=live-infinita.service
 AUDIO=live-infinita-audio.service
@@ -33,7 +33,7 @@ bash -n "$REPO/deploy/mvp016-performance-metrics.sh"
 sudo -v
 backup="/var/backups/live-infinita/mvp016-metrics-$(date +%Y%m%d-%H%M%S)"
 sudo install -d -m 0700 "$backup"
-for file in apps/headless-renderer/headless_renderer.py apps/world-runtime/main_cognitive_live.py apps/manager/index.html apps/manager/app.js apps/manager/monitoring.css; do
+for file in apps/headless-renderer/headless_renderer.py apps/world-runtime/main_cognitive_live.py apps/world-runtime/main_live.py apps/manager/index.html apps/manager/app.js apps/manager/monitoring.css; do
     sudo cp -a "$INSTALL/$file" "$backup/$(basename "$file")"
 done
 if [[ -e "$INSTALL/packages/observability/runtime_metrics.py" ]]; then
@@ -44,7 +44,7 @@ applied=0
 rollback(){
     if (( applied )); then
         echo 'MVP016_METRICS_ROLLBACK: código de API/renderer/manager apenas' >&2
-        for file in apps/headless-renderer/headless_renderer.py apps/world-runtime/main_cognitive_live.py apps/manager/index.html apps/manager/app.js apps/manager/monitoring.css; do
+        for file in apps/headless-renderer/headless_renderer.py apps/world-runtime/main_cognitive_live.py apps/world-runtime/main_live.py apps/manager/index.html apps/manager/app.js apps/manager/monitoring.css; do
             sudo cp -a "$backup/$(basename "$file")" "$INSTALL/$file"
         done
         if [[ -f "$backup/runtime_metrics.py" ]]; then
@@ -57,11 +57,11 @@ rollback(){
 }
 trap rollback EXIT
 applied=1
-for file in apps/headless-renderer/headless_renderer.py apps/world-runtime/main_cognitive_live.py apps/manager/index.html apps/manager/app.js apps/manager/monitoring.css packages/observability/runtime_metrics.py; do
+for file in apps/headless-renderer/headless_renderer.py apps/world-runtime/main_cognitive_live.py apps/world-runtime/main_live.py apps/manager/index.html apps/manager/app.js apps/manager/monitoring.css packages/observability/runtime_metrics.py; do
     sudo install -o liveinfinita -g liveinfinita -m 0644 "$REPO/$file" "$INSTALL/$file"
     cmp "$REPO/$file" "$INSTALL/$file"
 done
-sudo "$INSTALL/.venv/bin/python" -m py_compile "$INSTALL/apps/headless-renderer/headless_renderer.py" "$INSTALL/apps/world-runtime/main_cognitive_live.py" "$INSTALL/packages/observability/runtime_metrics.py"
+sudo "$INSTALL/.venv/bin/python" -m py_compile "$INSTALL/apps/headless-renderer/headless_renderer.py" "$INSTALL/apps/world-runtime/main_cognitive_live.py" "$INSTALL/apps/world-runtime/main_live.py" "$INSTALL/packages/observability/runtime_metrics.py"
 (cd /tmp && sudo -u liveinfinita "$INSTALL/.venv/bin/python" -c "import sys; sys.path.insert(0, '$INSTALL'); from packages.observability.runtime_metrics import runtime_snapshot; print('MVP016_MODULE_IMPORT_OK')")
 if command -v node >/dev/null 2>&1; then
     node --check "$INSTALL/apps/manager/app.js"
