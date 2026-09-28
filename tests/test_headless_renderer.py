@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import importlib.util
+import json
+import tempfile
 import sys
 import unittest
 from pathlib import Path
@@ -92,6 +94,24 @@ class HeadlessRendererConfigTest(unittest.TestCase):
         finally:
             enabled.stop()
         self.assertFalse(path.exists())
+
+    def test_renderer_emits_bounded_operational_status(self):
+        with tempfile.TemporaryDirectory() as directory:
+            renderer = HeadlessRenderer(HeadlessRendererConfig(
+                fps=15, godot_fps=20, minimum_godot_fps=12,
+                cpu_governor_enabled=True))
+            renderer._status_file = Path(directory) / "renderer.json"
+            renderer._fps_governor.current_fps = 12
+            renderer._publish_status(60.5)
+            status = json.loads(renderer._status_file.read_text())
+            self.assertEqual(status["godot_fps"], 12)
+            self.assertEqual(status["capture_fps"], 15)
+            self.assertEqual(status["cpu_pressure_avg10_pct"], 60.5)
+            self.assertTrue(status["governor_enabled"])
+            self.assertEqual(set(status), {
+                "updated_at_unix", "godot_fps", "capture_fps",
+                "governor_enabled", "cpu_pressure_avg10_pct"})
+            renderer.stop()
 
     def test_native_godot_polls_control_but_browser_export_is_unchanged(self):
         scene = (ROOT / "apps" / "renderer-godot" / "main.gd").read_text(encoding="utf-8")
