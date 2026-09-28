@@ -15,7 +15,6 @@ from packages.observability.runtime_metrics import recent_jsonl
 MAX_WINDOW_BYTES = 262_144
 MAX_WINDOW_RECORDS = 256
 MAX_DISPLAY_EPISODES = 8
-_VALID_NEEDS = frozenset({"energy", "safety", "curiosity", "social", "rest"})
 
 
 def _short_string(value: Any, *, limit: int = 96) -> str | None:
@@ -62,7 +61,7 @@ def _episode_view(row: dict[str, Any]) -> dict[str, Any] | None:
     return {
         "episode_id": episode_id,
         "logical_tick": tick,
-        "need": need if need in _VALID_NEEDS else None,
+        "need": need,
         "target_entity_id": _short_string(row.get("target_entity_id")),
         "strategy_id": _short_string(row.get("strategy_id"), limit=128),
         "context": {
