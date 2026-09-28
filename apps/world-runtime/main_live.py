@@ -20,6 +20,7 @@ from cold_engine import ColdAuthoritativeWorldEngine
 from mutation_gate_service import GuardedMutationService
 from story_narrator import LiveStoryNarrator, StoryCue
 from packages.narration_spool import append_cue
+from packages.observability.runtime_metrics import recent_jsonl
 
 app = main_spatial.app
 APP_STARTED_AT = time.time()
@@ -382,7 +383,7 @@ def _read_tiktok_status() -> dict[str, Any]:
 
 def _monitor_activity(limit: int = 30) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
-    for item in core.read_jsonl(core.AUDIENCE_EVENTS_FILE)[-limit:]:
+    for item in recent_jsonl(core.AUDIENCE_EVENTS_FILE, limit=limit):
         actor = item.get("actor") or {}
         rows.append({
             "channel": "audience",
@@ -392,7 +393,7 @@ def _monitor_activity(limit: int = 30) -> list[dict[str, Any]]:
             "at_unix": item.get("received_at_unix"),
         })
     try:
-        world_events = core.engine.read_jsonl(core.engine.events_file)[-limit:]
+        world_events = recent_jsonl(core.engine.events_file, limit=limit)
     except Exception:
         world_events = []
     for item in world_events:
@@ -440,7 +441,9 @@ async def current_manager_monitor() -> JSONResponse:
         entities_total = main_spatial.cold_store.entities_total()
     else:
         entities_total = len(world.get("entities", []))
-    replay = core.engine.verify_replay()
+    # Deep replay traverses lifetime world history; health/monitor use the
+    # startup-cached verification. Operators may run /api/replay/verify explicitly.
+    replay_ok = bool(core.STARTUP_REPLAY_OK)
     return JSONResponse({
         "generated_at_unix": now,
         "runtime": {"state": "online", "uptime_seconds": round(now - APP_STARTED_AT)},
@@ -453,7 +456,9 @@ async def current_manager_monitor() -> JSONResponse:
             "regions": len(world.get("regions", [])) if isinstance(world.get("regions"), list) else 0,
             "period": (world.get("environment") or {}).get("period"),
             "story": world.get("story") if isinstance(world.get("story"), dict) else {},
-            "replay_ok": bool(replay.get("ok")),
+            "replay_ok": replay_ok,
+            "replay_check": "startup-cached",
+            "deep_verify_path": "/api/replay/verify",
         },
         "collective": collective_intent.snapshot(now),
         "narrator": {
