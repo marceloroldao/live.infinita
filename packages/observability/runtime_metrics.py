@@ -86,6 +86,39 @@ def _last_jsonl_record(path: Path, limit: int = 32_768) -> dict[str, Any]:
     return {}
 
 
+
+def recent_jsonl(path: Path, *, max_bytes: int = 262_144, limit: int = 30) -> list[dict[str, Any]]:
+    """Return recent complete records without loading a lifetime history."""
+    if max_bytes <= 0 or limit <= 0:
+        return []
+    try:
+        with path.open("rb") as source:
+            source.seek(0, os.SEEK_END)
+            size = source.tell()
+            start = max(0, size - max_bytes)
+            source.seek(start)
+            data = source.read(max_bytes)
+    except OSError:
+        return []
+    if start:
+        boundary = data.find(b"\n")
+        if boundary < 0:
+            return []
+        data = data[boundary + 1:]
+    if not data.endswith(b"\n"):
+        boundary = data.rfind(b"\n")
+        data = data[:boundary + 1] if boundary >= 0 else b""
+    rows: list[dict[str, Any]] = []
+    for raw in data.splitlines()[-limit:]:
+        try:
+            record = json.loads(raw)
+        except (ValueError, UnicodeError):
+            continue
+        if isinstance(record, dict):
+            rows.append(record)
+    return rows
+
+
 def _cpu_pressure() -> float | None:
     try:
         snapshot = Path("/proc/pressure/cpu").read_text(encoding="ascii")
