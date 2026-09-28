@@ -19,6 +19,7 @@ from collective_world import CollectiveWorldEvolver
 from cold_engine import ColdAuthoritativeWorldEngine
 from mutation_gate_service import GuardedMutationService
 from story_narrator import LiveStoryNarrator, StoryCue
+from packages.narration_spool import append_cue
 
 app = main_spatial.app
 APP_STARTED_AT = time.time()
@@ -176,6 +177,9 @@ def _response_story_summary(response: Any) -> dict[str, Any]:
 async def _broadcast_story_cue(cue: StoryCue) -> None:
     """Send voice cue to audio and a matching transient caption to visual clients."""
     payload = cue.as_dict()
+    # Persist presentation-only speech before delivery: disconnected audio clients
+    # can recover cues without replaying or mutating authoritative World State.
+    await asyncio.to_thread(append_cue, core.DATA_DIR / "audio" / "narration-cue-spool.jsonl", payload)
     await core.broadcast({"type": "narration_cue", "cue": payload})
     # A second world projection updates the existing Godot narration panel without
     # persisting presentation prose into authoritative World State.
