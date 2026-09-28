@@ -76,6 +76,8 @@ Se o processo parar depois dos três eventos, mas antes da projeção, o
 o primeiro ou segundo acknowledgement, a mesma dupla de recibos assinados
 pode ser reapresentada para concluir sem duplicar eventos. Reuso de um
 `receipt_id` em outra troca e divergência em um ID já gravado são rejeitados.
+Um mesmo evento de decisão/origem da mesma entidade não pode conceder
+crédito em outra troca, mesmo que um assinante tente emitir novo `receipt_id`.
 O processo não revarre todo o histórico a cada tick ocioso.
 
 ## Gates e próximos passos

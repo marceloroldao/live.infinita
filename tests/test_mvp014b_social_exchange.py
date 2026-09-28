@@ -285,6 +285,23 @@ class SocialProducerTests(unittest.TestCase):
                 )
             self.assertEqual(len(journal._ordered), 3)
 
+    def test_source_event_cannot_mint_second_credit_with_new_receipt_ids(self):
+        with tempfile.TemporaryDirectory() as d:
+            producer, journal, evidence, dynamics, episodes, learning, store = self.make(Path(d))
+            first = producer.produce(encounter_id="encounter:p1", npc_receipt=receipt("npc"),
+                                     peer_receipt=receipt("peer"))
+            before = dynamics.get_needs("nov")["social"]
+            with self.assertRaises(SocialEventError):
+                producer.produce(
+                    encounter_id="encounter:p1",
+                    npc_receipt=receipt("npc", exchange_id="exchange2",
+                                        receipt_id="npc:receipt:2"),
+                    peer_receipt=receipt("peer", exchange_id="exchange2",
+                                         receipt_id="peer:receipt:2"),
+                )
+            self.assertEqual(dynamics.get_needs("nov")["social"], before)
+            self.assertEqual(len(journal._ordered), 3)
+
     def test_negative_exchange_keeps_social_need_unchanged(self):
         with tempfile.TemporaryDirectory() as d:
             producer, journal, evidence, dynamics, *_ = self.make(Path(d))

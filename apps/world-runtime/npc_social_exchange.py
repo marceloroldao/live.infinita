@@ -57,7 +57,7 @@ class SocialEventJournal:
                         row = json.loads(raw)
                         signed = {key: value for key, value in row.items() if key != "chain_hash"}
                         expected = hashlib.sha256(b"social-event-v1\0" + _canonical(signed)).hexdigest()
-                    except (ValueError, TypeError, KeyError) as exc:
+                    except (ValueError, TypeError, KeyError, AttributeError) as exc:
                         raise SocialEventError("invalid social event record") from exc
                     event_id = str(row.get("event_id") or "")
                     if (not event_id or event_id in rows
@@ -93,6 +93,17 @@ class SocialEventJournal:
         self._current()
         return any(
             row.get("receipt_id") == receipt_id and row.get("exchange_id") != exchange_id
+            for row in self._ordered
+        )
+
+    def source_event_used_elsewhere(self, receipt: dict[str, Any], exchange_id: str) -> bool:
+        self._current()
+        return any(
+            row.get("kind") == "participant_ack"
+            and row.get("entity_id") == receipt["entity_id"]
+            and row.get("channel") == receipt["channel"]
+            and row.get("source_event_id") == receipt["source_event_id"]
+            and row.get("exchange_id") != exchange_id
             for row in self._ordered
         )
 
@@ -185,6 +196,8 @@ class NpcSocialExchangeProducer:
                 or receipt.get("exchange_id") != exchange_id
                 or receipt.get("decision") != "accepted"
                 or not issuer or not source_id or not receipt_id or len(receipt_id) > 160
+                or len(issuer) > 200 or len(source_id) > 200
+                or len(str(receipt.get("actor_key") or "")) > 200
                 or source not in {"agent", "audience"}
                 or (role == "npc" and source != "agent")
                 or not isinstance(signature, str) or len(signature) != 64):
@@ -272,6 +285,8 @@ class NpcSocialExchangeProducer:
         for receipt in (npc_receipt, peer_receipt):
             if self.journal.receipt_used_elsewhere(receipt["receipt_id"], exchange_id):
                 raise SocialEventError("participant receipt was already used elsewhere")
+            if self.journal.source_event_used_elsewhere(receipt, exchange_id):
+                raise SocialEventError("source decision/event was already used elsewhere")
         outcome = npc_receipt["outcome"]
         if not isinstance(outcome, dict) or set(outcome) != {"signal", "observed_satisfaction_delta"}:
             raise SocialEventError("observed exchange outcome invalid")
