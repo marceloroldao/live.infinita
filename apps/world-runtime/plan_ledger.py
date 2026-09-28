@@ -30,13 +30,15 @@ class PlanLedger:
     def __init__(self, path: Path) -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
+        # Only nonterminal rows stay hot. Terminal rows use cold byte offsets.
         self._view_by_id: dict[str, dict[str, Any]] | None = None
+        self._view_offsets: dict[str, int] = {}
         self._view_order: list[str] = []
         # Preserve original creation order without rescanning all historical
         # plans each tick. Terminal lifecycle transitions remove the ID.
         self._view_active_ids: dict[str, None] = {}
         self._view_idempotency: dict[str, str] = {}
-        self._view_need_candidates: dict[str, dict[str, Any]] = {}
+        self._view_need_candidates: dict[str, int] = {}
         self._view_signature: tuple[int, int, int, int] | None = None
 
     @staticmethod
@@ -59,70 +61,95 @@ class PlanLedger:
     def _ensure_view(self) -> None:
         if self._view_by_id is not None and self._view_signature == self._signature():
             return
-        # The append-only JSONL remains authoritative. Rebuild on restart,
-        # external append, replacement or truncation, not on every lookup.
+        # Stream on restart. Never retain complete terminal plan objects.
         for _ in range(3):
             before = self._signature()
-            latest: dict[str, dict[str, Any]] = {}
+            offsets: dict[str, int] = {}
+            hot: dict[str, dict[str, Any]] = {}
+            keys: dict[str, str] = {}
+            candidates: dict[str, int] = {}
             order: list[str] = []
-            for row in self.history():
+            for offset, row in self._iter_rows_with_offsets():
                 plan_id = str(row.get("plan_id") or "").strip()
                 if not plan_id:
                     continue
-                if plan_id not in latest:
+                if plan_id not in offsets:
                     order.append(plan_id)
-                latest[plan_id] = row
+                offsets[plan_id] = offset
+                keys[plan_id] = str(row.get("idempotency_key") or "")
+                if row.get("status") not in self.TERMINAL:
+                    hot[plan_id] = row
+                else:
+                    hot.pop(plan_id, None)
+                if self._eligible_need_candidate(row):
+                    candidates[plan_id] = offset
+                else:
+                    candidates.pop(plan_id, None)
             after = self._signature()
             if before == after:
                 idempotency: dict[str, str] = {}
                 for plan_id in order:
-                    key = str(latest[plan_id].get("idempotency_key") or "")
+                    key = keys.get(plan_id, "")
                     if key:
                         idempotency.setdefault(key, plan_id)
-                self._view_by_id = latest
+                self._view_by_id = hot
+                self._view_offsets = offsets
                 self._view_order = order
                 self._view_active_ids = {
-                    plan_id: None for plan_id in order
-                    if latest[plan_id].get("status") not in self.TERMINAL
+                    plan_id: None for plan_id in order if plan_id in hot
                 }
                 self._view_idempotency = idempotency
-                self._view_need_candidates = {
-                    plan_id: latest[plan_id]
-                    for plan_id in order
-                    if self._eligible_need_candidate(latest[plan_id])
-                }
+                self._view_need_candidates = candidates
                 self._view_signature = after
                 return
         raise PlanLedgerError("plan ledger changed while rebuilding current state")
 
-    def history(self) -> list[dict[str, Any]]:
+    def _iter_rows_with_offsets(self):
+        # Stream durable rows; quarantine ONLY a torn final append.
         if not self.path.exists():
-            return []
-        rows: list[dict[str, Any]] = []
+            return
         with self.path.open("rb") as fh:
-            offset = 0
             while True:
+                offset = fh.tell()
                 raw = fh.readline()
                 if not raw:
                     break
-                next_offset = offset + len(raw)
                 try:
                     line = raw.decode("utf-8").strip()
                     if line:
-                        value = json.loads(line)
-                        if isinstance(value, dict):
-                            rows.append(value)
+                        row = json.loads(line)
+                        if isinstance(row, dict):
+                            yield offset, row
                 except (UnicodeDecodeError, json.JSONDecodeError) as exc:
-                    # A crash/power loss can leave only the final append torn.
-                    # Never hide corruption in the committed middle of the ledger.
                     if fh.read(1):
                         raise PlanLedgerError(
                             f"corrupt plan ledger at byte {offset}"
                         ) from exc
                     self._quarantine_torn_tail(offset, raw)
                     break
-                offset = next_offset
-        return rows
+
+    def history(self) -> list[dict[str, Any]]:
+        # Explicit full history; never used to rebuild the hot index.
+        return [row for _, row in self._iter_rows_with_offsets()]
+
+    def _read_at(self, offset: int, expected_id: str) -> dict[str, Any]:
+        try:
+            with self.path.open("rb") as fh:
+                fh.seek(offset)
+                row = json.loads(fh.readline())
+        except (OSError, ValueError, TypeError) as exc:
+            raise PlanLedgerError("indexed plan record unavailable") from exc
+        if not isinstance(row, dict) or str(row.get("plan_id") or "").strip() != expected_id:
+            raise PlanLedgerError("indexed plan record identity mismatch")
+        return row
+
+    def _latest(self, plan_id: str) -> dict[str, Any] | None:
+        assert self._view_by_id is not None
+        hot = self._view_by_id.get(plan_id)
+        if hot is not None:
+            return deepcopy(hot)
+        offset = self._view_offsets.get(plan_id)
+        return self._read_at(offset, plan_id) if offset is not None else None
 
     def _quarantine_torn_tail(self, offset: int, raw: bytes) -> None:
         quarantine = self.path.with_name(self.path.name + ".torn-tail")
@@ -141,36 +168,27 @@ class PlanLedger:
             ) from exc
 
     def current(self) -> list[dict[str, Any]]:
+        # Explicit complete snapshot. Per-tick consumers must use active/pending.
         self._ensure_view()
-        assert self._view_by_id is not None
-        return [deepcopy(self._view_by_id[plan_id]) for plan_id in self._view_order]
+        return [row for plan_id in self._view_order
+                if (row := self._latest(plan_id)) is not None]
 
     def get(self, plan_id: str) -> dict[str, Any] | None:
         self._ensure_view()
-        assert self._view_by_id is not None
-        row = self._view_by_id.get(str(plan_id or "").strip())
-        return deepcopy(row) if row is not None else None
+        return self._latest(str(plan_id or "").strip())
 
     def get_by_idempotency_key(self, key: str) -> dict[str, Any] | None:
         self._ensure_view()
-        assert self._view_by_id is not None
         plan_id = self._view_idempotency.get(str(key or ""))
-        row = self._view_by_id.get(plan_id) if plan_id else None
-        return deepcopy(row) if row is not None else None
+        return self._latest(plan_id) if plan_id else None
 
     def active(self) -> list[dict[str, Any]]:
         self._ensure_view()
         assert self._view_by_id is not None
-        return [
-            deepcopy(self._view_by_id[plan_id])
-            for plan_id in self._view_active_ids
-        ]
+        return [deepcopy(self._view_by_id[plan_id])
+                for plan_id in self._view_active_ids]
 
     def has_active_plan_for_actor(self, actor_entity_id: str) -> bool:
-        """Membership lookup without copying payloads or historical plans.
-
-        Matches the idle NPC's previous actor_entity_id comparison exactly.
-        """
         self._ensure_view()
         assert self._view_by_id is not None
         actor = str(actor_entity_id or "")
@@ -180,27 +198,17 @@ class PlanLedger:
         )
 
     def need_outcome_candidates(self) -> list[dict[str, Any]]:
-        """Latest completed need plans, in original plan creation order.
-
-        Unlike current(), only eligible candidate payloads are deep-copied.
-        The authoritative JSONL remains the source on cache invalidation.
-        """
         self._ensure_view()
         return [
-            deepcopy(self._view_need_candidates[plan_id])
+            self._read_at(self._view_need_candidates[plan_id], plan_id)
             for plan_id in self._view_order
             if plan_id in self._view_need_candidates
         ]
 
     def pending_need_outcome_candidates(self, processed_ids: set[str]) -> list[dict[str, Any]]:
-        """Only unprocessed completed need records, in plan creation order.
-
-        JSONL remains authoritative. A warm tick with no new completions
-        copies no old plan payloads; invalidated views are rebuilt first.
-        """
         self._ensure_view()
         return [
-            deepcopy(self._view_need_candidates[plan_id])
+            self._read_at(self._view_need_candidates[plan_id], plan_id)
             for plan_id in self._view_order
             if plan_id not in processed_ids and plan_id in self._view_need_candidates
         ]
@@ -210,21 +218,13 @@ class PlanLedger:
             json.dumps(row, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
             + "\n"
         ).encode("utf-8")
-        # One low-level append write prevents TextIO from splitting a record.
-        # fsync makes an acknowledged lifecycle transition durable before return.
         before = self._signature()
         cached = self._view_by_id is not None and self._view_signature == before
-        fd = os.open(
-            self.path,
-            os.O_WRONLY | os.O_CREAT | os.O_APPEND,
-            0o644,
-        )
+        fd = os.open(self.path, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o644)
         try:
             written = os.write(fd, payload)
             if written != len(payload):
-                raise PlanLedgerError(
-                    f"short plan-ledger append: {written}/{len(payload)} bytes"
-                )
+                raise PlanLedgerError(f"short plan-ledger append: {written}/{len(payload)} bytes")
             os.fsync(fd)
         except BaseException:
             self._view_by_id = None
@@ -240,22 +240,20 @@ class PlanLedger:
             assert self._view_by_id is not None
             plan_id = str(row.get("plan_id") or "").strip()
             if plan_id:
-                previous = self._view_by_id.get(plan_id)
+                old_offset = self._view_offsets.get(plan_id)
+                previous = self._latest(plan_id) if old_offset is not None else None
                 previous_key = str(previous.get("idempotency_key") or "") if previous else ""
                 key = str(row.get("idempotency_key") or "")
                 if previous is not None and previous_key != key:
-                    # An unusual key change requires rebuilding first-match
-                    # semantics in original plan-creation order.
                     self._view_by_id = None
                 else:
-                    if previous is None:
+                    if old_offset is None:
                         self._view_order.append(plan_id)
-                    snapshot = deepcopy(row)
-                    self._view_by_id[plan_id] = snapshot
-                    if snapshot.get("status") not in self.TERMINAL:
-                        if previous is not None and plan_id not in self._view_active_ids:
-                            # A rare externally restored terminal plan must
-                            # retain its original creation position, too.
+                    offset = before[2] if before else 0
+                    self._view_offsets[plan_id] = offset
+                    if row.get("status") not in self.TERMINAL:
+                        self._view_by_id[plan_id] = deepcopy(row)
+                        if old_offset is not None and plan_id not in self._view_active_ids:
                             old_active = self._view_active_ids
                             self._view_active_ids = {
                                 existing: None for existing in self._view_order
@@ -264,9 +262,10 @@ class PlanLedger:
                         else:
                             self._view_active_ids.setdefault(plan_id, None)
                     else:
+                        self._view_by_id.pop(plan_id, None)
                         self._view_active_ids.pop(plan_id, None)
-                    if self._eligible_need_candidate(snapshot):
-                        self._view_need_candidates[plan_id] = snapshot
+                    if self._eligible_need_candidate(row):
+                        self._view_need_candidates[plan_id] = offset
                     else:
                         self._view_need_candidates.pop(plan_id, None)
                     if key:
