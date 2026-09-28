@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import asyncio
+import os
 from pathlib import Path
+import subprocess
+import sys
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -41,6 +44,23 @@ class NarrationSpoolTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 append_cue(path, {"cue_id": "large", "text": "A" * 5000})
             self.assertFalse(path.exists())
+
+    def test_standalone_audio_entrypoint_imports_shared_spool(self):
+        # The production unit starts stable_audio.py by path with no PYTHONPATH.
+        # Running from a foreign cwd detects missing repository-root imports.
+        audio_dir = Path(__file__).resolve().parents[1] / "apps" / "audio-service"
+        env = os.environ.copy()
+        env.pop("PYTHONPATH", None)
+        with tempfile.TemporaryDirectory() as cwd:
+            probe = subprocess.run(
+                [sys.executable, "-c",
+                 "import sys;sys.path.insert(0,sys.argv[1]);import retro_audio;"
+                 "from packages.narration_spool import read_cues;print('AUDIO_IMPORT_OK')",
+                 str(audio_dir)],
+                cwd=cwd, env=env, capture_output=True, text=True, timeout=20,
+            )
+        self.assertEqual(probe.returncode, 0, probe.stderr)
+        self.assertIn("AUDIO_IMPORT_OK", probe.stdout)
 
     def test_audio_service_recovers_cue_without_websocket(self):
         import server_audio
