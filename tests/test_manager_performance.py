@@ -9,7 +9,7 @@ from unittest.mock import patch
 
 from packages.observability.runtime_metrics import (
     EventLoopLagMonitor, _bounded_json, _last_jsonl_record,
-    _native_audio_metrics, runtime_snapshot,
+    _native_audio_metrics, recent_jsonl, runtime_snapshot,
 )
 
 
@@ -22,6 +22,17 @@ class ManagerPerformanceTests(unittest.TestCase):
                             '{"event_identity":"partial"', encoding="utf-8")
             self.assertEqual(_last_jsonl_record(path)["event_identity"], "two")
             self.assertEqual(_last_jsonl_record(path, limit=8), {})
+
+    def test_recent_event_window_skips_partial_lines(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "world-events.jsonl"
+            rows = [json.dumps({"sequence": n, "text": "x" * 80}) + "\n"
+                    for n in range(200)]
+            path.write_text("".join(rows) + '{"sequence": 999', encoding="utf-8")
+            recent = recent_jsonl(path, max_bytes=1024, limit=5)
+            self.assertEqual([row["sequence"] for row in recent], [195, 196, 197, 198, 199])
+            self.assertEqual(recent_jsonl(path, max_bytes=0), [])
+            self.assertEqual(recent_jsonl(path, limit=0), [])
 
     def test_large_sidecar_is_ignored(self):
         with tempfile.TemporaryDirectory() as folder:
@@ -102,6 +113,12 @@ class ManagerPerformanceTests(unittest.TestCase):
         self.assertIn('id="perf-fps"', html)
         self.assertIn("api('/api/manage/performance')", js)
         self.assertIn("void loadPerformance()", js)
+        monitor_source = (root / "apps/world-runtime/main_live.py").read_text(encoding="utf-8")
+        monitored = monitor_source.split("async def current_manager_monitor()", 1)[1].split("def _is_legacy_static_mount", 1)[0]
+        self.assertNotIn("core.engine.verify_replay()", monitored)
+        self.assertIn("core.STARTUP_REPLAY_OK", monitored)
+        self.assertIn("recent_jsonl(core.engine.events_file", monitor_source)
+        self.assertIn('"replay_check": "startup-cached"', monitor_source)
 
 
 if __name__ == "__main__":
