@@ -115,7 +115,7 @@ class SocialOutcomeTests(unittest.TestCase):
             )
             rows = proc.process_completed()
             self.assertEqual(len(rows), 1)
-            self.assertEqual(rows[0]["status"], "encounter_only")
+            self.assertEqual(rows[0]["status"], "social_goal_no_reward")
             self.assertEqual(proc.process_completed(), [])
             self.assertIsNone(experience.strategy_stats(
                 "nov", "social", "friend", "via_clearing",

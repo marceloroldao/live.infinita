@@ -185,7 +185,7 @@ class NpcCompositeStrategyOutcomeProcessor:
                 row = {
                     "strategy_execution_id": execution_id,
                     "terminal_plan_id": terminal_plan_id,
-                    "status": "encounter_only",
+                    "status": "social_goal_no_reward",
                     "learning": None,
                     "episode_id": None,
                 }

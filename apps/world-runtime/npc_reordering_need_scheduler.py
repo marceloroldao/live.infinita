@@ -247,8 +247,9 @@ class NpcReorderingNeedScheduler(NpcNeedScheduler):
                     for phase in composite_plan.get("phases") or []:
                         phase_intent = phase.get("intent") if isinstance(phase, dict) else None
                         if isinstance(phase_intent, dict) and phase_intent.get("need_outcome_eligible") is True:
-                            if str(phase_intent.get("target_entity_id") or "") == selected_target_id:
-                                phase_intent["target_evidence_source"] = target_evidence_source
+                            # Even if a compound strategy changes its terminal
+                            # waypoint, a movement alone cannot become social proof.
+                            phase_intent["target_evidence_source"] = target_evidence_source
                 if isinstance(intent, dict):
                     intent["target_evidence_source"] = target_evidence_source
             horizon_reordered = need != original_need

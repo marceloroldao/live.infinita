@@ -45,8 +45,9 @@ move_to_entity NÃO prova troca social, satisfação ou aprendizagem.
 NpcNeedOutcomeProcessor registra exatamente uma observação de encontro,
 com co-presença, disponibilidade atual e distância, ou encounter_unverified.
 Não reduz social, não reforça NpcNeedLearning, não cria episódio positivo e
-não deriva crença. O processador composto audita encounter_only sem
-recompensar a estratégia. As regras legadas de alvos sociais explicitamente
+não deriva crença. O processador composto audita social_goal_no_reward sem
+recompensar a estratégia, inclusive se a fase terminal tiver outro destino.
+As regras legadas de alvos sociais explicitamente
 configurados não são alteradas por este incremento.
 
 O contrato futuro deverá admitir evidência de interação autorizada, com
