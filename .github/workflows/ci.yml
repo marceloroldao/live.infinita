@@ -131,8 +131,15 @@ jobs:
           GODOT_PID=$!
           sleep 3
           kill -0 "$GODOT_PID"
-          grep -F '[render] native fast sky enabled' /tmp/godot-render.log
-          ! grep -E 'SCRIPT ERROR|Shader compilation failed' /tmp/godot-render.log
+          # Godot buffers stdout for the long-lived Xvfb capture process.
+          # The short headless scene exits and flushes the native shader marker.
+          LIVE_INFINITA_RENDER_FAST_SKY=1 "$GODOT_BIN" --headless --path apps/renderer-godot \
+            --audio-driver Dummy --quit-after 3 >/tmp/godot-native-fast-sky.log 2>&1
+          if ! grep -F '[render] native fast sky enabled' /tmp/godot-native-fast-sky.log; then
+            cat /tmp/godot-native-fast-sky.log
+            exit 1
+          fi
+          ! grep -E 'SCRIPT ERROR|Shader compilation failed' /tmp/godot-native-fast-sky.log
           DISPLAY=:99 ffmpeg -hide_banner -loglevel error -y \
             -f x11grab -video_size 720x1280 -i :99.0+0,0 \
             -frames:v 1 /tmp/live-infinita-render.png
