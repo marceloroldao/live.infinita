@@ -79,6 +79,37 @@ async function load() {
   await loadLogs(true);
 }
 
+async function loadPerformance() {
+  if ($('manager-view').hidden || $('overview').hidden) return;
+  const value = (id, text) => { $(id).textContent = text; };
+  try {
+    const data = await api('/api/manage/performance');
+    const cpu = data.host || {}, loop = data.api || {}, renderer = data.renderer || {};
+    const audio = data.audio || {}, relay = data.audio_web || {};
+    const number = v => Number.isFinite(Number(v)) && v !== null ? Number(v) : null;
+    const pressure = number(cpu.cpu_pressure_avg10_pct);
+    value('perf-cpu', pressure === null ? '—' : pressure.toFixed(1) + '%');
+    value('perf-cpu-detail', cpu.load_1m == null ? 'Carga não disponível' : `Carga ${cpu.load_1m} · ${cpu.logical_cpus || '—'} vCPUs`);
+    const lag = number(loop.max_recent_ms);
+    value('perf-loop', lag === null ? '—' : lag.toFixed(0) + ' ms');
+    value('perf-loop-detail', loop.samples ? `Pico nas últimas ${loop.samples} amostras · atual ${loop.last_ms ?? '—'} ms` : 'Aguardando amostras');
+    value('perf-fps', renderer.available ? `${renderer.fps} / ${renderer.capture_fps}` : '—');
+    value('perf-fps-detail', renderer.available ? `Meta dinâmica · atualização há ${renderer.updated_age_s} s` : 'Telemetria do renderer indisponível');
+    value('perf-tts', audio.last_tts_ok === true ? 'OK' : audio.last_tts_ok === false ? 'Falhou' : '—');
+    value('perf-tts-detail', audio.last_tts_provider ? `${audio.last_tts_provider} · ${audio.last_pcm_bytes ?? 0} bytes PCM` : 'Nenhuma síntese registrada');
+    value('perf-voice', number(audio.voice_chunks) === null ? '—' : String(audio.voice_chunks));
+    value('perf-voice-detail', audio.xruns == null ? 'Mixer não medido' : `${audio.xruns} xruns · ${audio.deadline_misses ?? '—'} atrasos`);
+    value('perf-listeners', relay.available ? String(relay.active_streams ?? '—') : '—');
+    value('perf-listeners-detail', relay.available ? `Capacidade: ${relay.max_clients ?? '—'} conexões` : 'Relay de áudio indisponível');
+    const state = $('performance-state');
+    state.textContent = renderer.available && relay.available ? 'Telemetria ativa' : 'Telemetria parcial';
+    state.classList.toggle('status-warning', !(renderer.available && relay.available));
+  } catch (_) {
+    $('performance-state').textContent = 'Telemetria indisponível';
+    $('performance-state').classList.add('status-warning');
+  }
+}
+
 async function loadMonitor() {
   clearTimeout(monitorTimer);
   if ($('manager-view').hidden) return;
@@ -104,12 +135,13 @@ async function loadMonitor() {
     $('story-chapter').textContent = data.world.story?.chapter ?? data.collective?.chapter ?? 0;
     $('story-motif').textContent = data.world.story?.title || data.world.story?.motif || 'história autônoma';
     $('collective-intent').textContent = collectiveLabel(data.collective);
-    badge('replay-state', data.world.replay_ok); $('replay-state').textContent = data.world.replay_ok ? 'Replay íntegro' : 'Replay com erro';
+    badge('replay-state', data.world.replay_ok); $('replay-state').textContent = data.world.replay_ok ? 'Replay inicial OK' : 'Replay inicial com erro';
     $('system-state').classList.toggle('status-error', !data.world.replay_ok); $('system-state').lastChild.textContent = data.world.replay_ok ? ' Sistema online' : ' Verificar sistema';
     $('last-update').textContent = `atualizado ${new Date(data.generated_at_unix*1000).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}`;
     const list = $('activity-list'); list.replaceChildren();
     if (!data.activity.length) { const li=document.createElement('li'); li.className='empty'; li.textContent='Nenhum evento registrado.'; list.append(li); }
     data.activity.forEach(item => { const li=document.createElement('li'), t=document.createElement('time'), icon=document.createElement('span'), text=document.createElement('span'), source=document.createElement('small'); t.textContent=item.at_unix?new Date(item.at_unix*1000).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'—'; icon.className='activity-icon'; icon.textContent=item.channel==='world'?'◇':'•'; text.textContent=`${item.actor} ${activityLabel(item)}`; source.textContent=item.source; li.append(t,icon,text,source); list.append(li); });
+    void loadPerformance();
   } catch (error) {
     if (String(error.message).includes('401') || String(error.message).includes('chave')) return showLogin('Sua senha não é mais válida. Entre novamente.');
     $('system-state').classList.add('status-error'); $('system-state').lastChild.textContent=' Monitor indisponível';

@@ -17,6 +17,7 @@ import main_spatial
 from cognitive_shadow import summarize_shadow_file
 from memoria_v2_adapter import build_nov_cognitive_frame, to_memoria_v2_request_payload
 from route_precedence import promote_api_route_before_root
+from packages.observability.runtime_metrics import EventLoopLagMonitor, async_runtime_snapshot
 from story_narrator import NarrationSuppressed
 
 
@@ -28,6 +29,23 @@ def _flag_enabled(name: str, default: str = "0") -> bool:
 
 
 COGNITIVE_GYM_ENABLED = _flag_enabled("LIVE_INFINITA_MEMORIA_V2_COGNITIVE_GYM")
+performance_loop = EventLoopLagMonitor()
+
+
+@app.on_event("startup")
+async def _start_performance_probe() -> None:
+    await performance_loop.start()
+
+
+@app.on_event("shutdown")
+async def _stop_performance_probe() -> None:
+    await performance_loop.stop()
+
+
+@app.get("/api/manage/performance", dependencies=[Depends(core.require_operator)])
+async def manager_performance() -> JSONResponse:
+    """Protected bounded telemetry, never deep replay or full event ledgers."""
+    return JSONResponse(await async_runtime_snapshot(core.DATA_DIR, performance_loop))
 
 
 class ManagerSimulatorCommentRequest(BaseModel):
@@ -349,3 +367,4 @@ promote_api_route_before_root(app, "/api/cognitive/v2/frame")
 promote_api_route_before_root(app, "/api/cognitive/v2/shadow/metrics")
 promote_api_route_before_root(app, "/api/manage/simulator/state")
 promote_api_route_before_root(app, "/api/manage/simulator/comment")
+promote_api_route_before_root(app, "/api/manage/performance")
