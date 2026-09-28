@@ -361,7 +361,9 @@ class InteractionNarrationService(server_audio.NarrationService):
                 async with server_audio.websockets.connect(
                     server_audio.WORLD_WS,
                     ping_interval=20,
-                    ping_timeout=20,
+                    # Preserve the narration side-channel across brief runtime stalls.
+                    # Transport pings remain enabled; application messages determine liveness.
+                    ping_timeout=None,
                 ) as websocket:
                     server_audio.write_status(
                         state="connected",
