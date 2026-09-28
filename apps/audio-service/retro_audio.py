@@ -7,6 +7,7 @@ import random
 from typing import Any
 
 import server_audio
+from packages.narration_spool import read_cues, resume_offset
 
 
 RETRO_SCORE_ENABLED = str(os.getenv("LIVE_INFINITA_RETRO_SCORE_ENABLED", "1")).strip().lower() not in {"0", "false", "no", "off"}
@@ -345,7 +346,25 @@ class InteractionNarrationService(server_audio.NarrationService):
             flush=True,
         )
 
+    async def cue_spool_listener(self) -> None:
+        """Recover missed cues without depending on the heavy world WebSocket."""
+        path = server_audio.AUDIO_DIR / "narration-cue-spool.jsonl"
+        offset = await asyncio.to_thread(resume_offset, path, self.last_identity)
+        while not self.stop.is_set():
+            offset, cues = await asyncio.to_thread(read_cues, path, offset)
+            for cue in cues:
+                await self.submit_narration_cue(cue)
+            await asyncio.sleep(0.5)
+
     async def world_listener(self) -> None:
+        spool_task = asyncio.create_task(self.cue_spool_listener())
+        try:
+            await self._world_websocket_listener()
+        finally:
+            spool_task.cancel()
+            await asyncio.gather(spool_task, return_exceptions=True)
+
+    async def _world_websocket_listener(self) -> None:
         backoff = 1.0
         while not self.stop.is_set():
             server_audio.write_status(
