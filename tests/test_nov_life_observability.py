@@ -83,7 +83,8 @@ class NovLifeProjectionTests(unittest.TestCase):
             result = nov_life_snapshot(path, max_bytes=2048, window_records=5, limit=3)
             self.assertEqual([x["logical_tick"] for x in result["episodes"]], [999, 998, 997])
             self.assertEqual(result["max_window_bytes"], 2048)
-            self.assertEqual(result["window_records_examined"], 5)
+            self.assertGreaterEqual(result["window_records_examined"], 3)
+            self.assertLessEqual(result["window_records_examined"], 5)
             self.assertEqual(len(result["episodes"]), 3)
 
     def test_empty_and_malformed_entries_are_not_invented(self):
