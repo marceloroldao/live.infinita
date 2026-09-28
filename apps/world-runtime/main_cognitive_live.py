@@ -18,6 +18,7 @@ from cognitive_shadow import summarize_shadow_file
 from memoria_v2_adapter import build_nov_cognitive_frame, to_memoria_v2_request_payload
 from route_precedence import promote_api_route_before_root
 from packages.observability.runtime_metrics import EventLoopLagMonitor, async_runtime_snapshot
+from packages.observability.nov_life import nov_life_snapshot
 from story_narrator import NarrationSuppressed
 
 
@@ -46,6 +47,14 @@ async def _stop_performance_probe() -> None:
 async def manager_performance() -> JSONResponse:
     """Protected bounded telemetry, never deep replay or full event ledgers."""
     return JSONResponse(await async_runtime_snapshot(core.DATA_DIR, performance_loop))
+
+
+@app.get("/api/manage/nov/life", dependencies=[Depends(core.require_operator)])
+async def manager_nov_life() -> JSONResponse:
+    """Inspect only confirmed local episodes, without affecting Nov or ticking."""
+    path = main_spatial._world_data_root() / "npc-episodes.jsonl"
+    snapshot = await asyncio.to_thread(nov_life_snapshot, path)
+    return JSONResponse(snapshot)
 
 
 class ManagerSimulatorCommentRequest(BaseModel):
@@ -368,3 +377,4 @@ promote_api_route_before_root(app, "/api/cognitive/v2/shadow/metrics")
 promote_api_route_before_root(app, "/api/manage/simulator/state")
 promote_api_route_before_root(app, "/api/manage/simulator/comment")
 promote_api_route_before_root(app, "/api/manage/performance")
+promote_api_route_before_root(app, "/api/manage/nov/life")
