@@ -4,7 +4,15 @@ import asyncio
 import math
 import os
 import random
+import sys
+from pathlib import Path
 from typing import Any
+
+# stable_audio.py is launched by path, not with `python -m` or PYTHONPATH.
+# Make the shared presentation transport importable under the production unit.
+ROOT_DIR = Path(__file__).resolve().parents[2]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
 
 import server_audio
 from packages.narration_spool import read_cues, resume_offset
