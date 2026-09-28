@@ -14,6 +14,8 @@ sys.modules[spec.name] = module
 spec.loader.exec_module(module)
 HeadlessRendererConfig = module.HeadlessRendererConfig
 RendererConfigError = module.RendererConfigError
+CpuPressureGovernor = module.CpuPressureGovernor
+HeadlessRenderer = module.HeadlessRenderer
 
 
 class HeadlessRendererConfigTest(unittest.TestCase):
@@ -55,6 +57,51 @@ class HeadlessRendererConfigTest(unittest.TestCase):
         cfg = HeadlessRendererConfig(video_output="rtmp://example.invalid/live")
         with self.assertRaises(RendererConfigError):
             cfg.validate()
+
+    def test_pressure_parser_and_bounded_degradation(self):
+        pressure = "some avg10=66.73 avg60=50.12 avg300=42.00 total=900\\nfull avg10=0.00"
+        self.assertEqual(CpuPressureGovernor.pressure_avg10(pressure), 66.73)
+        self.assertIsNone(CpuPressureGovernor.pressure_avg10("full avg10=1.00"))
+        governor = CpuPressureGovernor(max_fps=20, min_fps=12, recovery_samples=3)
+        self.assertEqual(governor.update(56), 12)
+        self.assertEqual(governor.update(None), 12)
+        self.assertEqual(governor.update(0), 12)
+        self.assertEqual(governor.update(0), 12)
+        self.assertEqual(governor.update(0), 14)
+        self.assertEqual(governor.update(40), 14)
+        self.assertEqual(governor.update(56), 12)
+        self.assertEqual(governor.update(40), 12)
+        self.assertEqual(governor.update(40), 12)
+        self.assertEqual(governor.update(40), 14)
+
+    def test_governor_file_is_private_and_disabled_by_default(self):
+        cfg = HeadlessRendererConfig()
+        self.assertFalse(cfg.cpu_governor_enabled)
+        renderer = HeadlessRenderer(cfg)
+        env = {}
+        renderer._start_governor(env)
+        self.assertEqual(env, {})
+        enabled = HeadlessRenderer(HeadlessRendererConfig(cpu_governor_enabled=True))
+        try:
+            enabled._start_governor(env)
+            path = Path(env["LIVE_INFINITA_RENDER_CONTROL_FILE"])
+            self.assertEqual(path.read_text(), "20\\n")
+            self.assertEqual(path.parent.stat().st_mode & 0o777, 0o700)
+            enabled._publish_fps(12)
+            self.assertEqual(path.read_text(), "12\\n")
+        finally:
+            enabled.stop()
+        self.assertFalse(path.exists())
+
+    def test_native_godot_polls_control_but_browser_export_is_unchanged(self):
+        scene = (ROOT / "apps" / "renderer-godot" / "main.gd").read_text(encoding="utf-8")
+        unit = (ROOT / "deploy" / "live-infinita-renderer.service").read_text(encoding="utf-8")
+        self.assertIn('if OS.has_feature("web"):', scene)
+        self.assertIn('Engine.max_fps = target_fps', scene)
+        self.assertIn('Environment=LIVE_INFINITA_RENDER_CPU_GOVERNOR=1', unit)
+        self.assertIn('Environment=LIVE_INFINITA_RENDER_FPS=15', unit)
+        self.assertIn('Nice=5', unit)
+
 
 
 if __name__ == "__main__":
