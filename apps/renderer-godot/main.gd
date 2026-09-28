@@ -25,6 +25,8 @@ var camera_offset := Vector2.ZERO
 var camera_target := Vector2.ZERO
 var director_cooldown_until := 0
 var sky_material := ShaderMaterial.new()
+var sky_stars: Array[Vector2] = []
+var sky_cloud_contours: Array[PackedVector2Array] = []
 var retiring: Array[Node2D] = []
 const MAX_RETIRING := 32
 const MAX_CAMERA_SHIFT := 22.0
@@ -39,11 +41,15 @@ var director_focus_until_ms := 0
 
 func _ready() -> void:
     _configure_native_fps_governor()
+    _build_sky_geometry()
     var sky := ColorRect.new()
     sky.size = Vector2(720, 1280)
     sky.mouse_filter = Control.MOUSE_FILTER_IGNORE
     sky.z_index = -10
-    sky_material.shader = preload("res://story_sky.gdshader")
+    # The web client keeps the original shader. The VM opts in to a native
+    # software-rasterizer variant without millions of sin() calls per frame.
+    var native_fast_sky := not OS.has_feature("web") and OS.get_environment("LIVE_INFINITA_RENDER_FAST_SKY") == "1"
+    sky_material.shader = preload("res://story_sky_native.gdshader") if native_fast_sky else preload("res://story_sky.gdshader")
     sky.material = sky_material
     add_child(sky)
     _connect_websocket()
@@ -74,6 +80,22 @@ func _poll_native_fps_governor() -> void:
     var target_fps := clampi(text_value.to_int(), 8, 60)
     if Engine.max_fps != target_fps:
         Engine.max_fps = target_fps
+
+func _build_sky_geometry() -> void:
+    # Positions/contours depend only on seeds and never need recomputation.
+    sky_stars.clear()
+    sky_cloud_contours.clear()
+    for i in range(38):
+        var x := fposmod(sin(float(i + 1) * 127.1) * 43758.5453, 1.0) * 670.0 + 25.0
+        var y := fposmod(sin(float(i + 1) * 311.7) * 19642.349, 1.0) * 340.0 + 105.0
+        sky_stars.append(Vector2(x, y))
+    for i in range(5):
+        var contour := PackedVector2Array()
+        for point in range(40):
+            var angle := float(point) / 40.0 * TAU
+            var radius := 1.0 + sin(angle * 5.0 + i) * 0.07
+            contour.append(Vector2(cos(angle) * 54.0, sin(angle) * 24.0) * radius)
+        sky_cloud_contours.append(contour)
 
 func _install_browser_audio_bridge() -> void:
     if not OS.has_feature("web"): return
@@ -312,10 +334,8 @@ func _update_director_layout(delta: float = 0.016) -> void:
 
 func _draw_sky(v: Vector2, _night: bool) -> void:
     # Continuous shader below this node; celestial bodies cross-fade above it.
-    for i in range(38):
-        var x := fposmod(sin(float(i + 1) * 127.1) * 43758.5453, 1.0) * (v.x - 50.0) + 25.0
-        var y := fposmod(sin(float(i + 1) * 311.7) * 19642.349, 1.0) * 340.0 + 105.0
-        draw_circle(Vector2(x, y), 1.0 + float(i % 3) * 0.35, Color(0.94, 0.97, 1.0, night_amount * (0.48 + 0.16 * sin(visual_time * 0.7 + i))))
+    for i in range(sky_stars.size()):
+        draw_circle(sky_stars[i], 1.0 + float(i % 3) * 0.35, Color(0.94, 0.97, 1.0, night_amount * (0.48 + 0.16 * sin(visual_time * 0.7 + i))))
     var sun := Vector2(570, 220 + night_amount * 100)
     for i in range(8, 0, -1):
         draw_circle(sun, 34.0 + i * 8.0, Color(1.0, 0.79, 0.44, 0.015 * (1.0 - night_amount)))
@@ -329,12 +349,7 @@ func _draw_sky(v: Vector2, _night: bool) -> void:
         var cy := 240.0 + i * 43.0
         var cloud := Color(0.96, 0.96, 0.86, lerpf(0.22, 0.055, night_amount))
         draw_set_transform(Vector2(cx, cy) + camera_offset * 0.06, 0.0, Vector2(1.8, 0.58))
-        var contour := PackedVector2Array()
-        for point in range(40):
-            var angle := float(point) / 40.0 * TAU
-            var radius := 1.0 + sin(angle * 5.0 + i) * 0.07
-            contour.append(Vector2(cos(angle) * 54.0, sin(angle) * 24.0) * radius)
-        draw_colored_polygon(contour, cloud)
+        draw_colored_polygon(sky_cloud_contours[i], cloud)
         draw_set_transform(Vector2.ZERO)
 
 func _draw() -> void:
