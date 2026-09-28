@@ -131,7 +131,7 @@ def build_npc_cognitive_stack(
     composite_strategy = NpcConfidenceStrategy(horizon_strategy, decision_confidence)
     strategy_compiler = NpcStrategyCompiler()
     strategy_executor = NpcStrategyExecutor(root / "npc-strategy-executions.jsonl", plan_scheduler)
-    social_opportunities = NpcSocialOpportunity(store, planner.regions)
+    social_opportunities = NpcSocialOpportunity(store, planner)
     need_scheduler = NpcAuditedReorderingNeedScheduler(
         root / "npc-need-scheduler.jsonl",
         proposal_ledger,

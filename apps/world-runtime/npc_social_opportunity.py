@@ -52,7 +52,10 @@ class NpcSocialOpportunity:
         }
         if not observer_id or not region_id:
             return result
-        region = self.regions.get(region_id) if callable(getattr(self.regions, "get", None)) else None
+        # The live planner replaces its RegionCatalog as world topology evolves.
+        # Resolve it at observation time rather than retaining its bootstrap copy.
+        catalog = getattr(self.regions, "regions", self.regions)
+        region = catalog.get(region_id) if callable(getattr(catalog, "get", None)) else None
         if region is None:
             result["status"] = "region_unavailable"
             return result
@@ -64,7 +67,7 @@ class NpcSocialOpportunity:
         # Only one topological hop; do not scan an unbounded persistent world.
         region_ids.extend(
             item for item in sorted(set(region.neighbors))
-            if item != region_id and self.regions.get(item) is not None
+            if item != region_id and catalog.get(item) is not None
         )
         result["region_scan_limited"] = len(region_ids) > self.max_regions
         region_ids = region_ids[:self.max_regions]

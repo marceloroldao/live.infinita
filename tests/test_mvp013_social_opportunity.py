@@ -98,6 +98,20 @@ class SocialOpportunityTests(unittest.TestCase):
             self.assertEqual(provider.candidates(store.get_entity("nov")), ["a"])
             self.assertNotIn("social_target_entity_id", store.get_entity("nov")["properties"])
 
+    def test_catalog_replacement_does_not_leave_stale_topology(self):
+        with tempfile.TemporaryDirectory() as d:
+            store, provider = self.setup_world(Path(d), [nov(), actor("neighbor", "forest")])
+            class MutablePlanner:
+                def __init__(self, regions):
+                    self.regions = regions
+            planner = MutablePlanner(provider.regions)
+            live_provider = NpcSocialOpportunity(store, planner)
+            self.assertEqual(live_provider.candidates(store.get_entity("nov")), ["neighbor"])
+            planner.regions = RegionCatalog([
+                Region(id="clearing", center=(0, 0), radius=100, neighbors=()),
+            ])
+            self.assertEqual(live_provider.candidates(store.get_entity("nov")), [])
+
     def test_deterministic_bounded_candidates_revalidates_availability(self):
         with tempfile.TemporaryDirectory() as d:
             store, provider = self.setup_world(Path(d), [
