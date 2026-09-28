@@ -6,7 +6,7 @@ INSTALL=/opt/live.infinita
 WORLD=live-infinita-autonomous-world.service
 API=live-infinita.service
 AUDIO=live-infinita-audio.service
-REQUIRED=0922eb9682484a289b1aae7e25754743e5528887
+REQUIRED=19f1c32955f9cd92b2b687a79bfae1ca34d71c53
 fail(){ echo "NARRATOR_DEPLOY_FAIL: $*" >&2; exit 2; }
 (( EUID != 0 )) || fail "Execute como etbra: bash deploy/narrator-ws-hotfix.sh"
 cd "$REPO"
@@ -21,7 +21,7 @@ world_pid="$(systemctl show "$WORLD" -p MainPID --value)"
 echo "== Testes focalizados =="
 PYTHONPATH=.:apps/world-runtime:apps/audio-service:apps/audience \
   "$INSTALL/.venv/bin/python" -m unittest \
-  tests.test_live_presentation_narration tests.test_manager_live_simulator \
+  tests.test_narration_spool tests.test_live_presentation_narration tests.test_manager_live_simulator \
   tests.test_story_narrator tests.test_retro_world_audio \
   tests.test_spatial_session tests.test_spatial_multi_observer
 sudo -v
@@ -29,6 +29,9 @@ backup="/var/backups/live-infinita/narrator-ws-$(date +%Y%m%d-%H%M%S)"
 sudo install -d -m 0700 "$backup"
 sudo cp -a "$INSTALL/apps/audio-service/retro_audio.py" "$backup/retro_audio.py"
 sudo cp -a "$INSTALL/apps/world-runtime/main_spatial.py" "$backup/main_spatial.py"
+if [[ -f "$INSTALL/packages/narration_spool.py" ]]; then
+  sudo cp -a "$INSTALL/packages/narration_spool.py" "$backup/narration_spool.py"
+fi
 echo "BACKUP=$backup"
 applied=0
 rollback(){
@@ -36,6 +39,11 @@ rollback(){
     echo "ROLLBACK: restaurando apenas os dois arquivos do narrador" >&2
     sudo cp -a "$backup/retro_audio.py" "$INSTALL/apps/audio-service/retro_audio.py"
     sudo cp -a "$backup/main_spatial.py" "$INSTALL/apps/world-runtime/main_spatial.py"
+    if [[ -f "$backup/narration_spool.py" ]]; then
+      sudo cp -a "$backup/narration_spool.py" "$INSTALL/packages/narration_spool.py"
+    else
+      sudo rm -f "$INSTALL/packages/narration_spool.py"
+    fi
     sudo systemctl restart "$API" "$AUDIO" || true
   fi
 }
@@ -45,10 +53,14 @@ sudo install -o liveinfinita -g liveinfinita -m 0644 \
   "$REPO/apps/audio-service/retro_audio.py" "$INSTALL/apps/audio-service/retro_audio.py"
 sudo install -o liveinfinita -g liveinfinita -m 0644 \
   "$REPO/apps/world-runtime/main_spatial.py" "$INSTALL/apps/world-runtime/main_spatial.py"
+sudo install -o liveinfinita -g liveinfinita -m 0644 \
+  "$REPO/packages/narration_spool.py" "$INSTALL/packages/narration_spool.py"
 cmp "$REPO/apps/audio-service/retro_audio.py" "$INSTALL/apps/audio-service/retro_audio.py"
 cmp "$REPO/apps/world-runtime/main_spatial.py" "$INSTALL/apps/world-runtime/main_spatial.py"
+cmp "$REPO/packages/narration_spool.py" "$INSTALL/packages/narration_spool.py"
 sudo "$INSTALL/.venv/bin/python" -m py_compile \
-  "$INSTALL/apps/audio-service/retro_audio.py" "$INSTALL/apps/world-runtime/main_spatial.py"
+  "$INSTALL/apps/audio-service/retro_audio.py" "$INSTALL/apps/world-runtime/main_spatial.py" \
+  "$INSTALL/packages/narration_spool.py"
 sudo systemctl restart "$API" "$AUDIO"
 ready=0
 for attempt in $(seq 1 12); do
