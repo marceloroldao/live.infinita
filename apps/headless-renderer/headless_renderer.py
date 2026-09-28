@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import argparse
 import os
+import re
 import shlex
 import shutil
 import signal
 import subprocess
 import sys
+import tempfile
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -24,6 +26,9 @@ class HeadlessRendererConfig:
     width: int = 720
     height: int = 1280
     fps: int = 30
+    godot_fps: int = 20
+    minimum_godot_fps: int = 12
+    cpu_governor_enabled: bool = False
     video_output: str = "udp://127.0.0.1:5600?pkt_size=1316"
     video_bitrate_kbps: int = 6000
     startup_seconds: float = 2.0
@@ -37,6 +42,9 @@ class HeadlessRendererConfig:
             width=int(os.getenv("LIVE_INFINITA_RENDER_WIDTH", "720")),
             height=int(os.getenv("LIVE_INFINITA_RENDER_HEIGHT", "1280")),
             fps=int(os.getenv("LIVE_INFINITA_RENDER_FPS", "30")),
+            godot_fps=int(os.getenv("LIVE_INFINITA_RENDER_GODOT_FPS", "20")),
+            minimum_godot_fps=int(os.getenv("LIVE_INFINITA_RENDER_GODOT_MIN_FPS", "12")),
+            cpu_governor_enabled=os.getenv("LIVE_INFINITA_RENDER_CPU_GOVERNOR", "0").strip().lower() in {"1", "true", "yes", "on"},
             video_output=os.getenv("LIVE_INFINITA_VIDEO_BUS", "udp://127.0.0.1:5600?pkt_size=1316").strip(),
             video_bitrate_kbps=int(os.getenv("LIVE_INFINITA_RENDER_BITRATE_KBPS", "6000")),
             startup_seconds=float(os.getenv("LIVE_INFINITA_RENDER_STARTUP_SECONDS", "2")),
@@ -53,6 +61,8 @@ class HeadlessRendererConfig:
             raise RendererConfigError("resolução inválida")
         if not 1 <= self.fps <= 60:
             raise RendererConfigError("FPS deve ficar entre 1 e 60")
+        if not 8 <= self.minimum_godot_fps <= self.godot_fps <= 60:
+            raise RendererConfigError("limites FPS Godot inválidos")
         if self.video_bitrate_kbps < 500:
             raise RendererConfigError("bitrate de vídeo muito baixo")
         if not self.video_output.startswith("udp://127.0.0.1:"):
@@ -78,11 +88,85 @@ class HeadlessRendererConfig:
         ]
 
 
+class CpuPressureGovernor:
+    """Bounded renderer-only FPS controller; never changes simulation-clock cadence."""
+
+    def __init__(self, max_fps: int, min_fps: int, recovery_samples: int = 6) -> None:
+        self.max_fps = max_fps
+        self.min_fps = min_fps
+        self.recovery_samples = recovery_samples
+        self.current_fps = max_fps
+        self.healthy_samples = 0
+
+    @staticmethod
+    def pressure_avg10(snapshot: str) -> float | None:
+        for line in snapshot.splitlines():
+            if not line.startswith("some "):
+                continue
+            match = re.search(r"(?:^|\s)avg10=([0-9]+(?:\.[0-9]+)?)", line)
+            if match:
+                return float(match.group(1))
+        return None
+
+    def update(self, cpu_pressure_avg10: float | None) -> int:
+        if cpu_pressure_avg10 is None:
+            return self.current_fps
+        if cpu_pressure_avg10 >= 55.0:
+            target = self.min_fps
+        elif cpu_pressure_avg10 >= 30.0:
+            target = max(self.min_fps, self.max_fps - 5)
+        else:
+            target = self.max_fps
+        if target < self.current_fps:
+            self.current_fps = target
+            self.healthy_samples = 0
+        elif target > self.current_fps:
+            self.healthy_samples += 1
+            if self.healthy_samples >= self.recovery_samples:
+                self.current_fps = min(target, self.current_fps + 2)
+                self.healthy_samples = 0
+        else:
+            self.healthy_samples = 0
+        return self.current_fps
+
+
 class HeadlessRenderer:
     def __init__(self, config: HeadlessRendererConfig) -> None:
         self.config = config
         self.processes: list[subprocess.Popen[bytes]] = []
         self.stop_requested = False
+        self._fps_governor = CpuPressureGovernor(config.godot_fps, config.minimum_godot_fps)
+        self._control_dir: tempfile.TemporaryDirectory[str] | None = None
+        self._control_file: Path | None = None
+
+    def _publish_fps(self, value: int) -> None:
+        path = self._control_file
+        if path is None:
+            return
+        temporary = path.with_suffix(".tmp")
+        temporary.write_text(f"{value}\n", encoding="ascii")
+        os.replace(temporary, path)
+
+    def _start_governor(self, env: dict[str, str]) -> None:
+        if not self.config.cpu_governor_enabled:
+            return
+        self._control_dir = tempfile.TemporaryDirectory(prefix="live-infinita-fps-")
+        self._control_file = Path(self._control_dir.name) / "fps"
+        self._publish_fps(self.config.godot_fps)
+        env["LIVE_INFINITA_RENDER_CONTROL_FILE"] = str(self._control_file)
+
+    def _poll_governor(self) -> None:
+        if self._control_file is None:
+            return
+        try:
+            snapshot = Path("/proc/pressure/cpu").read_text(encoding="ascii")
+        except OSError:
+            return
+        before = self._fps_governor.current_fps
+        after = self._fps_governor.update(CpuPressureGovernor.pressure_avg10(snapshot))
+        if after != before:
+            self._publish_fps(after)
+            print(f"[renderer] CPU pressure: Godot FPS {before} -> {after}", flush=True)
 
     def _spawn(self, command: list[str], env: dict[str, str] | None = None) -> subprocess.Popen[bytes]:
         process = subprocess.Popen(command, env=env)
@@ -104,6 +188,10 @@ class HeadlessRenderer:
             except subprocess.TimeoutExpired:
                 process.kill()
         self.processes.clear()
+        if self._control_dir is not None:
+            self._control_dir.cleanup()
+            self._control_dir = None
+            self._control_file = None
 
     def run(self, xvfb_bin: str, ffmpeg_bin: str) -> int:
         self.config.validate()
@@ -113,12 +201,18 @@ class HeadlessRenderer:
             return int(xvfb.returncode or 1)
         env = os.environ.copy()
         env["DISPLAY"] = self.config.display
+        self._start_governor(env)
         godot = self._spawn(self.config.godot_command(), env=env)
         time.sleep(max(0.0, self.config.startup_seconds))
         if godot.poll() is not None:
             return int(godot.returncode or 1)
         capture = self._spawn(self.config.capture_command(ffmpeg_bin), env=env)
+        next_pressure_poll = 0.0
         while not self.stop_requested:
+            now = time.monotonic()
+            if now >= next_pressure_poll:
+                self._poll_governor()
+                next_pressure_poll = now + 10.0
             for process in (xvfb, godot, capture):
                 code = process.poll()
                 if code is not None:
