@@ -6,7 +6,7 @@ INSTALL=/opt/live.infinita
 WORLD=live-infinita-autonomous-world.service
 API=live-infinita.service
 AUDIO=live-infinita-audio.service
-REQUIRED=19f1c32955f9cd92b2b687a79bfae1ca34d71c53
+REQUIRED=53a4b001767d0b59d6649627fce7096ee8b93b07
 fail(){ echo "NARRATOR_DEPLOY_FAIL: $*" >&2; exit 2; }
 (( EUID != 0 )) || fail "Execute como etbra: bash deploy/narrator-ws-hotfix.sh"
 cd "$REPO"
@@ -14,7 +14,7 @@ cd "$REPO"
 [[ -z "$(git status --porcelain --untracked-files=no)" ]] || fail "Alterações rastreadas locais"
 git fetch origin main
 [[ "$(git rev-parse HEAD)" == "$(git rev-parse origin/main)" ]] || fail "Atualize o checkout antes do deploy"
-git merge-base --is-ancestor "$REQUIRED" HEAD || fail "PR #70 não está integrado"
+git merge-base --is-ancestor "$REQUIRED" HEAD || fail "Correção de importação do narrador não integrada"
 systemctl is-active --quiet "$WORLD" || fail "Single Writer inativo"
 world_pid="$(systemctl show "$WORLD" -p MainPID --value)"
 [[ "$world_pid" =~ ^[0-9]+$ && "$world_pid" -gt 1 ]] || fail "PID autoritativo inválido"
@@ -29,6 +29,7 @@ backup="/var/backups/live-infinita/narrator-ws-$(date +%Y%m%d-%H%M%S)"
 sudo install -d -m 0700 "$backup"
 sudo cp -a "$INSTALL/apps/audio-service/retro_audio.py" "$backup/retro_audio.py"
 sudo cp -a "$INSTALL/apps/world-runtime/main_spatial.py" "$backup/main_spatial.py"
+sudo cp -a "$INSTALL/apps/world-runtime/main_live.py" "$backup/main_live.py"
 if [[ -f "$INSTALL/packages/narration_spool.py" ]]; then
   sudo cp -a "$INSTALL/packages/narration_spool.py" "$backup/narration_spool.py"
 fi
@@ -36,9 +37,10 @@ echo "BACKUP=$backup"
 applied=0
 rollback(){
   if (( applied )); then
-    echo "ROLLBACK: restaurando apenas os dois arquivos do narrador" >&2
+    echo "ROLLBACK: restaurando os arquivos de apresentação do narrador" >&2
     sudo cp -a "$backup/retro_audio.py" "$INSTALL/apps/audio-service/retro_audio.py"
     sudo cp -a "$backup/main_spatial.py" "$INSTALL/apps/world-runtime/main_spatial.py"
+    sudo cp -a "$backup/main_live.py" "$INSTALL/apps/world-runtime/main_live.py"
     if [[ -f "$backup/narration_spool.py" ]]; then
       sudo cp -a "$backup/narration_spool.py" "$INSTALL/packages/narration_spool.py"
     else
@@ -54,13 +56,19 @@ sudo install -o liveinfinita -g liveinfinita -m 0644 \
 sudo install -o liveinfinita -g liveinfinita -m 0644 \
   "$REPO/apps/world-runtime/main_spatial.py" "$INSTALL/apps/world-runtime/main_spatial.py"
 sudo install -o liveinfinita -g liveinfinita -m 0644 \
+  "$REPO/apps/world-runtime/main_live.py" "$INSTALL/apps/world-runtime/main_live.py"
+sudo install -o liveinfinita -g liveinfinita -m 0644 \
   "$REPO/packages/narration_spool.py" "$INSTALL/packages/narration_spool.py"
 cmp "$REPO/apps/audio-service/retro_audio.py" "$INSTALL/apps/audio-service/retro_audio.py"
 cmp "$REPO/apps/world-runtime/main_spatial.py" "$INSTALL/apps/world-runtime/main_spatial.py"
+cmp "$REPO/apps/world-runtime/main_live.py" "$INSTALL/apps/world-runtime/main_live.py"
 cmp "$REPO/packages/narration_spool.py" "$INSTALL/packages/narration_spool.py"
 sudo "$INSTALL/.venv/bin/python" -m py_compile \
   "$INSTALL/apps/audio-service/retro_audio.py" "$INSTALL/apps/world-runtime/main_spatial.py" \
-  "$INSTALL/packages/narration_spool.py"
+  "$INSTALL/apps/world-runtime/main_live.py" "$INSTALL/packages/narration_spool.py"
+# Verify the real production import layout, not only py_compile.
+sudo -u liveinfinita "$INSTALL/.venv/bin/python" -c \
+  "import sys; sys.path.insert(0, \"$INSTALL/apps/audio-service\"); import retro_audio; from packages.narration_spool import read_cues; print(\"NARRATOR_PRODUCTION_IMPORT_OK\")"
 sudo systemctl restart "$API" "$AUDIO"
 ready=0
 for attempt in $(seq 1 12); do
