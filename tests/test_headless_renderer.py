@@ -59,7 +59,7 @@ class HeadlessRendererConfigTest(unittest.TestCase):
             cfg.validate()
 
     def test_pressure_parser_and_bounded_degradation(self):
-        pressure = "some avg10=66.73 avg60=50.12 avg300=42.00 total=900\\nfull avg10=0.00"
+        pressure = "some avg10=66.73 avg60=50.12 avg300=42.00 total=900\nfull avg10=0.00"
         self.assertEqual(CpuPressureGovernor.pressure_avg10(pressure), 66.73)
         self.assertIsNone(CpuPressureGovernor.pressure_avg10("full avg10=1.00"))
         governor = CpuPressureGovernor(max_fps=20, min_fps=12, recovery_samples=3)
@@ -85,10 +85,10 @@ class HeadlessRendererConfigTest(unittest.TestCase):
         try:
             enabled._start_governor(env)
             path = Path(env["LIVE_INFINITA_RENDER_CONTROL_FILE"])
-            self.assertEqual(path.read_text(), "20\\n")
+            self.assertEqual(path.read_text(), "20\n")
             self.assertEqual(path.parent.stat().st_mode & 0o777, 0o700)
             enabled._publish_fps(12)
-            self.assertEqual(path.read_text(), "12\\n")
+            self.assertEqual(path.read_text(), "12\n")
         finally:
             enabled.stop()
         self.assertFalse(path.exists())
