@@ -19,7 +19,7 @@
   <div id="manager-view" class="app-shell" hidden>
     <aside class="sidebar">
       <a class="brand" href="/" aria-label="Live Infinita Manager"><span class="brand-symbol">∞</span><span>LIVE<br>INFINITA</span></a>
-      <nav aria-label="Navegação principal"><a class="nav-link active" data-page="overview" href="#overview"><span>⌂</span> Visão geral</a><a class="nav-link" data-page="simulador" href="#simulador"><span>◉</span> Simulador</a><a class="nav-link" data-page="integracoes" href="#integracoes"><span>◫</span> Integrações</a><a class="nav-link" data-page="relatorio" href="#relatorio"><span>▤</span> Relatório</a><a class="nav-link" href="/godot/"><span>◇</span> Godot <b>↗</b></a><a class="nav-link" href="/gdscript/"><span>⌁</span> GDScript <b>↗</b></a></nav>
+      <nav aria-label="Navegação principal"><a class="nav-link active" data-page="overview" href="#overview"><span>⌂</span> Visão geral</a><a class="nav-link" data-page="nov" href="#nov"><span>✦</span> Vida de Nov</a><a class="nav-link" data-page="simulador" href="#simulador"><span>◉</span> Simulador</a><a class="nav-link" data-page="integracoes" href="#integracoes"><span>◫</span> Integrações</a><a class="nav-link" data-page="relatorio" href="#relatorio"><span>▤</span> Relatório</a><a class="nav-link" href="/godot/"><span>◇</span> Godot <b>↗</b></a><a class="nav-link" href="/gdscript/"><span>⌁</span> GDScript <b>↗</b></a></nav>
       <button id="logout" class="logout" type="button"><span>↪</span> Sair</button>
     </aside>
     <main class="workspace">
@@ -57,6 +57,15 @@
             <p class="log-note">Logs sanitizados; segredos e tokens são removidos antes da exibição.</p>
           </section>
         </div>
+      </section>
+      <section id="nov" class="manager-page" hidden>
+        <header class="topbar"><div><p class="eyebrow">Gerência · Observação cognitiva</p><h1>Vida de Nov</h1></div><span id="nov-life-state" class="system-status"><i></i> Aguardando episódios</span></header>
+        <section class="monitor-hero nov-life-hero"><div><p class="eyebrow green">MEMÓRIA LOCAL · EPISÓDIOS CONFIRMADOS</p><h2>O que Nov viveu</h2><p>Experiências registradas quando uma estratégia termina. Não são falas geradas por IA nem previsões do Shadow Mode.</p></div><div><button id="nov-life-refresh" class="secondary compact" type="button">Atualizar</button></div></section>
+        <section class="monitor-card nov-life-card">
+          <div class="section-title"><div><p class="eyebrow">TRAJETÓRIA · RESULTADOS REAIS</p><h2>Últimos episódios observados</h2></div><span id="nov-life-window" class="total-pill">—</span></div>
+          <ol id="nov-life-episodes" class="nov-life-episodes"><li class="empty">Aguardando leitura da memória de Nov…</li></ol>
+          <p class="nov-life-note">Leitura limitada às últimas entradas do arquivo de memória episódica. Sem varrer todo o histórico e sem escrever no World State. A Memoria.ia central ainda não recebe estes registros por esta funcionalidade.</p>
+        </section>
       </section>
       <section id="simulador" class="manager-page" hidden>
         <header class="topbar"><div><p class="eyebrow">Gerência · Laboratório</p><h1>Simulador da Live</h1></div><span id="simulator-state" class="system-status"><i></i> Verificando modo de teste</span></header>

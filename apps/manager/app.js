@@ -3,6 +3,7 @@ let token = sessionStorage.getItem('live-infinita-operator') || '';
 let toastTimer;
 let monitorTimer;
 let logsTimer;
+let novLifeTimer;
 let logsPaused = false;
 let reportText = '';
 
@@ -26,7 +27,7 @@ async function safeApi(path) {
 }
 
 function showLogin(error = '') {
-  clearTimeout(monitorTimer); clearTimeout(logsTimer);
+  clearTimeout(monitorTimer); clearTimeout(logsTimer); clearTimeout(novLifeTimer);
   $('manager-view').hidden = true;
   $('login-view').hidden = false;
   $('login-message').textContent = error;
@@ -37,15 +38,17 @@ function showLogin(error = '') {
 function showManager() {
   $('login-view').hidden = true;
   $('manager-view').hidden = false;
-  const page = ({'#integracoes':'integracoes','#relatorio':'relatorio'})[location.hash] || 'overview';
+  const page = ({'#integracoes':'integracoes','#relatorio':'relatorio','#nov':'nov'})[location.hash] || 'overview';
   showPage(page, false);
 }
 
 function showPage(page, refresh = true) {
+  clearTimeout(novLifeTimer);
   document.querySelectorAll('.manager-page').forEach(el => el.hidden = el.id !== page);
   document.querySelectorAll('[data-page]').forEach(el => el.classList.toggle('active', el.dataset.page === page));
   if (page === 'overview' && refresh) { loadMonitor(); loadLogs(true); }
   if (page === 'relatorio' && refresh) generateReport();
+  if (page === 'nov') void loadNovLife();
 }
 
 document.querySelectorAll('[data-page]').forEach(link => link.onclick = () => showPage(link.dataset.page));
@@ -78,6 +81,54 @@ async function load() {
   await loadMonitor();
   await loadLogs(true);
 }
+
+const NOV_NEED_NAMES = {curiosity:'Curiosidade',energy:'Energia',safety:'Segurança',social:'Convivência'};
+function novLifeLabel(value) {
+  return NOV_NEED_NAMES[value] || (value ? String(value).replaceAll('_',' ') : 'Necessidade não informada');
+}
+function novLifeText(value) { return value == null || value === '' ? '—' : String(value); }
+async function loadNovLife() {
+  clearTimeout(novLifeTimer);
+  if ($('manager-view').hidden || $('nov').hidden) return;
+  const list = $('nov-life-episodes');
+  try {
+    const result = await api('/api/manage/nov/life');
+    list.replaceChildren();
+    const records = Array.isArray(result.episodes) ? result.episodes : [];
+    $('nov-life-window').textContent = `${records.length} episódio(s) · janela recente`;
+    $('nov-life-state').lastChild.textContent = records.length ? ' Memória local ativa' : ' Nenhum episódio na janela';
+    $('nov-life-state').classList.toggle('status-warning', !records.length);
+    if (!records.length) {
+      const li = document.createElement('li');
+      li.className = 'empty';
+      li.textContent = result.ledger_available ? 'Nenhum episódio de Nov encontrado na janela recente.' : 'Arquivo de memória episódica ainda não disponível.';
+      list.append(li);
+    }
+    for (const episode of records) {
+      const li = document.createElement('li');
+      const title = document.createElement('strong');
+      title.textContent = `${novLifeLabel(episode.need)} · tick ${novLifeText(episode.logical_tick)}`;
+      const meta = document.createElement('p');
+      const ctx = episode.context || {}, outcome = episode.outcome || {};
+      meta.textContent = `Destino: ${novLifeText(episode.target_entity_id)} · região: ${novLifeText(ctx.region_id)} · período: ${novLifeText(ctx.period)} · estratégia: ${novLifeText(episode.strategy_id)}`;
+      const resultLine = document.createElement('small');
+      resultLine.textContent = `Resultado observado: satisfação ${outcome.satisfaction == null ? '—' : Math.round(outcome.satisfaction * 100) + '%'} · duração ${novLifeText(outcome.elapsed_ticks)} tick(s) · risco ${outcome.observed_risk == null ? '—' : Math.round(outcome.observed_risk * 100) + '%'} · origem: ${novLifeText(episode.provenance)}`;
+      li.append(title, meta, resultLine);
+      list.append(li);
+    }
+  } catch (error) {
+    $('nov-life-state').lastChild.textContent = ' Memória indisponível';
+    $('nov-life-state').classList.add('status-warning');
+    list.replaceChildren();
+    const li = document.createElement('li');
+    li.className = 'empty';
+    li.textContent = 'Não foi possível consultar os episódios neste momento.';
+    list.append(li);
+  } finally {
+    if (!$('manager-view').hidden && !$('nov').hidden) novLifeTimer = setTimeout(loadNovLife, 15000);
+  }
+}
+$('nov-life-refresh').onclick = () => { void loadNovLife(); };
 
 async function loadPerformance() {
   if ($('manager-view').hidden || $('overview').hidden) return;
