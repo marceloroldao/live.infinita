@@ -3,7 +3,7 @@ set -Eeuo pipefail
 
 REPO=/home/etbra/live.infinita
 INSTALL=/opt/live.infinita
-REQUIRED=ed902040a3e1ebc27973f60c887018db23fae659
+REQUIRED=c13c06c59cb7c1f603e8c7b93142bd4beb1894ce
 WORLD=live-infinita-autonomous-world.service
 API=live-infinita.service
 AUDIO=live-infinita-audio.service
@@ -28,7 +28,7 @@ api_pid="$(systemctl show "$API" -p MainPID --value)"
 renderer_pid="$(systemctl show "$RENDERER" -p MainPID --value)"
 echo "BEFORE world=$world_pid audio=$audio_pid api=$api_pid renderer=$renderer_pid"
 echo '== Testes = API reinicia; áudio e relay dependentes podem reiniciar também =='
-PYTHONPATH=.:apps/world-runtime:apps/audio-service:apps/audience "$INSTALL/.venv/bin/python" -m unittest tests.test_manager_performance tests.test_headless_renderer
+PYTHONPATH=.:apps/world-runtime:apps/audio-service:apps/audience "$INSTALL/.venv/bin/python" -m unittest tests.test_manager_performance tests.test_manager_performance_contract tests.test_headless_renderer
 bash -n "$REPO/deploy/mvp016-performance-metrics.sh"
 sudo -v
 backup="/var/backups/live-infinita/mvp016-metrics-$(date +%Y%m%d-%H%M%S)"
