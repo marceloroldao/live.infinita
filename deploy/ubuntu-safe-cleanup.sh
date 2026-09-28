@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 
 REPO=/home/etbra/live.infinita
-REQUIRED_COMMIT=__REQUIRED_COMMIT__
+REQUIRED_COMMIT=b4b6fa8c9d5a4ad6a77ba9c3288a26d81f35730b
 CACHE=/var/cache/live-infinita-godot
 ENGINE=/opt/live-infinita-godot/engine/Godot_v4.7.2-stable_linux.x86_64
 WEB=/var/www/live-infinita-godot/index.html
