@@ -135,7 +135,7 @@ async function loadMonitor() {
     $('story-chapter').textContent = data.world.story?.chapter ?? data.collective?.chapter ?? 0;
     $('story-motif').textContent = data.world.story?.title || data.world.story?.motif || 'história autônoma';
     $('collective-intent').textContent = collectiveLabel(data.collective);
-    badge('replay-state', data.world.replay_ok); $('replay-state').textContent = data.world.replay_ok ? 'Replay íntegro' : 'Replay com erro';
+    badge('replay-state', data.world.replay_ok); $('replay-state').textContent = data.world.replay_ok ? 'Replay inicial OK' : 'Replay inicial com erro';
     $('system-state').classList.toggle('status-error', !data.world.replay_ok); $('system-state').lastChild.textContent = data.world.replay_ok ? ' Sistema online' : ' Verificar sistema';
     $('last-update').textContent = `atualizado ${new Date(data.generated_at_unix*1000).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}`;
     const list = $('activity-list'); list.replaceChildren();
