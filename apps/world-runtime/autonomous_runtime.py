@@ -272,6 +272,7 @@ def build_authoritative_autonomous_runtime(
         world_provider=world_provider,
     )
     clock = SimulationClock(root / "simulation-clock.json", tick_duration_ms=tick_duration_ms)
+    cognition.social_exchange_producer.clock_provider = lambda: clock.state().tick
     world_tick = WorldTickRunner(
         clock,
         scheduler,

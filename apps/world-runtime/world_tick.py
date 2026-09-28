@@ -26,6 +26,7 @@ class WorldTickRunner:
         npc_need_dynamics: Any | None = None,
         npc_need_outcomes: Any | None = None,
         npc_social_evidence: Any | None = None,
+        npc_social_exchange_producer: Any | None = None,
         npc_strategy_executor: Any | None = None,
         npc_composite_strategy_outcomes: Any | None = None,
         npc_causal_model: Any | None = None,
@@ -41,6 +42,7 @@ class WorldTickRunner:
         self.npc_need_dynamics = npc_need_dynamics
         self.npc_need_outcomes = npc_need_outcomes
         self.npc_social_evidence = npc_social_evidence
+        self.npc_social_exchange_producer = npc_social_exchange_producer
         self.npc_strategy_executor = npc_strategy_executor
         self.npc_composite_strategy_outcomes = npc_composite_strategy_outcomes
         self.npc_causal_model = npc_causal_model
@@ -120,6 +122,7 @@ class WorldTickRunner:
                 "plans": [],
                 "npc_need_outcomes": [],
                 "npc_social_evidence": [],
+                "npc_social_exchanges": [],
                 "npc_composite_strategy_outcomes": [],
             }
 
@@ -303,6 +306,18 @@ class WorldTickRunner:
                     "satisfaction_delta": row.get("satisfaction_delta"),
                 })
 
+        social_exchange_results: list[dict[str, Any]] = []
+        if self.npc_social_exchange_producer is not None:
+            for row in self._stage("npc_social_exchange.reconcile", self.npc_social_exchange_producer.reconcile):
+                social_exchange_results.append({
+                    "evidence_id": row.get("evidence_id"),
+                    "npc_id": row.get("npc_id"),
+                    "peer_entity_id": row.get("peer_entity_id"),
+                    "status": row.get("status"),
+                    "confirmed": row.get("confirmed"),
+                    "satisfaction_delta": row.get("satisfaction_delta"),
+                })
+
         composite_outcome_results: list[dict[str, Any]] = []
         if self.npc_composite_strategy_outcomes is not None:
             for row in self._stage("npc_composite_outcomes.process", self.npc_composite_strategy_outcomes.process_completed):
@@ -340,5 +355,6 @@ class WorldTickRunner:
             "plans": results,
             "npc_need_outcomes": outcome_results,
             "npc_social_evidence": social_evidence_results,
+            "npc_social_exchanges": social_exchange_results,
             "npc_composite_strategy_outcomes": composite_outcome_results,
         }

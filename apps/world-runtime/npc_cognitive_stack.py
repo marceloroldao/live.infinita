@@ -28,6 +28,7 @@ from npc_strategy_experience import NpcStrategyExperience
 from npc_strategy_value import NpcStrategyValue
 from npc_social_opportunity import NpcSocialOpportunity
 from npc_social_evidence import NpcSocialEvidenceMemory
+from npc_social_exchange import NpcSocialExchangeProducer, SocialEventJournal
 
 
 @dataclass(frozen=True)
@@ -54,6 +55,7 @@ class NpcCognitiveStack:
     need_scheduler: NpcNeedScheduler
     social_opportunities: NpcSocialOpportunity
     social_evidence: NpcSocialEvidenceMemory
+    social_exchange_producer: NpcSocialExchangeProducer
     idle_wander: NpcIdleWander
     need_outcomes: NpcNeedOutcomeProcessor
     composite_strategy_outcomes: NpcCompositeStrategyOutcomeProcessor
@@ -65,6 +67,7 @@ class NpcCognitiveStack:
             "npc_need_dynamics": self.need_dynamics,
             "npc_need_outcomes": self.need_outcomes,
             "npc_social_evidence": self.social_evidence,
+            "npc_social_exchange_producer": self.social_exchange_producer,
             "npc_strategy_executor": self.strategy_executor,
             "npc_composite_strategy_outcomes": self.composite_strategy_outcomes,
             "npc_causal_model": self.causal_model,
@@ -176,6 +179,16 @@ def build_npc_cognitive_stack(
         world_event_resolver=None,
         source_need_outcomes=need_outcomes,
     )
+    social_journal = SocialEventJournal(root / "npc-social-events.jsonl")
+    social_exchange_producer = NpcSocialExchangeProducer(
+        social_journal, social_evidence, store,
+        # No externally sourced receipts are accepted until separate,
+        # authenticated agent keys and audience binding issuers exist.
+        key_provider=None,
+        clock_provider=None,
+        binding_provider=None,
+        source_event_verifier=None,
+    )
     composite_strategy_outcomes = NpcCompositeStrategyOutcomeProcessor(
         root / "npc-composite-strategy-outcomes.jsonl",
         strategy_executor,
@@ -205,6 +218,7 @@ def build_npc_cognitive_stack(
         need_scheduler=need_scheduler,
         social_opportunities=social_opportunities,
         social_evidence=social_evidence,
+        social_exchange_producer=social_exchange_producer,
         idle_wander=idle_wander,
         need_outcomes=need_outcomes,
         composite_strategy_outcomes=composite_strategy_outcomes,
