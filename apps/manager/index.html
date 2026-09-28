@@ -32,6 +32,18 @@
           <article class="metric"><span>OpenAI</span><strong id="monitor-openai-value">—</strong><small id="monitor-openai-detail">aguardando</small></article>
           <article class="metric"><span>WebSocket</span><strong id="websocket-value">—</strong><small>telas conectadas</small></article>
         </div>
+        <section class="monitor-card performance-card" aria-labelledby="performance-title">
+          <div class="section-title"><div><p class="eyebrow">MVP-016 · ESTABILIDADE</p><h2 id="performance-title">Desempenho em tempo real</h2></div><span id="performance-state" class="total-pill">Aguardando métricas</span></div>
+          <div class="performance-grid">
+            <div><span>Pressão de CPU · 10 s</span><strong id="perf-cpu">—</strong><small id="perf-cpu-detail">Não disponível</small></div>
+            <div><span>Atraso da API · recente</span><strong id="perf-loop">—</strong><small id="perf-loop-detail">Aguardando amostras</small></div>
+            <div><span>FPS Godot / captura</span><strong id="perf-fps">—</strong><small id="perf-fps-detail">Renderer não medido</small></div>
+            <div><span>Última síntese de voz</span><strong id="perf-tts">—</strong><small id="perf-tts-detail">Nenhuma fala recente</small></div>
+            <div><span>Blocos de voz no mixer</span><strong id="perf-voice">—</strong><small id="perf-voice-detail">Desde o início do áudio</small></div>
+            <div><span>Áudio aberto em navegadores</span><strong id="perf-listeners">—</strong><small id="perf-listeners-detail">Relay não medido</small></div>
+          </div>
+          <p class="performance-note">Leituras limitadas e somente operacionais. FPS é a meta aplicada ao Godot; blocos de voz são acumulados desde o início do processo, não um contador de ouvintes.</p>
+        </section>
         <div class="monitor-grid">
           <section class="monitor-card audience-card"><div class="section-title"><div><p class="eyebrow">AUDIÊNCIA</p><h2>Movimento da live</h2></div><span id="audience-total" class="total-pill">0 eventos</span></div><div class="audience-metrics"><div><strong id="joins-value">0</strong><span>Entradas</span></div><div><strong id="likes-value">0</strong><span>Curtidas</span></div><div><strong id="gifts-value">0</strong><span>Presentes</span></div><div><strong id="actors-value">0</strong><span>Atores</span></div></div></section>
           <section class="monitor-card world-card"><div class="section-title"><div><p class="eyebrow">MUNDO</p><h2>Estado atual</h2></div><span id="replay-state" class="badge">Verificando</span></div><dl><div><dt>Versão</dt><dd id="world-version">—</dd></div><div><dt>Sequência</dt><dd id="world-sequence">—</dd></div><div><dt>Entidades</dt><dd id="world-entities">—</dd></div><div><dt>Regiões</dt><dd id="world-regions">—</dd></div><div><dt>Período</dt><dd id="world-period">—</dd></div><div><dt>Capítulo</dt><dd id="story-chapter">—</dd></div><div><dt>História</dt><dd id="story-motif">—</dd></div><div><dt>Intenção coletiva</dt><dd id="collective-intent">—</dd></div></dl></section>
