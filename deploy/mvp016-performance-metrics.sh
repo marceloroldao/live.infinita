@@ -3,7 +3,7 @@ set -Eeuo pipefail
 
 REPO=/home/etbra/live.infinita
 INSTALL=/opt/live.infinita
-REQUIRED=72c3499489cc68486483c365ff04f1d74255b08b
+REQUIRED=ed902040a3e1ebc27973f60c887018db23fae659
 WORLD=live-infinita-autonomous-world.service
 API=live-infinita.service
 AUDIO=live-infinita-audio.service
@@ -27,7 +27,7 @@ audio_pid="$(systemctl show "$AUDIO" -p MainPID --value)"
 api_pid="$(systemctl show "$API" -p MainPID --value)"
 renderer_pid="$(systemctl show "$RENDERER" -p MainPID --value)"
 echo "BEFORE world=$world_pid audio=$audio_pid api=$api_pid renderer=$renderer_pid"
-echo '== Testes = background-only changes =='
+echo '== Testes = API reinicia; áudio e relay dependentes podem reiniciar também =='
 PYTHONPATH=.:apps/world-runtime:apps/audio-service:apps/audience "$INSTALL/.venv/bin/python" -m unittest tests.test_manager_performance tests.test_headless_renderer
 bash -n "$REPO/deploy/mvp016-performance-metrics.sh"
 sudo -v
@@ -79,8 +79,13 @@ done
 sleep 12
 systemctl is-active --quiet "$API" || fail 'API caiu após readiness'
 systemctl is-active --quiet "$RENDERER" || fail 'Renderer caiu após readiness'
+systemctl is-active --quiet "$AUDIO" || fail 'Áudio não recuperou após reinício transitivo da API'
+systemctl is-active --quiet live-infinita-audio-web.service || fail 'Relay de áudio não recuperou'
 [[ "$(systemctl show "$WORLD" -p MainPID --value)" == "$world_pid" ]] || fail 'Single Writer alterou PID'
-[[ "$(systemctl show "$AUDIO" -p MainPID --value)" == "$audio_pid" ]] || fail 'Áudio alterou PID'
+audio_pid_after="$(systemctl show "$AUDIO" -p MainPID --value)"
+[[ "$audio_pid_after" =~ ^[0-9]+$ && "$audio_pid_after" -gt 1 ]] || fail 'PID do áudio após restart inválido'
+echo "AUDIO_SERVICE_OK old_pid=$audio_pid current_pid=$audio_pid_after (reinício transitivo permitido)"
+
 [[ "$(systemctl show "$API" -p MainPID --value)" != "$api_pid" ]] || fail 'API não reiniciou'
 [[ "$(systemctl show "$RENDERER" -p MainPID --value)" != "$renderer_pid" ]] || fail 'Renderer não reiniciou'
 sudo "$INSTALL/.venv/bin/python" - <<'PY'
@@ -114,5 +119,5 @@ for attempt in range(4):
 PY
 trap - EXIT
 applied=0
-echo "MVP016_METRICS_DEPLOY_OK world_pid=$world_pid audio_pid=$audio_pid"
+echo "MVP016_METRICS_DEPLOY_OK world_pid=$world_pid audio_pid=$audio_pid_after"
 echo 'MVP016_METRICS_FINISHED'
