@@ -25,6 +25,7 @@ class WorldTickRunner:
         npc_idle_wander: Any | None = None,
         npc_need_dynamics: Any | None = None,
         npc_need_outcomes: Any | None = None,
+        npc_social_evidence: Any | None = None,
         npc_strategy_executor: Any | None = None,
         npc_composite_strategy_outcomes: Any | None = None,
         npc_causal_model: Any | None = None,
@@ -39,6 +40,7 @@ class WorldTickRunner:
         self.npc_idle_wander = npc_idle_wander
         self.npc_need_dynamics = npc_need_dynamics
         self.npc_need_outcomes = npc_need_outcomes
+        self.npc_social_evidence = npc_social_evidence
         self.npc_strategy_executor = npc_strategy_executor
         self.npc_composite_strategy_outcomes = npc_composite_strategy_outcomes
         self.npc_causal_model = npc_causal_model
@@ -117,6 +119,7 @@ class WorldTickRunner:
                 },
                 "plans": [],
                 "npc_need_outcomes": [],
+                "npc_social_evidence": [],
                 "npc_composite_strategy_outcomes": [],
             }
 
@@ -267,8 +270,10 @@ class WorldTickRunner:
             })
 
         outcome_results: list[dict[str, Any]] = []
+        full_need_outcomes: list[dict[str, Any]] = []
         if self.npc_need_outcomes is not None:
             for row in self._stage("npc_need_outcomes.process", self.npc_need_outcomes.process_completed):
+                full_need_outcomes.append(row)
                 outcome = row.get("outcome") if isinstance(row.get("outcome"), dict) else {}
                 outcome_results.append({
                     "plan_id": row.get("plan_id"),
@@ -280,6 +285,22 @@ class WorldTickRunner:
                     "after": outcome.get("after"),
                     "amount": outcome.get("amount"),
                     "strategy_experience": row.get("strategy_experience"),
+                })
+
+        social_evidence_results: list[dict[str, Any]] = []
+        if self.npc_social_evidence is not None:
+            for row in self._stage(
+                "npc_social_evidence.observe_encounters",
+                lambda: self.npc_social_evidence.observe_encounters(full_need_outcomes),
+            ):
+                social_evidence_results.append({
+                    "evidence_id": row.get("evidence_id"),
+                    "npc_id": row.get("npc_id"),
+                    "peer_entity_id": row.get("peer_entity_id"),
+                    "kind": row.get("kind"),
+                    "status": row.get("status"),
+                    "confirmed": row.get("confirmed"),
+                    "satisfaction_delta": row.get("satisfaction_delta"),
                 })
 
         composite_outcome_results: list[dict[str, Any]] = []
@@ -318,5 +339,6 @@ class WorldTickRunner:
             },
             "plans": results,
             "npc_need_outcomes": outcome_results,
+            "npc_social_evidence": social_evidence_results,
             "npc_composite_strategy_outcomes": composite_outcome_results,
         }

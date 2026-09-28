@@ -27,6 +27,7 @@ from npc_strategy_executor import NpcStrategyExecutor
 from npc_strategy_experience import NpcStrategyExperience
 from npc_strategy_value import NpcStrategyValue
 from npc_social_opportunity import NpcSocialOpportunity
+from npc_social_evidence import NpcSocialEvidenceMemory
 
 
 @dataclass(frozen=True)
@@ -52,6 +53,7 @@ class NpcCognitiveStack:
     strategy_executor: NpcStrategyExecutor
     need_scheduler: NpcNeedScheduler
     social_opportunities: NpcSocialOpportunity
+    social_evidence: NpcSocialEvidenceMemory
     idle_wander: NpcIdleWander
     need_outcomes: NpcNeedOutcomeProcessor
     composite_strategy_outcomes: NpcCompositeStrategyOutcomeProcessor
@@ -62,6 +64,7 @@ class NpcCognitiveStack:
             "npc_idle_wander": self.idle_wander,
             "npc_need_dynamics": self.need_dynamics,
             "npc_need_outcomes": self.need_outcomes,
+            "npc_social_evidence": self.social_evidence,
             "npc_strategy_executor": self.strategy_executor,
             "npc_composite_strategy_outcomes": self.composite_strategy_outcomes,
             "npc_causal_model": self.causal_model,
@@ -163,6 +166,16 @@ def build_npc_cognitive_stack(
         episodic_memory_provider=episodic_memory,
         belief_provider=belief_model,
     )
+    social_evidence = NpcSocialEvidenceMemory(
+        root / "npc-social-evidence.jsonl",
+        need_dynamics=need_dynamics,
+        episodic_memory=episodic_memory,
+        need_learning=need_learning,
+        # No producer of confirmed exchanges exists yet. Never accept LLM text,
+        # audience telemetry or mere movement as an authoritative exchange.
+        world_event_resolver=None,
+        source_need_outcomes=need_outcomes,
+    )
     composite_strategy_outcomes = NpcCompositeStrategyOutcomeProcessor(
         root / "npc-composite-strategy-outcomes.jsonl",
         strategy_executor,
@@ -191,6 +204,7 @@ def build_npc_cognitive_stack(
         strategy_executor=strategy_executor,
         need_scheduler=need_scheduler,
         social_opportunities=social_opportunities,
+        social_evidence=social_evidence,
         idle_wander=idle_wander,
         need_outcomes=need_outcomes,
         composite_strategy_outcomes=composite_strategy_outcomes,
