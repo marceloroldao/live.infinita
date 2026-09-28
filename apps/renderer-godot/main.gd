@@ -50,6 +50,7 @@ func _ready() -> void:
     # software-rasterizer variant without millions of sin() calls per frame.
     var native_fast_sky := not OS.has_feature("web") and OS.get_environment("LIVE_INFINITA_RENDER_FAST_SKY") == "1"
     sky_material.shader = preload("res://story_sky_native.gdshader") if native_fast_sky else preload("res://story_sky.gdshader")
+    if native_fast_sky: print("[render] native fast sky enabled")
     sky.material = sky_material
     add_child(sky)
     _connect_websocket()
