@@ -34,8 +34,9 @@ class MaterializedLedgerViewTests(unittest.TestCase):
         ledger = PlanLedger(self.root / "plans.jsonl")
         initial = _row("plan_id", "one")
         ledger._append(initial)
-        with patch.object(ledger, "history", wraps=ledger.history) as replay:
-            self.assertEqual(ledger.get("one"), initial)
+        with patch.object(ledger, "_iter_rows_with_offsets", wraps=ledger._iter_rows_with_offsets) as replay:
+            with patch.object(ledger, "history", side_effect=AssertionError("no full history materialization")):
+                self.assertEqual(ledger.get("one"), initial)
             self.assertEqual(replay.call_count, 1)
             ledger._append(_row("plan_id", "two", "running"))
             ledger._append(_row("plan_id", "one", "completed"))
