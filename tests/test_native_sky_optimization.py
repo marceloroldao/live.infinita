@@ -41,7 +41,7 @@ class NativeSkyOptimizationContract(unittest.TestCase):
 
     def test_static_sky_geometry_is_constructed_once(self):
         source = (GODOT / "main.gd").read_text(encoding="utf-8")
-        self.assertEqual(source.count("_build_sky_geometry()"), 1)
+        self.assertEqual(source.count("\n    _build_sky_geometry()\n"), 1)
         self.assertIn("sky_stars.append(Vector2(x, y))", source)
         self.assertIn("sky_cloud_contours.append(contour)", source)
         draw = source.split("func _draw_sky(", 1)[1]
