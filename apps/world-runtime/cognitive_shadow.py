@@ -416,6 +416,7 @@ class CognitiveShadowRecorder:
                 "plans": len(tick_result.get("plans") or []),
                 "npc_needs": len(tick_result.get("npc_needs") or []),
                 "npc_need_outcomes": len(tick_result.get("npc_need_outcomes") or []),
+                "npc_social_evidence": len(tick_result.get("npc_social_evidence") or []),
                 "npc_strategies": len(tick_result.get("npc_strategies") or []),
                 "events": len(tick_result.get("events") or []),
                 "conditional_events": len(tick_result.get("conditional_events") or []),
