@@ -39,7 +39,7 @@ rollback(){
     sudo systemctl restart "$API" "$AUDIO" || true
   fi
 }
-trap rollback ERR
+trap rollback EXIT
 applied=1
 sudo install -o liveinfinita -g liveinfinita -m 0644 \
   "$REPO/apps/audio-service/retro_audio.py" "$INSTALL/apps/audio-service/retro_audio.py"
@@ -63,7 +63,7 @@ systemctl is-active --quiet "$AUDIO" || fail "Serviço de áudio inativo"
 systemctl is-active --quiet "$WORLD" || fail "Single Writer inativo após deploy"
 [[ "$(systemctl show "$WORLD" -p MainPID --value)" == "$world_pid" ]] ||
   fail "Single Writer reiniciou inesperadamente"
-trap - ERR
+trap - EXIT
 applied=0
 echo "NARRATOR_DEPLOY_OK: API e áudio reiniciados; Single Writer preservado"
 echo "== Teste ponta a ponta (bloqueado automaticamente durante TikTok LIVE) =="
