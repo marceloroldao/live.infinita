@@ -453,11 +453,11 @@ async def spatial_websocket_endpoint(websocket: WebSocket) -> None:
     world = core.engine.load_world()
     view = spatial_session.default_view(world)
     session_views[websocket] = view
-    await websocket.send_json(spatial_session.wrap_world_message(
-        {"type": "world_state", "world": world},
-        view,
-    ))
     try:
+        await websocket.send_json(spatial_session.wrap_world_message(
+            {"type": "world_state", "world": world},
+            view,
+        ))
         while True:
             message = await websocket.receive_json()
             message_type = str(message.get("type", ""))
