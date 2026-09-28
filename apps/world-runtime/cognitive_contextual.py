@@ -31,10 +31,11 @@ def freeze_contextual_forecast(
     environment: dict[str, Any] | None = None,
     experience_provider: Any | None = None,
     need_source: str = "entity_properties_bootstrap",
+    social_opportunity_provider: Any | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any] | None]:
-    """Read-only baseline from existing need policy and configured target evidence.
+    """Read-only baseline from needs and observed/configured target evidence.
 
-    This is NOT the runtime's action/strategy selection. If a unique configured
+    This is NOT the runtime's action/strategy selection. If a unique verified
     target does not exist, abstain rather than inventing an intent.
     """
     env = environment if isinstance(environment, dict) else {}
@@ -99,6 +100,16 @@ def freeze_contextual_forecast(
         plural = entity_props.get(NpcNeedScheduler.TARGET_LIST_FIELDS[candidate_need])
         if isinstance(plural, list):
             references.update(str(item).strip() for item in plural if str(item).strip())
+        configured_reference_ids = sorted(references)
+        observed_social_ids: list[str] = []
+        if candidate_need == "social" and social_opportunity_provider is not None:
+            discover = getattr(social_opportunity_provider, "discover", None)
+            if callable(discover):
+                social_evidence = discover(observer)
+                if isinstance(social_evidence, dict):
+                    observed_social_ids = list(social_evidence.get("candidate_ids") or [])
+                    forecast["social_opportunity"] = deepcopy(social_evidence)
+                    references.update(observed_social_ids)
         reference_ids = sorted(references)
         # Capture each reference only once; concurrent world ticks must never
         # mix a target from two different read moments in a frozen forecast.
@@ -134,6 +145,10 @@ def freeze_contextual_forecast(
             return forecast, None
         need = candidate_need
         target_id, target = next(iter(resolved.items()))
+        forecast["target_evidence_source"] = (
+            "observed_social_capability" if target_id in observed_social_ids
+            and target_id not in configured_reference_ids else "configured_reference"
+        )
         distance = _distance(observer, target)
         if distance is None:
             forecast["reason"] = "target_position_unavailable"

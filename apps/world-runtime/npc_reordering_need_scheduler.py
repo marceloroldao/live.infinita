@@ -238,6 +238,19 @@ class NpcReorderingNeedScheduler(NpcNeedScheduler):
             strategy_ranking = prepared["strategy_ranking"]
             selected_target_id = str(prepared["selected_target_id"] or "")
             composite_plan = prepared["composite_plan"]
+            target_evidence_source = "configured_reference"
+            if (need == "social" and self.social_opportunity_provider is not None
+                    and selected_target_id not in self._target_references(entity, need)):
+                target_evidence_source = "observed_social_capability"
+                # Preserve the origin on the actual terminal child plan.
+                if isinstance(composite_plan, dict):
+                    for phase in composite_plan.get("phases") or []:
+                        phase_intent = phase.get("intent") if isinstance(phase, dict) else None
+                        if isinstance(phase_intent, dict) and phase_intent.get("need_outcome_eligible") is True:
+                            if str(phase_intent.get("target_entity_id") or "") == selected_target_id:
+                                phase_intent["target_evidence_source"] = target_evidence_source
+                if isinstance(intent, dict):
+                    intent["target_evidence_source"] = target_evidence_source
             horizon_reordered = need != original_need
             # A projected prerequisite may differ from the originally selected
             # need; never schedule a duplicate of that live prerequisite either.
@@ -260,6 +273,7 @@ class NpcReorderingNeedScheduler(NpcNeedScheduler):
                 "need": need,
                 "learning_context": deepcopy(context),
                 "strategy_id": strategy_id,
+                "target_evidence_source": target_evidence_source,
             }
             bucket = tick // max(1, self.cooldown_ticks or 1)
             idem = (
@@ -285,6 +299,7 @@ class NpcReorderingNeedScheduler(NpcNeedScheduler):
                     "tick": tick,
                     "plan_priority": priority,
                     "selected_target_entity_id": selected_target_id,
+                    "target_evidence_source": target_evidence_source,
                     "learning_context": deepcopy(context),
                     "target_ranking": deepcopy(target_ranking),
                     "strategy_id": strategy_id,
@@ -351,6 +366,7 @@ class NpcReorderingNeedScheduler(NpcNeedScheduler):
                 "tick": tick,
                 "status": "scheduled",
                 "selected_target_entity_id": selected_target_id,
+                "target_evidence_source": target_evidence_source,
                 "learning_context": deepcopy(context),
                 "target_ranking": deepcopy(target_ranking),
                 "strategy_id": strategy_id,

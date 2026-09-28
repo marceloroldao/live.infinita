@@ -46,6 +46,7 @@ class NpcNeedScheduler:
         composite_strategy_provider: Any | None = None,
         strategy_compiler: Any | None = None,
         strategy_executor: Any | None = None,
+        social_opportunity_provider: Any | None = None,
     ) -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -62,6 +63,7 @@ class NpcNeedScheduler:
         self.composite_strategy_provider = composite_strategy_provider
         self.strategy_compiler = strategy_compiler
         self.strategy_executor = strategy_executor
+        self.social_opportunity_provider = social_opportunity_provider
         self._index_ready = False
         self._index_signature: tuple[int, int, int, int] | None = None
         self._scheduled_ticks: dict[tuple[str, str], int] = {}
@@ -347,6 +349,9 @@ class NpcNeedScheduler:
         singular = str(properties.get(self.TARGET_FIELDS[need]) or "").strip()
         if singular:
             values.append(singular)
+        if need == "social" and self.social_opportunity_provider is not None:
+            discovered = self.social_opportunity_provider.candidates(entity)
+            values.extend(str(item).strip() for item in discovered if str(item).strip())
         return sorted({target_id for target_id in values if self._entity(target_id) is not None})
 
     def _select_target(self, entity: dict[str, Any], need: str, context: dict[str, Any]) -> tuple[str | None, list[dict[str, Any]] | None]:

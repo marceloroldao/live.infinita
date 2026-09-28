@@ -177,6 +177,22 @@ class NpcCompositeStrategyOutcomeProcessor:
             terminal_plan_id = self._terminal_plan_id(execution)
             if not terminal_plan_id:
                 continue
+            terminal_plan = self._plan(terminal_plan_id) or {}
+            terminal_intent = terminal_plan.get("intent") if isinstance(terminal_plan.get("intent"), dict) else {}
+            if terminal_intent.get("target_evidence_source") == "observed_social_capability":
+                # Arrival at a social-capable actor is not yet an interaction or
+                # a learned success. Mark the composite terminal exactly once.
+                row = {
+                    "strategy_execution_id": execution_id,
+                    "terminal_plan_id": terminal_plan_id,
+                    "status": "encounter_only",
+                    "learning": None,
+                    "episode_id": None,
+                }
+                self._append(row)
+                processed.add(execution_id)
+                results.append(row)
+                continue
             outcome_row = self._need_outcome(terminal_plan_id)
             if outcome_row is None:
                 continue

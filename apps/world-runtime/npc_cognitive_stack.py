@@ -26,6 +26,7 @@ from npc_strategy_compiler import NpcStrategyCompiler
 from npc_strategy_executor import NpcStrategyExecutor
 from npc_strategy_experience import NpcStrategyExperience
 from npc_strategy_value import NpcStrategyValue
+from npc_social_opportunity import NpcSocialOpportunity
 
 
 @dataclass(frozen=True)
@@ -50,6 +51,7 @@ class NpcCognitiveStack:
     strategy_compiler: NpcStrategyCompiler
     strategy_executor: NpcStrategyExecutor
     need_scheduler: NpcNeedScheduler
+    social_opportunities: NpcSocialOpportunity
     idle_wander: NpcIdleWander
     need_outcomes: NpcNeedOutcomeProcessor
     composite_strategy_outcomes: NpcCompositeStrategyOutcomeProcessor
@@ -129,6 +131,7 @@ def build_npc_cognitive_stack(
     composite_strategy = NpcConfidenceStrategy(horizon_strategy, decision_confidence)
     strategy_compiler = NpcStrategyCompiler()
     strategy_executor = NpcStrategyExecutor(root / "npc-strategy-executions.jsonl", plan_scheduler)
+    social_opportunities = NpcSocialOpportunity(store, planner.regions)
     need_scheduler = NpcAuditedReorderingNeedScheduler(
         root / "npc-need-scheduler.jsonl",
         proposal_ledger,
@@ -143,6 +146,7 @@ def build_npc_cognitive_stack(
         composite_strategy_provider=composite_strategy,
         strategy_compiler=strategy_compiler,
         strategy_executor=strategy_executor,
+        social_opportunity_provider=social_opportunities,
     )
     idle_wander = NpcIdleWander(
         plan_scheduler,
@@ -186,6 +190,7 @@ def build_npc_cognitive_stack(
         strategy_compiler=strategy_compiler,
         strategy_executor=strategy_executor,
         need_scheduler=need_scheduler,
+        social_opportunities=social_opportunities,
         idle_wander=idle_wander,
         need_outcomes=need_outcomes,
         composite_strategy_outcomes=composite_strategy_outcomes,
