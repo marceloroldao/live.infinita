@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import re
 import shlex
@@ -138,6 +139,7 @@ class HeadlessRenderer:
         self._fps_governor = CpuPressureGovernor(config.godot_fps, config.minimum_godot_fps)
         self._control_dir: tempfile.TemporaryDirectory[str] | None = None
         self._control_file: Path | None = None
+        self._status_file = Path(os.getenv("LIVE_INFINITA_RENDER_STATUS_FILE", "/var/lib/live-infinita/render-runtime-status.json"))
 
     def _publish_fps(self, value: int) -> None:
         path = self._control_file
@@ -155,18 +157,39 @@ class HeadlessRenderer:
         self._publish_fps(self.config.godot_fps)
         env["LIVE_INFINITA_RENDER_CONTROL_FILE"] = str(self._control_file)
 
+    def _publish_status(self, pressure: float | None) -> None:
+        if not self.config.cpu_governor_enabled:
+            return
+        payload = {
+            "updated_at_unix": time.time(),
+            "godot_fps": self._fps_governor.current_fps,
+            "capture_fps": self.config.fps,
+            "governor_enabled": True,
+            "cpu_pressure_avg10_pct": pressure,
+        }
+        try:
+            self._status_file.parent.mkdir(parents=True, exist_ok=True)
+            temporary = self._status_file.with_suffix(".tmp")
+            temporary.write_text(json.dumps(payload, sort_keys=True) + "\n", encoding="utf-8")
+            temporary.replace(self._status_file)
+        except OSError as exc:
+            print(f"[renderer] telemetry unavailable: {type(exc).__name__}", flush=True)
+
     def _poll_governor(self) -> None:
         if self._control_file is None:
             return
         try:
             snapshot = Path("/proc/pressure/cpu").read_text(encoding="ascii")
         except OSError:
+            self._publish_status(None)
             return
+        pressure = CpuPressureGovernor.pressure_avg10(snapshot)
         before = self._fps_governor.current_fps
-        after = self._fps_governor.update(CpuPressureGovernor.pressure_avg10(snapshot))
+        after = self._fps_governor.update(pressure)
         if after != before:
             self._publish_fps(after)
             print(f"[renderer] CPU pressure: Godot FPS {before} -> {after}", flush=True)
+        self._publish_status(pressure)
 
     def _spawn(self, command: list[str], env: dict[str, str] | None = None) -> subprocess.Popen[bytes]:
         process = subprocess.Popen(command, env=env)
