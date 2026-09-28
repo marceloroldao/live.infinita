@@ -60,13 +60,14 @@ class ManagerPerformanceTests(unittest.TestCase):
             (audio / "narration-cue-spool.jsonl").write_text(
                 '{"cue":{"cue_id":"cue-one","text":"SECRET COMMENT"}}\n', encoding="utf-8")
             (audio / "native-metrics.txt").write_text(
-                "voice_chunks=123\nmisses=9\nxruns=3\n", encoding="ascii")
+                "voice_chunks=123\ndeadline_misses=9\nxruns=3\n", encoding="ascii")
             with patch("packages.observability.runtime_metrics._relay_health",
                        return_value={"available": True, "active_streams": 1, "max_clients": 4}):
                 result = runtime_snapshot(root, {"last_ms": 2.5, "max_recent_ms": 11})
             self.assertTrue(result["renderer"]["available"])
             self.assertEqual(result["renderer"]["fps"], 12)
             self.assertEqual(result["audio"]["voice_chunks"], 123)
+            self.assertEqual(result["audio"]["deadline_misses"], 9)
             self.assertEqual(result["audio"]["last_pcm_bytes"], 2000)
             self.assertEqual(result["audio_web"]["active_streams"], 1)
             self.assertEqual(result["api"]["max_recent_ms"], 11)
@@ -87,8 +88,8 @@ class ManagerPerformanceTests(unittest.TestCase):
     def test_native_metrics_reject_unbounded_data(self):
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder) / "metrics.txt"
-            path.write_text("voice_chunks=123\nxruns=4\nunknown=777\n", encoding="ascii")
-            self.assertEqual(_native_audio_metrics(path), {"voice_chunks": 123, "xruns": 4})
+            path.write_text("voice_chunks=123\nxruns=4\ndeadline_misses=5\nunknown=777\n", encoding="ascii")
+            self.assertEqual(_native_audio_metrics(path), {"voice_chunks": 123, "xruns": 4, "deadline_misses": 5})
             path.write_text("x" * 9000, encoding="ascii")
             self.assertEqual(_native_audio_metrics(path), {})
 
