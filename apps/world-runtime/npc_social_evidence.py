@@ -237,7 +237,7 @@ class NpcSocialEvidenceMemory:
             "npc_id": npc_id,
             "peer_entity_id": peer_id,
             "status": "confirmed",
-            "source": "authoritative_world_event",
+            "source": "authoritative_social_event_ledger",
             "source_world_event_id": event_id,
             "logical_tick": exchange["logical_tick"],
             "provenance": deepcopy(exchange.get("provenance")),

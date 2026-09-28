@@ -99,6 +99,13 @@ class NpcCognitiveStackTest(unittest.TestCase):
             self.assertIs(kwargs["npc_need_scheduler"], stack.need_scheduler)
             self.assertIs(kwargs["npc_need_dynamics"], stack.need_dynamics)
             self.assertIs(kwargs["npc_need_outcomes"], stack.need_outcomes)
+            self.assertIs(kwargs["npc_social_evidence"], stack.social_evidence)
+            self.assertIs(kwargs["npc_social_exchange_producer"], stack.social_exchange_producer)
+            self.assertIs(stack.social_evidence.world_event_resolver.__self__,
+                          stack.social_exchange_producer.journal)
+            self.assertIsNone(stack.social_exchange_producer.key_provider)
+            self.assertIsNone(stack.social_exchange_producer.binding_provider)
+            self.assertFalse((Path(tmpdir) / "npc-social-events.jsonl").exists())
             self.assertIs(kwargs["npc_strategy_executor"], stack.strategy_executor)
             self.assertIs(kwargs["npc_composite_strategy_outcomes"], stack.composite_strategy_outcomes)
             self.assertIs(kwargs["npc_causal_model"], stack.causal_model)

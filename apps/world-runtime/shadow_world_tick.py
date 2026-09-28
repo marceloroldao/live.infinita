@@ -6,7 +6,8 @@ from cognitive_shadow import CognitiveShadowRecorder
 
 
 def _meaningful_boundary(result: dict[str, Any]) -> bool:
-    if result.get("events") or result.get("conditional_events") or result.get("npc_social_evidence"):
+    if (result.get("events") or result.get("conditional_events")
+            or result.get("npc_social_evidence") or result.get("npc_social_exchanges")):
         return True
 
     terminal_plan_states = {"completed", "failed", "cancelled", "canceled"}
