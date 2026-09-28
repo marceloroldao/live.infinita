@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 from copy import deepcopy
 from pathlib import Path
 from typing import Any
@@ -260,6 +261,58 @@ class NpcNeedOutcomeProcessor:
             return None
         return observer(episode)
 
+    def _social_encounter_evidence(self, actor_id: str, target_id: str) -> dict[str, Any]:
+        """Observe co-presence only; physical arrival is not social satisfaction."""
+        result = {
+            "schema": "npc_social_encounter_evidence_v1",
+            "actor_entity_id": actor_id,
+            "target_entity_id": target_id,
+            "co_present": False,
+            "target_available": False,
+            "social_interaction_confirmed": False,
+            "source": "completed_movement_and_live_entity_snapshot",
+        }
+        store = getattr(self.need_dynamics, "store", None)
+        getter = getattr(store, "get_entity", None)
+        if not callable(getter):
+            result["reason"] = "entity_provider_unavailable"
+            return result
+        actor = getter(actor_id)
+        target = getter(target_id)
+        if not isinstance(actor, dict) or not isinstance(target, dict):
+            result["reason"] = "entity_missing"
+            return result
+        props = target.get("properties") if isinstance(target.get("properties"), dict) else {}
+        caps = props.get("interaction_capabilities")
+        available = (
+            isinstance(caps, list) and "social" in caps
+            and props.get("available_for_interaction") is True
+        )
+        result["target_available"] = available
+        if not available:
+            result["reason"] = "target_not_available"
+            return result
+        if str(actor.get("region_id") or "") != str(target.get("region_id") or ""):
+            result["reason"] = "region_changed"
+            return result
+        try:
+            actor_xy = actor["position"]
+            target_xy = target["position"]
+            distance = math.dist(
+                (float(actor_xy["x"]), float(actor_xy["y"])),
+                (float(target_xy["x"]), float(target_xy["y"])),
+            )
+        except (KeyError, ValueError, TypeError, OverflowError):
+            result["reason"] = "position_unavailable"
+            return result
+        if not math.isfinite(distance):
+            result["reason"] = "position_unavailable"
+            return result
+        result["distance"] = distance
+        result["co_present"] = distance <= 1.0
+        result["reason"] = "co_present_without_confirmed_interaction" if result["co_present"] else "not_co_present"
+        return result
+
     def process_completed(self) -> list[dict[str, Any]]:
         processed = self._processed_ids()
         results: list[dict[str, Any]] = []
@@ -280,6 +333,31 @@ class NpcNeedOutcomeProcessor:
             need = str(intent.get("need") or "").strip().lower()
             npc_id = str(record.get("actor_entity_id") or intent.get("actor_entity_id") or "").strip()
             if need not in self.satisfaction or not npc_id:
+                continue
+
+            if need == "social" and intent.get("target_evidence_source") == "observed_social_capability":
+                evidence = self._social_encounter_evidence(npc_id, str(intent.get("target_entity_id") or ""))
+                # A movement plan is not proof of reciprocal interaction. Keep
+                # an exactly-once audit, but do not reduce the need, reward
+                # learning, create a positive episode or derive a belief.
+                row = {
+                    "need_outcome_schema": "npc_need_outcome_audit_v6",
+                    "plan_id": plan_id,
+                    "proposal_id": record.get("proposal_id"),
+                    "npc_id": npc_id,
+                    "need": need,
+                    "target_entity_id": intent.get("target_entity_id"),
+                    "status": "encounter_observed" if evidence["co_present"] else "encounter_unverified",
+                    "social_encounter_evidence": evidence,
+                    "outcome": None,
+                    "learning": None,
+                    "strategy_experience": None,
+                    "episode_id": None,
+                    "belief": None,
+                }
+                self._append(row)
+                processed.add(plan_id)
+                results.append(row)
                 continue
 
             outcome_id = f"plan-completed:{plan_id}:{need}"

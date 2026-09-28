@@ -69,6 +69,7 @@ class CognitiveShadowRecorder:
         needs_provider: Callable[[str], dict[str, Any] | None] | None = None,
         experience_provider: Any | None = None,
         need_threshold: float = 0.70,
+        social_opportunity_provider: Any | None = None,
     ) -> None:
         self.path = Path(path)
         self.world_provider = world_provider
@@ -78,6 +79,7 @@ class CognitiveShadowRecorder:
         self.needs_provider = needs_provider
         self.experience_provider = experience_provider
         self.need_threshold = float(need_threshold)
+        self.social_opportunity_provider = social_opportunity_provider
 
     def _need_snapshot(self, observer: dict[str, Any]) -> tuple[dict[str, float], str]:
         getter = self.needs_provider
@@ -156,6 +158,7 @@ class CognitiveShadowRecorder:
             environment=world.get("environment"),
             experience_provider=self.experience_provider,
             need_source=needs_source,
+            social_opportunity_provider=self.social_opportunity_provider,
         )
         return ShadowToken(
             frame=frame,
