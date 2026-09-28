@@ -139,7 +139,7 @@ def _native_audio_metrics(path: Path) -> dict[str, Any]:
         lines = path.read_text(encoding="ascii").splitlines()
     except (OSError, UnicodeError):
         return {}
-    fields = {"voice_chunks", "chunks", "misses", "xruns", "render_avg_ms", "max_late_ms"}
+    fields = {"voice_chunks", "chunks", "deadline_misses", "xruns", "render_avg_ms", "max_late_ms"}
     result: dict[str, Any] = {}
     for line in lines:
         key, separator, value = line.partition("=")
@@ -212,7 +212,7 @@ def runtime_snapshot(data_dir: Path, loop: dict[str, Any]) -> dict[str, Any]:
             "latest_cue_id": cue.get("cue_id"),
             "voice_chunks": metrics.get("voice_chunks"),
             "xruns": metrics.get("xruns"),
-            "deadline_misses": metrics.get("misses"),
+            "deadline_misses": metrics.get("deadline_misses"),
         },
         "audio_web": _relay_health(),
     }
