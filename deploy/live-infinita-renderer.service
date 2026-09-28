@@ -19,6 +19,7 @@ Environment=LIVE_INFINITA_RENDER_FPS=15
 Environment=LIVE_INFINITA_RENDER_GODOT_FPS=20
 Environment=LIVE_INFINITA_RENDER_GODOT_MIN_FPS=12
 Environment=LIVE_INFINITA_RENDER_CPU_GOVERNOR=1
+Environment=LIVE_INFINITA_RENDER_FAST_SKY=1
 Environment=LIVE_INFINITA_RENDER_BITRATE_KBPS=2500
 Environment=LIVE_INFINITA_VIDEO_BUS=udp://127.0.0.1:5600?pkt_size=1316
 ExecStart=/opt/live.infinita/.venv/bin/python /opt/live.infinita/apps/headless-renderer/headless_renderer.py
