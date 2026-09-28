@@ -28,13 +28,17 @@ var sky_material := ShaderMaterial.new()
 var retiring: Array[Node2D] = []
 const MAX_RETIRING := 32
 const MAX_CAMERA_SHIFT := 22.0
+const FPS_GOVERNOR_POLL_MS := 5000
 var ws_reconnect_attempt := 0
 var ws_reconnect_at_ms := 0
 var visual_time := 0.0
+var render_control_path := ""
+var render_control_next_poll_ms := 0
 var director_focus_entity_id := ""
 var director_focus_until_ms := 0
 
 func _ready() -> void:
+    _configure_native_fps_governor()
     var sky := ColorRect.new()
     sky.size = Vector2(720, 1280)
     sky.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -45,6 +49,31 @@ func _ready() -> void:
     _connect_websocket()
     _install_browser_audio_bridge()
     queue_redraw()
+
+func _configure_native_fps_governor() -> void:
+    # The web export keeps browser-controlled rendering; only native uses this.
+    if OS.has_feature("web"):
+        return
+    render_control_path = OS.get_environment("LIVE_INFINITA_RENDER_CONTROL_FILE")
+    if render_control_path.is_empty():
+        return
+    _poll_native_fps_governor()
+
+func _poll_native_fps_governor() -> void:
+    if render_control_path.is_empty():
+        return
+    var now_ms := Time.get_ticks_msec()
+    if now_ms < render_control_next_poll_ms:
+        return
+    render_control_next_poll_ms = now_ms + FPS_GOVERNOR_POLL_MS
+    if not FileAccess.file_exists(render_control_path):
+        return
+    var text_value := FileAccess.get_file_as_string(render_control_path).strip_edges()
+    if not text_value.is_valid_int():
+        return
+    var target_fps := clampi(text_value.to_int(), 8, 60)
+    if Engine.max_fps != target_fps:
+        Engine.max_fps = target_fps
 
 func _install_browser_audio_bridge() -> void:
     if not OS.has_feature("web"): return
@@ -101,6 +130,7 @@ func _maybe_reconnect_websocket() -> void:
     _connect_websocket()
 
 func _process(delta: float) -> void:
+    _poll_native_fps_governor()
     visual_time += delta
     narration_remaining = maxf(0.0, narration_remaining - delta)
     audience_remaining = maxf(0.0, audience_remaining - delta)
