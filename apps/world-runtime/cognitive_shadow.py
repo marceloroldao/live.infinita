@@ -431,7 +431,14 @@ class CognitiveShadowRecorder:
         return record
 
 
-def summarize_shadow_file(path: Path) -> dict[str, Any]:
+def summarize_shadow_file(path: Path, *, max_bytes: int | None = None) -> dict[str, Any]:
+    """Aggregate the complete log, or a bounded recent window for fast health.
+
+    A window never claims historical totals. Its first partial JSONL record is
+    discarded so it cannot manufacture a malformed observation.
+    """
+    if max_bytes is not None and (isinstance(max_bytes, bool) or max_bytes <= 0):
+        raise ValueError("max_bytes must be positive")
     file_path = Path(path)
     if not file_path.exists():
         return {
@@ -488,14 +495,20 @@ def summarize_shadow_file(path: Path) -> dict[str, Any]:
     stationary_counts: dict[str, int] = {}
     contextual_reasons: dict[str, int] = {}
     last: dict[str, Any] | None = None
-    with file_path.open("r", encoding="utf-8") as fh:
+    with file_path.open("rb") as fh:
+        if max_bytes is not None:
+            fh.seek(0, 2)
+            offset = max(0, fh.tell() - max_bytes)
+            fh.seek(offset)
+            if offset:
+                fh.readline()  # drop a potentially truncated first record
         for raw in fh:
-            line = raw.strip()
-            if not line:
-                continue
             try:
+                line = raw.decode("utf-8").strip()
+                if not line:
+                    continue
                 row = json.loads(line)
-            except json.JSONDecodeError:
+            except (UnicodeDecodeError, json.JSONDecodeError):
                 continue
             if not isinstance(row, dict):
                 continue

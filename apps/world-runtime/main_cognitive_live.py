@@ -179,7 +179,8 @@ async def cognitive_v2_frame(observer_id: str = "nov") -> JSONResponse:
 
 @app.get("/api/cognitive/v2/shadow/metrics", dependencies=[Depends(core.require_operator)])
 async def cognitive_v2_shadow_metrics() -> JSONResponse:
-    summary = summarize_shadow_file(_shadow_file())
+    # Full-history aggregates are opt-in and run off the event-loop thread.
+    summary = await asyncio.to_thread(summarize_shadow_file, _shadow_file())
     return JSONResponse({
         "ok": True,
         "world_mutated": False,
@@ -293,7 +294,9 @@ _original_context_health = main_context_live.context_health
 async def cognitive_health() -> JSONResponse:
     response = await _original_context_health()
     payload = json.loads(response.body.decode("utf-8")) if response.body else {}
-    shadow_summary = summarize_shadow_file(_shadow_file())
+    # /api/health must not synchronously parse an ever-growing shadow ledger.
+    # Counters here describe a RECENT bounded window, not lifetime totals.
+    shadow_summary = summarize_shadow_file(_shadow_file(), max_bytes=262_144)
     payload["cognitive_gym_v2"] = {
         "enabled": COGNITIVE_GYM_ENABLED,
         "mode": "read-only-cognitive-projection",
@@ -301,6 +304,9 @@ async def cognitive_health() -> JSONResponse:
         "observer": "nov",
         "contract": "CognitiveFrame -> Memoria V2 request payload",
         "shadow_observer": {
+            "metrics_scope": "recent_window",
+            "max_window_bytes": 262_144,
+            "complete_metrics_path": "/api/cognitive/v2/shadow/metrics",
             "records": shadow_summary.get("records", 0),
             "exact_match_rate": shadow_summary.get("exact_match_rate"),
             "exante_forecasts": shadow_summary.get("exante_forecasts", 0),
