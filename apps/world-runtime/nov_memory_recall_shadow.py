@@ -7,7 +7,6 @@ checkpoint, connects to central services, or participates in world decisions.
 from __future__ import annotations
 
 import argparse
-from hashlib import sha256
 import json
 import os
 from pathlib import Path
@@ -209,7 +208,12 @@ def recall_once(*, source: Path, world_path: Path, checkpoint_path: Path,
                 edge = edges.get(evidence_id)
                 if (edge is None or edge.source_text != source_json
                         or edge.predicate != "observed_experience"
-                        or edge.namespace != "live:" + source_world):
+                        or edge.subject != "live:episode:" + evidence_id
+                        or edge.object != "live:entity:" + source_world + ":nov"
+                        or edge.namespace != "live:" + source_world
+                        or edge.origin != "live.infinita:" + source_world
+                        or edge.provenance != "live.infinita:npc_episode_v1"
+                        or edge.epoch != tick or edge.confidence != 1.0):
                     raise RecallBlocked("evidence_provenance_mismatch")
                 if source_world == world_id and request.source.entity_id == "nov":
                     records.append({
