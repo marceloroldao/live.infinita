@@ -149,6 +149,7 @@ class GenuineV2SnapshotTests(unittest.TestCase):
         last = self.append("p3", 9, "hunger")
         self.watermark(last)
         original_count = self.store.count
+        checkpoint_bytes = self.checkpoint.read_bytes()
         out = nov.recall_once(
             source=self.source, world_path=self.world,
             checkpoint_path=self.checkpoint, private_root=self.mem,
@@ -164,7 +165,7 @@ class GenuineV2SnapshotTests(unittest.TestCase):
         self.assertFalse(out["bdr_used"])
         self.assertEqual(self.store.count, original_count)
         self.assertEqual(self.world.read_text()[:1], "{")
-        self.assertEqual(self.checkpoint.stat().st_mode & 0o777, 0o644)
+        self.assertEqual(self.checkpoint.read_bytes(), checkpoint_bytes)
         self.assertFalse(list(self.mem.glob("nov-recall-*")))
         self.assertEqual(first["record_key"] in (last["record_key"],), False)
 
