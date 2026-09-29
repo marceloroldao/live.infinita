@@ -10,7 +10,7 @@ import math
 from pathlib import Path
 from typing import Any
 
-from nov_memory_release_contract import render_unit, ReleaseBlocked
+from nov_memory_release_contract import CORE, PYTHON, render_unit, ReleaseBlocked
 from nov_memory_continuous import SCHEMA as OWNER_SCHEMA, PUBLIC_STATUSES
 
 SCHEMA = "live-infinita-nov-ephemeral-systemd-gate/v1"
@@ -21,8 +21,9 @@ MAX_JOURNAL_BYTES = 64 * 1024
 UNIT_MARKER = "MVP018L_OWNER_STOPPED "
 
 
-def render_canary(template: str, root: Path) -> str:
-    base = render_unit(template, root)
+def render_canary(template: str, root: Path, *, core: Path = CORE,
+                  python: Path = PYTHON) -> str:
+    base = render_unit(template, root, core=core, python=python)
     lines = base.splitlines()
     starts = [i for i, line in enumerate(lines) if line.startswith("ExecStart=")]
     restarts = [i for i, line in enumerate(lines) if line.startswith("Restart=")]
