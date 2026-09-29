@@ -130,6 +130,43 @@ async function loadNovLife() {
 }
 $('nov-life-refresh').onclick = () => { void loadNovLife(); };
 
+async function loadNovSyncPreview() {
+  const button = $('nov-sync-preview-button');
+  button.disabled = true;
+  const status = $('nov-sync-preview-status');
+  const list = $('nov-sync-preview-list');
+  list.replaceChildren();
+  status.textContent = 'Preparando primeira janela local…';
+  try {
+    const data = await api('/api/manage/nov/sync/preview?cursor=0');
+    const envelopes = Array.isArray(data.episodes) ? data.episodes : [];
+    status.textContent = `${envelopes.length} observação(ões) confirmada(s) · janela inicial · cursor candidato ${data.candidate_next_cursor} · sem envio, sem recibo e sem atualização de cursor.`;
+    for (const entry of envelopes) {
+      const li = document.createElement('li');
+      const title = document.createElement('strong');
+      title.textContent = `${novLifeLabel(entry.observation?.need)} · tick ${novLifeText(entry.observation?.logical_tick)}`;
+      const detail = document.createElement('p');
+      detail.textContent = `Fonte: ${novLifeText(entry.source?.source_kind)} · ID: ${novLifeText(entry.source?.episode_id)} · destino: ${novLifeText(entry.observation?.target_entity_id)}`;
+      const digest = document.createElement('small');
+      digest.textContent = `Chave estável: ${String(entry.record_key || '').slice(0, 20)}… · integridade: ${String(entry.content_sha256 || '').slice(0, 20)}… · sem confirmação central`;
+      li.append(title, detail, digest);
+      list.append(li);
+    }
+    if (!envelopes.length) {
+      const li = document.createElement('li');
+      li.className = 'empty';
+      li.textContent = 'Nenhum episódio confirmado disponível nesta janela.';
+      list.append(li);
+    }
+  } catch (_) {
+    status.textContent = 'Não foi possível gerar a prévia local. Nenhum dado foi enviado.';
+  } finally {
+    button.disabled = false;
+  }
+}
+$('nov-sync-preview-button').onclick = () => { void loadNovSyncPreview(); };
+
+
 async function loadPerformance() {
   if ($('manager-view').hidden || $('overview').hidden) return;
   const value = (id, text) => { $(id).textContent = text; };
