@@ -186,7 +186,7 @@ class AsyncReadTests(unittest.TestCase):
         self.worker.submit(frame())
         result = self.worker.wait_ready(frame(), timeout=2)
         self.assertEqual(result.status, "blocked")
-        self.assertEqual(result.public["blocked_reason"], "scratch_permission")
+        self.assertEqual(result.public["blocked_reason"], "permission_denied")
         self.assertNotIn("sensitive-private-path", json.dumps(result.public))
         self.assertIsNone(result.primary)
         self.assertIsNone(result.supplementary)
