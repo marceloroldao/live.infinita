@@ -7,6 +7,7 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNTIME = ROOT / "apps/world-runtime"
@@ -149,16 +150,16 @@ class CacheContracts(unittest.TestCase):
 
     def test_change_during_query_rejected(self):
         self.cache(self.frame)
-        current = self.cache._current_version
+        current = VersionedNovRecallCache._current_version
         calls = [0]
-        def changing():
+        def changing(cache):
             calls[0] += 1
             if calls[0] == 2:
                 self.wal.write_bytes(b"changed during query")
-            return current()
-        self.cache._current_version = changing
-        with self.assertRaisesRegex(RecallBlocked, "source_moved_during_query"):
-            self.cache(self.frame)
+            return current(cache)
+        with patch.object(VersionedNovRecallCache, "_current_version", changing):
+            with self.assertRaisesRegex(RecallBlocked, "source_moved_during_query"):
+                self.cache(self.frame)
         self.assertIsNone(self.cache._report)
 
     def test_cross_world_and_future_episode_cannot_leak(self):
