@@ -12,12 +12,14 @@ A nova `sample_current_nov_frame` lê apenas arquivos existentes da Live:
 da região apontada para `nov`. A leitura usa `world-mutation.lock` com
 `LOCK_SH | LOCK_NB`: se o escritor está ativo, **abstém**, sem bloqueá-lo.
 Tamanho, esquema, identidade da entidade e região são conferidos; o frame
-real tem o tick, estado de mundo e endereços atuais de região, período,
-clima e necessidades da entidade. Nenhum motor autoritativo ou construtor
-de armazenamento é instanciado. Ainda há uma diferença importante:
-`frame_query` usa a necessidade do **último episódio confirmado** e a
-região/clima/período do frame observado. Não se deve apresentar a necessidade
-histórica como intenção atual ou prova de aprendizagem.
+real tem o tick, estado de mundo e endereços observados de região,
+período e clima. Os nomes de necessidades em `properties.needs` são os
+valores atualmente armazenados na entidade e **não substituem** o estado
+dinâmico do agendador de necessidades. Nenhum motor autoritativo ou
+construtor de armazenamento é instanciado. Ainda há uma diferença
+importante: `frame_query` usa a necessidade do **último episódio confirmado**
+e a região/clima/período do frame observado. Não se deve apresentar a
+necessidade histórica como intenção atual ou prova de aprendizagem.
 
 ## Ciclo de preparação
 
