@@ -161,16 +161,12 @@ class NovEpisodeDeliveryTests(Fixtures):
         self.write([row(0)])
         sent = self.deliver()
         assert sent["ack"]
-        previous = self.checkpoint.read_bytes()
         self.checkpoint.unlink()
         again = self.deliver()
         self.assertTrue(again["ack"])
         self.assertEqual(len(self.central.stored), 1)
-        self.assertEqual(self.checkpoint.read_bytes(), previous.replace(
-            previous[previous.index(b'"updated_at_unix"'):].split(b",", 1)[0], 
-            self.checkpoint.read_bytes()[self.checkpoint.read_bytes().index(b'"updated_at_unix"'):].split(b",", 1)[0],
-        ) if False else self.checkpoint.read_bytes())
         self.assertEqual(_read_checkpoint(self.checkpoint)["acknowledged"], 1)
+        self.assertEqual(_read_checkpoint(self.checkpoint)["last_record_key"], sent["record_key"])
 
     def test_non_nov_record_is_filtered_without_network_or_fake_ack(self):
         self.write([row(0, npc="other"), row(1)])
@@ -184,7 +180,7 @@ class NovEpisodeDeliveryTests(Fixtures):
         self.assertEqual(_read_checkpoint(self.checkpoint)["acknowledged"], 1)
 
     def test_partial_line_waits_without_cursor_progress(self):
-        self.write([row(0)], tail=b'{"episode_id":"incomplete"')
+        self.write([row(0)], tail=b'{garbage')
         self.assertTrue(self.deliver()["ack"])
         state = self.checkpoint.read_bytes()
         waiting = self.deliver()
