@@ -256,6 +256,35 @@ class GenuineV2SnapshotTests(unittest.TestCase):
         self.assertEqual(self.store.count, 4)
         self.assertFalse(list(self.mem.glob("nov-recall-*")))
 
+    def test_real_v2_redacted_diagnostics(self) -> None:
+        from nov_memory_diagnostics import diagnose, SCHEMA as DIAGNOSTICS_SCHEMA
+        self.append("p1", 3, "hunger")
+        self.append("p2", 5, "thirst")
+        last = self.append("p3", 9, "hunger")
+        self.watermark(last)
+        before_checkpoint = self.checkpoint.read_bytes()
+        before_world = self.world.read_bytes()
+        result = diagnose(
+            source=self.source, checkpoint=self.checkpoint,
+            world=self.world, private_root=self.mem, samples=3,
+        )
+        self.assertEqual(result["schema"], DIAGNOSTICS_SCHEMA)
+        self.assertEqual(result["snapshot_records"], 3)
+        self.assertEqual(result["nov_observations"], 3)
+        self.assertEqual(result["warm_queries"], 3)
+        self.assertEqual(result["distinct_address_values"]["need"], 2)
+        self.assertEqual(result["distinct_episode_signatures"], 2)
+        self.assertTrue(result["checkpoint_stable"])
+        self.assertFalse(result["selection_authority"])
+        self.assertFalse(result["world_mutated"])
+        self.assertFalse(result["live_nov_state_measured"])
+        self.assertNotIn("record_key", json.dumps(result))
+        self.assertNotIn("live-obs:", json.dumps(result))
+        self.assertEqual(self.checkpoint.read_bytes(), before_checkpoint)
+        self.assertEqual(self.world.read_bytes(), before_world)
+        self.assertEqual(self.store.count, 3)
+        self.assertFalse(list(self.mem.glob("nov-recall-*")))
+
     def test_empty_journal_abstains(self) -> None:
         self.checkpoint.write_text(json.dumps({
             "schema": nov.CHECKPOINT_SCHEMA, "cursor": 0, "world_id": "nov-test",
