@@ -1,0 +1,38 @@
+[Unit]
+Description=Live Infinita Nov owner-only continuous V2 memory preparer (OFF until gated)
+After=local-fs.target live-infinita-memoria-local.service
+Requires=live-infinita-memoria-local.service
+ConditionPathExists=/var/lib/live-infinita/memoria-local/external-episodes-incremental/external-episodes.sqlite3
+ConditionPathExists=/var/lib/live-infinita/memoria-local/nov-ingest.checkpoint.json
+ConditionPathExists=/var/lib/live-infinita/autonomous-world/world.json
+ConditionPathExists=/var/lib/live-infinita/autonomous-world/cold-store/manifest.json
+ConditionPathExists=/opt/live-infinita-memoria-core/2b6334e8d6026c6bae620297de3f2fa658427596/src/memoria_resolutiva/external_episode_incremental.py
+
+[Service]
+Type=simple
+User=liveinfinita
+Group=liveinfinita
+WorkingDirectory=/opt/live.infinita
+Environment="PYTHONUNBUFFERED=1"
+Environment="PYTHONPATH=/opt/live.infinita:/opt/live.infinita/apps/world-runtime:/opt/live-infinita-memoria-core/2b6334e8d6026c6bae620297de3f2fa658427596/src"
+ExecStart=/opt/live.infinita/.venv/bin/python /opt/live.infinita/apps/world-runtime/nov_memory_continuous.py --period 2 --refresh 4
+Restart=on-failure
+RestartSec=15
+TimeoutStopSec=15
+UMask=0077
+Nice=15
+CPUWeight=10
+IOWeight=10
+MemoryHigh=192M
+MemoryMax=384M
+TasksMax=24
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadOnlyPaths=/var/lib/live-infinita/autonomous-world
+ReadWritePaths=/var/lib/live-infinita/memoria-local
+IPAddressDeny=any
+
+[Install]
+WantedBy=multi-user.target
