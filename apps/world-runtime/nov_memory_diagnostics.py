@@ -20,6 +20,7 @@ from memoria_v2_adapter import CognitiveFrame
 from nov_memory_context_shadow import MemoryContextRejected, freeze_memory_context
 from nov_memory_recall_cache import VersionedNovRecallCache, frame_query
 from nov_memory_hybrid_shadow import OwnerHybridRecallWorker
+from nov_memory_dual_lane_shadow import OwnerDualLaneRecallObserver
 from nov_trajectory_recall_shadow import compare_trajectory_recall, trajectory_distribution
 from nov_memory_recall_shadow import (
     FIELDS, MAX_WORLD_BYTES, RecallBlocked, _read_bounded_json, recall_once,
@@ -115,6 +116,16 @@ def diagnose(
     # The manually invoked service-account process owns both the V2 snapshot
     # and hybrid comparator; neither can run in the authoritative 500-ms tick.
     hybrid_result, hybrid_metrics = OwnerHybridRecallWorker(cache).refresh(frame)
+    # Separate supplemental context; no substitutions in the primary lane.
+    dual_primary, supplement_result, dual_metrics = OwnerDualLaneRecallObserver(cache).refresh(frame)
+    if (dual_primary["selected"] != hybrid_result["selected"]
+            or dual_primary["private_evidence"] != hybrid_result["private_evidence"]
+            or dual_metrics["hybrid_overlap_counts"] != hybrid_metrics["hybrid_overlap_counts"]
+            or dual_metrics["supplementary_count"] != len(supplement_result["selected"])
+            or dual_metrics["primary_count_unchanged"] != len(hybrid_result["selected"])
+            or dual_metrics["combined_distinct_observed_profiles"]
+            < dual_metrics["primary_observed_profiles"]):
+        raise RecallBlocked("dual_lane_primary_changed")
     if (hybrid_metrics["baseline_overlap_counts"]
             != memory_context.public_view["matched_address_counts"]
             or hybrid_metrics["matching_records"] != first["historical_matches"]
@@ -183,6 +194,7 @@ def diagnose(
         "trajectory_distribution": trajectories,
         "trajectory_recall_comparison": comparison,
         "hybrid_recall_comparison": hybrid_metrics,
+        "dual_lane_comparison": dual_metrics,
         "cold_validation_ms": round(cold_ms, 3),
         "warm_median_ms": round(statistics.median(warm), 3),
         "warm_max_ms": round(max(warm), 3),
