@@ -37,7 +37,7 @@ servidor ou corrupção local não avançam o cursor.
 
 O checkpoint de offset é separado do World State, criado com permissão 0600 e
 atualizado atomicamente **após o ACK validado**. A posição local é conferida
-com o inode e um hash de âncora. Rotação, truncamento ou mudança da fonte
+com o inode, servidor/dispositivo aprovados e um hash de âncora. Rotação, truncamento ou mudança da fonte
 param o envio até reconciliação. Entradas descartadas por serem de outro NPC
 não geram ACK; apenas seu offset pode avançar como registro filtrado.
 
