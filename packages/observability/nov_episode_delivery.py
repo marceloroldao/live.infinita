@@ -91,6 +91,8 @@ def _read_checkpoint(path: Path) -> dict[str, Any] | None:
         or data["cursor"] < 0
         or not isinstance(data.get("ledger_identity"), str)
         or not isinstance(data.get("world_id"), str)
+        or not isinstance(data.get("server_id"), str) or not data["server_id"]
+        or not isinstance(data.get("device_id"), str) or not data["device_id"]
         or not isinstance(data.get("anchor_sha256"), str)
         or not _HEX64.fullmatch(data["anchor_sha256"])
     ):
@@ -251,6 +253,8 @@ def deliver_next(
         identity = preview["ledger_identity"]
         world_id = preview["world_id"]
         if saved:
+            if saved["server_id"] != device.server_id or saved["device_id"] != device.device_id:
+                raise DeliveryError("central server/device identity changed; manual reconciliation required")
             if saved["ledger_identity"] != identity or saved["world_id"] != world_id:
                 raise DeliveryError("ledger identity/world changed; manual reconciliation required")
             if _anchor(ledger, cursor, identity) != saved["anchor_sha256"]:
@@ -271,6 +275,8 @@ def deliver_next(
             "cursor": next_cursor,
             "ledger_identity": identity,
             "world_id": world_id,
+            "server_id": device.server_id,
+            "device_id": device.device_id,
             "anchor_sha256": anchor,
             "last_record_key": rows[0]["record_key"] if rows else (saved or {}).get("last_record_key"),
             "last_content_sha256": rows[0]["content_sha256"] if rows else (saved or {}).get("last_content_sha256"),
