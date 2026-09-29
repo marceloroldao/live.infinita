@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 from collections import Counter, deque
+from functools import partial
 import json
 import resource
 import statistics
@@ -20,7 +21,7 @@ from typing import Any, Callable
 from nov_memory_async_prepare import OwnerAsyncDualLanePreparation
 from nov_memory_current_frame import sample_current_nov_frame
 from nov_memory_recall_cache import VersionedNovRecallCache
-from nov_memory_recall_shadow import RecallBlocked
+from nov_memory_recall_shadow import RecallBlocked, recall_once
 
 PRIVATE_ROOT = Path("/var/lib/live-infinita/memoria-local")
 WORLD_ROOT = Path("/var/lib/live-infinita/autonomous-world")
@@ -29,6 +30,7 @@ CHECKPOINT = PRIVATE_ROOT / "nov-ingest.checkpoint.json"
 WORLD = WORLD_ROOT / "world.json"
 COLD = WORLD_ROOT / "cold-store"
 LOCK = WORLD_ROOT / "world-mutation.lock"
+SYSTEMD_SCRATCH_ROOT = Path("/run/live-infinita-nov-preparer")
 SCHEMA = "live-infinita-nov-owner-continuous/v1"
 PUBLIC_STATUSES = frozenset((
     "ready", "pending", "frame_unavailable", "context_rejected",
@@ -195,7 +197,8 @@ def run(*, cycles: int | None = None, period: float = 2.0,
         sleep: Callable[[float], None] = time.sleep,
         clock: Callable[[], float] = time.monotonic,
         sampler: Callable[[], Any] | None = None,
-        worker: Any | None = None) -> dict[str, Any]:
+        worker: Any | None = None,
+        scratch_root: Path | None = None) -> dict[str, Any]:
     """The bounded canary waits ONLY inside this separate owner process."""
     if (type(period) not in (int, float) or not 0.5 <= period <= 10
             or cycles is not None and (
@@ -216,6 +219,8 @@ def run(*, cycles: int | None = None, period: float = 2.0,
         VersionedNovRecallCache(
             source=SOURCE, world_path=WORLD,
             checkpoint_path=CHECKPOINT, private_root=PRIVATE_ROOT,
+            _loader=partial(recall_once, scratch_root=scratch_root)
+            if scratch_root is not None else recall_once,
         ),
     )
     runner = ContinuousOwnerMonitor(
@@ -349,11 +354,15 @@ def main() -> None:
     parser.add_argument("--refresh", type=float, default=4.0)
     parser.add_argument("--cycles", type=int)
     parser.add_argument("--canary", action="store_true")
+    parser.add_argument("--scratch-root", type=Path)
     args = parser.parse_args()
     try:
+        if args.scratch_root is not None and args.scratch_root != SYSTEMD_SCRATCH_ROOT:
+            raise RecallBlocked("systemd_scratch_path_invalid")
         report = run(
             cycles=args.cycles, period=args.period,
             refresh=args.refresh, canary=args.canary,
+            scratch_root=args.scratch_root,
         )
     except (RecallBlocked, OSError, ValueError) as exc:
         raise SystemExit("MVP018L_OWNER_BLOCKED " + type(exc).__name__) from exc
