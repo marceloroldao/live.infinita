@@ -4,7 +4,7 @@
 
 A memória de Nov opera **dentro da VM**, com o núcleo real
 `marceloroldao/memoria.ia` fixado no commit
-`3ea447c449349761215c43182ca54a0941b6e09b` (V2).
+`2b6334e8d6026c6bae620297de3f2fa658427596` (V2).
 Não é um clone SQL improvisado nem o serviço central. Usa V2 Product
 EvidenceCore e o contrato tipado `/api/v1/external/episodes`, sem coerção para
 `role=user|assistant` ou texto gerado.
@@ -35,8 +35,8 @@ Para cada episódio:
 1. valida a identidade do mundo e a proveniência `npc_episode_v1/need_outcome`;
 2. deriva `record_key` e `content_sha256` canônicos, sem texto sintético;
 3. envia **somente** ao endpoint fixo de loopback da Memoria.ia local;
-4. exige retorno `ack=true`, IDs/digest exatos e referência de snapshot
-   persistido (`backend`, `state_id`, `sha256`);
+4. exige retorno `ack=true`, IDs/digest exatos e referência do episódio
+   persistido incrementalmente (`backend=sqlite-incremental`, `state_id`, `sha256`);
 5. só então escreve atomicamente e com `fsync` o cursor em
    `nov-ingest.checkpoint.json`.
 
@@ -57,17 +57,25 @@ O código, testes e units são mantidos no repositório Live. O script
 instala com backup de código anterior. Em caso de erro, desabilita somente os
 serviços novos; **nunca apaga memória persistida ou o segredo local**.
 
-**Bloqueio de segurança vigente:** benchmark sobre exatamente o core pinado nesta
-instalação revelou 2,19 MiB após 2 episódios, 24,41 MiB após 8 e 91,21 MiB
-após 16; o ensaio interrompeu-se acima de 128 MiB em 20 episódios. A
-persistência `ProductEvidenceService.save()` grava snapshots completos. O
-instalador agora mede oito experiências num diretório temporário e **falha antes
-de qualquer sudo** se o crescimento ultrapassar 8 MiB. Até implementar
-persistência incremental no core/receptor ou migrar para um backend comprovado,
-não ativar timer nem fazer ingestão automática de Nov nessa modalidade. Este
-bloqueio preserva a Live em produção.
+**Histórico do bloqueio:** no commit antigo, `ProductEvidenceService.save()`
+gravava snapshots completos: 24,41 MiB após 8 episódios e 91,21 MiB após 16.
+A versão V2 agora pinada traz `MEMORIA_EXTERNAL_EPISODE_PERSISTENCE=sqlite-incremental`,
+que mantém o EvidenceCore real e persiste uma linha canônica por episódio em
+SQLite WAL com `synchronous=FULL`. Ensaio isolado: 100/1.000/10.000 episódios
+ocuparam 1,93/5,28/16,46 MB, respectivamente, incluindo arquivos WAL; reabrir
+e reconstruir 10.000 relações levou 2,27 s. Não é um teste prolongado de produção.
 
-Depois de corrigido e validado o backend, o operador executará como `etbra`:
+O instalador mantém o gate de até 8 MiB **após 8 observações reais de teste,
+antes de qualquer sudo**, agora exigindo explicitamente o modo incremental.
+O modo snapshot antigo não pode ser habilitado por acidente.
+
+**Migração do rollback anterior:** a V2 verifica os registros tipados antigos
+do último snapshot, migra-os de forma idempotente para o journal incremental
+e mantém todos os arquivos antigos. A credencial local de 0600 é reaproveitada.
+O checkpoint antigo continua no lugar: nenhum cursor é apagado ou avançado
+sem novo recibo incremental. Fonte inconsistente interrompe a instalação.
+
+Depois de merge, CI e liberação operacional, o operador executa como `etbra`:
 
     cd ~/live.infinita && bash deploy/mvp018c-memoria-local.sh
 
@@ -75,7 +83,7 @@ Valida em loopback:
 - `/api/v1/health` HTTP 200;
 - `/api/v1/storage/health` com SQLite e runtimes Python;
 - `/api/v1/external/episodes` HTTP 401 sem credenciais;
-- primeiro episódio real aceito, recibo e checkpoint próprios;
+- migração segura dos episódios existentes, journal incremental, recibo e checkpoint próprios;
 - timers locais ativos e todos os PIDs de Nov/API/Godot/áudio inalterados.
 
 Para inspecionar (sem revelar credenciais):
