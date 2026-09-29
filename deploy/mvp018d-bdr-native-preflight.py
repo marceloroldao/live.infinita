@@ -39,7 +39,10 @@ def main() -> None:
                 "observation": {
                     "logical_tick": i, "need": "curiosity",
                     "target_entity_id": "ancient_tree", "strategy_id": "explore",
-                    "context": {}, "outcome": {"satisfaction": 0.5},
+                    "context": {"period": "day", "weather": "clear",
+                                "region_id": "clearing", "danger_level": 0.1},
+                    "outcome": {"satisfaction": 0.5, "observed_risk": 0.1,
+                                "elapsed_ticks": 3, "preemptions": 0, "replans": 0},
                 },
                 "authority": "observed-outcome-only",
                 "world_write_authority": False,
