@@ -91,3 +91,32 @@ não o acionamento automático da memória pelo Nov.
    rollback e aprovação separada.
 
 Referências: issue #88, PR #87 (espelho), PR #90 (auditoria corrigida).
+
+
+## Extensão: contexto verificado para Shadow Mode
+
+A camada `nov_memory_context_shadow.py` aceita o resultado privado de
+`recall_once(include_evidence=True)` **somente como entrada em processo**,
+conferindo ID de evidência, digest, proveniência, mundo, tempo lógico,
+endereços coincidentes e identidade do frame cognitivo.
+
+`CognitiveShadowRecorder` possui um parâmetro novo, opcional:
+`memory_recall_provider`. O provider **não é ligado** em
+`autonomous_runtime_main.py` nem em qualquer serviço de produção. Ele só
+pode ser injetado explicitamente numa execução isolada de Shadow Mode.
+
+O `ShadowToken` conserva IDs completos somente em memória. O arquivo
+`memoria-v2-shadow.jsonl` recebe apenas contagens e indicadores
+redigidos/sem segredo; não grava IDs, hashes ou payloads de observação.
+O contexto é diagnóstico, sem `used_to_rank`, previsão de ação ou
+autoridade sobre propostas, plano, Single Writer ou World State.
+
+Falhas de validação causam abstenção do observador: o wrapper
+`ShadowWorldTickRunner` prossegue com o tick autoritativo, sem consumir
+lembranças não verificadas. Não há leitura de BDR nem sincronização central.
+
+Gate: executar as provas isoladas e a integração com o EvidenceCore real na
+CI. Antes de conectar o provider em produção, obter resultado de recuperação
+de origem no ensaio manual e medir o custo da cópia SQLite/WAL e da reconstrução
+V2; **não** reconstruir o grafo a cada tick. Um futuro cache somente de leitura
+terá de ser versionado pelo checkpoint e invalidado por atualização da memória.
