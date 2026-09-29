@@ -21,6 +21,7 @@ from nov_memory_context_shadow import MemoryContextRejected, freeze_memory_conte
 from nov_memory_recall_cache import VersionedNovRecallCache, frame_query
 from nov_memory_hybrid_shadow import OwnerHybridRecallWorker
 from nov_memory_dual_lane_shadow import OwnerDualLaneRecallObserver
+from nov_memory_async_prepare import OwnerAsyncDualLanePreparation
 from nov_trajectory_recall_shadow import compare_trajectory_recall, trajectory_distribution
 from nov_memory_recall_shadow import (
     FIELDS, MAX_WORLD_BYTES, RecallBlocked, _read_bounded_json, recall_once,
@@ -169,6 +170,58 @@ def diagnose(
             "selection_authority": False, "causal_inference_claim": False,
             "new_evidence_created": False,
         }
+    # Explicit off-tick worker: loading can be slow, submitting and consuming
+    # the prepared pair must never rehydrate V2 on the requesting thread.
+    async_cache = VersionedNovRecallCache(
+        source=source, checkpoint_path=checkpoint,
+        world_path=world, private_root=private_root,
+    )
+    async_worker = OwnerAsyncDualLanePreparation(async_cache)
+    try:
+        async_worker.start()
+        started = perf_counter_ns()
+        async_worker.submit(frame)
+        submit_ms = (perf_counter_ns() - started) / 1_000_000
+        prepared = async_worker.wait_ready(frame, timeout=5.0)
+        if prepared.status != "ready":
+            raise RecallBlocked("async_preparation_" + prepared.status)
+        if (prepared.public["primary_overlap_counts"]
+                != dual_metrics["hybrid_overlap_counts"]
+                or prepared.public["supplementary_overlap_counts"]
+                != dual_metrics["supplementary_overlap_counts"]
+                or prepared.public["primary_count"]
+                != dual_metrics["primary_count_unchanged"]
+                or prepared.public["supplementary_count"]
+                != dual_metrics["supplementary_count"]
+                or prepared.public["primary_unchanged"] is not True):
+            raise RecallBlocked("async_prepared_context_disagrees")
+        async_times: list[float] = []
+        for _ in range(samples):
+            started = perf_counter_ns()
+            ready = async_worker.peek(frame)
+            async_times.append((perf_counter_ns() - started) / 1_000_000)
+            if (ready.status != "ready"
+                    or ready.public["primary_overlap_counts"]
+                    != prepared.public["primary_overlap_counts"]
+                    or ready.public["supplementary_overlap_counts"]
+                    != prepared.public["supplementary_overlap_counts"]):
+                raise RecallBlocked("async_peek_inconsistent")
+        async_summary = {
+            "status": "ready", "submit_ms": round(submit_ms, 3),
+            "peek_median_ms": round(statistics.median(async_times), 3),
+            "peek_max_ms": round(max(async_times), 3),
+            "peek_queries": samples,
+            "primary_count": prepared.public["primary_count"],
+            "supplementary_count": prepared.public["supplementary_count"],
+            "primary_overlap_counts": prepared.public["primary_overlap_counts"],
+            "supplementary_overlap_counts": prepared.public["supplementary_overlap_counts"],
+            "historical_snapshot_only": True,
+            "live_caught_up_claim": False, "selection_authority": False,
+            "source_rebuild_off_tick": True,
+            "main_runtime_wired": False,
+        }
+    finally:
+        async_worker.close()
     warm: list[float] = []
     for _ in range(samples):
         started = perf_counter_ns()
@@ -195,6 +248,7 @@ def diagnose(
         "trajectory_recall_comparison": comparison,
         "hybrid_recall_comparison": hybrid_metrics,
         "dual_lane_comparison": dual_metrics,
+        "async_preparation": async_summary,
         "cold_validation_ms": round(cold_ms, 3),
         "warm_median_ms": round(statistics.median(warm), 3),
         "warm_max_ms": round(max(warm), 3),
