@@ -67,6 +67,8 @@ def observation_envelope(row: dict[str, Any], *, world_id: str) -> dict[str, Any
         return None
     if row.get("episode_schema") != "npc_episode_v1":
         return None
+    if any(field in row for field in ("role", "text", "narration", "llm_generated")):
+        raise EpisodeSyncContractError("mixed_conversation_provenance")
     episode = project_confirmed_episode(row)
     source = row.get("source") if isinstance(row.get("source"), dict) else {}
     plan_id = _source_identifier(source.get("plan_id"))
