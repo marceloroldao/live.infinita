@@ -16,7 +16,7 @@ import secrets
 import time
 from typing import Any, Callable
 from urllib.error import HTTPError, URLError
-from urllib.request import Request, urlopen
+from urllib.request import Request, ProxyHandler, build_opener
 
 from packages.observability.nov_episode_sync import (
     EpisodeSyncContractError, preview_episode_batch,
@@ -125,6 +125,25 @@ def _write_checkpoint(path: Path, payload: dict[str, Any]) -> None:
             temp.unlink()
 
 
+def _verify_checkpoint_ledger(checkpoint: dict[str, Any] | None, ledger: Path) -> None:
+    """Verify the committed prefix *before* parsing a possible rewritten tail."""
+    if checkpoint is None:
+        return
+    try:
+        info = ledger.stat()
+    except OSError as exc:
+        raise LocalMemorySyncError("ledger_unavailable") from exc
+    if checkpoint["ledger_identity"] != f"{info.st_dev}:{info.st_ino}":
+        raise LocalMemorySyncError("ledger_inode_changed")
+    cursor = checkpoint["cursor"]
+    if info.st_size < cursor:
+        raise LocalMemorySyncError("ledger_truncated")
+    if checkpoint["prefix_sha256"] != _prefix_digest(ledger, cursor):
+        raise LocalMemorySyncError("ledger_prefix_rewritten")
+    if checkpoint["last_line_sha256"] != _line_digest_at_cursor(ledger, cursor):
+        raise LocalMemorySyncError("last_acked_line_rewritten")
+
+
 def _checkpoint_validate(checkpoint: dict[str, Any] | None, *, ledger: Path, batch: dict[str, Any]) -> None:
     if checkpoint is None:
         return
@@ -132,13 +151,8 @@ def _checkpoint_validate(checkpoint: dict[str, Any] | None, *, ledger: Path, bat
         raise LocalMemorySyncError("world_identity_changed")
     if checkpoint["ledger_identity"] != batch["ledger_identity"]:
         raise LocalMemorySyncError("ledger_inode_changed")
-    cursor = checkpoint["cursor"]
-    if batch["ledger_size_at_read"] < cursor:
+    if batch["ledger_size_at_read"] < checkpoint["cursor"]:
         raise LocalMemorySyncError("ledger_truncated")
-    if checkpoint["prefix_sha256"] != _prefix_digest(ledger, cursor):
-        raise LocalMemorySyncError("ledger_prefix_rewritten")
-    if checkpoint["last_line_sha256"] != _line_digest_at_cursor(ledger, cursor):
-        raise LocalMemorySyncError("last_acked_line_rewritten")
 
 
 def _validate_receipt(receipt: dict[str, Any], observation: dict[str, Any]) -> None:
@@ -176,7 +190,7 @@ def _post_local(observation: dict[str, Any]) -> dict[str, Any]:
         headers={"Content-Type": "application/json", "Accept": "application/json", "X-Memoria-Key": api_key},
     )
     try:
-        with urlopen(req, timeout=30) as response:
+        with build_opener(ProxyHandler({})).open(req, timeout=30) as response:
             raw = response.read(8193)
             if response.status != 201 or len(raw) > 8192:
                 raise LocalMemorySyncError("invalid_local_server_response")
@@ -205,6 +219,7 @@ def sync_once(
     stored = 0
     last = prior
     for _ in range(max_episodes):
+        _verify_checkpoint_ledger(prior, ledger)
         batch = preview_episode_batch(ledger, world, cursor=cursor, limit=1)
         _checkpoint_validate(prior, ledger=ledger, batch=batch)
         if batch["input_cursor"] != cursor:
