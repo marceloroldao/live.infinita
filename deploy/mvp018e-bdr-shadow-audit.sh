@@ -20,7 +20,10 @@ print("MVP018E_AUTHORITATIVE_SQLITE_OK observations=", health["external_episode_
 PY
 # The private data and report are never copied to etbra or /tmp.
 # The owner-only auditor prints only counts and booleans.
-sudo -u liveinfinita "$PY" "$REPO/deploy/mvp018e_bdr_shadow_audit.py" --mirrors-root "$ROOT"
+# The etbra shell opens the public auditor before sudo changes identity.
+# Run with / as cwd: liveinfinita cannot traverse /home/etbra.
+# No copy, chmod, ACL or exposure of private memory is required.
+( cd / && sudo -u liveinfinita "$PY" - --mirrors-root "$ROOT" < "$REPO/deploy/mvp018e_bdr_shadow_audit.py" )
 "$PY" - <<'PY'
 import json
 from urllib.request import urlopen
