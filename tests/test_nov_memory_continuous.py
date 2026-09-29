@@ -127,6 +127,8 @@ class ContinuousMonitorTests(unittest.TestCase):
         self.assertEqual(sum(result["status_counts"].values()), result["samples"])
         self.assertEqual(result["ready_reads"] + result["abstentions"], result["samples"])
         self.assertEqual(result["status_counts"]["ready"], result["ready_reads"])
+        self.assertGreaterEqual(result["peak_rss_kib"], 1)
+        self.assertLessEqual(result["median_step_ms"], result["max_step_ms"])
         self.assertNotIn("live:world", json.dumps(emitted))
         self.assertNotIn("record_key", json.dumps(emitted))
 
