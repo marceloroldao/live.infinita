@@ -292,6 +292,17 @@ class GenuineV2SnapshotTests(unittest.TestCase):
         self.assertEqual(dual["supplementary_count"], len(dual["supplementary_overlap_counts"]))
         self.assertFalse(dual["supplementary_used_to_rank_primary"])
         self.assertFalse(dual["selection_authority"])
+        asynchronous = result["async_preparation"]
+        self.assertEqual(asynchronous["status"], "ready")
+        self.assertEqual(asynchronous["primary_count"], hybrid["hybrid_retrieved"])
+        self.assertEqual(asynchronous["supplementary_count"], dual["supplementary_count"])
+        self.assertEqual(asynchronous["primary_overlap_counts"], hybrid["hybrid_overlap_counts"])
+        self.assertEqual(asynchronous["supplementary_overlap_counts"],
+                         dual["supplementary_overlap_counts"])
+        self.assertEqual(asynchronous["peek_queries"], 3)
+        self.assertTrue(asynchronous["source_rebuild_off_tick"])
+        self.assertFalse(asynchronous["main_runtime_wired"])
+        self.assertFalse(asynchronous["live_caught_up_claim"])
         self.assertEqual(hybrid["hybrid_retrieved"], result["retrieved_evidence_count"])
         self.assertGreaterEqual(hybrid["hybrid_trajectory_profiles"],
                                 hybrid["baseline_trajectory_profiles"])
