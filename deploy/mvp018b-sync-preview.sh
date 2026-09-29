@@ -81,7 +81,7 @@ done
 (( ready )) || fail 'API não retomou'
 sleep 12
 for svc in "$WORLD" "$API" "$RENDERER" "$AUDIO" "$RELAY"; do
-    systemctl is-active --quiet "$svc" || fail "$svc não recuperou'
+    systemctl is-active --quiet "$svc" || fail "$svc não recuperou"
     current_pid="$(systemctl show "$svc" -p MainPID --value)"
     [[ "$current_pid" =~ ^[0-9]+$ && "$current_pid" -gt 1 ]] || fail "$svc com PID inválido"
 done
