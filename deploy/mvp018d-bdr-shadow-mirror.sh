@@ -67,6 +67,9 @@ else
     # No persistent apt/Ubuntu package is installed.
     "$VENV_PY" -m pip install --quiet --no-input --disable-pip-version-check \
         --target "$stage/cmake-wheel" 'cmake>=3.21,<4'
+    # Pip --target leaves the cmake entrypoint outside site-packages; expose
+    # its temporary Python module to that entrypoint without touching the VM.
+    export PYTHONPATH="$stage/cmake-wheel${PYTHONPATH:+:$PYTHONPATH}"
     cmake_bin="$stage/cmake-wheel/bin/cmake"
     if [[ ! -x "$cmake_bin" ]]; then
         cmake_dir="$(PYTHONPATH="$stage/cmake-wheel" "$VENV_PY" -c 'import cmake; print(cmake.CMAKE_BIN_DIR)')"
