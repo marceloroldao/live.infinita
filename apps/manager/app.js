@@ -139,6 +139,9 @@ async function loadNovSyncPreview() {
   status.textContent = 'Preparando primeira janela local…';
   try {
     const data = await api('/api/manage/nov/sync/preview?cursor=0');
+    if (data.transport_enabled !== false || data.central_receipt !== null || data.candidate_cursor_is_ack !== false) {
+      throw new Error('Prévia não confirma transporte desativado');
+    }
     const envelopes = Array.isArray(data.episodes) ? data.episodes : [];
     status.textContent = `${envelopes.length} observação(ões) confirmada(s) · janela inicial · cursor candidato ${data.candidate_next_cursor} · sem envio, sem recibo e sem atualização de cursor.`;
     for (const entry of envelopes) {
