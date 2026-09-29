@@ -87,7 +87,9 @@ def freeze_memory_context(frame: CognitiveFrame, recall: dict[str, Any]) -> Memo
         if summary.get("logical_tick") != tick or summary.get("source") != "typed_confirmed_nov_outcome":
             raise MemoryContextRejected("summary_provenance")
         address_names = item.get("matching_addresses")
-        if (not isinstance(address_names, list) or len(address_names) != len(set(address_names))
+        if (not isinstance(address_names, list)
+                or not all(isinstance(name, str) for name in address_names)
+                or len(address_names) != len(set(address_names))
                 or not set(address_names).issubset(ALLOWED_ADDRESSES)):
             raise MemoryContextRejected("invalid_matching_addresses")
         observation = item.get("observation")
@@ -99,7 +101,8 @@ def freeze_memory_context(frame: CognitiveFrame, recall: dict[str, Any]) -> Memo
         ids.append(evidence_id)
         seen.add(evidence_id)
         overlaps.append(len(address_names))
-    if recall.get("historical_matches", 0) < len(ids):
+    total_matches = recall.get("historical_matches")
+    if type(total_matches) is not int or not len(ids) <= total_matches <= records:
         raise MemoryContextRejected("match_count_inconsistent")
     public = {
         "schema": SCHEMA,
@@ -107,7 +110,7 @@ def freeze_memory_context(frame: CognitiveFrame, recall: dict[str, Any]) -> Memo
         "source": "verified-local-memoria-v2",
         "snapshot_records": records,
         "evidence_count": len(ids),
-        "historical_matches": recall["historical_matches"],
+        "historical_matches": total_matches,
         "matched_address_counts": overlaps,
         "checkpoint_unchanged_during_copy": recall.get("checkpoint_unchanged_during_copy") is True,
         "used_to_rank": False,
