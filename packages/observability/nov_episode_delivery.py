@@ -259,8 +259,13 @@ def deliver_next(
         if next_cursor == cursor:
             return {"status": "waiting_complete_record", "cursor": cursor, "ack": False}
         rows = preview["episodes"]
+        # Pin the complete candidate boundary before the network call. An
+        # append is safe; an in-place rewrite, rotation or truncation is not.
+        candidate_anchor = _anchor(ledger, next_cursor, identity)
         receipt = device.send(rows[0]) if rows else None
         anchor = _anchor(ledger, next_cursor, identity)
+        if anchor != candidate_anchor:
+            raise DeliveryError("source ledger changed while awaiting receipt")
         state = {
             "schema": CHECKPOINT_SCHEMA,
             "cursor": next_cursor,
