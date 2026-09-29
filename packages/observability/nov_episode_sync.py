@@ -7,8 +7,8 @@ from __future__ import annotations
 
 from hashlib import sha256
 import json
-import math
 from pathlib import Path
+import os
 from typing import Any
 
 from packages.observability.nov_life import project_confirmed_episode
@@ -144,10 +144,6 @@ def preview_episode_batch(
                     raise EpisodeSyncContractError("cursor_not_line_boundary")
             source.seek(cursor)
             data = source.read(min(max_bytes, info - cursor))
-            identity = f"{source.fileno()}"  # overwritten with stable inode below
-            stat = source.seek(0, 2)  # size sampled for diagnostics only
-            source.seek(cursor)
-            import os
             stat_result = os.fstat(source.fileno())
             identity = f"{stat_result.st_dev}:{stat_result.st_ino}"
     except OSError as exc:
@@ -179,8 +175,6 @@ def preview_episode_batch(
                 episodes.append(envelope)
         if len(episodes) >= limit:
             break
-    if not data.endswith(b"\n") and candidate_cursor == cursor + len(data):
-        partial_tail = True
     if data and candidate_cursor == cursor and b"\n" not in data and len(data) == max_bytes:
         raise EpisodeSyncContractError("episode_line_exceeds_window")
     return {
