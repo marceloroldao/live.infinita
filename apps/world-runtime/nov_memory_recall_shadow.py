@@ -159,8 +159,10 @@ def select_related(records: list[dict[str, Any]], *, query: dict[str, str],
 
 def recall_once(*, source: Path, world_path: Path, checkpoint_path: Path,
                 private_root: Path, need: str | None = None,
-                limit: int = 5) -> dict[str, Any]:
+                limit: int = 5, include_evidence: bool = False) -> dict[str, Any]:
     """Only owner-side scratch is writable; original journal and world remain read-only."""
+    if type(include_evidence) is not bool:
+        raise RecallBlocked("invalid_evidence_mode")
     # Imports are deliberately inside the function: this is the exact deployed
     # Memoria.ia V2, not a mock graph or a second SQLite inference backend.
     from memoria_resolutiva.external_episode_contract import ExternalEpisodeRequest
@@ -249,9 +251,9 @@ def recall_once(*, source: Path, world_path: Path, checkpoint_path: Path,
         after_checkpoint, _ = _checkpoint(checkpoint_path)
         if _world(world_path)[0] != world_id:
             raise RecallBlocked("world_identity_changed")
-        # For any later integration, selected retains genuine observation and
-        # evidence addresses in-process. The operator output deliberately does not.
-        return {
+        # Future read-only consumers may request typed evidence in-process;
+        # the operator CLI never enables this sensitive field.
+        result = {
             "schema": SCHEMA, "mode": "read-only-shadow",
             "world_identity_validated": True,
             "source_backend": "sqlite-incremental",
@@ -274,6 +276,18 @@ def recall_once(*, source: Path, world_path: Path, checkpoint_path: Path,
             "central_sync": False,
             "live_caught_up_claim": False,
         }
+        if include_evidence:
+            result["private_evidence"] = [{
+                "record_key": row["record_key"],
+                "evidence_id": row["evidence_id"],
+                "content_sha256": row["content_sha256"],
+                "logical_tick": row["logical_tick"],
+                "observation": row["observation"],
+                "matching_addresses": list(row["matching_addresses"]),
+                "provenance": "live.infinita:npc_episode_v1",
+                "world_id": world_id,
+            } for row in selected]
+        return result
 
 
 def main() -> None:
