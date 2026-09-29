@@ -49,6 +49,7 @@ PYTHONPATH=.:apps/world-runtime:apps/audio-service:apps/audience "$INSTALL/.venv
 
 # Fetch the actual V2 core by immutable commit; never take whatever is newest.
 stage="$(mktemp -d /tmp/live-memoria-v2.XXXXXXXX)"
+env_backup="$ENV_FILE.mvp018c-backup-$(date +%Y%m%d-%H%M%S)-$"
 applied=0
 rollback(){
     if (( applied )); then
@@ -62,6 +63,9 @@ rollback(){
             sudo rm -f "$INSTALL/$WORKER"
         fi
         sudo systemctl daemon-reload || true
+        if sudo test -f "$env_backup"; then
+            sudo cp -p "$env_backup" "$ENV_FILE"
+        fi
         # Never delete DATA_DIR, the API key, or snapshots from a partial ingest.
     fi
     rm -rf -- "$stage"
@@ -192,6 +196,45 @@ if [[ -e "$INSTALL/$WORKER" ]]; then
     sudo cp -a "$INSTALL/$WORKER" "$stage/previous-worker.py"
 fi
 applied=1
+# Earlier attempt may have left a private key with snapshot mode. Reuse the
+# exact existing key, archive its old env privately, and switch only the
+# explicit external-episode backend. Never print or regenerate the secret.
+sudo cp -p "$ENV_FILE" "$env_backup"
+sudo /usr/bin/python3 - "$ENV_FILE" <<'PY'
+import os, sys
+from pathlib import Path
+path = Path(sys.argv[1])
+if path.is_symlink() or (path.stat().st_mode & 0o077):
+    raise SystemExit("existing memoria-local env is not private")
+entries = path.read_text().splitlines()
+if sum(line.startswith("MEMORIA_API_KEY=") for line in entries) != 1:
+    raise SystemExit("local key is missing or duplicated")
+key = "MEMORIA_EXTERNAL_EPISODE_PERSISTENCE="
+values = [line.partition("=")[2] for line in entries if line.startswith(key)]
+if values and values != ["sqlite-incremental"]:
+    if values != ["snapshot"]:
+        raise SystemExit("conflicting incremental mode config")
+    entries = [line for line in entries if not line.startswith(key)]
+if not values or values == ["snapshot"]:
+    entries.append(key + "sqlite-incremental")
+new = "\n".join(entries) + "\n"
+temp = path.with_name(path.name + ".tmp." + str(os.getpid()))
+fd = os.open(temp, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+try:
+    with os.fdopen(fd, "w") as output:
+        output.write(new)
+        output.flush()
+        os.fsync(output.fileno())
+    os.replace(temp, path)
+    folder = os.open(path.parent, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+    try:
+        os.fsync(folder)
+    finally:
+        os.close(folder)
+finally:
+    if temp.exists():
+        temp.unlink()
+PY
 sudo install -o liveinfinita -g liveinfinita -m 0644 "$REPO/$WORKER" "$INSTALL/$WORKER"
 for unit in "$CORE_UNIT" "$WORKER_UNIT" "$TIMER_UNIT"; do
     sudo install -o root -g root -m 0644 "$REPO/deploy/$unit" "/etc/systemd/system/$unit"
@@ -226,8 +269,24 @@ systemctl show "$WORKER_UNIT" -p Result --value | grep -Fx success >/dev/null ||
 journalctl -u "$WORKER_UNIT" --since '5 minutes ago' --no-pager |
     grep -F 'LOCAL_MEMORIA_SYNC_OK' >/dev/null ||
     fail 'Nenhum recibo de ingestão local confirmado'
-[[ -s "$DATA_DIR/nov-ingest.checkpoint.json" && -s "$DATA_DIR/evidence/receipt.json" ]] ||
-    fail 'Checkpoint local ou recibo V2 não foi persistido'
+sudo test -s "$DATA_DIR/nov-ingest.checkpoint.json" &&
+sudo test -s "$DATA_DIR/external-episodes-incremental/external-episodes.sqlite3" ||
+    fail 'Checkpoint ou journal incremental V2 não foi persistido'
+sudo "$INSTALL/.venv/bin/python" - <<'PY'
+import json
+from pathlib import Path
+from urllib.request import Request, ProxyHandler, build_opener
+env=Path('/etc/live-infinita/memoria-local.env').read_text()
+key=next(line.partition('=')[2].strip() for line in env.splitlines()
+         if line.startswith('MEMORIA_API_KEY='))
+request=Request('http://127.0.0.1:8788/api/v1/external/episodes/health',
+                headers={'X-Memoria-Key':key})
+with build_opener(ProxyHandler({})).open(request,timeout=8) as response:
+    report=json.load(response)
+assert report['mode']=='sqlite-incremental',report
+assert report['observations']>=2,report
+print('MVP018C_INCREMENTAL_HEALTH_OK observations=',report['observations'])
+PY
 
 # Low-rate timer. No Live API, renderer or Single Writer dependency.
 sudo systemctl enable --now "$TIMER_UNIT"
