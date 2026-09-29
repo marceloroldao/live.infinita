@@ -124,6 +124,14 @@ class MemoryContextContract(unittest.TestCase):
                 with self.assertRaises(MemoryContextRejected):
                     freeze_memory_context(frame, recall)
         recall = deepcopy(good)
+        recall["private_evidence"][0]["matching_addresses"] = [{"untrusted": "value"}]
+        with self.assertRaises(MemoryContextRejected):
+            freeze_memory_context(frame, recall)
+        recall = deepcopy(good)
+        recall["historical_matches"] = "1"
+        with self.assertRaises(MemoryContextRejected):
+            freeze_memory_context(frame, recall)
+        recall = deepcopy(good)
         recall["private_evidence"].append(deepcopy(recall["private_evidence"][0]))
         recall["selected"].append(deepcopy(recall["selected"][0]))
         with self.assertRaises(MemoryContextRejected):
