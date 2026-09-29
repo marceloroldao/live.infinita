@@ -39,8 +39,8 @@ caminho. No uso histórico fora do systemd (diagnósticos manuais), o
 comportamento anterior continua opcional e inalterado.
 
 O preparo assíncrono continua fora do tick autoritativo. Quando falha,
-só enumera `scratch_permission`, `sqlite_validation`,
-`typed_validation` ou `unexpected_failure`, nunca uma mensagem de
+só enumera `permission_denied`, `sqlite_error`,
+`verification_blocked` ou `unexpected_failure`, nunca uma mensagem de
 exceção, ID ou payload. Contextos bloqueados permanecem em abstenção.
 
 ## Gates automatizados e de operação
