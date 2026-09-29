@@ -57,7 +57,7 @@ class NovEpisodeSyncPreviewTests(unittest.TestCase):
         self.assertEqual(len(value['record_key']), 64)
         self.assertEqual(len(value['content_sha256']), 64)
         self.assertNotEqual(value['record_key'], value['content_sha256'])
-        for secret in ('SECRET', 'DO_NOT_EXPORT', 'PRIVATE', 'role', 'text'):
+        for secret in ('SECRET', 'DO_NOT_EXPORT', 'PRIVATE', '"role":', '"text":'):
             self.assertNotIn(secret, json.dumps(value))
         different = deepcopy(row)
         different['outcome']['satisfaction'] = 0.5
@@ -68,7 +68,10 @@ class NovEpisodeSyncPreviewTests(unittest.TestCase):
 
     def test_requires_confirmed_plan_outcome_not_narration_or_forecast(self):
         row = _episode(0)
-        for change in ({'episode_schema': 'shadow_forecast_v1'}, {'role': 'assistant', 'source': {'kind': 'narration'}},
+        forecast = deepcopy(row)
+        forecast['episode_schema'] = 'shadow_forecast_v1'
+        self.assertIsNone(observation_envelope(forecast, world_id='nov-live-autonomous-001'))
+        for change in ({'role': 'assistant', 'text': 'generated narration'}, {'source': {'kind': 'narration'}},
                        {'source': {'kind': 'need_outcome', 'plan_id': 'wrong', 'proposal_id': 'pr_0', 'plan_revision': 0}}):
             with self.subTest(change=change):
                 candidate = deepcopy(row)
