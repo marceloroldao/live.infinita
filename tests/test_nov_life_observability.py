@@ -160,6 +160,18 @@ print('ISOLATED_NOV_LIFE_ENDPOINT_OK')
         self.assertEqual(run.returncode, 0, run.stderr + run.stdout)
         self.assertIn("ISOLATED_NOV_LIFE_ENDPOINT_OK", run.stdout)
 
+    def test_deploy_accounts_for_renderer_systemd_dependency(self):
+        script = (ROOT / "deploy/mvp018a-nov-life.sh").read_text(encoding="utf-8")
+        renderer_unit = (ROOT / "deploy/live-infinita-renderer.service").read_text(encoding="utf-8")
+        self.assertIn("Requires=live-infinita.service", renderer_unit)
+        self.assertIn('[[ "$(systemctl show "$WORLD" -p MainPID --value)" == "$world_pid" ]]', script)
+        self.assertIn('renderer_pid_after="$(systemctl show "$RENDERER" -p MainPID --value)"', script)
+        self.assertIn("native fast sky enabled", script)
+        self.assertIn('RENDERER_SERVICE_OK old_pid=', script)
+        self.assertNotIn("== \"$renderer_pid\" ]] || fail 'Renderer reiniciou'", script)
+        self.assertNotIn('sudo systemctl restart "$WORLD"', script)
+        self.assertNotIn('sudo systemctl restart "$RENDERER"', script)
+
     def test_manager_visualization_and_route_precedence(self):
         api = (ROOT / "apps/world-runtime/main_cognitive_live.py").read_text(encoding="utf-8")
         html = (ROOT / "apps/manager/index.html").read_text(encoding="utf-8")

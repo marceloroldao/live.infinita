@@ -3,7 +3,7 @@ set -Eeuo pipefail
 
 REPO=/home/etbra/live.infinita
 INSTALL=/opt/live.infinita
-REQUIRED=45043e52c374b643ff9957cd9092c7e15a0ec445
+REQUIRED=fc6c11838d408453510c8d258686badaaf416f09
 API=live-infinita.service
 WORLD=live-infinita-autonomous-world.service
 AUDIO=live-infinita-audio.service
@@ -66,6 +66,10 @@ for file in apps/world-runtime/main_cognitive_live.py apps/manager/index.html ap
 done
 sudo "$INSTALL/.venv/bin/python" -m py_compile "$INSTALL/apps/world-runtime/main_cognitive_live.py" "$INSTALL/packages/observability/nov_life.py"
 node --check "$INSTALL/apps/manager/app.js"
+started_at="$(date -u '+%Y-%m-%d %H:%M:%S')"
+# systemd Requires= can transitively restart renderer, audio and relay with API.
+# These dependent units must recover; only the autonomous Single Writer has
+# an invariant of unchanged PID. No renderer source or unit is installed here.
 sudo systemctl restart "$API"
 ready=0
 for attempt in $(seq 1 20); do
@@ -81,7 +85,19 @@ for svc in "$API" "$AUDIO" "$RELAY" "$WORLD" "$RENDERER"; do
     systemctl is-active --quiet "$svc" || fail "$svc inativo após deploy"
 done
 [[ "$(systemctl show "$WORLD" -p MainPID --value)" == "$world_pid" ]] || fail 'Single Writer reiniciou'
-[[ "$(systemctl show "$RENDERER" -p MainPID --value)" == "$renderer_pid" ]] || fail 'Renderer reiniciou'
+renderer_pid_after="$(systemctl show "$RENDERER" -p MainPID --value)"
+[[ "$renderer_pid_after" =~ ^[0-9]+$ && "$renderer_pid_after" -gt 1 ]] || fail 'Renderer não recuperou PID válido'
+if [[ "$renderer_pid_after" != "$renderer_pid" ]]; then
+    # Protect the earlier native-sky optimization if renderer restarts with API.
+    journalctl -u "$RENDERER" --since "$started_at" --no-pager |
+        grep -F '[render] native fast sky enabled' > /dev/null ||
+        fail 'Renderer reiniciou sem confirmar shader nativo'
+fi
+echo "RENDERER_SERVICE_OK old_pid=$renderer_pid current_pid=$renderer_pid_after (reinício transitivo permitido)"
+for svc in "$AUDIO" "$RELAY"; do
+    dependent_pid="$(systemctl show "$svc" -p MainPID --value)"
+    [[ "$dependent_pid" =~ ^[0-9]+$ && "$dependent_pid" -gt 1 ]] || fail "$svc não recuperou PID válido"
+done
 [[ "$(systemctl show "$API" -p MainPID --value)" != "$api_pid" ]] || fail 'API não reiniciou'
 [[ "$(curl -sS --max-time 5 -o /dev/null -w '%{http_code}' http://127.0.0.1:8080/api/manage/nov/life)" == 401 ]] ||
     fail 'Endpoint de Nov não está protegido'
@@ -108,5 +124,5 @@ print('MVP018A_NOV_LIFE_ENDPOINT_OK',
 PY
 trap - EXIT
 applied=0
-echo "MVP018A_NOV_LIFE_DEPLOY_OK world_pid=$world_pid renderer_pid=$renderer_pid"
+echo "MVP018A_NOV_LIFE_DEPLOY_OK world_pid=$world_pid renderer_pid=$renderer_pid_after"
 echo 'MVP018A_NOV_LIFE_FINISHED'
