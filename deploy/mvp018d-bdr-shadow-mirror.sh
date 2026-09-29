@@ -116,6 +116,20 @@ sudo -u liveinfinita env \
     --bdr-library "$library" \
     --max-records 100000
 sudo -u liveinfinita test -s "$output/report.json" || fail 'relatório de paridade ausente'
+sudo -u liveinfinita "$VENV_PY" - "$output/report.json" <<'PY'
+import json,sys
+from pathlib import Path
+r=json.loads(Path(sys.argv[1]).read_text())
+assert r["schema"]=="memoria-v2-bdr-observed-episode-mirror-proof/v1",r
+assert r["checkpoint_watermark_present"] is True,r
+assert r["verified_cold_restart"] and r["verified_idempotent_replay"],r
+assert r["source_snapshot_records"]==r["inserted_into_bdr"],r
+assert not r["backend_cutover"] and not r["production_checkpoint_advanced"],r
+assert not r["world_mutated"] and not r["central_sync"],r
+print("MVP018D_CHECKPOINT_STABLE_DURING_COPY",r["checkpoint_unchanged_during_copy"])
+print("MVP018D_BDR_SNAPSHOT_PARITY_OK",r["source_snapshot_records"],
+      "bdr_sequence",r["bdr_durable_sequence"])
+PY
 
 for row in "$WORLD:$world_pid" "$CORE:$core_pid" "$RENDERER:$renderer_pid" "$API:$api_pid"; do
     IFS=: read -r unit expected <<< "$row"
