@@ -17,7 +17,7 @@ fail(){ echo "MVP018G_NOV_DIAGNOSTICS_BLOCKED: $*" >&2; exit 2; }
 [[ -x "$PY" ]] || fail "Python local indisponivel"
 [[ -f "$CORE/memoria_resolutiva/external_episode_incremental.py" ]] || fail "core V2 pin indisponivel"
 [[ ! -L "$LOG" ]] || fail "log nao pode ser symlink"
-for name in memoria_v2_adapter nov_memory_recall_shadow nov_memory_recall_cache nov_memory_context_shadow nov_memory_diagnostics; do
+for name in memoria_v2_adapter nov_memory_recall_shadow nov_memory_recall_cache nov_memory_context_shadow nov_trajectory_recall_shadow nov_memory_diagnostics; do
     [[ -f "$REPO/apps/world-runtime/$name.py" ]] || fail "modulo ausente: $name"
 done
 systemctl is-active --quiet live-infinita-memoria-local.service || fail "Memoria.ia local inativa"
@@ -26,7 +26,7 @@ STAGE="$(mktemp -d /tmp/live-nov-diagnostics.XXXXXXXX)"
 cleanup(){ rm -rf -- "$STAGE"; }
 trap cleanup EXIT
 chmod 0755 "$STAGE"
-for name in memoria_v2_adapter nov_memory_recall_shadow nov_memory_recall_cache nov_memory_context_shadow nov_memory_diagnostics; do
+for name in memoria_v2_adapter nov_memory_recall_shadow nov_memory_recall_cache nov_memory_context_shadow nov_trajectory_recall_shadow nov_memory_diagnostics; do
     cp -- "$REPO/apps/world-runtime/$name.py" "$STAGE/$name.py"
     chmod 0644 "$STAGE/$name.py"
 done
