@@ -41,14 +41,29 @@ cleanup(){
   rc=$?
   trap - EXIT INT TERM
   set +e
+  stopped=1
   if [[ "$installed" == 1 ]]; then
     systemctl stop "$UNIT" >/dev/null 2>&1
-    rm -f -- "$UNIT_PATH"
-    systemctl daemon-reload >/dev/null 2>&1
-    systemctl reset-failed "$UNIT" >/dev/null 2>&1
+    if systemctl is-active --quiet "$UNIT"; then
+      stopped=0
+    fi
+    main_pid="$(systemctl show "$UNIT" --property=MainPID --value 2>/dev/null)"
+    if [[ -n "$main_pid" && "$main_pid" != 0 ]]; then
+      stopped=0
+    fi
+    if [[ "$stopped" == 1 ]]; then
+      rm -f -- "$UNIT_PATH"
+      systemctl daemon-reload >/dev/null 2>&1
+      systemctl reset-failed "$UNIT" >/dev/null 2>&1
+    else
+      echo "MVP018O_ROLLBACK_BLOCKED process_still_active" >&2
+      rc=2
+    fi
   fi
-  if [[ "$created" == 1 && "$RELEASE" =~ ^/opt/live-infinita-nov-preparer/releases/[a-f0-9]{40}$ ]]; then
+  if [[ "$stopped" == 1 && "$created" == 1 &&
+        "$RELEASE" =~ ^/opt/live-infinita-nov-preparer/releases/[a-f0-9]{40}$ ]]; then
     rm -rf -- "$RELEASE"
+    rmdir "$BASE" /opt/live-infinita-nov-preparer >/dev/null 2>&1
   fi
   rm -rf -- "$WORK"
   if [[ "$installed" == 1 && ( -e "$UNIT_PATH" || -L "$UNIT_PATH" ) ]]; then
