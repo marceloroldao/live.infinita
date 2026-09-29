@@ -151,7 +151,7 @@ class ContinuousOwnerMonitor:
             self.ready_reads += 1
         else:
             self.abstentions += 1
-        return self._public(status, queued=queued, view=view if status == "ready" else None)
+        return self._public(status, queued=queued, view=view)
 
     def _public(self, status: str, *, queued: bool,
                 view: Any | None = None) -> dict[str, Any]:
@@ -181,6 +181,13 @@ class ContinuousOwnerMonitor:
             "central_sync": False,
             "bdr_used": False,
         }
+        if view is not None and status == "blocked":
+            reason = view.public.get("blocked_reason")
+            if reason in {
+                "scratch_permission", "sqlite_validation",
+                "typed_validation", "unexpected_failure",
+            }:
+                summary["blocked_reason"] = reason
         if view is not None and status == "ready":
             summary["primary_count"] = view.public["primary_count"]
             summary["supplementary_count"] = view.public["supplementary_count"]
