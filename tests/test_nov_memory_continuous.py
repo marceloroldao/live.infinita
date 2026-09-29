@@ -124,6 +124,9 @@ class ContinuousMonitorTests(unittest.TestCase):
         self.assertTrue(worker.closed)
         self.assertEqual(len(emitted), 4)
         self.assertFalse(result["main_runtime_wired"])
+        self.assertEqual(sum(result["status_counts"].values()), result["samples"])
+        self.assertEqual(result["ready_reads"] + result["abstentions"], result["samples"])
+        self.assertEqual(result["status_counts"]["ready"], result["ready_reads"])
         self.assertNotIn("live:world", json.dumps(emitted))
         self.assertNotIn("record_key", json.dumps(emitted))
 
