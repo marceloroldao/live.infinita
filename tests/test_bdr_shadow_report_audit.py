@@ -97,6 +97,20 @@ class AuditTests(unittest.TestCase):
         with self.assertRaises(audit_module.AuditError):
             audit_module.audit(self.root)
 
+    def test_wrapper_uses_stdin_not_private_home_script_path(self) -> None:
+        wrapper = (MODULE.parent / "mvp018e-bdr-shadow-audit.sh").read_text()
+        self.assertIn(
+            'sudo -u liveinfinita "$PY" - --mirrors-root "$ROOT" < '
+            '"$REPO/deploy/mvp018e_bdr_shadow_audit.py"', wrapper,
+        )
+        self.assertIn('( cd / && sudo -u liveinfinita', wrapper)
+        self.assertNotIn(
+            'sudo -u liveinfinita "$PY" "$REPO/deploy/mvp018e_bdr_shadow_audit.py"',
+            wrapper,
+        )
+        for unsafe in ("chmod 755 /home/etbra", "setfacl", "chown -R", "cp -r"):
+            self.assertNotIn(unsafe, wrapper)
+
     def test_no_payload_or_hash_leaks_from_summary(self) -> None:
         output = json.dumps(audit_module.audit(self.root))
         self.assertNotIn("a" * 64, output)
