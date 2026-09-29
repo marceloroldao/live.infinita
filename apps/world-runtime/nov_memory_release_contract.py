@@ -74,6 +74,13 @@ def render_unit(template: str, root: Path, *, core: Path = CORE,
     rendered = template
     for token, value in values.items():
         rendered = rendered.replace(token, value)
+    # The only writable mount must be the owner-only systemd RuntimeDirectory.
+    write_lines = [
+        line for line in rendered.splitlines()
+        if line.startswith(("ReadWritePaths=", "WritePaths="))
+    ]
+    if write_lines != ["ReadWritePaths=/run/live-infinita-nov-preparer"]:
+        raise ReleaseBlocked("unsafe_write_scope")
     if (re.search(r"@[A-Z][A-Z_]+@", rendered)
             or "User=liveinfinita" not in rendered
             or "Group=liveinfinita" not in rendered
@@ -84,6 +91,9 @@ def render_unit(template: str, root: Path, *, core: Path = CORE,
             or "IPAddressDeny=any" not in rendered
             or "Restart=on-failure" not in rendered
             or "ExecStart=" + str(python) + " " + str(root) + "/nov_memory_continuous.py" not in rendered
+            or "RuntimeDirectory=live-infinita-nov-preparer" not in rendered
+            or "RuntimeDirectoryMode=0700" not in rendered
+            or " --scratch-root /run/live-infinita-nov-preparer" not in rendered
             or "ReadWritePaths=/var/lib/live-infinita/memoria-local" in rendered):
         raise ReleaseBlocked("unsafe_unit_contract")
     return rendered

@@ -19,11 +19,13 @@ WorkingDirectory=@NOV_RELEASE_ROOT@
 Environment="PYTHONDONTWRITEBYTECODE=1"
 Environment="PYTHONUNBUFFERED=1"
 Environment="PYTHONPATH=@NOV_RELEASE_ROOT@:@PINNED_CORE_ROOT@"
-ExecStart=@VENV_PYTHON@ @NOV_RELEASE_ROOT@/nov_memory_continuous.py --period 2 --refresh 4
+ExecStart=@VENV_PYTHON@ @NOV_RELEASE_ROOT@/nov_memory_continuous.py --period 2 --refresh 4 --scratch-root /run/live-infinita-nov-preparer
 Restart=on-failure
 RestartSec=15
 TimeoutStopSec=15
 UMask=0077
+RuntimeDirectory=live-infinita-nov-preparer
+RuntimeDirectoryMode=0700
 Nice=15
 CPUWeight=10
 IOWeight=10
@@ -36,6 +38,7 @@ ProtectHome=true
 ProtectSystem=strict
 ReadOnlyPaths=/var/lib/live-infinita/autonomous-world
 ReadOnlyPaths=/var/lib/live-infinita/memoria-local
+ReadWritePaths=/run/live-infinita-nov-preparer
 IPAddressDeny=any
 
 [Install]

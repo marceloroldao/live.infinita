@@ -177,6 +177,20 @@ class AsyncReadTests(unittest.TestCase):
         self.assertEqual(result.status, "ready")
         self.assertEqual(self.worker.peek(frame(9)).status, "frame_regressed")
 
+    def test_owner_failure_categories_are_fixed_and_never_expose_exception(self):
+        class DeniedObserver:
+            def refresh(self, frame):
+                raise PermissionError("sensitive-private-path-should-not-appear")
+        self.worker._observer = DeniedObserver()
+        self.worker.start()
+        self.worker.submit(frame())
+        result = self.worker.wait_ready(frame(), timeout=2)
+        self.assertEqual(result.status, "blocked")
+        self.assertEqual(result.public["blocked_reason"], "permission_denied")
+        self.assertNotIn("sensitive-private-path", json.dumps(result.public))
+        self.assertIsNone(result.primary)
+        self.assertIsNone(result.supplementary)
+
     def test_invalid_configuration_and_no_automatic_live_hook(self):
         for options in (
             {"max_age_seconds": 0},

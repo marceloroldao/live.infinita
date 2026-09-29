@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 from dataclasses import dataclass, field
+import sqlite3
 from threading import Condition, Thread
 from time import monotonic
 from typing import Any, Callable
@@ -61,6 +62,7 @@ class OwnerAsyncDualLanePreparation:
     _snapshot: PreparedSnapshot | None = field(default=None, init=False, repr=False)
     _state: str = field(default="not_started", init=False)
     _closed: bool = field(default=False, init=False)
+    _blocked_reason: str | None = field(default=None, init=False)
 
     def __post_init__(self) -> None:
         if (type(self.max_age_seconds) not in (int, float)
@@ -95,6 +97,7 @@ class OwnerAsyncDualLanePreparation:
             self._generation += 1
             self._pending = (self._generation, deepcopy(frame))
             self._state = "pending"
+            self._blocked_reason = None
             self._cv.notify_all()
         return "queued"
 
@@ -145,24 +148,33 @@ class OwnerAsyncDualLanePreparation:
                     supplementary=supplementary, metrics=dict(metrics),
                     prepared_at=self._clock(),
                 )
-            except Exception:
-                # No raw exception, address, ID or observation is persisted.
+            except Exception as exc:
+                # Only a fixed failure category, never private exception text.
+                reason = (
+                    "permission_denied" if isinstance(exc, PermissionError)
+                    else "sqlite_error" if isinstance(exc, sqlite3.Error)
+                    else "verification_blocked" if isinstance(exc, RecallBlocked)
+                    else "unexpected_failure"
+                )
                 with self._cv:
                     if self._generation == generation and not self._closed:
                         self._snapshot = None
                         self._state = "blocked"
+                        self._blocked_reason = reason
                         self._cv.notify_all()
                 continue
             with self._cv:
                 if self._generation == generation and not self._closed:
                     self._snapshot = prepared
                     self._state = "ready"
+                    self._blocked_reason = None
                     self._cv.notify_all()
 
     def peek(self, frame: CognitiveFrame) -> PreparedRead:
         """Non-blocking view; no source version probe or SQLite access."""
         with self._cv:
             snapshot, state, closed = self._snapshot, self._state, self._closed
+            reason = self._blocked_reason
         status = "closed" if closed else state
         # A newer frame is in flight: never expose the previous frame as
         # ready while its replacement has not completed.
@@ -198,6 +210,11 @@ class OwnerAsyncDualLanePreparation:
             "bdr_used": False,
             "central_sync": False,
         }
+        if status == "blocked" and reason in {
+            "permission_denied", "sqlite_error",
+            "verification_blocked", "unexpected_failure",
+        }:
+            public["blocked_reason"] = reason
         if status != "ready" or snapshot is None:
             return PreparedRead(status, None, None, public)
         try:

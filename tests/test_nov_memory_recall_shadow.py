@@ -196,6 +196,73 @@ class GenuineV2SnapshotTests(unittest.TestCase):
         self.assertFalse(list(self.mem.glob("nov-recall-*")))
         self.assertEqual(first["record_key"] in (last["record_key"],), False)
 
+    def test_real_v2_separate_owner_scratch_without_private_root_writes(self) -> None:
+        from functools import partial
+        from memoria_v2_adapter import build_nov_cognitive_frame
+        from nov_memory_recall_cache import VersionedNovRecallCache
+        self.append("p1", 3, "hunger")
+        last = self.append("p2", 5, "hunger")
+        self.watermark(last)
+        before_source = self.source.read_bytes()
+        before_checkpoint = self.checkpoint.read_bytes()
+        scratch = Path(self.temp.name) / "owner-scratch"
+        scratch.mkdir(mode=0o700)
+        frame = build_nov_cognitive_frame(
+            world={"world_id": "nov-test", "current_tick": 20, "sequence": 20,
+                   "environment": {"period": "day", "weather": "sun"}},
+            observer={"id": "nov", "region_id": "forest", "type": "human",
+                      "properties": {"needs": {"hunger": 0.8}}}, targets={},
+        )
+        # Removing parent write permission simulates the read-only source
+        # for an unprivileged test user; scratch remains owner-only elsewhere.
+        self.mem.chmod(0o500)
+        try:
+            cache = VersionedNovRecallCache(
+                source=self.source, world_path=self.world,
+                checkpoint_path=self.checkpoint, private_root=self.mem,
+                _loader=partial(nov.recall_once, scratch_root=scratch),
+            )
+            out = cache(frame)
+            self.assertEqual(out["source_snapshot_records"], 2)
+            self.assertEqual(out["cache_status"], "refreshed")
+        finally:
+            self.mem.chmod(0o700)
+        self.assertFalse(list(scratch.glob("nov-recall-*")))
+        self.assertFalse(list(self.mem.glob("nov-recall-*")))
+        self.assertEqual(self.checkpoint.read_bytes(), before_checkpoint)
+        self.assertEqual(self.source.read_bytes(), before_source)
+        self.assertEqual(self.store.count, 2)
+
+    def test_invalid_scratch_permissions_and_nested_source_fail_closed(self) -> None:
+        last = self.append("p1", 3, "hunger")
+        self.watermark(last)
+        scratch = Path(self.temp.name) / "owner-scratch"
+        scratch.mkdir(mode=0o700)
+        scratch.chmod(0o777)
+        with self.assertRaisesRegex(nov.RecallBlocked, "snapshot_scratch_permissions"):
+            nov.recall_once(
+                source=self.source, checkpoint_path=self.checkpoint,
+                world_path=self.world, private_root=self.mem,
+                scratch_root=scratch,
+            )
+        scratch.chmod(0o700)
+        nested = self.mem / "scratch"
+        nested.mkdir(mode=0o700)
+        with self.assertRaisesRegex(nov.RecallBlocked, "snapshot_scratch_in_private_root"):
+            nov.recall_once(
+                source=self.source, checkpoint_path=self.checkpoint,
+                world_path=self.world, private_root=self.mem,
+                scratch_root=nested,
+            )
+        link = Path(self.temp.name) / "link"
+        link.symlink_to(scratch, target_is_directory=True)
+        with self.assertRaisesRegex(nov.RecallBlocked, "snapshot_scratch_invalid"):
+            nov.recall_once(
+                source=self.source, checkpoint_path=self.checkpoint,
+                world_path=self.world, private_root=self.mem,
+                scratch_root=link,
+            )
+
     def test_checkpoint_mismatch_fail_closed_without_source_change(self) -> None:
         last = self.append("p1", 3, "hunger")
         self.watermark(last)

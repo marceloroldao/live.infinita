@@ -28,7 +28,7 @@ def render_canary(template: str, root: Path, *, core: Path = CORE,
     starts = [i for i, line in enumerate(lines) if line.startswith("ExecStart=")]
     restarts = [i for i, line in enumerate(lines) if line.startswith("Restart=")]
     if (len(starts) != 1 or len(restarts) != 1
-            or not lines[starts[0]].endswith(" --period 2 --refresh 4")
+            or not lines[starts[0]].endswith(" --period 2 --refresh 4 --scratch-root /run/live-infinita-nov-preparer")
             or lines[restarts[0]] != "Restart=on-failure"
             or lines.count("[Install]") != 1):
         raise ReleaseBlocked("canary_template_mismatch")

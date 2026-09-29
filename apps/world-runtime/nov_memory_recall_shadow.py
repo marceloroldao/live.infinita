@@ -12,6 +12,7 @@ import os
 from pathlib import Path
 import re
 import shutil
+import stat
 import sqlite3
 import tempfile
 from typing import Any
@@ -159,7 +160,8 @@ def select_related(records: list[dict[str, Any]], *, query: dict[str, str],
 def recall_once(*, source: Path, world_path: Path, checkpoint_path: Path,
                 private_root: Path, need: str | None = None,
                 limit: int = 5, include_evidence: bool = False,
-                include_index: bool = False) -> dict[str, Any]:
+                include_index: bool = False,
+                scratch_root: Path | None = None) -> dict[str, Any]:
     """Only owner-side scratch is writable; original journal and world remain read-only."""
     if type(include_evidence) is not bool or type(include_index) is not bool:
         raise RecallBlocked("invalid_evidence_mode")
@@ -176,7 +178,21 @@ def recall_once(*, source: Path, world_path: Path, checkpoint_path: Path,
         raise RecallBlocked("private_source_invalid")
     if source.parent.parent != private_root:
         raise RecallBlocked("source_root_mismatch")
-    with tempfile.TemporaryDirectory(prefix="nov-recall-", dir=private_root) as tmp:
+    # systemd may mount the private source read-only. A separate explicit
+    # service-owner-only scratch dir holds backup and V2 rehydration.
+    scratch = private_root
+    if scratch_root is not None:
+        if (not isinstance(scratch_root, Path) or not scratch_root.is_absolute()
+                or scratch_root.is_symlink() or not scratch_root.is_dir()):
+            raise RecallBlocked("snapshot_scratch_invalid")
+        info = scratch_root.stat(follow_symlinks=False)
+        if (not stat.S_ISDIR(info.st_mode) or info.st_uid != os.geteuid()
+                or stat.S_IMODE(info.st_mode) != 0o700):
+            raise RecallBlocked("snapshot_scratch_permissions")
+        if scratch_root.resolve().is_relative_to(private_root.resolve()):
+            raise RecallBlocked("snapshot_scratch_in_private_root")
+        scratch = scratch_root
+    with tempfile.TemporaryDirectory(prefix="nov-recall-", dir=scratch) as tmp:
         root = Path(tmp)
         os.chmod(root, 0o700)
         snapshot = root / SOURCE_NAME

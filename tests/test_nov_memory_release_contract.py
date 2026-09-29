@@ -43,6 +43,10 @@ class ReleaseContractTests(unittest.TestCase):
         self.assertIn("ProtectSystem=strict", unit)
         self.assertIn("ReadOnlyPaths=/var/lib/live-infinita/memoria-local", unit)
         self.assertIn("ReadOnlyPaths=/var/lib/live-infinita/autonomous-world", unit)
+        self.assertIn("ReadWritePaths=/run/live-infinita-nov-preparer", unit)
+        self.assertIn("RuntimeDirectory=live-infinita-nov-preparer", unit)
+        self.assertIn("RuntimeDirectoryMode=0700", unit)
+        self.assertIn(" --scratch-root /run/live-infinita-nov-preparer", unit)
         self.assertIn("IPAddressDeny=any", unit)
         self.assertIn("Restart=on-failure", unit)
         self.assertIn("StartLimitBurst=3", unit)
@@ -77,6 +81,14 @@ class ReleaseContractTests(unittest.TestCase):
                         self.root, core=self.core, python=self.python)
         with self.assertRaises(ReleaseBlocked):
             render_unit(self.template.replace("@NOV_RELEASE_ROOT@", "/unknown"),
+                        self.root, core=self.core, python=self.python)
+        with self.assertRaises(ReleaseBlocked):
+            render_unit(self.template.replace("ReadWritePaths=/run/live-infinita-nov-preparer",
+                                              "ReadWritePaths=/var/lib/live-infinita/memoria-local"),
+                        self.root, core=self.core, python=self.python)
+        with self.assertRaises(ReleaseBlocked):
+            render_unit(self.template.replace("RuntimeDirectoryMode=0700",
+                                              "RuntimeDirectoryMode=0755"),
                         self.root, core=self.core, python=self.python)
         with self.assertRaises(ReleaseBlocked):
             render_unit(self.template.replace("ReadOnlyPaths=/var/lib/live-infinita/memoria-local",
