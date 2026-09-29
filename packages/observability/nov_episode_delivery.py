@@ -13,6 +13,7 @@ import json
 import os
 from pathlib import Path
 import re
+import tempfile
 import time
 from typing import Any, Callable
 from urllib.error import HTTPError, URLError
@@ -58,9 +59,9 @@ def _anchor(path: Path, cursor: int, expected_identity: str) -> str:
 
 def _save_json_atomic(path: Path, row: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
-    temporary = path.with_name(path.name + ".tmp")
     data = _canonical(row) + b"\n"
-    fd = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    fd, temp_name = tempfile.mkstemp(prefix=path.name + ".", suffix=".tmp", dir=path.parent)
+    temporary = Path(temp_name)
     try:
         with os.fdopen(fd, "wb") as stream:
             stream.write(data)
@@ -170,9 +171,16 @@ class DeviceSession:
             raise DeliveryError("server/device identity mismatch")
         message = challenge.get("signing_message")
         challenge_id = challenge.get("challenge_id")
-        if not isinstance(message, str) or not isinstance(challenge_id, str) or not challenge_id:
+        nonce = challenge.get("nonce")
+        if not isinstance(message, str) or not isinstance(challenge_id, str) or not challenge_id or not isinstance(nonce, str):
             raise DeliveryError("invalid signed challenge")
-        signature = base64.urlsafe_b64encode(self.signer(message.encode("utf-8"))).decode("ascii").rstrip("=")
+        expected_message = (
+            "memoria-server-device-auth/v1\n" + self.server_id + "\n"
+            + self.device_id + "\n" + challenge_id + "\n" + nonce
+        )
+        if message != expected_message:
+            raise DeliveryError("unexpected device challenge signing message")
+        signature = base64.urlsafe_b64encode(self.signer(expected_message.encode("utf-8"))).decode("ascii").rstrip("=")
         status, result = self.transport(path + "verify", {
             "device_id": self.device_id,
             "challenge_id": challenge_id,
@@ -209,6 +217,8 @@ class DeviceSession:
             and receipt.get("namespace") == "live:" + envelope["source"]["world_id"]
             and receipt.get("world_mutated") is False
             and receipt.get("selection_authority") is False
+            and isinstance(receipt.get("evidence_id"), str)
+            and receipt["evidence_id"] == "live-obs:" + envelope["record_key"][:40]
         ):
             raise DeliveryError("central receipt identity or authority mismatch")
         persistence = receipt.get("persistence")
@@ -229,7 +239,8 @@ def deliver_next(
     ledger = Path(episode_file)
     lock_file = checkpoint_file.with_suffix(".lock")
     checkpoint_file.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
-    with lock_file.open("a+b") as lock:
+    fd = os.open(lock_file, os.O_CREAT | os.O_RDWR, 0o600)
+    with os.fdopen(fd, "r+b") as lock:
         try:
             fcntl.flock(lock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError as exc:
