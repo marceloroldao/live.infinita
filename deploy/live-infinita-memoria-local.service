@@ -1,7 +1,7 @@
 [Unit]
 Description=Live Infinita — independent local Memoria.ia V2 (no central dependency)
 After=local-fs.target
-ConditionPathExists=/opt/live-infinita-memoria-core/3ea447c449349761215c43182ca54a0941b6e09b/src/memoria_resolutiva/product_server.py
+ConditionPathExists=/opt/live-infinita-memoria-core/2b6334e8d6026c6bae620297de3f2fa658427596/src/memoria_resolutiva/product_server.py
 
 [Service]
 Type=simple
@@ -9,7 +9,7 @@ User=liveinfinita
 Group=liveinfinita
 WorkingDirectory=/var/lib/live-infinita/memoria-local
 Environment="PYTHONUNBUFFERED=1"
-Environment="PYTHONPATH=/opt/live-infinita-memoria-core/3ea447c449349761215c43182ca54a0941b6e09b/src"
+Environment="PYTHONPATH=/opt/live-infinita-memoria-core/2b6334e8d6026c6bae620297de3f2fa658427596/src"
 EnvironmentFile=/etc/live-infinita/memoria-local.env
 ExecStart=/opt/live.infinita/.venv/bin/uvicorn memoria_resolutiva.product_server:app --host 127.0.0.1 --port 8788 --workers 1 --no-access-log
 Restart=on-failure
