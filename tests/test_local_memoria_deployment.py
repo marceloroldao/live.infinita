@@ -4,7 +4,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 DEPLOY = ROOT / "deploy"
-CORE_SHA = "3ea447c449349761215c43182ca54a0941b6e09b"
+CORE_SHA = "2b6334e8d6026c6bae620297de3f2fa658427596"
 
 
 class LocalMemoriaDeploymentContractTests(unittest.TestCase):
@@ -20,6 +20,11 @@ class LocalMemoriaDeploymentContractTests(unittest.TestCase):
         self.assertIn("MEMORIA_EPISODIC_RUNTIME=python", install)
         self.assertIn("MEMORIA_STORAGE_BACKEND=sqlite", install)
         self.assertIn("MEMORIA_STORAGE_ALLOW_FALLBACK=false", install)
+        self.assertIn("MEMORIA_EXTERNAL_EPISODE_PERSISTENCE=sqlite-incremental", install)
+        self.assertIn("MVP018C_INCREMENTAL_HEALTH_OK", install)
+        self.assertIn("external-episodes-incremental/external-episodes.sqlite3", install)
+        self.assertIn("sudo cp -p \"$ENV_FILE\" \"$env_backup\"", install)
+        self.assertIn("sudo test -s \"$DATA_DIR/nov-ingest.checkpoint.json\"", install)
         self.assertIn("MEMORIA_DATA_DIR=/var/lib/live-infinita/memoria-local", install)
         self.assertIn("secrets.token_hex(32)", install)
         self.assertIn("0o600", install)
