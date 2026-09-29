@@ -11,7 +11,10 @@ import sys
 import tempfile
 import unittest
 
-MODULE = Path(__file__).resolve().parents[1] / "apps/world-runtime/nov_memory_recall_shadow.py"
+RUNTIME = Path(__file__).resolve().parents[1] / "apps/world-runtime"
+if str(RUNTIME) not in sys.path:
+    sys.path.insert(0, str(RUNTIME))
+MODULE = RUNTIME / "nov_memory_recall_shadow.py"
 spec = importlib.util.spec_from_file_location("nov_recall", MODULE)
 nov = importlib.util.module_from_spec(spec)
 assert spec.loader
