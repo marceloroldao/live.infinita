@@ -1,0 +1,2 @@
+# Optional isolated process only; not installed in the autonomous runtime.
+cryptography>=43,<48
