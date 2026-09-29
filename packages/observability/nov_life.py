@@ -48,7 +48,7 @@ def _nonnegative_int(value: Any) -> int | None:
     return parsed if 0 <= parsed <= 10**12 else None
 
 
-def _episode_view(row: dict[str, Any]) -> dict[str, Any] | None:
+def project_confirmed_episode(row: dict[str, Any]) -> dict[str, Any] | None:
     if row.get("episode_schema") != "npc_episode_v1" or row.get("npc_id") != "nov":
         return None
     episode_id = _short_string(row.get("episode_id"), limit=160)
@@ -98,7 +98,7 @@ def nov_life_snapshot(
     selected: list[dict[str, Any]] = []
     seen: set[str] = set()
     for row in reversed(rows):
-        episode = _episode_view(row)
+        episode = project_confirmed_episode(row)
         if episode is None or episode["episode_id"] in seen:
             continue
         seen.add(episode["episode_id"])

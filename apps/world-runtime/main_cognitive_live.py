@@ -6,7 +6,7 @@ import os
 import time
 from typing import Any
 
-from fastapi import Depends
+from fastapi import Depends, Query
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
@@ -19,6 +19,7 @@ from memoria_v2_adapter import build_nov_cognitive_frame, to_memoria_v2_request_
 from route_precedence import promote_api_route_before_root
 from packages.observability.runtime_metrics import EventLoopLagMonitor, async_runtime_snapshot
 from packages.observability.nov_life import nov_life_snapshot
+from packages.observability.nov_episode_sync import EpisodeSyncContractError, preview_episode_batch
 from story_narrator import NarrationSuppressed
 
 
@@ -55,6 +56,22 @@ async def manager_nov_life() -> JSONResponse:
     path = main_spatial._world_data_root() / "npc-episodes.jsonl"
     snapshot = await asyncio.to_thread(nov_life_snapshot, path)
     return JSONResponse(snapshot)
+
+
+@app.get("/api/manage/nov/sync/preview", dependencies=[Depends(core.require_operator)])
+async def manager_nov_sync_preview(cursor: int = Query(default=0, ge=0)) -> JSONResponse:
+    """Typed preview only. No outbound request, ACK, cursor persistence or world write."""
+    root = main_spatial._world_data_root()
+    try:
+        preview = await asyncio.to_thread(
+            preview_episode_batch,
+            root / "npc-episodes.jsonl",
+            root / "world.json",
+            cursor=cursor,
+        )
+    except EpisodeSyncContractError as exc:
+        raise core.HTTPException(status_code=409, detail=str(exc)) from exc
+    return JSONResponse(preview)
 
 
 class ManagerSimulatorCommentRequest(BaseModel):
@@ -378,3 +395,4 @@ promote_api_route_before_root(app, "/api/manage/simulator/state")
 promote_api_route_before_root(app, "/api/manage/simulator/comment")
 promote_api_route_before_root(app, "/api/manage/performance")
 promote_api_route_before_root(app, "/api/manage/nov/life")
+promote_api_route_before_root(app, "/api/manage/nov/sync/preview")
