@@ -281,6 +281,16 @@ class GenuineV2SnapshotTests(unittest.TestCase):
         self.assertEqual(result["trajectory_recall_comparison"]["diversified"]["retrieved_count"], 2)
         self.assertFalse(result["trajectory_recall_comparison"]["selection_authority"])
         self.assertFalse(result["trajectory_recall_comparison"]["new_evidence_created"])
+        hybrid = result["hybrid_recall_comparison"]
+        self.assertTrue(hybrid["relevance_vector_preserved"])
+        self.assertEqual(hybrid["baseline_overlap_counts"], hybrid["hybrid_overlap_counts"])
+        self.assertEqual(hybrid["baseline_full_matches"], hybrid["hybrid_full_matches"])
+        self.assertEqual(hybrid["matching_records"], result["historical_matches"])
+        self.assertEqual(hybrid["hybrid_retrieved"], result["retrieved_evidence_count"])
+        self.assertGreaterEqual(hybrid["hybrid_trajectory_profiles"],
+                                hybrid["baseline_trajectory_profiles"])
+        self.assertFalse(hybrid["selection_authority"])
+        self.assertFalse(hybrid["causal_inference_claim"])
         self.assertTrue(result["checkpoint_stable"])
         self.assertFalse(result["selection_authority"])
         self.assertFalse(result["world_mutated"])
