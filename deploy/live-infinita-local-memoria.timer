@@ -1,0 +1,13 @@
+[Unit]
+Description=Live Infinita - periodic offline Nov memory update
+
+[Timer]
+OnBootSec=3min
+OnUnitInactiveSec=2min
+RandomizedDelaySec=15s
+AccuracySec=30s
+Persistent=false
+Unit=live-infinita-local-memoria.service
+
+[Install]
+WantedBy=timers.target
