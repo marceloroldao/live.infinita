@@ -111,6 +111,9 @@ class LocalMemoriaRealIntegrationTests(unittest.TestCase):
             with self.assertRaisesRegex(LocalMemoriaError, "conflicting_local_observation"):
                 sync_once(ledger, world, local)
             self.assertEqual((local / "checkpoint.json").read_bytes(), checkpoint)
+            # Restore a clean ledger before testing a separately missing
+            # checkpoint; conflicting input must not hide that failure mode.
+            ledger.write_bytes(json.dumps(observed(0)).encode() + b"\n")
             (local / "checkpoint.json").unlink()
             with self.assertRaisesRegex(LocalMemoriaError, "checkpoint_missing_for_existing_memory"):
                 sync_once(ledger, world, local)
