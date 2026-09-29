@@ -52,7 +52,13 @@ def read_current_nov_frame(*, world_path: Path, cold_store: Path) -> CognitiveFr
     if cold_store.is_symlink() or not cold_store.is_dir():
         raise RecallBlocked("cold_store_invalid")
     manifest = cold_store / "manifest.json"
+    if (cold_store / "regions").is_symlink():
+        raise RecallBlocked("cold_region_root_symlink")
     world_before, world = _read_bounded_json(world_path, MAX_WORLD_BYTES, "pilot_world")
+    envelope = world.get("cold_entities")
+    if (not isinstance(envelope, dict) or envelope.get("mode") != "region_file_store"
+            or world.get("entities") not in (None, [])):
+        raise RecallBlocked("world_not_cold_backed")
     manifest_before, metadata = _read_bounded_json(manifest, MAX_MANIFEST_BYTES, "pilot_manifest")
     if (type(metadata.get("version")) is not int or metadata["version"] != 1
             or not isinstance(metadata.get("entity_region"), dict)):
@@ -124,13 +130,20 @@ class OwnerLiveFramePilot:
                                                    "live:period:")))
                     if last_state is not None and state != last_state:
                         region_or_weather_changes += 1
-                    last_state = state
                     seen_ticks.add(frame.tick_id)
                     self.preparer.submit(frame)
                     # Bounded processing opportunity; never wait for the
                     # worker or enter the authoritative simulation's tick.
                     self._sleep(self.interval)
-                    read = self.preparer.peek(frame)
+                    observed = self.frame_reader()
+                    seen_ticks.add(observed.tick_id)
+                    observed_state = tuple(a for a in observed.state_addresses
+                                           if a.startswith(("live:region:", "live:weather:",
+                                                            "live:period:")))
+                    if observed_state != state:
+                        region_or_weather_changes += 1
+                    last_state = observed_state
+                    read = self.preparer.peek(observed)
                     status = read.status if read.status in ALLOWED_STATUS else "unavailable"
                     tally[status] += 1
                     if status == "ready":
