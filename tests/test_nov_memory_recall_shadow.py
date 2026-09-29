@@ -286,6 +286,12 @@ class GenuineV2SnapshotTests(unittest.TestCase):
         self.assertEqual(hybrid["baseline_overlap_counts"], hybrid["hybrid_overlap_counts"])
         self.assertEqual(hybrid["baseline_full_matches"], hybrid["hybrid_full_matches"])
         self.assertEqual(hybrid["matching_records"], result["historical_matches"])
+        dual = result["dual_lane_comparison"]
+        self.assertEqual(dual["primary_count_unchanged"], hybrid["hybrid_retrieved"])
+        self.assertEqual(dual["hybrid_overlap_counts"], hybrid["hybrid_overlap_counts"])
+        self.assertEqual(dual["supplementary_count"], len(dual["supplementary_overlap_counts"]))
+        self.assertFalse(dual["supplementary_used_to_rank_primary"])
+        self.assertFalse(dual["selection_authority"])
         self.assertEqual(hybrid["hybrid_retrieved"], result["retrieved_evidence_count"])
         self.assertGreaterEqual(hybrid["hybrid_trajectory_profiles"],
                                 hybrid["baseline_trajectory_profiles"])
@@ -300,6 +306,46 @@ class GenuineV2SnapshotTests(unittest.TestCase):
         self.assertEqual(self.checkpoint.read_bytes(), before_checkpoint)
         self.assertEqual(self.world.read_bytes(), before_world)
         self.assertEqual(self.store.count, 3)
+        self.assertFalse(list(self.mem.glob("nov-recall-*")))
+
+    def test_real_v2_primary_and_supplementary_are_separate(self) -> None:
+        from nov_memory_diagnostics import retrospective_frame
+        from nov_memory_dual_lane_shadow import OwnerDualLaneRecallObserver
+        from nov_memory_recall_cache import VersionedNovRecallCache
+        self.append("p1", 1, "thirst")
+        self.append("p2", 2, "hunger", region="shelter")
+        for index in range(3, 9):
+            receipt = self.append("p" + str(index), index, "hunger")
+        self.watermark(receipt)
+        before_checkpoint = self.checkpoint.read_bytes()
+        before_world = self.world.read_bytes()
+        _, doc = nov._read_bounded_json(self.world, nov.MAX_WORLD_BYTES, "world")
+        frame = retrospective_frame(doc, [
+            {"record_key": receipt["record_key"], "logical_tick": 8,
+             "addresses": {"need": "hunger", "region_id": "forest"}},
+        ])
+        cache = VersionedNovRecallCache(
+            source=self.source, world_path=self.world,
+            checkpoint_path=self.checkpoint, private_root=self.mem,
+        )
+        primary, supplement, metrics = OwnerDualLaneRecallObserver(cache).refresh(frame)
+        self.assertEqual(primary["source_snapshot_records"], 8)
+        self.assertEqual([r["matched_address_count"] for r in primary["selected"]],
+                         [4, 4, 4, 4, 4])
+        self.assertEqual([r["matched_address_count"] for r in supplement["selected"]],
+                         [3, 3])
+        self.assertEqual(metrics["primary_count_unchanged"], 5)
+        self.assertEqual(metrics["supplementary_count"], 2)
+        self.assertEqual(metrics["combined_distinct_observed_profiles"], 3)
+        self.assertFalse(metrics["selection_authority"])
+        self.assertFalse(metrics["supplementary_used_to_rank_primary"])
+        self.assertFalse(metrics["new_evidence_created"])
+        primary_ids = {row["record_key"] for row in primary["private_evidence"]}
+        additional_ids = {row["record_key"] for row in supplement["private_evidence"]}
+        self.assertFalse(primary_ids & additional_ids)
+        self.assertEqual(self.checkpoint.read_bytes(), before_checkpoint)
+        self.assertEqual(self.world.read_bytes(), before_world)
+        self.assertEqual(self.store.count, 8)
         self.assertFalse(list(self.mem.glob("nov-recall-*")))
 
     def test_empty_journal_abstains(self) -> None:
