@@ -164,6 +164,15 @@ class OwnerAsyncDualLanePreparation:
         with self._cv:
             snapshot, state, closed = self._snapshot, self._state, self._closed
         status = "closed" if closed else state
+        # A newer frame is in flight: never expose the previous frame as
+        # ready while its replacement has not completed.
+        if status == "pending":
+            return PreparedRead("pending", None, None, {
+                "schema": SCHEMA, "status": "pending",
+                "historical_snapshot_only": True,
+                "live_caught_up_claim": False, "selection_authority": False,
+                "world_mutated": False, "bdr_used": False, "central_sync": False,
+            })
         age: float | None = None
         if not closed and snapshot is not None:
             age = self._clock() - snapshot.prepared_at
