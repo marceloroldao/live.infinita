@@ -10,6 +10,7 @@ from typing import Any, Callable
 from cognitive_exante import build_exante_forecast, evaluate_exante_forecast
 from cognitive_contextual import freeze_contextual_forecast, evaluate_contextual_forecast, stationary_evidence
 from nov_memory_context_shadow import MemoryShadowContext, freeze_memory_context
+from nov_memory_async_prepare import PreparedRead
 from memoria_v2_adapter import (
     CognitiveFrame,
     NOV_ACTIONS,
@@ -29,6 +30,8 @@ class ShadowToken:
     contextual_forecast: dict[str, Any]
     contextual_target_snapshot: dict[str, Any] | None
     memory_context: MemoryShadowContext | None = None
+    supplementary_memory_context: MemoryShadowContext | None = None
+    memory_preparation_status: str | None = None
 
 
 def _finite_number(value: Any) -> float | None:
@@ -73,6 +76,7 @@ class CognitiveShadowRecorder:
         need_threshold: float = 0.70,
         social_opportunity_provider: Any | None = None,
         memory_recall_provider: Callable[[CognitiveFrame], dict[str, Any]] | None = None,
+        prepared_memory_provider: Callable[[CognitiveFrame], PreparedRead] | None = None,
     ) -> None:
         self.path = Path(path)
         self.world_provider = world_provider
@@ -83,7 +87,10 @@ class CognitiveShadowRecorder:
         self.experience_provider = experience_provider
         self.need_threshold = float(need_threshold)
         self.social_opportunity_provider = social_opportunity_provider
+        if memory_recall_provider is not None and prepared_memory_provider is not None:
+            raise ValueError("choose exactly one read-only memory provider")
         self.memory_recall_provider = memory_recall_provider
+        self.prepared_memory_provider = prepared_memory_provider
 
     def _need_snapshot(self, observer: dict[str, Any]) -> tuple[dict[str, float], str]:
         getter = self.needs_provider
@@ -129,7 +136,34 @@ class CognitiveShadowRecorder:
         # OFF by default. No source access, SQLite snapshot or network call unless
         # a separate trusted read-only provider is explicitly injected.
         memory_context = None
-        if self.memory_recall_provider is not None:
+        supplementary_context = None
+        preparation_status = None
+        if self.prepared_memory_provider is not None:
+            # The trusted provider is a NON-BLOCKING in-RAM peek. The core V2
+            # snapshot is prepared by a separate owner-side worker, never here.
+            prepared = self.prepared_memory_provider(frame)
+            if not isinstance(prepared, PreparedRead):
+                raise ValueError("invalid prepared memory contract")
+            preparation_status = (
+                prepared.status if prepared.status in {
+                    "ready", "not_started", "not_ready", "pending", "blocked",
+                    "source_changed", "expired", "world_changed", "frame_regressed",
+                    "frame_lagged", "query_changed", "context_rejected", "closed",
+                } else "abstained"
+            )
+            if preparation_status == "ready":
+                memory_context = prepared.primary
+                supplementary_context = prepared.supplementary
+                if (not isinstance(memory_context, MemoryShadowContext)
+                        or not isinstance(supplementary_context, MemoryShadowContext)
+                        or memory_context.frame_id != frame.frame_id
+                        or supplementary_context.frame_id != frame.frame_id
+                        or memory_context.public_view.get("source") != "verified-local-memoria-v2"
+                        or supplementary_context.public_view.get("source") != "verified-local-memoria-v2"):
+                    raise ValueError("prepared evidence frame or provenance invalid")
+            elif prepared.primary is not None or prepared.supplementary is not None:
+                raise ValueError("abstained provider must not return evidence")
+        elif self.memory_recall_provider is not None:
             memory_context = freeze_memory_context(frame, self.memory_recall_provider(frame))
         needs_before, needs_source = self._need_snapshot(observer)
         before_observer = {
@@ -179,6 +213,8 @@ class CognitiveShadowRecorder:
             contextual_forecast=contextual_forecast,
             contextual_target_snapshot=contextual_target,
             memory_context=memory_context,
+            supplementary_memory_context=supplementary_context,
+            memory_preparation_status=preparation_status,
         )
 
     @staticmethod
@@ -438,6 +474,19 @@ class CognitiveShadowRecorder:
         if token.memory_context is not None:
             # No evidence ID, raw observation or checkpoint is persisted here.
             record["memory_recall_context"] = dict(token.memory_context.public_view)
+        if token.supplementary_memory_context is not None:
+            # Separate evidence namespace; never feed into primary ranking.
+            record["memory_supplementary_context"] = dict(
+                token.supplementary_memory_context.public_view
+            )
+        if token.memory_preparation_status is not None:
+            record["memory_preparation"] = {
+                "status": token.memory_preparation_status,
+                "historical_snapshot_only": True,
+                "live_caught_up_claim": False,
+                "selection_authority": False,
+                "supplementary_used_to_rank_primary": False,
+            }
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with self.path.open("a", encoding="utf-8") as fh:
             fh.write(json.dumps(record, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n")

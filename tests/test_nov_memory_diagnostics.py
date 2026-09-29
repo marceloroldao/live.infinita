@@ -66,6 +66,7 @@ class DiagnosticContracts(unittest.TestCase):
         self.assertIn("nov_trajectory_recall_shadow", script)
         self.assertIn("nov_memory_hybrid_shadow", script)
         self.assertIn("nov_memory_dual_lane_shadow", script)
+        self.assertIn("nov_memory_async_prepare", script)
         self.assertNotIn('systemctl restart', script)
         self.assertNotIn('systemctl enable', script)
         self.assertNotIn('MEMORIA_EXTERNAL_EPISODE_PERSISTENCE=bdr', script)
