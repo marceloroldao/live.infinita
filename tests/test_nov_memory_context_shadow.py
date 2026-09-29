@@ -19,6 +19,7 @@ from nov_memory_context_shadow import (  # noqa: E402
     SCHEMA, MemoryContextRejected, freeze_memory_context,
 )
 from nov_memory_recall_shadow import SCHEMA as RECALL_SCHEMA  # noqa: E402
+from nov_memory_async_prepare import PreparedRead  # noqa: E402
 from shadow_world_tick import ShadowWorldTickRunner  # noqa: E402
 from tests.test_memoria_v2_shadow_mode import FakeStore, FakeRunner  # noqa: E402
 
@@ -159,6 +160,72 @@ class MemoryContextContract(unittest.TestCase):
             self.assertNotIn("live-obs:", saved)
             self.assertNotIn("content_sha256", saved)
             self.assertEqual(world["version"], 11)
+
+    def test_prepared_two_lane_shadow_is_redacted_and_observational(self):
+        frame, recall, world, store = fixture()
+        supplemental = deepcopy(recall)
+        key = "c" * 64
+        supplemental["private_evidence"][0]["record_key"] = key
+        supplemental["private_evidence"][0]["evidence_id"] = "live-obs:" + key[:40]
+        supplemental["private_evidence"][0]["content_sha256"] = key
+        supplemental["private_evidence"][0]["logical_tick"] = 9
+        supplemental["selected"][0]["logical_tick"] = 9
+        primary_ctx = freeze_memory_context(frame, recall)
+        supplementary_ctx = freeze_memory_context(frame, supplemental)
+        self.assertFalse(set(primary_ctx.private_evidence_ids)
+                         & set(supplementary_ctx.private_evidence_ids))
+        with tempfile.TemporaryDirectory() as root:
+            path = Path(root) / "shadow.jsonl"
+            recorder = CognitiveShadowRecorder(
+                path, world_provider=lambda: deepcopy(world), store=store,
+                enabled=True, prepared_memory_provider=lambda actual: PreparedRead(
+                    "ready", primary_ctx, supplementary_ctx,
+                    {"status": "ready", "historical_snapshot_only": True},
+                ),
+            )
+            result = ShadowWorldTickRunner(FakeRunner(world, store), recorder).tick()
+            self.assertEqual(result["cognitive_shadow"]["status"], "recorded")
+            saved = path.read_text()
+            row = json.loads(saved.strip())
+            self.assertEqual(row["memory_recall_context"]["evidence_count"], 1)
+            self.assertEqual(row["memory_supplementary_context"]["evidence_count"], 1)
+            self.assertEqual(row["memory_preparation"]["status"], "ready")
+            self.assertFalse(row["memory_preparation"]["selection_authority"])
+            self.assertFalse(row["memory_preparation"]["supplementary_used_to_rank_primary"])
+            self.assertNotIn("live-obs:", saved)
+            self.assertNotIn("content_sha256", saved)
+            self.assertEqual(world["version"], 11)
+
+    def test_prepared_not_ready_abstains_without_blocking_world(self):
+        _, _, world, store = fixture()
+        with tempfile.TemporaryDirectory() as root:
+            path = Path(root) / "shadow.jsonl"
+            recorder = CognitiveShadowRecorder(
+                path, world_provider=lambda: deepcopy(world), store=store,
+                enabled=True, prepared_memory_provider=lambda _: PreparedRead(
+                    "pending", None, None, {"status": "pending"},
+                ),
+            )
+            result = ShadowWorldTickRunner(FakeRunner(world, store), recorder).tick()
+            self.assertEqual(result["cognitive_shadow"]["status"], "recorded")
+            row = json.loads(path.read_text().strip())
+            self.assertEqual(row["memory_preparation"]["status"], "pending")
+            self.assertNotIn("memory_recall_context", row)
+            self.assertNotIn("memory_supplementary_context", row)
+            self.assertEqual(world["version"], 11)
+
+    def test_cannot_mix_two_memory_providers(self):
+        _, recall, world, store = fixture()
+        with tempfile.TemporaryDirectory() as root:
+            with self.assertRaises(ValueError):
+                CognitiveShadowRecorder(
+                    Path(root) / "shadow.jsonl", world_provider=lambda: world,
+                    store=store, enabled=True,
+                    memory_recall_provider=lambda _: recall,
+                    prepared_memory_provider=lambda _: PreparedRead(
+                        "pending", None, None, {"status": "pending"},
+                    ),
+                )
 
     def test_provider_failure_never_blocks_world_tick(self):
         _, _, world, store = fixture()
