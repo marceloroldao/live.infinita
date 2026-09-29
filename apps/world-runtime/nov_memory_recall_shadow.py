@@ -158,9 +158,10 @@ def select_related(records: list[dict[str, Any]], *, query: dict[str, str],
 
 def recall_once(*, source: Path, world_path: Path, checkpoint_path: Path,
                 private_root: Path, need: str | None = None,
-                limit: int = 5, include_evidence: bool = False) -> dict[str, Any]:
+                limit: int = 5, include_evidence: bool = False,
+                include_index: bool = False) -> dict[str, Any]:
     """Only owner-side scratch is writable; original journal and world remain read-only."""
-    if type(include_evidence) is not bool:
+    if type(include_evidence) is not bool or type(include_index) is not bool:
         raise RecallBlocked("invalid_evidence_mode")
     # Imports are deliberately inside the function: this is the exact deployed
     # Memoria.ia V2, not a mock graph or a second SQLite inference backend.
@@ -291,6 +292,11 @@ def recall_once(*, source: Path, world_path: Path, checkpoint_path: Path,
                 "provenance": "live.infinita:npc_episode_v1",
                 "world_id": world_id,
             } for row in selected]
+        if include_index:
+            # Privileged, in-process cache seed. Never enabled by the operator
+            # command, serialized, logged or persisted. Each record was checked
+            # against the genuine rehydrated V2 EvidenceCore above.
+            result["_private_index"] = records
         return result
 
 
