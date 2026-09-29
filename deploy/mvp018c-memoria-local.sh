@@ -5,7 +5,7 @@ set -Eeuo pipefail
 
 REPO=/home/etbra/live.infinita
 INSTALL=/opt/live.infinita
-CORE_SHA=3ea447c449349761215c43182ca54a0941b6e09b
+CORE_SHA=2b6334e8d6026c6bae620297de3f2fa658427596
 REQUIRED=cae61891e64364978ba125f3137fa1ce164376bb
 CORE_ROOT=/opt/live-infinita-memoria-core
 CORE_DIR="$CORE_ROOT/$CORE_SHA"
@@ -85,6 +85,7 @@ MEMORIA_API_KEY=local-test-key-0123456789abcdefghijklmnopqrstuvwxyz \
 MEMORIA_DATA_DIR="$stage/test-data" \
 MEMORIA_STORAGE_BACKEND=sqlite \
 MEMORIA_STORAGE_ALLOW_FALLBACK=false \
+MEMORIA_EXTERNAL_EPISODE_PERSISTENCE=sqlite-incremental \
 MEMORIA_CONVERSATION_RUNTIME=python \
 MEMORIA_EPISODIC_RUNTIME=python \
 "$INSTALL/.venv/bin/python" - <<'PY'
@@ -108,6 +109,7 @@ with TestClient(app) as client:
     assert status["conversation_runtime"] == "python"
     assert status["episodic_runtime"] == "python"
     assert status["backend"] == "sqlite"
+    assert status["external_episode_persistence"] == "sqlite-incremental"
     assert client.post("/api/v1/external/episodes",json=envelope).status_code == 401
     key = {"X-Memoria-Key":"local-test-key-0123456789abcdefghijklmnopqrstuvwxyz"}
     first = client.post("/api/v1/external/episodes",json=envelope,headers=key)
@@ -116,10 +118,10 @@ with TestClient(app) as client:
     assert first.json()["ack"] is True and first.json()["stored"] is True
     assert again.json()["ack"] is True and again.json()["stored"] is False
     assert first.json()["content_sha256"] == envelope["content_sha256"]
-    assert first.json()["persistence"]["backend"] == "sqlite"
+    assert first.json()["persistence"]["backend"] == "sqlite-incremental"
     assert first.json()["persistence"]["state_id"]
-    # Real disk-growth gate: this pin persists a full EvidenceCore snapshot per
-    # episode. Do not enable an unbounded timer until the backend is incremental.
+    # Verify the real incremental episode storage under the exact pinned V2
+    # source. Do not enable the timer if it falls back to full snapshots.
     from pathlib import Path
     for i in range(1, 8):
         sample = {
@@ -137,7 +139,7 @@ with TestClient(app) as client:
     disk_bytes = sum(p.stat().st_size for p in Path(os.environ["MEMORIA_DATA_DIR"]).rglob("*") if p.is_file())
     print("MVP018C_LOCAL_MEMORIA_DISK_GATE", "episodes=8", f"bytes={disk_bytes}", flush=True)
     if disk_bytes > 8 * 1024 * 1024:
-        raise SystemExit("MVP018C_LOCAL_MEMORIA_DISK_GATE_FAIL: snapshot storage exceeds 8 MiB for 8 episodes; refusing production timer")
+        raise SystemExit("MVP018C_LOCAL_MEMORIA_DISK_GATE_FAIL: incremental storage exceeds 8 MiB for 8 episodes; refusing production timer")
 print("MVP018C_LOCAL_CORE_PREFLIGHT_OK")
 PY
 
@@ -172,6 +174,7 @@ else:
         "MEMORIA_DATA_DIR=/var/lib/live-infinita/memoria-local",
         "MEMORIA_STORAGE_BACKEND=sqlite",
         "MEMORIA_STORAGE_ALLOW_FALLBACK=false",
+        "MEMORIA_EXTERNAL_EPISODE_PERSISTENCE=sqlite-incremental",
         "MEMORIA_CONVERSATION_RUNTIME=python",
         "MEMORIA_EPISODIC_RUNTIME=python",
         "MEMORIA_CONCEPT_NAMESPACE=live-local",
