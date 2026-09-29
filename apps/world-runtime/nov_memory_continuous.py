@@ -7,10 +7,14 @@ The worker's private V2 index stays in memory of the service account.
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 import json
+import resource
+import statistics
 from pathlib import Path
 import signal
 import time
+from time import perf_counter
 from typing import Any, Callable
 
 from nov_memory_async_prepare import OwnerAsyncDualLanePreparation
@@ -26,6 +30,13 @@ WORLD = WORLD_ROOT / "world.json"
 COLD = WORLD_ROOT / "cold-store"
 LOCK = WORLD_ROOT / "world-mutation.lock"
 SCHEMA = "live-infinita-nov-owner-continuous/v1"
+PUBLIC_STATUSES = frozenset((
+    "ready", "pending", "frame_unavailable", "context_rejected",
+    "submission_blocked", "not_started", "not_ready", "blocked",
+    "source_changed", "expired", "world_changed", "frame_regressed",
+    "frame_lagged", "query_changed", "closed", "unavailable",
+))
+MAX_FINITE_CYCLES = 60
 
 
 class ContinuousOwnerMonitor:
@@ -54,6 +65,12 @@ class ContinuousOwnerMonitor:
         self.ready_reads = 0
         self.abstentions = 0
         self.submissions = 0
+        self.status_counts: Counter[str] = Counter()
+        self.current_not_ready_streak = 0
+        self.longest_not_ready_streak = 0
+        self.last_observed_tick: int | None = None
+        self.frame_tick_advances = 0
+        self.frame_tick_regressions = 0
 
     def step(self) -> dict[str, Any]:
         """One bounded observational iteration; no calls into world authority."""
@@ -63,6 +80,15 @@ class ContinuousOwnerMonitor:
         except (RecallBlocked, ValueError, OSError, BlockingIOError):
             self.abstentions += 1
             return self._public("frame_unavailable", queued=False)
+        if type(frame.tick_id) is not int or frame.tick_id < 0:
+            self.abstentions += 1
+            return self._public("frame_unavailable", queued=False)
+        if self.last_observed_tick is not None:
+            if frame.tick_id > self.last_observed_tick:
+                self.frame_tick_advances += 1
+            elif frame.tick_id < self.last_observed_tick:
+                self.frame_tick_regressions += 1
+        self.last_observed_tick = frame.tick_id
         now = self.clock()
         try:
             view = self.worker.peek(frame)
@@ -106,6 +132,16 @@ class ContinuousOwnerMonitor:
 
     def _public(self, status: str, *, queued: bool,
                 view: Any | None = None) -> dict[str, Any]:
+        # No untrusted exception/status/body is ever printed to the journal.
+        status = status if status in PUBLIC_STATUSES else "context_rejected"
+        self.status_counts[status] += 1
+        if status == "ready":
+            self.current_not_ready_streak = 0
+        else:
+            self.current_not_ready_streak += 1
+            self.longest_not_ready_streak = max(
+                self.longest_not_ready_streak, self.current_not_ready_streak,
+            )
         summary = {
             "schema": SCHEMA,
             "status": status,
@@ -141,7 +177,9 @@ def run(*, cycles: int | None = None, period: float = 2.0,
         worker: Any | None = None) -> dict[str, Any]:
     """The bounded canary waits ONLY inside this separate owner process."""
     if (type(period) not in (int, float) or not 0.5 <= period <= 10
-            or cycles is not None and (type(cycles) is not int or not 2 <= cycles <= 12)):
+            or cycles is not None and (
+                type(cycles) is not int or not 2 <= cycles <= MAX_FINITE_CYCLES
+            )):
         raise RecallBlocked("continuous_run_budget")
     if canary and cycles is None:
         raise RecallBlocked("continuous_canary_requires_cycle_budget")
@@ -173,10 +211,14 @@ def run(*, cycles: int | None = None, period: float = 2.0,
         original_term = signal.signal(signal.SIGTERM, request_stop)
         original_int = signal.signal(signal.SIGINT, request_stop)
     prepared.start()
+    start_at = clock()
+    step_times_ms: list[float] = []
     try:
         count = 0
         while not stop and (cycles is None or count < cycles):
+            step_started = perf_counter()
             row = runner.step()
+            step_times_ms.append((perf_counter() - step_started) * 1000)
             if canary and row["status"] == "pending":
                 # Allowed to wait for the service account's background worker
                 # here; production's 500-ms world loop is never involved.
@@ -204,6 +246,17 @@ def run(*, cycles: int | None = None, period: float = 2.0,
             "abstentions": runner.abstentions,
             "submissions": runner.submissions,
             "cycles": count,
+            "status_counts": dict(sorted(runner.status_counts.items())),
+            "longest_not_ready_streak": runner.longest_not_ready_streak,
+            "frame_tick_advances": runner.frame_tick_advances,
+            "frame_tick_regressions": runner.frame_tick_regressions,
+            "ready_fraction": round(runner.ready_reads / runner.samples, 4)
+            if runner.samples else 0.0,
+            "max_step_ms": round(max(step_times_ms, default=0.0), 3),
+            "median_step_ms": round(statistics.median(step_times_ms), 3)
+            if step_times_ms else 0.0,
+            "peak_rss_kib": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,
+            "elapsed_seconds": round(max(0.0, clock() - start_at), 3),
             "historical_snapshot_only": True,
             "live_caught_up_claim": False,
             "main_runtime_wired": False,
