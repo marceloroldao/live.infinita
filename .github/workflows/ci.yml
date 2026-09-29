@@ -53,8 +53,9 @@ jobs:
           git clone --filter=blob:none --depth 1 --branch v2.0.0-rc2 \
             https://github.com/marceloroldao/memoria.ia.git /tmp/live-infinita-memoria-rc2
           test "$(git -C /tmp/live-infinita-memoria-rc2 rev-parse HEAD)" = "e38f27b639bec1cfcb83694c1418a4d01f250ffd"
-          echo "PYTHONPATH=$GITHUB_WORKSPACE:/tmp/live-infinita-memoria-rc2/src" >> "$GITHUB_ENV"
-          python -c 'from memoria_resolutiva.product_evidence import ProductEvidenceService; print("Pinned Memoria.ia RC2 EvidenceCore import OK")'
+          export PYTHONPATH="$GITHUB_WORKSPACE:/tmp/live-infinita-memoria-rc2/src"
+          echo "PYTHONPATH=$PYTHONPATH" >> "$GITHUB_ENV"
+          python -c 'from memoria_resolutiva.evidence_core import EvidenceCore; print("Pinned Memoria.ia RC2 EvidenceCore import OK")'
 
       - name: Unit and API tests
         run: python -m unittest discover -v -s tests -p 'test_*.py'
