@@ -8,6 +8,7 @@ REPO=/home/etbra/live.infinita
 VENV_PY=/opt/live.infinita/.venv/bin/python
 MEMORIA_PIN=4f40da7876ecece3ce30f743d1b7a8382213aaf1
 BDR_PIN=317882a00f041fc1568ff986af8016b09453f21a
+ZLIB_PIN=51b7f2abdade71cd9bb0e7a373ef2610ec6f9daf
 DATA=/var/lib/live-infinita/memoria-local
 SOURCE="$DATA/external-episodes-incremental/external-episodes.sqlite3"
 CHECKPOINT="$DATA/nov-ingest.checkpoint.json"
@@ -74,14 +75,35 @@ else
 fi
 [[ -x "$cmake_bin" ]] || fail 'cmake temporário não está disponível'
 command -v g++ >/dev/null || fail 'g++ não disponível'
+# Minimal Ubuntu VMs may have libz runtime but not zlib.h/libz.so. Build
+# pinned zlib from public source in scratch, without installing apt packages.
+zlib_args=()
+zlib_libdir=""
+if [[ ! -r /usr/include/zlib.h || ! -e /usr/lib/x86_64-linux-gnu/libz.so ]]; then
+    git clone -q --filter=blob:none --depth 1 --branch v1.3.1 \
+        https://github.com/madler/zlib.git "$stage/zlib-src"
+    [[ "$(git -C "$stage/zlib-src" rev-parse HEAD)" == "$ZLIB_PIN" ]] || fail 'zlib source pin divergente'
+    "$cmake_bin" -S "$stage/zlib-src" -B "$stage/zlib-build" \
+        -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$stage/zlib-prefix" \
+        -DBUILD_SHARED_LIBS=ON >/dev/null
+    nice -n 15 "$cmake_bin" --build "$stage/zlib-build" --parallel 1 >/dev/null
+    "$cmake_bin" --install "$stage/zlib-build" >/dev/null
+    zlib_lib="$(find "$stage/zlib-prefix" -name libz.so -print -quit)"
+    [[ -n "$zlib_lib" ]] || fail 'zlib temporária ausente'
+    zlib_libdir="$(dirname "$zlib_lib")"
+    zlib_args=(-DZLIB_ROOT="$stage/zlib-prefix" -DCMAKE_BUILD_RPATH="$zlib_libdir")
+    chmod -R a+rX "$stage/zlib-prefix"
+    echo 'MVP018D_TEMP_ZLIB_OK (sem apt)'
+fi
 "$cmake_bin" -S "$stage/bdr/experimental/api_v86" -B "$stage/build" \
-    -DCMAKE_BUILD_TYPE=Release >/dev/null
+    -DCMAKE_BUILD_TYPE=Release "${zlib_args[@]}" >/dev/null
 nice -n 15 "$cmake_bin" --build "$stage/build" --parallel 1 \
     --target bdr_atomic_c_api_shared >/dev/null
 library="$stage/build/libbdr_atomic_c_api.so"
 [[ -f "$library" ]] || fail 'biblioteca BDR nativa não gerada'
 chmod -R a+rX "$stage/memoria" "$stage/bdr" "$stage/build"
 PYTHONPATH="$stage/bdr:$stage/memoria/src" BDR_ATOMIC_LIBRARY="$library" \
+    LD_LIBRARY_PATH="$zlib_libdir${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" \
     "$VENV_PY" - <<'PY'
 import os, tempfile
 from bdr.atomic import AtomicBDR
@@ -108,6 +130,7 @@ echo 'MVP018D_BDR_PRIVATE_MIRROR_START (backend SQLite continua ativo)'
 sudo -u liveinfinita env \
     PYTHONPATH="$stage/memoria/src:$stage/bdr" \
     BDR_ATOMIC_LIBRARY="$library" \
+    LD_LIBRARY_PATH="$zlib_libdir${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" \
     /usr/bin/nice -n 15 "$VENV_PY" \
     "$stage/memoria/scripts/mirror_external_episodes_to_bdr.py" \
     --source-sqlite "$SOURCE" \
