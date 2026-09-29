@@ -46,6 +46,16 @@ jobs:
           test -x apps/audio-native/build/live-infinita-audio-native
           file apps/audio-native/build/live-infinita-audio-native | grep -q 'ELF 64-bit'
 
+      - name: Pin real local Memoria.ia V2 RC2 for integration tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --filter=blob:none --depth 1 --branch v2.0.0-rc2 \
+            https://github.com/marceloroldao/memoria.ia.git /tmp/live-infinita-memoria-rc2
+          test "$(git -C /tmp/live-infinita-memoria-rc2 rev-parse HEAD)" = "e38f27b639bec1cfcb83694c1418a4d01f250ffd"
+          echo "PYTHONPATH=$GITHUB_WORKSPACE:/tmp/live-infinita-memoria-rc2/src" >> "$GITHUB_ENV"
+          python -c 'from memoria_resolutiva.product_evidence import ProductEvidenceService; print("Pinned Memoria.ia RC2 EvidenceCore import OK")'
+
       - name: Unit and API tests
         run: python -m unittest discover -v -s tests -p 'test_*.py'
 
