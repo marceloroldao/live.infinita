@@ -1,0 +1,13 @@
+[Unit]
+Description=Live Infinita — slow local memory synchronization for Nov
+
+[Timer]
+OnBootSec=5min
+OnUnitInactiveSec=2min
+RandomizedDelaySec=20s
+AccuracySec=20s
+Persistent=false
+Unit=live-infinita-memoria-nov-sync.service
+
+[Install]
+WantedBy=timers.target
