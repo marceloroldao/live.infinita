@@ -65,8 +65,8 @@ class HybridSelectionTests(unittest.TestCase):
     def test_anchor_is_stable_and_diversity_only_within_same_band(self):
         data = [
             row("a", 1, region="forest", satisfaction=0.1),
-            row("b", 2, region="forest", satisfaction=0.2),
-            row("c", 3, region="forest", satisfaction=0.3),
+            row("b", 2, region="forest", satisfaction=0.3),
+            row("c", 3, region="forest", satisfaction=0.2),
             row("d", 4, region="forest", satisfaction=0.2),
             row("e", 5, region="forest", satisfaction=0.2),
             row("f", 6, region="forest", satisfaction=0.2),
