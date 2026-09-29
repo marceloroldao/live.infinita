@@ -57,7 +57,17 @@ O código, testes e units são mantidos no repositório Live. O script
 instala com backup de código anterior. Em caso de erro, desabilita somente os
 serviços novos; **nunca apaga memória persistida ou o segredo local**.
 
-Após aprovação do PR/CI, o operador executa como `etbra`:
+**Bloqueio de segurança vigente:** benchmark sobre exatamente o core pinado nesta
+instalação revelou 2,19 MiB após 2 episódios, 24,41 MiB após 8 e 91,21 MiB
+após 16; o ensaio interrompeu-se acima de 128 MiB em 20 episódios. A
+persistência `ProductEvidenceService.save()` grava snapshots completos. O
+instalador agora mede oito experiências num diretório temporário e **falha antes
+de qualquer sudo** se o crescimento ultrapassar 8 MiB. Até implementar
+persistência incremental no core/receptor ou migrar para um backend comprovado,
+não ativar timer nem fazer ingestão automática de Nov nessa modalidade. Este
+bloqueio preserva a Live em produção.
+
+Depois de corrigido e validado o backend, o operador executará como `etbra`:
 
     cd ~/live.infinita && bash deploy/mvp018c-memoria-local.sh
 

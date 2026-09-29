@@ -47,6 +47,16 @@ class LocalMemoriaDeploymentContractTests(unittest.TestCase):
         ):
             self.assertNotRegex(install, r"systemctl (?:restart|stop|disable|enable)\s+(?:--now\s+)?[\"']?" + re.escape(name))
 
+    def test_disk_growth_gate_runs_before_any_sudo_or_timer(self):
+        install = (DEPLOY / "mvp018c-memoria-local.sh").read_text()
+        self.assertIn("MVP018C_LOCAL_MEMORIA_DISK_GATE_FAIL", install)
+        self.assertIn("8 * 1024 * 1024", install)
+        self.assertIn("episodes=8", install)
+        self.assertLess(install.index("MVP018C_LOCAL_MEMORIA_DISK_GATE_FAIL"),
+                        install.index("sudo -v"))
+        self.assertLess(install.index("MVP018C_LOCAL_MEMORIA_DISK_GATE_FAIL"),
+                        install.index('sudo systemctl enable --now "$TIMER_UNIT"'))
+
     def test_local_source_and_state_are_separate_from_live(self):
         unit = (DEPLOY / "live-infinita-memoria-local.service").read_text()
         install = (DEPLOY / "mvp018c-memoria-local.sh").read_text()

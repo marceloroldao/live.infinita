@@ -88,6 +88,7 @@ MEMORIA_STORAGE_ALLOW_FALLBACK=false \
 MEMORIA_CONVERSATION_RUNTIME=python \
 MEMORIA_EPISODIC_RUNTIME=python \
 "$INSTALL/.venv/bin/python" - <<'PY'
+import os
 from fastapi.testclient import TestClient
 from memoria_resolutiva.product_server import app
 from packages.observability.nov_episode_sync import observation_envelope
@@ -117,6 +118,26 @@ with TestClient(app) as client:
     assert first.json()["content_sha256"] == envelope["content_sha256"]
     assert first.json()["persistence"]["backend"] == "sqlite"
     assert first.json()["persistence"]["state_id"]
+    # Real disk-growth gate: this pin persists a full EvidenceCore snapshot per
+    # episode. Do not enable an unbounded timer until the backend is incremental.
+    from pathlib import Path
+    for i in range(1, 8):
+        sample = {
+            **row,
+            "episode_id": f"plan:local-preflight-{i}",
+            "logical_tick": 7 + i,
+            "source": {
+                **row["source"], "plan_id": f"local-preflight-{i}",
+                "proposal_id": f"local-preflight-{i}",
+            },
+        }
+        item = observation_envelope(sample, world_id="nov-live-autonomous-001")
+        response = client.post("/api/v1/external/episodes", json=item, headers=key)
+        assert response.status_code == 201 and response.json()["ack"] is True, response.text
+    disk_bytes = sum(p.stat().st_size for p in Path(os.environ["MEMORIA_DATA_DIR"]).rglob("*") if p.is_file())
+    print("MVP018C_LOCAL_MEMORIA_DISK_GATE", "episodes=8", f"bytes={disk_bytes}", flush=True)
+    if disk_bytes > 8 * 1024 * 1024:
+        raise SystemExit("MVP018C_LOCAL_MEMORIA_DISK_GATE_FAIL: snapshot storage exceeds 8 MiB for 8 episodes; refusing production timer")
 print("MVP018C_LOCAL_CORE_PREFLIGHT_OK")
 PY
 
