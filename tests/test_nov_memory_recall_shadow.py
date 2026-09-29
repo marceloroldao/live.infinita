@@ -220,6 +220,42 @@ class GenuineV2SnapshotTests(unittest.TestCase):
                 checkpoint_path=self.checkpoint, private_root=self.mem,
             )
 
+    def test_real_v2_cache_reuses_then_rebuilds_on_durable_ack(self) -> None:
+        from memoria_v2_adapter import build_nov_cognitive_frame
+        from nov_memory_recall_cache import VersionedNovRecallCache
+        from nov_memory_context_shadow import freeze_memory_context
+        self.append("p1", 3, "hunger")
+        self.append("p2", 5, "thirst")
+        last = self.append("p3", 9, "hunger")
+        self.watermark(last)
+        frame = build_nov_cognitive_frame(
+            world={"world_id": "nov-test", "current_tick": 20, "sequence": 20,
+                   "environment": {"period": "day", "weather": "sun"}},
+            observer={"id": "nov", "region_id": "forest", "type": "human",
+                      "properties": {"needs": {"hunger": 0.8}}},
+            targets={},
+        )
+        cache = VersionedNovRecallCache(
+            source=self.source, world_path=self.world,
+            checkpoint_path=self.checkpoint, private_root=self.mem,
+        )
+        first = cache(frame)
+        self.assertEqual(first["cache_status"], "refreshed")
+        self.assertEqual(first["source_snapshot_records"], 3)
+        self.assertEqual(first["private_evidence"][0]["observation"]["need"], "hunger")
+        self.assertEqual(cache(frame)["cache_status"], "hit")
+        self.assertEqual(freeze_memory_context(frame, first).public_view["evidence_count"], 2)
+        self.assertFalse(list(self.mem.glob("nov-recall-*")))
+        self.assertEqual(self.store.count, 3)
+        newer = self.append("p4", 11, "hunger")
+        self.watermark(newer)
+        updated = cache(frame)
+        self.assertEqual(updated["cache_status"], "refreshed")
+        self.assertEqual(updated["source_snapshot_records"], 4)
+        self.assertEqual(updated["private_evidence"][0]["logical_tick"], 9)
+        self.assertEqual(self.store.count, 4)
+        self.assertFalse(list(self.mem.glob("nov-recall-*")))
+
     def test_empty_journal_abstains(self) -> None:
         self.checkpoint.write_text(json.dumps({
             "schema": nov.CHECKPOINT_SCHEMA, "cursor": 0, "world_id": "nov-test",
