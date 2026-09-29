@@ -23,7 +23,7 @@ class BdrShadowOperatorContractTests(unittest.TestCase):
 
     def test_no_world_restart_no_backend_switch_no_checkpoint_write(self):
         s = SCRIPT.read_text()
-        self.assertIn("MEMORIA_LOCAL", s.upper())
+        self.assertIn("live-infinita-memoria-local.service", s)
         self.assertIn('systemctl show "$WORLD" -p MainPID --value', s)
         self.assertIn('systemctl show "$CORE" -p MainPID --value', s)
         self.assertIn('systemctl show "$RENDERER" -p MainPID --value', s)
