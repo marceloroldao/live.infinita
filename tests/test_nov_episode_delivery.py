@@ -169,12 +169,14 @@ class NovEpisodeDeliveryTests(Fixtures):
         self.assertEqual(_read_checkpoint(self.checkpoint)["last_record_key"], sent["record_key"])
 
     def test_non_nov_record_is_filtered_without_network_or_fake_ack(self):
-        self.write([row(0, npc="other"), row(1)])
+        self.write([row(0, npc="other")])
         first = self.deliver()
         self.assertEqual(first["status"], "filtered_non_nov_record")
         self.assertFalse(first["ack"])
         self.assertEqual(self.central.events, [])
         self.assertEqual(_read_checkpoint(self.checkpoint)["acknowledged"], 0)
+        with self.ledger.open("ab") as stream:
+            stream.write(json.dumps(row(1)).encode("utf-8") + b"\n")
         second = self.deliver()
         self.assertTrue(second["ack"])
         self.assertEqual(_read_checkpoint(self.checkpoint)["acknowledged"], 1)
