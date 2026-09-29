@@ -144,6 +144,50 @@ with TestClient(app) as client:
     print("MVP018C_LOCAL_MEMORIA_DISK_GATE", "episodes=8", f"bytes={disk_bytes}", flush=True)
     if disk_bytes > 8 * 1024 * 1024:
         raise SystemExit("MVP018C_LOCAL_MEMORIA_DISK_GATE_FAIL: incremental storage exceeds 8 MiB for 8 episodes; refusing production timer")
+    # Exercise Live's *actual* receipt/checkpoint bridge against the real,
+    # authenticated V2 endpoint before touching production or using sudo.
+    import json, sys
+    from pathlib import Path
+    from tempfile import TemporaryDirectory
+    sys.path.insert(0, str(Path.cwd() / "apps/world-runtime"))
+    from nov_local_memory_sync import sync_once
+    with TemporaryDirectory(prefix="local-nov-preflight-") as scratch:
+        source = Path(scratch)
+        (source / "world.json").write_text(
+            json.dumps({"world_id": "nov-live-autonomous-001"}), encoding="utf-8"
+        )
+        rows = []
+        for i in (8, 9):
+            rows.append({
+                **row,
+                "episode_id": f"plan:local-preflight-{i}",
+                "logical_tick": 7 + i,
+                "source": {
+                    **row["source"], "plan_id": f"local-preflight-{i}",
+                    "proposal_id": f"local-preflight-{i}",
+                },
+            })
+        ledger = source / "npc-episodes.jsonl"
+        ledger.write_text(
+            "".join(json.dumps(item, sort_keys=True) + "\n" for item in rows),
+            encoding="utf-8",
+        )
+        original = ledger.read_bytes()
+        def send(observation):
+            response = client.post(
+                "/api/v1/external/episodes", json=observation, headers=key
+            )
+            assert response.status_code == 201, response.text
+            return response.json()
+        checkpoint = source / "checkpoint.json"
+        result = sync_once(ledger, source / "world.json", checkpoint, send=send)
+        assert result["acked"] == 2 and result["stored"] == 2, result
+        assert sync_once(ledger, source / "world.json", checkpoint, send=send)["acked"] == 0
+        assert ledger.read_bytes() == original
+        assert checkpoint.is_file()
+        status = client.get("/api/v1/external/episodes/health", headers=key)
+        assert status.status_code == 200 and status.json()["observations"] == 10
+        print("MVP018C_LOCAL_BRIDGE_PREFLIGHT_OK", flush=True)
 print("MVP018C_LOCAL_CORE_PREFLIGHT_OK")
 PY
 
