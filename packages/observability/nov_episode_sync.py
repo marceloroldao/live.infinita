@@ -191,7 +191,7 @@ def preview_episode_batch(
         "candidate_cursor_is_ack": False,
         "rows_examined": examined,
         "episodes": episodes,
-        "has_more_complete_records": candidate_cursor < info and not (partial_tail and candidate_cursor == cursor),
+        "more_bytes_after_candidate_cursor": candidate_cursor < info,
         "partial_tail": partial_tail,
         "transport_enabled": False,
         "central_receipt": None,
