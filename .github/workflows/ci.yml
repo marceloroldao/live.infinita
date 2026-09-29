@@ -49,6 +49,37 @@ jobs:
       - name: Unit and API tests
         run: python -m unittest discover -v -s tests -p 'test_*.py'
 
+      - name: Gate pinned local Memoria V2 incremental core and ACK bridge
+        shell: bash
+        run: |
+          set -euo pipefail
+          pin=2b6334e8d6026c6bae620297de3f2fa658427596
+          git clone -q --filter=blob:none --depth 1 \
+            https://github.com/marceloroldao/memoria.ia.git /tmp/live-memoria-incremental-core
+          git -C /tmp/live-memoria-incremental-core fetch -q --depth 1 origin "$pin"
+          git -C /tmp/live-memoria-incremental-core checkout -q --detach "$pin"
+          test "$(git -C /tmp/live-memoria-incremental-core rev-parse HEAD)" = "$pin"
+          python - <<'PY'
+          from pathlib import Path
+          src=Path("deploy/mvp018c-memoria-local.sh").read_text()
+          marker='"$INSTALL/.venv/bin/python" - <<\'PY\'\n'
+          block=src.split(marker,1)[1].split('\nPY\n',1)[0]
+          compile(block, "<mvp018c-incremental-preflight>", "exec")
+          Path("/tmp/live-memoria-incremental-preflight.py").write_text(block)
+          PY
+          mkdir -p /tmp/live-memoria-incremental-gate-data
+          PYTHONPATH="/tmp/live-memoria-incremental-core/src:$GITHUB_WORKSPACE" \
+          MEMORIA_ORGANIZATION_ID=live-infinita-local \
+          MEMORIA_NODE_ID=live-infinita-local:nov \
+          MEMORIA_API_KEY=local-test-key-0123456789abcdefghijklmnopqrstuvwxyz \
+          MEMORIA_DATA_DIR=/tmp/live-memoria-incremental-gate-data \
+          MEMORIA_STORAGE_BACKEND=sqlite \
+          MEMORIA_STORAGE_ALLOW_FALLBACK=false \
+          MEMORIA_EXTERNAL_EPISODE_PERSISTENCE=sqlite-incremental \
+          MEMORIA_CONVERSATION_RUNTIME=python \
+          MEMORIA_EPISODIC_RUNTIME=python \
+          python /tmp/live-memoria-incremental-preflight.py
+
       - name: Validate monitor and Manager JavaScript
         run: |
           node --check apps/renderer-web/monitor/app.js

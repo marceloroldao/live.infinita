@@ -42,8 +42,12 @@ def receipt_for(value: dict, *, stored: bool = True) -> dict:
         "content_sha256": value["content_sha256"],
         "episode_id": value["source"]["episode_id"],
         "world_id": value["source"]["world_id"],
-        "evidence_id": "local:evidence:" + value["record_key"][:20],
-        "persistence": {"backend": "sqlite", "state_id": "snapshot:" + value["record_key"], "sha256": "1" * 64},
+        "evidence_id": "live-obs:" + value["record_key"][:40],
+        "persistence": {
+            "backend": "sqlite-incremental",
+            "state_id": "external-episode:" + value["record_key"],
+            "sha256": value["content_sha256"],
+        },
         "world_mutated": False,
         "selection_authority": False,
     }
@@ -101,6 +105,9 @@ class LocalMemorySyncTests(unittest.TestCase):
             {**original, "content_sha256": "0" * 64},
             {**original, "world_id": "another-world"},
             {**original, "persistence": {}},
+            {**original, "persistence": {**original["persistence"], "backend": "sqlite"}},
+            {**original, "persistence": {**original["persistence"], "sha256": "0" * 64}},
+            {**original, "evidence_id": "wrong"},
             {**original, "selection_authority": True},
             {**original, "world_mutated": True},
         ]

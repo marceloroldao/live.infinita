@@ -5,7 +5,7 @@ set -Eeuo pipefail
 
 REPO=/home/etbra/live.infinita
 INSTALL=/opt/live.infinita
-CORE_SHA=3ea447c449349761215c43182ca54a0941b6e09b
+CORE_SHA=2b6334e8d6026c6bae620297de3f2fa658427596
 REQUIRED=cae61891e64364978ba125f3137fa1ce164376bb
 CORE_ROOT=/opt/live-infinita-memoria-core
 CORE_DIR="$CORE_ROOT/$CORE_SHA"
@@ -49,6 +49,7 @@ PYTHONPATH=.:apps/world-runtime:apps/audio-service:apps/audience "$INSTALL/.venv
 
 # Fetch the actual V2 core by immutable commit; never take whatever is newest.
 stage="$(mktemp -d /tmp/live-memoria-v2.XXXXXXXX)"
+env_backup="$ENV_FILE.mvp018c-backup-$(date +%Y%m%d-%H%M%S)-$"
 applied=0
 rollback(){
     if (( applied )); then
@@ -62,6 +63,9 @@ rollback(){
             sudo rm -f "$INSTALL/$WORKER"
         fi
         sudo systemctl daemon-reload || true
+        if sudo test -f "$env_backup"; then
+            sudo cp -p "$env_backup" "$ENV_FILE"
+        fi
         # Never delete DATA_DIR, the API key, or snapshots from a partial ingest.
     fi
     rm -rf -- "$stage"
@@ -85,6 +89,7 @@ MEMORIA_API_KEY=local-test-key-0123456789abcdefghijklmnopqrstuvwxyz \
 MEMORIA_DATA_DIR="$stage/test-data" \
 MEMORIA_STORAGE_BACKEND=sqlite \
 MEMORIA_STORAGE_ALLOW_FALLBACK=false \
+MEMORIA_EXTERNAL_EPISODE_PERSISTENCE=sqlite-incremental \
 MEMORIA_CONVERSATION_RUNTIME=python \
 MEMORIA_EPISODIC_RUNTIME=python \
 "$INSTALL/.venv/bin/python" - <<'PY'
@@ -108,6 +113,7 @@ with TestClient(app) as client:
     assert status["conversation_runtime"] == "python"
     assert status["episodic_runtime"] == "python"
     assert status["backend"] == "sqlite"
+    assert status["external_episode_persistence"] == "sqlite-incremental"
     assert client.post("/api/v1/external/episodes",json=envelope).status_code == 401
     key = {"X-Memoria-Key":"local-test-key-0123456789abcdefghijklmnopqrstuvwxyz"}
     first = client.post("/api/v1/external/episodes",json=envelope,headers=key)
@@ -116,10 +122,10 @@ with TestClient(app) as client:
     assert first.json()["ack"] is True and first.json()["stored"] is True
     assert again.json()["ack"] is True and again.json()["stored"] is False
     assert first.json()["content_sha256"] == envelope["content_sha256"]
-    assert first.json()["persistence"]["backend"] == "sqlite"
+    assert first.json()["persistence"]["backend"] == "sqlite-incremental"
     assert first.json()["persistence"]["state_id"]
-    # Real disk-growth gate: this pin persists a full EvidenceCore snapshot per
-    # episode. Do not enable an unbounded timer until the backend is incremental.
+    # Verify the real incremental episode storage under the exact pinned V2
+    # source. Do not enable the timer if it falls back to full snapshots.
     from pathlib import Path
     for i in range(1, 8):
         sample = {
@@ -137,7 +143,51 @@ with TestClient(app) as client:
     disk_bytes = sum(p.stat().st_size for p in Path(os.environ["MEMORIA_DATA_DIR"]).rglob("*") if p.is_file())
     print("MVP018C_LOCAL_MEMORIA_DISK_GATE", "episodes=8", f"bytes={disk_bytes}", flush=True)
     if disk_bytes > 8 * 1024 * 1024:
-        raise SystemExit("MVP018C_LOCAL_MEMORIA_DISK_GATE_FAIL: snapshot storage exceeds 8 MiB for 8 episodes; refusing production timer")
+        raise SystemExit("MVP018C_LOCAL_MEMORIA_DISK_GATE_FAIL: incremental storage exceeds 8 MiB for 8 episodes; refusing production timer")
+    # Exercise Live's *actual* receipt/checkpoint bridge against the real,
+    # authenticated V2 endpoint before touching production or using sudo.
+    import json, sys
+    from pathlib import Path
+    from tempfile import TemporaryDirectory
+    sys.path.insert(0, str(Path.cwd() / "apps/world-runtime"))
+    from nov_local_memory_sync import sync_once
+    with TemporaryDirectory(prefix="local-nov-preflight-") as scratch:
+        source = Path(scratch)
+        (source / "world.json").write_text(
+            json.dumps({"world_id": "nov-live-autonomous-001"}), encoding="utf-8"
+        )
+        rows = []
+        for i in (8, 9):
+            rows.append({
+                **row,
+                "episode_id": f"plan:local-preflight-{i}",
+                "logical_tick": 7 + i,
+                "source": {
+                    **row["source"], "plan_id": f"local-preflight-{i}",
+                    "proposal_id": f"local-preflight-{i}",
+                },
+            })
+        ledger = source / "npc-episodes.jsonl"
+        ledger.write_text(
+            "".join(json.dumps(item, sort_keys=True) + "\n" for item in rows),
+            encoding="utf-8",
+        )
+        original = ledger.read_bytes()
+        def send(observation):
+            response = client.post(
+                "/api/v1/external/episodes", json=observation, headers=key
+            )
+            assert response.status_code == 201, response.text
+            return response.json()
+        checkpoint = source / "checkpoint.json"
+        result = sync_once(ledger, source / "world.json", checkpoint, send=send)
+        assert result["acked"] == 2 and result["stored"] == 2, result
+        assert sync_once(ledger, source / "world.json", checkpoint, send=send)["acked"] == 0
+        assert ledger.read_bytes() == original
+        assert checkpoint.is_file()
+        status = client.get("/api/v1/external/episodes/health", headers=key)
+        assert status.status_code == 200 and status.json()["observations"] == 10
+        print("MVP018C_LOCAL_BRIDGE_PREFLIGHT_OK", flush=True)
 print("MVP018C_LOCAL_CORE_PREFLIGHT_OK")
 PY
 
@@ -172,6 +222,7 @@ else:
         "MEMORIA_DATA_DIR=/var/lib/live-infinita/memoria-local",
         "MEMORIA_STORAGE_BACKEND=sqlite",
         "MEMORIA_STORAGE_ALLOW_FALLBACK=false",
+        "MEMORIA_EXTERNAL_EPISODE_PERSISTENCE=sqlite-incremental",
         "MEMORIA_CONVERSATION_RUNTIME=python",
         "MEMORIA_EPISODIC_RUNTIME=python",
         "MEMORIA_CONCEPT_NAMESPACE=live-local",
@@ -189,6 +240,45 @@ if [[ -e "$INSTALL/$WORKER" ]]; then
     sudo cp -a "$INSTALL/$WORKER" "$stage/previous-worker.py"
 fi
 applied=1
+# Earlier attempt may have left a private key with snapshot mode. Reuse the
+# exact existing key, archive its old env privately, and switch only the
+# explicit external-episode backend. Never print or regenerate the secret.
+sudo cp -p "$ENV_FILE" "$env_backup"
+sudo /usr/bin/python3 - "$ENV_FILE" <<'PY'
+import os, sys
+from pathlib import Path
+path = Path(sys.argv[1])
+if path.is_symlink() or (path.stat().st_mode & 0o077):
+    raise SystemExit("existing memoria-local env is not private")
+entries = path.read_text().splitlines()
+if sum(line.startswith("MEMORIA_API_KEY=") for line in entries) != 1:
+    raise SystemExit("local key is missing or duplicated")
+key = "MEMORIA_EXTERNAL_EPISODE_PERSISTENCE="
+values = [line.partition("=")[2] for line in entries if line.startswith(key)]
+if values and values != ["sqlite-incremental"]:
+    if values != ["snapshot"]:
+        raise SystemExit("conflicting incremental mode config")
+    entries = [line for line in entries if not line.startswith(key)]
+if not values or values == ["snapshot"]:
+    entries.append(key + "sqlite-incremental")
+new = "\n".join(entries) + "\n"
+temp = path.with_name(path.name + ".tmp." + str(os.getpid()))
+fd = os.open(temp, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+try:
+    with os.fdopen(fd, "w") as output:
+        output.write(new)
+        output.flush()
+        os.fsync(output.fileno())
+    os.replace(temp, path)
+    folder = os.open(path.parent, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+    try:
+        os.fsync(folder)
+    finally:
+        os.close(folder)
+finally:
+    if temp.exists():
+        temp.unlink()
+PY
 sudo install -o liveinfinita -g liveinfinita -m 0644 "$REPO/$WORKER" "$INSTALL/$WORKER"
 for unit in "$CORE_UNIT" "$WORKER_UNIT" "$TIMER_UNIT"; do
     sudo install -o root -g root -m 0644 "$REPO/deploy/$unit" "/etc/systemd/system/$unit"
@@ -223,8 +313,24 @@ systemctl show "$WORKER_UNIT" -p Result --value | grep -Fx success >/dev/null ||
 journalctl -u "$WORKER_UNIT" --since '5 minutes ago' --no-pager |
     grep -F 'LOCAL_MEMORIA_SYNC_OK' >/dev/null ||
     fail 'Nenhum recibo de ingestão local confirmado'
-[[ -s "$DATA_DIR/nov-ingest.checkpoint.json" && -s "$DATA_DIR/evidence/receipt.json" ]] ||
-    fail 'Checkpoint local ou recibo V2 não foi persistido'
+sudo test -s "$DATA_DIR/nov-ingest.checkpoint.json" &&
+sudo test -s "$DATA_DIR/external-episodes-incremental/external-episodes.sqlite3" ||
+    fail 'Checkpoint ou journal incremental V2 não foi persistido'
+sudo "$INSTALL/.venv/bin/python" - <<'PY'
+import json
+from pathlib import Path
+from urllib.request import Request, ProxyHandler, build_opener
+env=Path('/etc/live-infinita/memoria-local.env').read_text()
+key=next(line.partition('=')[2].strip() for line in env.splitlines()
+         if line.startswith('MEMORIA_API_KEY='))
+request=Request('http://127.0.0.1:8788/api/v1/external/episodes/health',
+                headers={'X-Memoria-Key':key})
+with build_opener(ProxyHandler({})).open(request,timeout=8) as response:
+    report=json.load(response)
+assert report['mode']=='sqlite-incremental',report
+assert report['observations']>=2,report
+print('MVP018C_INCREMENTAL_HEALTH_OK observations=',report['observations'])
+PY
 
 # Low-rate timer. No Live API, renderer or Single Writer dependency.
 sudo systemctl enable --now "$TIMER_UNIT"

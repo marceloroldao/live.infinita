@@ -170,12 +170,14 @@ def _validate_receipt(receipt: dict[str, Any], observation: dict[str, Any]) -> N
     if not isinstance(receipt.get("stored"), bool):
         raise LocalMemorySyncError("receipt_storage_status_missing")
     persisted = receipt.get("persistence")
-    if not isinstance(persisted, dict) or persisted.get("backend") not in {"sqlite", "bdr"}:
-        raise LocalMemorySyncError("receipt_persistence_missing")
-    if not isinstance(persisted.get("state_id"), str) or not persisted["state_id"]:
-        raise LocalMemorySyncError("receipt_state_id_missing")
-    if not isinstance(persisted.get("sha256"), str) or not HEX.fullmatch(persisted["sha256"]):
-        raise LocalMemorySyncError("receipt_digest_invalid")
+    if not isinstance(persisted, dict) or persisted.get("backend") != "sqlite-incremental":
+        raise LocalMemorySyncError("receipt_incremental_backend_required")
+    if persisted.get("state_id") != "external-episode:" + observation["record_key"]:
+        raise LocalMemorySyncError("receipt_state_id_mismatch")
+    if persisted.get("sha256") != observation["content_sha256"]:
+        raise LocalMemorySyncError("receipt_digest_mismatch")
+    if receipt.get("evidence_id") != "live-obs:" + observation["record_key"][:40]:
+        raise LocalMemorySyncError("receipt_evidence_id_mismatch")
 
 
 def _post_local(observation: dict[str, Any]) -> dict[str, Any]:
