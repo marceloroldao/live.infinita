@@ -142,6 +142,24 @@ class ContinuousMonitorTests(unittest.TestCase):
         self.assertNotIn("live:world", json.dumps(emitted))
         self.assertNotIn("record_key", json.dumps(emitted))
 
+    def test_indefinite_owner_without_any_ready_exits_fail_closed(self):
+        worker = FakeWorker()
+        elapsed = [0.0]
+        emitted = []
+        with self.assertRaisesRegex(RecallBlocked, "owner_no_ready_window"):
+            run(
+                cycles=None, period=10.0, refresh=4.0, canary=False,
+                worker=worker, sampler=lambda: frame(int(elapsed[0]) + 10),
+                clock=lambda: elapsed[0],
+                sleep=lambda seconds: elapsed.__setitem__(0, elapsed[0] + seconds),
+                emit=emitted.append,
+            )
+        self.assertTrue(worker.closed)
+        self.assertEqual(emitted[-1]["status"], "owner_no_ready_window")
+        self.assertFalse(emitted[-1]["world_mutated"])
+        self.assertFalse(emitted[-1]["selection_authority"])
+        self.assertLessEqual(len(emitted), 10)
+
     def test_production_wiring_off_and_invalid_config_blocked(self):
         runtime = (RUNTIME / "autonomous_runtime_main.py").read_text()
         self.assertNotIn("nov_memory_continuous", runtime)

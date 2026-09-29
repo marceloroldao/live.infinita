@@ -39,6 +39,8 @@ PUBLIC_STATUSES = frozenset((
 MAX_FINITE_CYCLES = 60
 LATENCY_WINDOW = 256
 PHASES = ("sampler", "peek", "submit")
+PRODUCTION_NO_READY_SECONDS = 120.0
+PRODUCTION_HEARTBEAT_CYCLES = 15
 
 
 class ContinuousOwnerMonitor:
@@ -231,6 +233,8 @@ def run(*, cycles: int | None = None, period: float = 2.0,
         original_int = signal.signal(signal.SIGINT, request_stop)
     prepared.start()
     start_at = clock()
+    last_ready_at = start_at
+    previous_ready_count = 0
     # Bounded for an eventual long-lived owner process. In the finite
     # 60-cycle canary this retains EVERY primary and follow-up step.
     step_times_ms: deque[float] = deque(maxlen=LATENCY_WINDOW)
@@ -272,8 +276,24 @@ def run(*, cycles: int | None = None, period: float = 2.0,
                         row["status"] = ready.status
                 except (RecallBlocked, ValueError, OSError):
                     row["status"] = "frame_unavailable"
-            output(row)
+            if runner.ready_reads > previous_ready_count:
+                last_ready_at = clock()
+                previous_ready_count = runner.ready_reads
+            if cycles is None and clock() - last_ready_at >= PRODUCTION_NO_READY_SECONDS:
+                # A continuously unavailable preparer must fail and let
+                # systemd apply bounded restart policy, never claim healthy.
+                output({
+                    "schema": SCHEMA, "status": "owner_no_ready_window",
+                    "samples": runner.samples, "ready_reads": runner.ready_reads,
+                    "abstentions": runner.abstentions,
+                    "historical_snapshot_only": True,
+                    "selection_authority": False, "world_mutated": False,
+                    "central_sync": False, "bdr_used": False,
+                })
+                raise RecallBlocked("owner_no_ready_window")
             count += 1
+            if cycles is not None or count % PRODUCTION_HEARTBEAT_CYCLES == 0:
+                output(row)
             if not stop and (cycles is None or count < cycles):
                 # A fixed multiple of the 500-ms world tick can repeatedly
                 # collide with the same writer phase. Shift only the probe's
