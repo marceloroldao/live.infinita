@@ -142,7 +142,8 @@ SINCE="$(date --utc '+%Y-%m-%d %H:%M:%S')"
 systemctl start "$UNIT" || fail "unit_start"
 echo "MVP018O_EPHEMERAL_UNIT_RUNNING"
 state=unknown
-for ((t=0;t<50;t++)); do
+# 60 continuous-mode cycles at 2 s plus bounded owner cleanup.
+for ((t=0;t<165;t++)); do
   state="$(systemctl show "$UNIT" --property=ActiveState --value)"
   [[ "$state" == inactive || "$state" == failed ]] && break
   sleep 1
