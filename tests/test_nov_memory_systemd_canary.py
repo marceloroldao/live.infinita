@@ -37,7 +37,7 @@ class SystemdCanaryTests(unittest.TestCase):
         unit = render_canary(self.template, self.root,
                              core=self.core, python=self.python)
         self.assertIn("ExecStart=" + str(self.python) + " " + str(self.root)
-                      + "/nov_memory_continuous.py --period 2 --refresh 4 --scratch-root /run/live-infinita-nov-preparer --cycles 12", unit)
+                      + "/nov_memory_continuous.py --period 2 --refresh 4 --scratch-root /run/live-infinita-nov-preparer --cycles 60", unit)
         self.assertIn("Restart=no", unit)
         self.assertNotIn("Restart=on-failure", unit)
         self.assertNotIn("[Install]", unit)
@@ -70,9 +70,10 @@ class SystemdCanaryTests(unittest.TestCase):
         return {
             "schema": "live-infinita-nov-owner-continuous/v1",
             "status": "ok", "cycles": CYCLES, "samples": CYCLES,
-            "ready_reads": 6, "abstentions": 6, "submissions": 5,
-            "frame_tick_advances": 10, "frame_tick_regressions": 0,
-            "status_counts": {"ready": 6, "pending": 6},
+            "ready_reads": 37, "abstentions": 23, "submissions": 15,
+            "longest_not_ready_streak": 6,
+            "frame_tick_advances": 51, "frame_tick_regressions": 0,
+            "status_counts": {"ready": 37, "pending": 23},
             "peak_rss_kib": 55555, "max_step_ms": 5.3,
             "slow_step_gt_250_count": 0, "slow_step_gt_500_count": 0,
             "historical_snapshot_only": True, "live_caught_up_claim": False,
@@ -84,7 +85,7 @@ class SystemdCanaryTests(unittest.TestCase):
         result = evaluate_journal("MVP018L_OWNER_STATUS {}\n"
             + "MVP018L_OWNER_STOPPED " + json.dumps(self.report()) + "\n")
         self.assertEqual(result["status"], "pass")
-        self.assertEqual(result["ready_reads"], 6)
+        self.assertEqual(result["ready_reads"], 37)
         self.assertNotIn("record_key", json.dumps(result))
         self.assertNotIn("live:world", json.dumps(result))
 
@@ -99,9 +100,12 @@ class SystemdCanaryTests(unittest.TestCase):
 
     def test_bad_accounting_or_authority_never_passes(self):
         for update, code in (
-            ({"ready_reads": 0, "abstentions": 12, "status_counts": {"pending": 12}},
+            ({"ready_reads": 0, "abstentions": CYCLES, "status_counts": {"pending": CYCLES}},
              "readiness_or_accounting"),
             ({"cycles": 11}, "readiness_or_accounting"),
+            ({"ready_reads": 11, "abstentions": 49,
+              "status_counts": {"ready": 11, "pending": 49}}, "readiness_or_accounting"),
+            ({"longest_not_ready_streak": 21}, "readiness_or_accounting"),
             ({"frame_tick_regressions": 1}, "readiness_or_accounting"),
             ({"selection_authority": True}, "authority_contract"),
             ({"main_runtime_wired": True}, "authority_contract"),
@@ -109,7 +113,7 @@ class SystemdCanaryTests(unittest.TestCase):
             ({"max_step_ms": 760.384, "slow_step_gt_250_count": 1,
               "slow_step_gt_500_count": 1}, "resource_budget"),
             ({"peak_rss_kib": 400000}, "resource_budget"),
-            ({"status_counts": {"ready": 6, "private": 6}}, "readiness_or_accounting"),
+            ({"status_counts": {"ready": 37, "private": 23}}, "readiness_or_accounting"),
         ):
             with self.subTest(update=update):
                 r = self.report()

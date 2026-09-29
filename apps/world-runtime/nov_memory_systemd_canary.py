@@ -14,7 +14,10 @@ from nov_memory_release_contract import CORE, PYTHON, render_unit, ReleaseBlocke
 from nov_memory_continuous import SCHEMA as OWNER_SCHEMA, PUBLIC_STATUSES
 
 SCHEMA = "live-infinita-nov-ephemeral-systemd-gate/v1"
-CYCLES = 12
+CYCLES = 60
+MIN_READY_READS = 12
+MIN_READY_FRACTION = 0.30
+MAX_NOT_READY_STREAK = 20
 MAX_STEP_MS = 250.0
 MAX_RSS_KIB = 384 * 1024
 MAX_JOURNAL_BYTES = 64 * 1024
@@ -68,7 +71,7 @@ def evaluate_journal(text: str) -> dict[str, Any]:
         return blocked("authority_contract")
     keys = ("cycles", "samples", "ready_reads", "abstentions",
             "submissions", "frame_tick_advances", "frame_tick_regressions",
-            "peak_rss_kib", "slow_step_gt_250_count",
+            "peak_rss_kib", "longest_not_ready_streak", "slow_step_gt_250_count",
             "slow_step_gt_500_count")
     if any(type(r.get(key)) is not int or r[key] < 0 for key in keys):
         return blocked("aggregate_metrics")
@@ -76,9 +79,11 @@ def evaluate_journal(text: str) -> dict[str, Any]:
     if (r.get("status") != "ok" or r["cycles"] != CYCLES
             or r["samples"] < CYCLES
             or r["ready_reads"] + r["abstentions"] != r["samples"]
-            or r["ready_reads"] < 2
+            or r["ready_reads"] < MIN_READY_READS
+            or r["ready_reads"] / r["samples"] < MIN_READY_FRACTION
+            or r["longest_not_ready_streak"] > MAX_NOT_READY_STREAK
             or r["submissions"] < 1
-            or r["frame_tick_advances"] < 2
+            or r["frame_tick_advances"] < 5
             or r["frame_tick_regressions"] != 0
             or not isinstance(counts, dict)
             or any(k not in PUBLIC_STATUSES or type(v) is not int or v < 0
@@ -95,6 +100,9 @@ def evaluate_journal(text: str) -> dict[str, Any]:
         "schema": SCHEMA, "status": "pass", "reasons": [],
         "cycles": r["cycles"], "samples": r["samples"],
         "ready_reads": r["ready_reads"], "abstentions": r["abstentions"],
+        "ready_fraction": round(r["ready_reads"] / r["samples"], 4),
+        "longest_not_ready_streak": r["longest_not_ready_streak"],
+        "status_counts": dict(sorted(counts.items())),
         "frame_tick_advances": r["frame_tick_advances"],
         "frame_tick_regressions": r["frame_tick_regressions"],
         "max_step_ms": step, "peak_rss_kib": r["peak_rss_kib"],
