@@ -172,6 +172,21 @@ class GenuineV2SnapshotTests(unittest.TestCase):
         self.assertEqual(private["private_evidence"][0]["observation"]["need"], "hunger")
         self.assertEqual(private["private_evidence"][0]["provenance"], "live.infinita:npc_episode_v1")
         self.assertEqual(len(private["private_evidence"][0]["record_key"]), 64)
+        # End-to-end: a real rehydrated EvidenceCore receipt can supply the
+        # private, provenance-verified context for the existing shadow frame.
+        from memoria_v2_adapter import build_nov_cognitive_frame
+        from nov_memory_context_shadow import freeze_memory_context
+        frame = build_nov_cognitive_frame(
+            world={"world_id": "nov-test", "current_tick": 20, "sequence": 20,
+                   "environment": {"period": "day", "weather": "sun"}},
+            observer={"id": "nov", "region_id": "forest", "type": "human",
+                      "properties": {"needs": {"hunger": 0.8}}},
+            targets={},
+        )
+        context = freeze_memory_context(frame, private)
+        self.assertEqual(context.public_view["evidence_count"], 2)
+        self.assertFalse(context.public_view["used_to_rank"])
+        self.assertNotIn("live-obs:", json.dumps(context.public_view))
         self.assertEqual(self.store.count, original_count)
         self.assertEqual(self.world.read_text()[:1], "{")
         self.assertEqual(self.checkpoint.read_bytes(), checkpoint_bytes)
