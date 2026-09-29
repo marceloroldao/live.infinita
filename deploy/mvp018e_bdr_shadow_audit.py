@@ -13,7 +13,7 @@ import re
 import stat
 
 SCHEMA = "memoria-v2-bdr-observed-episode-mirror-proof/v1"
-DIGEST = re.compile(r"[0-9a-f]{64}\\Z")
+DIGEST = re.compile(r"[0-9a-f]{64}\Z")
 
 
 class AuditError(ValueError):
