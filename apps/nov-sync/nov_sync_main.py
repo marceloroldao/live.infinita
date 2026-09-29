@@ -37,7 +37,9 @@ def configured_session(env: dict[str, str]) -> tuple[DeviceSession, Path, Path, 
         raise DeliveryError("device private key must be owned by runner and mode 0600")
     world_dir = Path(values["LIVE_INFINITA_NOV_SYNC_WORLD_DIR"])
     checkpoint = Path(values["LIVE_INFINITA_NOV_SYNC_CHECKPOINT"])
-    if checkpoint.is_relative_to(world_dir):
+    if not world_dir.is_absolute() or not checkpoint.is_absolute():
+        raise DeliveryError("world directory and checkpoint must be absolute paths")
+    if checkpoint.resolve(strict=False).is_relative_to(world_dir.resolve(strict=False)):
         raise DeliveryError("sync checkpoint must stay outside authoritative world tree")
     device = DeviceSession(
         server_url=values["LIVE_INFINITA_NOV_SYNC_SERVER_URL"],
