@@ -151,9 +151,9 @@ class OwnerAsyncDualLanePreparation:
             except Exception as exc:
                 # Only a fixed failure category, never private exception text.
                 reason = (
-                    "scratch_permission" if isinstance(exc, PermissionError)
-                    else "sqlite_validation" if isinstance(exc, sqlite3.Error)
-                    else "typed_validation" if isinstance(exc, RecallBlocked)
+                    "permission_denied" if isinstance(exc, PermissionError)
+                    else "sqlite_error" if isinstance(exc, sqlite3.Error)
+                    else "verification_blocked" if isinstance(exc, RecallBlocked)
                     else "unexpected_failure"
                 )
                 with self._cv:
@@ -211,8 +211,8 @@ class OwnerAsyncDualLanePreparation:
             "central_sync": False,
         }
         if status == "blocked" and reason in {
-            "scratch_permission", "sqlite_validation",
-            "typed_validation", "unexpected_failure",
+            "permission_denied", "sqlite_error",
+            "verification_blocked", "unexpected_failure",
         }:
             public["blocked_reason"] = reason
         if status != "ready" or snapshot is None:
