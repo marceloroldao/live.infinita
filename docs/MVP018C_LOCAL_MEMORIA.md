@@ -6,6 +6,8 @@
 
 O backend do `ProductEvidenceService.save()` da RC2 serializa todo o grafo em cada operação. O primeiro ensaio sobre apenas 16 experiências de Nov consumiu **66 MiB** nesse formato SQLite; por isso **não** o utilizamos como checkpoint periódico da Live. Mantemos a lógica relacional do EvidenceCore genuíno, mas a Live fornece um adaptador de persistência incremental SQLite por episódio (uma linha por observação tipada, mais checkpoint na mesma transação). A Memoria.ia é reconstruída fielmente a partir dessas observações originais na abertura.
 
+No ensaio de laboratório sobre o ledger real da Live, o novo adaptador manteve **32 episódios / 128 relações em 68 KiB**, com checkpoint continuado entre quatro execuções. Este é um ensaio curto, não ainda uma curva medida de capacidade para toda a vida de Nov.
+
 Não representa a stack completa BDR/nativo, um servidor REST Memoria.ia, ou a inferência estrutural multimodal total. Essas possibilidades ficam para próximos gates comparativos. Nenhuma segunda stack Docker, LLM ou GPU é iniciada na VM.
 
 ## Fluxo de vida
