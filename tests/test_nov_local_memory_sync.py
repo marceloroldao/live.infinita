@@ -134,9 +134,9 @@ class LocalMemorySyncTests(unittest.TestCase):
             self.run_sync()
 
     def test_partial_line_is_not_acknowledged(self):
-        self.run_sync(max_episodes=2)
+        self.run_sync(max_episodes=3)
         self.ledger.write_bytes(self.ledger.read_bytes().removesuffix(b"\n"))
-        # Existing ledger record is truncated after an earlier ACK, fail closed.
+        # The acknowledged third record lost its newline: never accept mutation.
         with self.assertRaisesRegex(MODULE.LocalMemorySyncError, "last_acked_line_rewritten|ledger_prefix_rewritten|ledger_truncated"):
             self.run_sync()
 
