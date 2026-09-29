@@ -79,6 +79,9 @@ jobs:
           MEMORIA_CONVERSATION_RUNTIME=python \
           MEMORIA_EPISODIC_RUNTIME=python \
           python /tmp/live-memoria-incremental-preflight.py
+          # Unlike generic unit discovery, this gate MUST execute the real pinned V2 recall.
+          PYTHONPATH="/tmp/live-memoria-incremental-core/src:$GITHUB_WORKSPACE" \
+            python tests/test_nov_memory_recall_shadow.py -v
 
       - name: Validate monitor and Manager JavaScript
         run: |
