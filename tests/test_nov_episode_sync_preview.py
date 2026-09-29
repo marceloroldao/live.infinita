@@ -183,6 +183,17 @@ print('ISOLATED_NOV_SYNC_PREVIEW_OK')
         self.assertNotIn('urlopen(', module)
         self.assertNotIn('requests.post', module)
         self.assertNotIn('open("a"', module)
+        html = (ROOT / 'apps/manager/index.html').read_text()
+        js = (ROOT / 'apps/manager/app.js').read_text()
+        deploy = (ROOT / 'deploy/mvp018b-sync-preview.sh').read_text()
+        unit = (ROOT / 'deploy/live-infinita-renderer.service').read_text()
+        self.assertIn('id="nov-sync-preview-button"', html)
+        self.assertIn('api(\'/api/manage/nov/sync/preview?cursor=0\')', js)
+        self.assertIn("central_receipt", js)
+        self.assertIn('Requires=live-infinita.service', unit)
+        self.assertIn('Single Writer reiniciou', deploy)
+        self.assertIn('native fast sky enabled', deploy)
+        self.assertNotIn('sudo systemctl restart "$WORLD"', deploy)
 
 
 if __name__ == '__main__':
