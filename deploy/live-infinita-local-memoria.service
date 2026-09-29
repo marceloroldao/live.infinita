@@ -1,0 +1,31 @@
+[Unit]
+Description=Live Infinita - Memoria.ia V2 RC2 local Nov mirror (offline, bounded)
+Documentation=https://github.com/marceloroldao/live.infinita/blob/main/docs/MVP018C_LOCAL_MEMORIA.md
+After=local-fs.target
+
+[Service]
+Type=oneshot
+User=liveinfinita
+Group=liveinfinita
+WorkingDirectory=/opt/live.infinita
+Environment=PYTHONPATH=/opt/live-infinita-memoria-rc2/src:/opt/live.infinita
+ExecStart=/opt/live.infinita/.venv/bin/python /opt/live.infinita/apps/world-runtime/local_memoria_worker.py --limit 8
+TimeoutStartSec=60
+Nice=10
+IOSchedulingClass=idle
+CPUQuota=25%
+MemoryMax=512M
+UMask=0077
+NoNewPrivileges=true
+PrivateNetwork=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+PrivateTmp=true
+PrivateDevices=true
+ReadOnlyPaths=/var/lib/live-infinita/autonomous-world /opt/live-infinita-memoria-rc2 /opt/live.infinita
+ReadWritePaths=/var/lib/live-infinita/memoria-local
+RestrictAddressFamilies=AF_UNIX
+LockPersonality=true
