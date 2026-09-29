@@ -18,7 +18,8 @@ from typing import Any
 
 from memoria_v2_adapter import CognitiveFrame
 from nov_memory_context_shadow import MemoryContextRejected, freeze_memory_context
-from nov_memory_recall_cache import VersionedNovRecallCache
+from nov_memory_recall_cache import VersionedNovRecallCache, frame_query
+from nov_trajectory_recall_shadow import compare_trajectory_recall, trajectory_distribution
 from nov_memory_recall_shadow import (
     FIELDS, MAX_WORLD_BYTES, RecallBlocked, _read_bounded_json, recall_once,
 )
@@ -110,6 +111,44 @@ def diagnose(
             or first["nov_observations"] != initial["nov_observations"]):
         raise RecallBlocked("cache_proof_disagrees")
     memory_context = freeze_memory_context(frame, first)
+    # Comparison is advisory only, using exactly the records already
+    # authenticated by the V2 EvidenceCore; no second persistence path.
+    eligible = [
+        row for row in cache._validated_index if row["logical_tick"] <= frame.tick_id
+    ]
+    trajectories = trajectory_distribution(eligible)
+    if eligible:
+        seed = max(eligible, key=lambda row: (row["logical_tick"], row["record_key"]))
+        query = frame_query(frame, seed)
+    else:
+        seed, query = None, {}
+    if query:
+        comparison = compare_trajectory_recall(
+            eligible, query=query, exclude_key=seed["record_key"], limit=5,
+        )
+        if (comparison["matching_records"] != first["historical_matches"]
+                or comparison["baseline"]["overlap_counts"]
+                != [row["matched_address_count"] for row in first["selected"]]):
+            raise RecallBlocked("trajectory_baseline_mismatch")
+    else:
+        comparison = {
+            "matching_records": 0,
+            "candidate_address_profiles": 0,
+            "candidate_outcome_profiles": 0,
+            "candidate_trajectory_profiles": 0,
+            "baseline": {
+                "retrieved_count": 0, "unique_address_profiles": 0,
+                "unique_observed_trajectory_profiles": 0, "full_address_matches": 0,
+                "partial_address_matches": 0, "overlap_counts": [],
+            },
+            "diversified": {
+                "retrieved_count": 0, "unique_address_profiles": 0,
+                "unique_observed_trajectory_profiles": 0, "full_address_matches": 0,
+                "partial_address_matches": 0, "overlap_counts": [],
+            },
+            "selection_authority": False, "causal_inference_claim": False,
+            "new_evidence_created": False,
+        }
     warm: list[float] = []
     for _ in range(samples):
         started = perf_counter_ns()
@@ -132,6 +171,8 @@ def diagnose(
         "query_address_count": first["query_address_count"],
         "matched_address_counts": memory_context.public_view["matched_address_counts"],
         **patterns,
+        "trajectory_distribution": trajectories,
+        "trajectory_recall_comparison": comparison,
         "cold_validation_ms": round(cold_ms, 3),
         "warm_median_ms": round(statistics.median(warm), 3),
         "warm_max_ms": round(max(warm), 3),
