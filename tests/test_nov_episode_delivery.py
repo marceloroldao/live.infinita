@@ -147,6 +147,8 @@ class NovEpisodeDeliveryTests(Fixtures):
         state = _read_checkpoint(self.checkpoint)
         self.assertEqual(state["schema"], CHECKPOINT_SCHEMA)
         self.assertEqual(state["acknowledged"], 1)
+        self.assertEqual(state["server_id"], SERVER_ID)
+        self.assertEqual(state["device_id"], DEVICE_ID)
         self.assertEqual(state["last_record_key"], first["record_key"])
         self.assertEqual(stat.S_IMODE(self.checkpoint.stat().st_mode), 0o600)
         self.assertEqual(stat.S_IMODE(self.checkpoint.with_suffix(".lock").stat().st_mode), 0o600)
@@ -229,6 +231,42 @@ class NovEpisodeDeliveryTests(Fixtures):
         with self.assertRaises(DeliveryError):
             self.deliver()
         self.assertEqual(self.checkpoint.read_bytes(), checkpoint)
+
+    def test_checkpoint_blocks_changed_server_or_device(self):
+        self.write([row(0), row(1)])
+        self.deliver()
+        prior = self.checkpoint.read_bytes()
+        for server_id, device_id in (("different-central", DEVICE_ID), (SERVER_ID, "another-device")):
+            with self.subTest(server_id=server_id, device_id=device_id):
+                replacement = self.central.session()
+                replacement.server_id = server_id
+                replacement.device_id = device_id
+                before_count = len(self.central.events)
+                with self.assertRaisesRegex(DeliveryError, "identity changed"):
+                    deliver_next(
+                        episode_file=self.ledger, world_file=self.world,
+                        checkpoint_file=self.checkpoint, device=replacement,
+                    )
+                self.assertEqual(len(self.central.events), before_count)
+                self.assertEqual(self.checkpoint.read_bytes(), prior)
+
+    def test_mutation_while_remote_ack_is_in_flight_does_not_commit_cursor(self):
+        self.write([row(0)])
+        central = FakeCentral()
+        original = central.transport
+        def rewrite_during_send(path, payload, token):
+            result = original(path, payload, token)
+            if path == "/api/server/v1/device/observations/npc-episodes":
+                with self.ledger.open("r+b") as stream:
+                    stream.seek(16)
+                    current = stream.read(1)
+                    stream.seek(16)
+                    stream.write(b"X" if current != b"X" else b"Y")
+            return result
+        central.transport = rewrite_during_send
+        with self.assertRaisesRegex(DeliveryError, "changed while awaiting receipt"):
+            self.deliver(central=central)
+        self.assertFalse(self.checkpoint.exists())
 
     def test_world_identity_mismatch_preserves_checkpoint(self):
         self.write([row(0), row(1)])
