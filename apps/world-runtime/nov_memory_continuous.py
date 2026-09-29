@@ -192,7 +192,10 @@ def run(*, cycles: int | None = None, period: float = 2.0,
             output(row)
             count += 1
             if not stop and (cycles is None or count < cycles):
-                sleep(period)
+                # A fixed multiple of the 500-ms world tick can repeatedly
+                # collide with the same writer phase. Shift only the probe's
+                # next read; never delay the authoritative writer.
+                sleep(period * 0.67 if row["status"] == "frame_unavailable" else period)
         aggregate = {
             "schema": SCHEMA,
             "status": "ok" if runner.ready_reads else "no_ready_observations",
