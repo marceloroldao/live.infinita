@@ -60,6 +60,14 @@ cleanup(){
       rc=2
     fi
   fi
+  if [[ "$stopped" == 1 ]]; then
+    # The dedicated 0700 RuntimeDirectory contains only ephemeral V2 copies.
+    # systemd normally removes it; ensure no scratch remains after a safe stop.
+    if [[ -d /run/live-infinita-nov-preparer &&
+          ! -L /run/live-infinita-nov-preparer ]]; then
+      rm -rf -- /run/live-infinita-nov-preparer
+    fi
+  fi
   if [[ "$stopped" == 1 && "$created" == 1 &&
         "$RELEASE" =~ ^/opt/live-infinita-nov-preparer/releases/[a-f0-9]{40}$ ]]; then
     rm -rf -- "$RELEASE"
@@ -72,6 +80,11 @@ cleanup(){
   fi
   if [[ "$created" == 1 && -e "$RELEASE" ]]; then
     echo "MVP018O_ROLLBACK_BLOCKED release_file" >&2
+    rc=2
+  fi
+  if [[ -e /run/live-infinita-nov-preparer ||
+        -L /run/live-infinita-nov-preparer ]]; then
+    echo "MVP018O_ROLLBACK_BLOCKED runtime_scratch" >&2
     rc=2
   fi
   if [[ "$rc" == 0 ]]; then
