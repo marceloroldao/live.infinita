@@ -127,6 +127,16 @@ class ContinuousMonitorTests(unittest.TestCase):
         self.assertEqual(sum(result["status_counts"].values()), result["samples"])
         self.assertEqual(result["ready_reads"] + result["abstentions"], result["samples"])
         self.assertEqual(result["status_counts"]["ready"], result["ready_reads"])
+        self.assertEqual(result["latency_window_samples"], result["samples"])
+        self.assertEqual(set(result["phase_max_ms"]), {"sampler", "peek", "submit"})
+        self.assertEqual(set(result["worst_step_phase_ms"]),
+                         {"sampler", "peek", "submit", "unattributed"})
+        self.assertAlmostEqual(
+            sum(result["worst_step_phase_ms"].values()),
+            result["max_step_ms"], delta=0.2,
+        )
+        self.assertLessEqual(result["slow_step_gt_500_count"],
+                             result["slow_step_gt_250_count"])
         self.assertGreaterEqual(result["peak_rss_kib"], 1)
         self.assertLessEqual(result["median_step_ms"], result["max_step_ms"])
         self.assertNotIn("live:world", json.dumps(emitted))

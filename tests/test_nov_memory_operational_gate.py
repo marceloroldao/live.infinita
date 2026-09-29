@@ -33,6 +33,14 @@ def sample() -> dict:
         "frame_tick_advances": 51, "frame_tick_regressions": 0,
         "peak_rss_kib": 53248, "max_step_ms": 37.2,
         "median_step_ms": 1.98,
+        "latency_window_samples": 64,
+        "slow_step_gt_250_count": 0,
+        "slow_step_gt_500_count": 0,
+        "phase_max_ms": {"sampler": 32.0, "peek": 4.0, "submit": 1.0},
+        "worst_step_phase_ms": {
+            "sampler": 32.0, "peek": 4.0,
+            "submit": 1.0, "unattributed": 0.2,
+        },
         "historical_snapshot_only": True, "live_caught_up_claim": False,
         "main_runtime_wired": False, "selection_authority": False,
         "world_mutated": False, "central_sync": False, "bdr_used": False,
@@ -86,6 +94,42 @@ class OperationalGateTests(unittest.TestCase):
                          ["schema_invalid"])
         self.assertIn("metrics_invalid",
                       evaluate_operational({**sample(), "samples": True})["reasons"])
+
+    def test_real_outlier_stays_blocked_with_numeric_phase_explanation(self):
+        report = sample()
+        report["max_step_ms"] = 760.384
+        report["slow_step_gt_250_count"] = 1
+        report["slow_step_gt_500_count"] = 1
+        report["phase_max_ms"] = {
+            "sampler": 754.0, "peek": 4.0, "submit": 1.0,
+        }
+        report["worst_step_phase_ms"] = {
+            "sampler": 754.0, "peek": 4.0, "submit": 1.0,
+            "unattributed": 1.384,
+        }
+        result = evaluate_operational(report)
+        self.assertEqual(result["status"], "blocked")
+        self.assertEqual(result["reasons"], ["resource_budget"])
+        self.assertEqual(result["worst_step_phase_ms"]["sampler"], 754.0)
+        self.assertEqual(result["slow_step_gt_500_count"], 1)
+
+    def test_missing_or_impossible_phase_data_fails_closed(self):
+        for change in (
+            {"phase_max_ms": {}},
+            {"worst_step_phase_ms": {"sampler": 1.0}},
+            {"worst_step_phase_ms": {
+                "sampler": 32.0, "peek": 4.0, "submit": 1.0,
+                "unattributed": 22.0,
+            }},
+            {"latency_window_samples": 20},
+            {"slow_step_gt_250_count": 65},
+            {"slow_step_gt_500_count": 1},
+        ):
+            with self.subTest(change=change):
+                report = sample()
+                report.update(change)
+                self.assertIn("phase_telemetry_invalid",
+                              evaluate_operational(report)["reasons"])
 
     def test_source_changes_are_measurements_not_forced_failures(self):
         report = sample()

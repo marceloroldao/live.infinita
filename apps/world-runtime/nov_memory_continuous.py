@@ -7,7 +7,7 @@ The worker's private V2 index stays in memory of the service account.
 from __future__ import annotations
 
 import argparse
-from collections import Counter
+from collections import Counter, deque
 import json
 import resource
 import statistics
@@ -37,6 +37,8 @@ PUBLIC_STATUSES = frozenset((
     "frame_lagged", "query_changed", "closed", "unavailable",
 ))
 MAX_FINITE_CYCLES = 60
+LATENCY_WINDOW = 256
+PHASES = ("sampler", "peek", "submit")
 
 
 class ContinuousOwnerMonitor:
@@ -71,15 +73,26 @@ class ContinuousOwnerMonitor:
         self.last_observed_tick: int | None = None
         self.frame_tick_advances = 0
         self.frame_tick_regressions = 0
+        self.last_step_phase_ms: dict[str, float] = {name: 0.0 for name in PHASES}
+        self.max_phase_ms: dict[str, float] = {name: 0.0 for name in PHASES}
+
+    def _record_phase(self, name: str, started: float) -> None:
+        elapsed_ms = (perf_counter() - started) * 1000
+        self.last_step_phase_ms[name] = elapsed_ms
+        self.max_phase_ms[name] = max(self.max_phase_ms[name], elapsed_ms)
 
     def step(self) -> dict[str, Any]:
         """One bounded observational iteration; no calls into world authority."""
         self.samples += 1
+        self.last_step_phase_ms = {name: 0.0 for name in PHASES}
+        phase_started = perf_counter()
         try:
             frame = self.sampler()
         except (RecallBlocked, ValueError, OSError, BlockingIOError):
+            self._record_phase("sampler", phase_started)
             self.abstentions += 1
             return self._public("frame_unavailable", queued=False)
+        self._record_phase("sampler", phase_started)
         if type(frame.tick_id) is not int or frame.tick_id < 0:
             self.abstentions += 1
             return self._public("frame_unavailable", queued=False)
@@ -90,11 +103,14 @@ class ContinuousOwnerMonitor:
                 self.frame_tick_regressions += 1
         self.last_observed_tick = frame.tick_id
         now = self.clock()
+        phase_started = perf_counter()
         try:
             view = self.worker.peek(frame)
         except (RecallBlocked, ValueError):
+            self._record_phase("peek", phase_started)
             self.abstentions += 1
             return self._public("context_rejected", queued=False)
+        self._record_phase("peek", phase_started)
         if view.status == "ready":
             self.pending_since = None
         elif (self.pending_since is not None
@@ -111,11 +127,14 @@ class ContinuousOwnerMonitor:
         )
         queued = False
         if should_refresh:
+            phase_started = perf_counter()
             try:
                 self.worker.submit(frame)
             except (RecallBlocked, ValueError):
+                self._record_phase("submit", phase_started)
                 self.abstentions += 1
                 return self._public("submission_blocked", queued=False)
+            self._record_phase("submit", phase_started)
             self.last_submit = now
             self.pending_since = now
             self.submissions += 1
@@ -212,13 +231,35 @@ def run(*, cycles: int | None = None, period: float = 2.0,
         original_int = signal.signal(signal.SIGINT, request_stop)
     prepared.start()
     start_at = clock()
-    step_times_ms: list[float] = []
+    # Bounded for an eventual long-lived owner process. In the finite
+    # 60-cycle canary this retains EVERY primary and follow-up step.
+    step_times_ms: deque[float] = deque(maxlen=LATENCY_WINDOW)
+    max_step_ms = 0.0
+    slow_step_gt_250_count = 0
+    slow_step_gt_500_count = 0
+    worst_step_phase_ms = {**{name: 0.0 for name in PHASES}, "unattributed": 0.0}
+
+    def timed_step() -> dict[str, Any]:
+        nonlocal max_step_ms, slow_step_gt_250_count, slow_step_gt_500_count
+        step_started = perf_counter()
+        row = runner.step()
+        elapsed = (perf_counter() - step_started) * 1000
+        step_times_ms.append(elapsed)
+        slow_step_gt_250_count += int(elapsed > 250.0)
+        slow_step_gt_500_count += int(elapsed > 500.0)
+        if elapsed > max_step_ms:
+            max_step_ms = elapsed
+            for name in PHASES:
+                worst_step_phase_ms[name] = runner.last_step_phase_ms[name]
+            worst_step_phase_ms["unattributed"] = max(
+                0.0, elapsed - sum(runner.last_step_phase_ms.values()),
+            )
+        return row
+
     try:
         count = 0
         while not stop and (cycles is None or count < cycles):
-            step_started = perf_counter()
-            row = runner.step()
-            step_times_ms.append((perf_counter() - step_started) * 1000)
+            row = timed_step()
             if canary and row["status"] == "pending":
                 # Allowed to wait for the service account's background worker
                 # here; production's 500-ms world loop is never involved.
@@ -226,7 +267,7 @@ def run(*, cycles: int | None = None, period: float = 2.0,
                     frame = observe()
                     ready = prepared.wait_ready(frame, timeout=5.0)
                     if ready.status == "ready":
-                        row = runner.step()
+                        row = timed_step()
                     else:
                         row["status"] = ready.status
                 except (RecallBlocked, ValueError, OSError):
@@ -252,9 +293,18 @@ def run(*, cycles: int | None = None, period: float = 2.0,
             "frame_tick_regressions": runner.frame_tick_regressions,
             "ready_fraction": round(runner.ready_reads / runner.samples, 4)
             if runner.samples else 0.0,
-            "max_step_ms": round(max(step_times_ms, default=0.0), 3),
+            "max_step_ms": round(max_step_ms, 3),
             "median_step_ms": round(statistics.median(step_times_ms), 3)
             if step_times_ms else 0.0,
+            "latency_window_samples": len(step_times_ms),
+            "slow_step_gt_250_count": slow_step_gt_250_count,
+            "slow_step_gt_500_count": slow_step_gt_500_count,
+            "phase_max_ms": {
+                name: round(runner.max_phase_ms[name], 3) for name in PHASES
+            },
+            "worst_step_phase_ms": {
+                name: round(value, 3) for name, value in worst_step_phase_ms.items()
+            },
             "peak_rss_kib": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,
             "elapsed_seconds": round(max(0.0, clock() - start_at), 3),
             "historical_snapshot_only": True,

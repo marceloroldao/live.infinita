@@ -8,11 +8,12 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 from pathlib import Path
 import stat
 from typing import Any
 
-from nov_memory_continuous import PUBLIC_STATUSES, SCHEMA
+from nov_memory_continuous import PUBLIC_STATUSES, SCHEMA, PHASES, LATENCY_WINDOW
 
 EXPECTED_CYCLES = 60
 MAX_LOG_BYTES = 128 * 1024
@@ -86,6 +87,29 @@ def evaluate_operational(report: dict[str, Any]) -> dict[str, Any]:
             or report["peak_rss_kib"] == 0
             or report["peak_rss_kib"] > MAX_OWNER_RSS_KIB):
         reasons.append("resource_budget")
+    stages = report.get("phase_max_ms")
+    worst = report.get("worst_step_phase_ms")
+    phase_keys = set(PHASES)
+    expected_worst = phase_keys | {"unattributed"}
+    if (not isinstance(stages, dict) or set(stages) != phase_keys
+            or not isinstance(worst, dict) or set(worst) != expected_worst
+            or any(type(value) not in (int, float) or not math.isfinite(value)
+                   or value < 0 for value in [*stages.values(), *worst.values()])
+            or not _is_uint(report.get("slow_step_gt_250_count"))
+            or not _is_uint(report.get("slow_step_gt_500_count"))
+            or not _is_uint(report.get("latency_window_samples"))):
+        reasons.append("phase_telemetry_invalid")
+    elif (report["latency_window_samples"] != min(report["samples"], LATENCY_WINDOW)
+            or not 0 <= report["slow_step_gt_500_count"]
+                   <= report["slow_step_gt_250_count"] <= report["samples"]
+            or (type(step) in (int, float) and math.isfinite(step)
+                and (any(value > step + 0.2 for value in stages.values())
+                     or abs(sum(worst.values()) - step) > 0.2
+                     or (step > MAX_STEP_MS
+                         and report["slow_step_gt_250_count"] == 0)
+                     or (step > 500
+                         and report["slow_step_gt_500_count"] == 0)))):
+        reasons.append("phase_telemetry_invalid")
     return {
         "schema": "live-infinita-nov-operational-canary-gate/v1",
         "status": "pass" if not reasons else "blocked",
@@ -101,6 +125,13 @@ def evaluate_operational(report: dict[str, Any]) -> dict[str, Any]:
         "frame_tick_regressions": report["frame_tick_regressions"],
         "peak_rss_kib": report["peak_rss_kib"],
         "max_step_ms": step,
+        "slow_step_gt_250_count": report.get("slow_step_gt_250_count"),
+        "slow_step_gt_500_count": report.get("slow_step_gt_500_count"),
+        "latency_window_samples": report.get("latency_window_samples"),
+        "phase_max_ms": stages if isinstance(stages, dict)
+        and set(stages) == set(PHASES) else None,
+        "worst_step_phase_ms": worst if isinstance(worst, dict)
+        and set(worst) == set(PHASES) | {"unattributed"} else None,
         "historical_snapshot_only": True,
         "main_runtime_wired": False,
         "selection_authority": False,
