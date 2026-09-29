@@ -110,7 +110,7 @@ sudo systemctl start "$WORKER"
     fail "Worker retornou status diferente de zero"
 sudo -u liveinfinita env PYTHONPATH="$VENDOR/src:$INSTALL" \
     "$INSTALL/.venv/bin/python" "$INSTALL/$local_worker" --status
-test -s "$DATA/checkpoint.json" || fail "Checkpoint local não foi gravado"
+test -s "$DATA/memoria-local.sqlite3" || fail "Memória local SQLite não foi gravada"
 sudo systemctl enable --now "$TIMER" >/dev/null
 systemctl is-active --quiet "$TIMER" || fail "Timer local não está ativo"
 [[ "$(systemctl is-enabled "$TIMER")" == enabled ]] || fail "Timer local não foi habilitado"
