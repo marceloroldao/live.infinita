@@ -182,6 +182,16 @@ class TrialTests(unittest.TestCase):
                 OwnerLiveFramePilot(frame_reader=lambda: None,
                                     preparer=FakePrepared(), **opts)
 
+    def test_operator_script_never_enables_services_or_copies_private_data(self):
+        script = (RUNTIME.parents[1] / "deploy/mvp018l-nov-live-frame-pilot.sh").read_text()
+        self.assertIn("sudo -u liveinfinita", script)
+        self.assertIn("--cycles 20 --interval 1", script)
+        self.assertIn('umask 077', script)
+        self.assertIn("nov-live-frame-pilot.log", script)
+        self.assertNotIn("systemctl restart", script)
+        self.assertNotIn("systemctl enable", script)
+        self.assertNotIn('cp -- "$ROOT', script)
+
     def test_never_hooks_into_authoritative_tick(self):
         code = (RUNTIME / "autonomous_runtime_main.py").read_text()
         self.assertNotIn("OwnerLiveFramePilot", code)
