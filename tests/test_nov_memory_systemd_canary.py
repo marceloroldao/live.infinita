@@ -37,7 +37,7 @@ class SystemdCanaryTests(unittest.TestCase):
         unit = render_canary(self.template, self.root,
                              core=self.core, python=self.python)
         self.assertIn("ExecStart=" + str(self.python) + " " + str(self.root)
-                      + "/nov_memory_continuous.py --period 2 --refresh 4 --cycles 12", unit)
+                      + "/nov_memory_continuous.py --period 2 --refresh 4 --scratch-root /run/live-infinita-nov-preparer --cycles 12", unit)
         self.assertIn("Restart=no", unit)
         self.assertNotIn("Restart=on-failure", unit)
         self.assertNotIn("[Install]", unit)
@@ -49,6 +49,9 @@ class SystemdCanaryTests(unittest.TestCase):
             "NoNewPrivileges=true", "PrivateTmp=true",
             "ProtectSystem=strict", "IPAddressDeny=any",
             "MemoryMax=384M", "StartLimitBurst=3",
+            "RuntimeDirectory=live-infinita-nov-preparer",
+            "RuntimeDirectoryMode=0700",
+            "ReadWritePaths=/run/live-infinita-nov-preparer",
         ):
             self.assertIn(entry, unit)
 
