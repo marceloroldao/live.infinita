@@ -163,6 +163,15 @@ class GenuineV2SnapshotTests(unittest.TestCase):
         self.assertFalse(out["world_mutated"])
         self.assertFalse(out["selection_authority"])
         self.assertFalse(out["bdr_used"])
+        self.assertNotIn("private_evidence", out)
+        private = nov.recall_once(
+            source=self.source, world_path=self.world,
+            checkpoint_path=self.checkpoint, private_root=self.mem,
+            include_evidence=True,
+        )
+        self.assertEqual(private["private_evidence"][0]["observation"]["need"], "hunger")
+        self.assertEqual(private["private_evidence"][0]["provenance"], "live.infinita:npc_episode_v1")
+        self.assertEqual(len(private["private_evidence"][0]["record_key"]), 64)
         self.assertEqual(self.store.count, original_count)
         self.assertEqual(self.world.read_text()[:1], "{")
         self.assertEqual(self.checkpoint.read_bytes(), checkpoint_bytes)
