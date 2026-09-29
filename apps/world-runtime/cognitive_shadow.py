@@ -9,6 +9,7 @@ from typing import Any, Callable
 
 from cognitive_exante import build_exante_forecast, evaluate_exante_forecast
 from cognitive_contextual import freeze_contextual_forecast, evaluate_contextual_forecast, stationary_evidence
+from nov_memory_context_shadow import MemoryShadowContext, freeze_memory_context
 from memoria_v2_adapter import (
     CognitiveFrame,
     NOV_ACTIONS,
@@ -27,6 +28,7 @@ class ShadowToken:
     exante_forecast: dict[str, Any]
     contextual_forecast: dict[str, Any]
     contextual_target_snapshot: dict[str, Any] | None
+    memory_context: MemoryShadowContext | None = None
 
 
 def _finite_number(value: Any) -> float | None:
@@ -70,6 +72,7 @@ class CognitiveShadowRecorder:
         experience_provider: Any | None = None,
         need_threshold: float = 0.70,
         social_opportunity_provider: Any | None = None,
+        memory_recall_provider: Callable[[CognitiveFrame], dict[str, Any]] | None = None,
     ) -> None:
         self.path = Path(path)
         self.world_provider = world_provider
@@ -80,6 +83,7 @@ class CognitiveShadowRecorder:
         self.experience_provider = experience_provider
         self.need_threshold = float(need_threshold)
         self.social_opportunity_provider = social_opportunity_provider
+        self.memory_recall_provider = memory_recall_provider
 
     def _need_snapshot(self, observer: dict[str, Any]) -> tuple[dict[str, float], str]:
         getter = self.needs_provider
@@ -122,6 +126,11 @@ class CognitiveShadowRecorder:
             observer=observer,
             targets=targets,
         )
+        # OFF by default. No source access, SQLite snapshot or network call unless
+        # a separate trusted read-only provider is explicitly injected.
+        memory_context = None
+        if self.memory_recall_provider is not None:
+            memory_context = freeze_memory_context(frame, self.memory_recall_provider(frame))
         needs_before, needs_source = self._need_snapshot(observer)
         before_observer = {
             "id": observer.get("id"),
@@ -169,6 +178,7 @@ class CognitiveShadowRecorder:
             exante_forecast=forecast,
             contextual_forecast=contextual_forecast,
             contextual_target_snapshot=contextual_target,
+            memory_context=memory_context,
         )
 
     @staticmethod
@@ -425,6 +435,9 @@ class CognitiveShadowRecorder:
             "authority": "shadow-observer",
             "world_mutated_by_shadow": False,
         }
+        if token.memory_context is not None:
+            # No evidence ID, raw observation or checkpoint is persisted here.
+            record["memory_recall_context"] = dict(token.memory_context.public_view)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with self.path.open("a", encoding="utf-8") as fh:
             fh.write(json.dumps(record, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n")
