@@ -184,8 +184,8 @@ class ContinuousOwnerMonitor:
         if view is not None and status == "blocked":
             reason = view.public.get("blocked_reason")
             if reason in {
-                "scratch_permission", "sqlite_validation",
-                "typed_validation", "unexpected_failure",
+                "permission_denied", "sqlite_error",
+                "verification_blocked", "unexpected_failure",
             }:
                 summary["blocked_reason"] = reason
         if view is not None and status == "ready":
