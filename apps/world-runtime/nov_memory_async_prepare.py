@@ -140,7 +140,7 @@ class OwnerAsyncDualLanePreparation:
                 prepared = PreparedSnapshot(
                     version=after, world_id=after.world_id,
                     prepared_tick=frame.tick_id,
-                    seed=deepcopy(seed) if seed is not None else None,
+                    seed={"addresses": deepcopy(seed["addresses"])} if seed is not None else None,
                     query=dict(query), primary=primary,
                     supplementary=supplementary, metrics=dict(metrics),
                     prepared_at=self._clock(),
