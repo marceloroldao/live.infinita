@@ -92,8 +92,10 @@ class CurrentNovFrameTests(unittest.TestCase):
         self.assertEqual(frame.tick_id, 110)
 
     def test_rejects_manifest_entity_disagreement(self):
+        # Corrupt the original manifest-addressed region, not a new region:
+        # otherwise the unchanged old row would still be valid.
         self.nov["region_id"] = "deep_forest"
-        self.write_region()
+        self.region_path.write_text(json.dumps([self.nov]))
         with self.assertRaises(RecallBlocked):
             self.sample()
 
