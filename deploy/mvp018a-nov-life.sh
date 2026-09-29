@@ -3,7 +3,7 @@ set -Eeuo pipefail
 
 REPO=/home/etbra/live.infinita
 INSTALL=/opt/live.infinita
-REQUIRED=45043e52c374b643ff9957cd9092c7e15a0ec445
+REQUIRED=fc6c11838d408453510c8d258686badaaf416f09
 API=live-infinita.service
 WORLD=live-infinita-autonomous-world.service
 AUDIO=live-infinita-audio.service
