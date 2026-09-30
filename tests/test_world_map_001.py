@@ -64,6 +64,28 @@ class WorldMapTests(unittest.TestCase):
         self.assertIn('for index in range(steps):', features)
         self.assertIn('var features: Array[String] = _features.decorate(', script)
 
+    def test_live_spatial_feed_is_read_only_and_bounded(self):
+        data = json.loads(MAP.read_text(encoding="utf-8"))
+        projection = data["runtime_projection"]
+        self.assertEqual(projection["kind"], "two_point_similarity_v1")
+        self.assertEqual(projection["world_anchor_a_region"], "deep_forest")
+        self.assertEqual(projection["world_anchor_b_region"], "shelter")
+        self.assertEqual(projection["map_anchor_a_landmark"], "old_grove")
+        self.assertEqual(projection["map_anchor_b_landmark"], "shelter")
+        feed = (SCENE / "world_map_live_feed.gd").read_text(encoding="utf-8")
+        visual = (SCENE / "world_map_live_visual.gd").read_text(encoding="utf-8")
+        scene = (SCENE / "world_map_preview.tscn").read_text(encoding="utf-8")
+        self.assertIn('connect_to_url(_websocket_url())', feed)
+        self.assertIn('world_slice_received.emit(', feed)
+        self.assertIn('world_map_live_feed.gd', scene)
+        for forbidden in ("send_text", "send_json", "interest_update", "HTTPClient",
+                          "FileAccess", "DirAccess", "submit_intent", "post_world"):
+            self.assertNotIn(forbidden, feed)
+        self.assertIn("MAX_HOT_MARKERS := 96", visual)
+        self.assertIn("MAX_WARM_MARKERS := 192", visual)
+        self.assertIn("project_position", visual)
+        self.assertIn("update_markers", visual)
+
     def test_web_rollout_is_separate_and_atomic(self):
         rollout = (ROOT / "deploy/export-world-map-preview-web.sh").read_text()
         self.assertIn('PREVIEW_NAME="world-map-preview"', rollout)

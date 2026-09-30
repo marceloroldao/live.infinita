@@ -1,7 +1,8 @@
 extends Node3D
-# Isolated visual tour: no network I/O, filesystem writes, or World State mutation.
+# Visual tour with an optional read-only spatial feed; never mutates World State.
 const Catalog = preload("res://nature_asset_catalog.gd")
 const Features = preload("res://world_map_features.gd")
+const LiveVisual = preload("res://world_map_live_visual.gd")
 const MAP_PATH := "res://world_map_001.json"
 const TILE_M := 64.0
 const GRID := 16
@@ -10,6 +11,7 @@ const ACTIVE_RADIUS := 1
 const DECOR_PER_TILE := 6
 const MAX_ACTIVE_TILES := 9
 const MAX_ACTIVE_DECOR := 54
+const LIVE_STALE_MS := 10000
 const TOUR_SPEED_MPS := 13.0
 
 var _map: Dictionary = {}
@@ -24,6 +26,14 @@ var _route: Array = []
 var _leg := 1
 var _position := Vector3.ZERO
 var _clock := 0.0
+var _live_feed: Node
+var _live_authoritative := false
+var _live_last_update_ms := 0
+var _live_region_id := ""
+var _live_sequence := -1
+var _live_hot_count := 0
+var _live_warm_count := 0
+var _live_visual: RefCounted
 
 func _ready() -> void:
     var data = JSON.parse_string(FileAccess.get_file_as_string(MAP_PATH))
@@ -31,12 +41,16 @@ func _ready() -> void:
         push_error("WORLD_MAP_PREVIEW_BAD_MANIFEST")
         return
     _map = data
+    _live_feed = get_node_or_null("LiveFeed")
+    if _live_feed != null and _live_feed.has_signal("world_slice_received"):
+        _live_feed.connect("world_slice_received", Callable(self, "_on_world_slice"))
     _route = _map.get("route", [])
     if _route.size() < 2:
         push_error("WORLD_MAP_PREVIEW_NO_ROUTE")
         return
     _catalog = Catalog.new()
     _features = Features.new(Callable(self, "_height"))
+    _live_visual = LiveVisual.new(self, _features, _map)
     _position = _waypoint(_route[0])
     for argument in OS.get_cmdline_user_args():
         if str(argument).begins_with("--preview-cell="):
@@ -73,6 +87,7 @@ func _build_stage() -> void:
     _walker.mesh = capsule
     _walker.material_override = _material(Color("#eeb74b"))
     add_child(_walker)
+    _live_visual.build()
     _camera = Camera3D.new()
     _camera.current = true
     _camera.far = 280.0
@@ -200,6 +215,26 @@ func _sync_tiles() -> void:
             stale.queue_free()
     assert(_tiles.size() <= MAX_ACTIVE_TILES)
 
+func _on_world_slice(observer: Dictionary, current_region_id: String, hot_entities: Array, warm_entities: Array, sequence: int) -> void:
+    if observer.is_empty():
+        return
+    var first_bind := not _live_authoritative
+    var old_cell := Vector2i(_cell(_position.x), _cell(_position.z))
+    _position = _live_visual.project_position(observer)
+    _live_authoritative = true
+    _live_last_update_ms = Time.get_ticks_msec()
+    _live_region_id = current_region_id
+    _live_sequence = sequence
+    var counts: Dictionary = _live_visual.update_markers(hot_entities, warm_entities)
+    _live_hot_count = int(counts.get("hot", 0))
+    _live_warm_count = int(counts.get("warm", 0))
+    if old_cell != Vector2i(_cell(_position.x), _cell(_position.z)):
+        _sync_tiles()
+    _follow_camera()
+    _update_caption()
+    if first_bind:
+        print("WORLD_MAP_LIVE_BOUND region=%s sequence=%d cell=%d:%d hot=%d warm=%d" % [_live_region_id, _live_sequence, _cell(_position.x), _cell(_position.z), _live_hot_count, _live_warm_count])
+
 func _follow_camera() -> void:
     _walker.position = _position + Vector3(0, 1.1, 0)
     _camera.position = _position + Vector3(26, 32, 39)
@@ -208,11 +243,26 @@ func _follow_camera() -> void:
 func _update_caption() -> void:
     var cx := _cell(_position.x)
     var cz := _cell(_position.z)
-    _status.text = "LIVE INFINITA / VALE DE NOV\n1.024 x 1.024 m | %d setores ativos | max %d decoracoes\nSetor %d,%d - %s | percurso visual (sem World State)\nSetas: explorar manualmente" % [_tiles.size(), MAX_ACTIVE_DECOR, cx, cz, _biome(cx, cz)]
+    if _live_authoritative:
+        var feed_state := str(_live_feed.get("connection_state")) if _live_feed != null else "sem feed"
+        _status.text = "LIVE INFINITA / VALE DE NOV\n1.024 x 1.024 m | %d setores ativos | max %d decoracoes\nNOV autoritativo | regiao %s | seq %d | %s\nSetor %d,%d - %s | HOT %d / WARM %d | somente leitura" % [_tiles.size(), MAX_ACTIVE_DECOR, _live_region_id, _live_sequence, feed_state, cx, cz, _biome(cx, cz), _live_hot_count, _live_warm_count]
+    else:
+        _status.text = "LIVE INFINITA / VALE DE NOV\n1.024 x 1.024 m | %d setores ativos | max %d decoracoes\nSetor %d,%d - %s | percurso visual offline\nSetas: explorar manualmente" % [_tiles.size(), MAX_ACTIVE_DECOR, cx, cz, _biome(cx, cz)]
 
 func _process(delta: float) -> void:
     if _route.size() < 2:
         return
+    if _live_authoritative:
+        var connected := _live_feed != null and str(_live_feed.get("connection_state")) == "conectado"
+        if connected or Time.get_ticks_msec() - _live_last_update_ms < LIVE_STALE_MS:
+            _clock += delta
+            if _clock > 0.5:
+                _clock = 0.0
+                _update_caption()
+            return
+        _live_authoritative = false
+        _live_region_id = ""
+        _live_visual.clear_markers()
     var input := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
     var old_cell := Vector2i(_cell(_position.x), _cell(_position.z))
     if input.length_squared() > 0.01:

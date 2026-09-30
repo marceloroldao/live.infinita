@@ -15,7 +15,7 @@ if [[ ${EUID} -ne 0 ]]; then
   exit 1
 fi
 
-for required in "$PROJECT_DIR/project.godot" "$PROJECT_DIR/export_presets.cfg" "$PROJECT_DIR/world_map_preview.tscn" "$PROJECT_DIR/world_map_preview.gd" "$PROJECT_DIR/world_map_features.gd" "$PROJECT_DIR/world_map_001.json" "$PROJECT_DIR/nature_asset_catalog.gd"; do
+for required in "$PROJECT_DIR/project.godot" "$PROJECT_DIR/export_presets.cfg" "$PROJECT_DIR/world_map_preview.tscn" "$PROJECT_DIR/world_map_preview.gd" "$PROJECT_DIR/world_map_live_feed.gd" "$PROJECT_DIR/world_map_live_visual.gd" "$PROJECT_DIR/world_map_features.gd" "$PROJECT_DIR/world_map_001.json" "$PROJECT_DIR/nature_asset_catalog.gd"; do
   if [[ ! -f "$required" ]]; then
     echo "Arquivo Godot ausente: $required" >&2
     exit 2
