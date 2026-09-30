@@ -231,8 +231,55 @@ class NpcNeedScheduler:
             yield value
 
 
+    def _compaction_manifest(self) -> dict[str, Any] | None:
+        manifest_path = self.path.with_name(self.path.name + ".compaction.json")
+        if not manifest_path.exists():
+            return None
+        try:
+            value = json.loads(manifest_path.read_text(encoding="utf-8"))
+        except (OSError, ValueError, UnicodeError) as exc:
+            raise ValueError("npc need compaction manifest invalid") from exc
+        if (
+            not isinstance(value, dict)
+            or value.get("schema") != "live-infinita-hot-ledger-compaction/v1"
+            or value.get("kind") != "npc_need_scheduler"
+            or value.get("source") != self.path.name
+            or not isinstance(value.get("archive"), str)
+            or type(value.get("latest_rows")) is not int
+            or int(value["latest_rows"]) < 1
+        ):
+            raise ValueError("npc need compaction manifest invalid")
+        return value
+
+    @staticmethod
+    def _read_archive_history(path: Path) -> list[dict[str, Any]]:
+        rows: list[dict[str, Any]] = []
+        with path.open("rb") as fh:
+            for line_number, raw in enumerate(fh, start=1):
+                if not raw.strip():
+                    continue
+                try:
+                    value = json.loads(raw)
+                except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+                    raise ValueError(
+                        f"npc need archive corrupt at line {line_number}"
+                    ) from exc
+                if isinstance(value, dict):
+                    rows.append(value)
+        return rows
+
     def history(self) -> list[dict[str, Any]]:
-        return list(self._iter_history())
+        current_rows = list(self._iter_history())
+        manifest = self._compaction_manifest()
+        if manifest is None:
+            return current_rows
+        archive = self.path.parent / str(manifest["archive"])
+        if not archive.is_file() or archive.is_symlink():
+            raise ValueError("npc need compaction archive unavailable")
+        boundary = int(manifest["latest_rows"])
+        if len(current_rows) < boundary:
+            raise ValueError("npc need compact snapshot truncated")
+        return self._read_archive_history(archive) + current_rows[boundary:]
 
     def _append(self, row: dict[str, Any]) -> dict[str, Any]:
         self._ensure_index()
