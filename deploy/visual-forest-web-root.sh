@@ -25,6 +25,8 @@ flock -n 9 || fail "deploy_already_running"
     -s "$WEB/build.json" && -s "$WEB/nov-preview/index.pck" &&
     -s "$WEB/nov-preview/build.json" && ! -L "$WEB/nov-preview" ]] ||
     fail "web_or_nov_preview_missing"
+[[ -z "$(find "$WEB/nov-preview" -type l -print -quit)" ]] ||
+    fail "nov_preview_symlink"
 [[ -s /opt/live.infinita/apps/renderer-godot/diorama.gd ]] ||
     fail "native_renderer_missing"
 cmp -s "$REPO/apps/renderer-godot/diorama.gd" \
