@@ -2,6 +2,8 @@ extends Node2D
 
 # A fixed draw budget, independent of persistent world size. No decorative Nodes.
 const GRASS_COUNT := 74
+const FOREST_TREE_COUNT := 17
+const FOREST_STONE_COUNT := 19
 var visual_time := 0.0
 
 func _process(delta: float) -> void:
@@ -14,6 +16,7 @@ func _draw() -> void:
     var wind: float = stage.wind_amount
     var mix: Dictionary = stage.get_node("AtmosphereOverlay")._biome_mix(stage.world.get("environment", {}))
     var field: float = float(mix.get("field", 0.0))
+    var forest: float = float(mix.get("forest", 0.0))
     var river: float = float(mix.get("river", 0.0))
     var shift: Vector2 = stage.camera_offset
     var far := Color("#769b8e").lerp(Color("#24334f"), night)
@@ -38,6 +41,8 @@ func _draw() -> void:
         color.a = 0.7 * (1.0 - field)
         var base := Vector2(x, y) + shift * 0.25
         draw_colored_polygon(PackedVector2Array([base + Vector2(-13, 0), base + Vector2(0, -height), base + Vector2(14, 0)]), color)
+    _forest_floor(forest, night, shift)
+    _forest_trees(forest, night, wind, shift)
     _river(river, night, shift)
     _village(float(mix.get("village", 0.0)), night, stage)
     # Ground cover belongs to the visible diorama, not a persistent population.
@@ -58,6 +63,87 @@ func _draw() -> void:
             draw_set_transform(p + Vector2(12, 3), -0.2, Vector2(1.6, 0.7))
             draw_circle(Vector2.ZERO, 5.0, Color("#7a8572").lerp(Color("#38464a"), night))
             draw_set_transform(Vector2.ZERO)
+
+func _forest_floor(weight: float, night: float, shift: Vector2) -> void:
+    if weight <= 0.001: return
+    # A visual path in the scenery. It does not create a road, region or
+    # persistent entity. The main actor continues to come from World State.
+    var outer := PackedVector2Array()
+    var inner := PackedVector2Array()
+    for i in range(23):
+        var t := float(i) / 22.0
+        var y := lerpf(600.0, 1120.0, t)
+        var center_x := 360.0 + sin(t * 3.8 + 0.35) * (62.0 + 27.0 * t)
+        var half_width := lerpf(24.0, 152.0, t)
+        outer.append(Vector2(center_x - half_width, y) + shift * 0.54)
+        inner.append(Vector2(center_x - half_width * 0.78, y) + shift * 0.54)
+    for i in range(22, -1, -1):
+        var t := float(i) / 22.0
+        var y := lerpf(600.0, 1120.0, t)
+        var center_x := 360.0 + sin(t * 3.8 + 0.35) * (62.0 + 27.0 * t)
+        var half_width := lerpf(24.0, 152.0, t)
+        outer.append(Vector2(center_x + half_width, y) + shift * 0.54)
+        inner.append(Vector2(center_x + half_width * 0.78, y) + shift * 0.54)
+    var border := Color("#4e6446").lerp(Color("#253a35"), night)
+    border.a = weight * 0.88
+    var earth := Color("#88765c").lerp(Color("#39413b"), night)
+    earth.a = weight * 0.79
+    draw_colored_polygon(outer, border)
+    draw_colored_polygon(inner, earth)
+    # Pebbles are positions derived from a stable index, never random per frame.
+    for i in range(FOREST_STONE_COUNT):
+        var t := (float(i) + 0.5) / float(FOREST_STONE_COUNT)
+        var y := lerpf(626.0, 1083.0, t)
+        var center_x := 360.0 + sin(t * 3.8 + 0.35) * (62.0 + 27.0 * t)
+        var x := center_x + sin(float(i) * 14.27) * lerpf(9.0, 91.0, t)
+        var pos := Vector2(x, y) + shift * 0.54
+        var stone := Color("#a29979").lerp(Color("#53605b"), night)
+        stone.a = weight * 0.45
+        draw_set_transform(pos, 0.0, Vector2(1.5 + t, 0.42))
+        draw_circle(Vector2.ZERO, 2.0 + float(i % 3), stone)
+    draw_set_transform(Vector2.ZERO)
+
+
+func _forest_trees(weight: float, night: float, wind: float, shift: Vector2) -> void:
+    if weight <= 0.001: return
+    # Bounded decor behind materialized entities, with a clear central path.
+    # No tree is inserted in the World State, and no mesh is loaded per frame.
+    var bark := Color("#433f32").lerp(Color("#283335"), night)
+    bark.a = weight
+    var canopy := Color("#335b42").lerp(Color("#203a3b"), night)
+    canopy.a = weight
+    var crown := Color("#51774c").lerp(Color("#304d46"), night)
+    crown.a = weight * 0.93
+    for i in range(FOREST_TREE_COUNT):
+        var left := i % 2 == 0
+        var side := -1.0 if left else 1.0
+        var row := float(i / 2)
+        var depth := row / 8.0
+        var x := 360.0 + side * (lerpf(105.0, 355.0, depth) + sin(float(i) * 6.27) * 25.0)
+        var y := 605.0 + depth * 355.0 + cos(float(i) * 2.7) * 15.0
+        var scale_value := lerpf(0.45, 1.18, depth)
+        var origin := Vector2(x, y) + shift * (0.26 + depth * 0.30)
+        var h := 72.0 * scale_value
+        var sway := sin(visual_time * 0.66 + float(i) * 1.4) * (0.7 + wind * 3.0)
+        draw_line(origin, origin + Vector2(0, -h), bark, 5.5 * scale_value, true)
+        draw_line(origin + Vector2(0, -h * 0.55), origin + Vector2(side * 17, -h * 0.76), bark, 2.2 * scale_value, true)
+        var crown_pos := origin + Vector2(sway, -h)
+        for lobe in range(3):
+            var offset := Vector2(float(lobe - 1) * 13.0 * scale_value, float(lobe % 2) * 8.0 * scale_value)
+            draw_circle(crown_pos + offset, (25.0 + float((i + lobe) % 3) * 4.0) * scale_value, canopy)
+        draw_circle(crown_pos + Vector2(-6, -5) * scale_value, 19.0 * scale_value, crown)
+    # Ferns and fallen leaves, drawn only in the vegetation band.
+    for i in range(25):
+        var side := -1.0 if i % 2 == 0 else 1.0
+        var y := 705.0 + float((i * 71) % 303)
+        var x := 360.0 + side * (120.0 + float((i * 43) % 240))
+        var p := Vector2(x, y) + shift * 0.55
+        var leaf := Color("#7e995b").lerp(Color("#425b49"), night)
+        leaf.a = weight * 0.76
+        var wobble := sin(visual_time * 0.95 + i) * (1.0 + wind * 3.0)
+        for blade in range(3):
+            draw_line(p, p + Vector2((float(blade) - 1.0) * 8.0 + wobble, -8.0 - float((i + blade) % 4) * 4.0), leaf, 2.0, true)
+
 
 func _river(weight: float, night: float, shift: Vector2) -> void:
     if weight < 0.001: return
