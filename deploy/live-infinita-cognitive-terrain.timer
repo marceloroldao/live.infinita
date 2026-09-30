@@ -1,0 +1,13 @@
+[Unit]
+Description=Live Infinita — refresh cognitive terrain from local Memoria.ia
+
+[Timer]
+OnBootSec=2min
+OnUnitInactiveSec=2min
+RandomizedDelaySec=20s
+AccuracySec=20s
+Persistent=false
+Unit=live-infinita-cognitive-terrain.service
+
+[Install]
+WantedBy=timers.target

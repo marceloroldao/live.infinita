@@ -12,6 +12,7 @@ from starlette.routing import WebSocketRoute
 
 import main as core
 from cold_engine import ColdAuthoritativeWorldEngine
+from cognitive_terrain_projection import CognitiveTerrainError, CognitiveTerrainProjectionReader
 from mutation_gate_service import GuardedMutationService
 from packages.spatial import FileRegionColdStore, MutationPrincipal
 from proposal_ledger_runtime import install_runtime_proposal_ledger
@@ -368,6 +369,9 @@ _install_cold_mutation_gate()
 _install_operator_approval_marker()
 proposal_ledger = install_runtime_proposal_ledger(core, core.DATA_DIR)
 spatial_session = SpatialSession(cold_store=cold_store) if cold_store is not None else SpatialSession()
+cognitive_terrain_reader = CognitiveTerrainProjectionReader(
+    Path(os.getenv("LIVE_INFINITA_COGNITIVE_TERRAIN_FILE", "/var/lib/live-infinita/cognitive-terrain/projection.json"))
+)
 session_views: dict[WebSocket, dict[str, Any]] = {}
 _external_world_sync_task: asyncio.Task[None] | None = None
 _last_world_marker: tuple[int, str] | None = None
@@ -375,6 +379,25 @@ _last_world_marker: tuple[int, str] | None = None
 
 def _world_marker(world: dict[str, Any]) -> tuple[int, str]:
     return int(world.get("sequence", 0)), str(world.get("state_hash") or "")
+
+
+def _client_world_payload(message: dict[str, Any], view: dict[str, Any]) -> dict[str, Any]:
+    """Attach visual memory projection outside authoritative World State."""
+    payload = spatial_session.wrap_world_message(message, view)
+    if payload.get("type") != "world_state" or not isinstance(message.get("world"), dict):
+        return payload
+    world_id = str(message["world"].get("world_id") or "").strip()
+    if not world_id:
+        return payload
+    try:
+        projection = cognitive_terrain_reader.read(world_id)
+    except (CognitiveTerrainError, OSError, ValueError):
+        projection = None
+    if projection is not None:
+        delivery = payload.get("delivery")
+        if isinstance(delivery, dict):
+            delivery["cognitive_terrain"] = projection
+    return payload
 
 
 def _external_world_sync_seconds() -> float:
@@ -395,7 +418,7 @@ async def spatial_broadcast(message: dict[str, Any]) -> None:
     dead: list[WebSocket] = []
     for client, view in list(session_views.items()):
         try:
-            payload = spatial_session.wrap_world_message(message, view)
+            payload = _client_world_payload(message, view)
             await client.send_json(payload)
         except Exception:
             dead.append(client)
@@ -454,7 +477,7 @@ async def spatial_websocket_endpoint(websocket: WebSocket) -> None:
     view = spatial_session.default_view(world)
     session_views[websocket] = view
     try:
-        await websocket.send_json(spatial_session.wrap_world_message(
+        await websocket.send_json(_client_world_payload(
             {"type": "world_state", "world": world},
             view,
         ))
@@ -468,7 +491,7 @@ async def spatial_websocket_endpoint(websocket: WebSocket) -> None:
                 view = spatial_session.normalize_view(message, view)
                 session_views[websocket] = view
                 world = core.engine.load_world()
-                await websocket.send_json(spatial_session.wrap_world_message(
+                await websocket.send_json(_client_world_payload(
                     {"type": "world_state", "world": world},
                     view,
                 ))

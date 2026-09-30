@@ -75,7 +75,7 @@ class WorldMapTests(unittest.TestCase):
         for forbidden in ("WebSocket", "HTTPClient", "FileAccess.open(",
                           "DirAccess", "set_world", "submit_intent", "post_world"):
             self.assertNotIn(forbidden, script)
-        self.assertLess(len(script), 12500)
+        self.assertLess(len(script), 14000)
 
     def test_real_visual_features_are_bounded_and_read_only(self):
         features = (SCENE / "world_map_features.gd").read_text(encoding="utf-8")
@@ -115,7 +115,30 @@ class WorldMapTests(unittest.TestCase):
         self.assertIn("MAX_HOT_MARKERS := 96", visual)
         self.assertIn("MAX_WARM_MARKERS := 192", visual)
         self.assertIn("project_position", visual)
+        self.assertIn("project_flat", visual)
         self.assertIn("update_markers", visual)
+        self.assertIn('delivery.get("cognitive_terrain", {})', feed)
+
+    def test_cognitive_terrain_is_visual_only_bounded_and_streamed(self):
+        terrain = (SCENE / "world_map_cognitive_terrain.gd").read_text(encoding="utf-8")
+        preview = SCRIPT.read_text(encoding="utf-8")
+        rollout = (ROOT / "deploy/export-world-map-preview-web.sh").read_text(encoding="utf-8")
+        self.assertIn('SCHEMA := "live-infinita-cognitive-terrain/v1"', terrain)
+        self.assertIn("MAX_REGIONS := 32", terrain)
+        self.assertIn("MAX_TRANSITIONS := 48", terrain)
+        self.assertIn('policy.get("world_write_authority", true) == false', terrain)
+        self.assertIn('policy.get("selection_authority", true) == false', terrain)
+        self.assertIn("func height_delta(", terrain)
+        self.assertIn("MemoryLake_", terrain)
+        self.assertIn('CognitiveTerrain = preload("res://world_map_cognitive_terrain.gd")', preview)
+        self.assertIn('_cognitive_terrain.call("height_delta", x, z)', preview)
+        self.assertIn("_rebuild_active_tiles()", preview)
+        self.assertIn("world_map_cognitive_terrain.gd", rollout)
+        for forbidden in (
+            "WebSocket", "HTTPClient", "FileAccess", "DirAccess",
+            "send_text", "send_json", "submit_intent", "post_world",
+        ):
+            self.assertNotIn(forbidden, terrain)
 
     def test_persistent_region_overlay_and_collision_budget(self):
         feed = (SCENE / "world_map_live_feed.gd").read_text(encoding="utf-8")
@@ -180,7 +203,7 @@ class WorldMapTests(unittest.TestCase):
         self.assertIn('World-map traversal smoke: 0 failures', rollout)
         self.assertIn('"traversability": "local-physics-read-only"', rollout)
         self.assertIn('"touch_controls": true', rollout)
-        for required in ("world_map_hud.gd", "world_map_local_motion.gd", "world_map_traversability.gd", "world_map_layout.gd"):
+        for required in ("world_map_hud.gd", "world_map_local_motion.gd", "world_map_traversability.gd", "world_map_layout.gd", "world_map_cognitive_terrain.gd"):
             self.assertIn(required, rollout)
         for forbidden in ("systemctl restart", "nginx -s", "main.tscn >", "World State"):
             if forbidden == "World State":
