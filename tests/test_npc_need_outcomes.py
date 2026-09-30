@@ -197,6 +197,32 @@ class NpcNeedOutcomeTest(unittest.TestCase):
                 self.assertEqual(processor.process_completed(), [])
             self.assertEqual(len(processor.history()), 2)
 
+    def test_stage_observer_decomposes_need_outcome_processing(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            dynamics, ledger, processor = self.make(Path(tmpdir))
+            self.complete_plan(ledger, need="energy")
+            observed = []
+            processor.stage_observer = lambda name, elapsed: observed.append((name, elapsed))
+            result = processor.process_completed()
+            self.assertEqual(len(result), 1)
+            names = [name for name, _ in observed]
+            self.assertIn("outcome.process.processed_ids", names)
+            self.assertIn("outcome.process.candidates", names)
+            self.assertIn("outcome.process.satisfy", names)
+            self.assertIn("outcome.process.learning", names)
+            self.assertIn("outcome.process.strategy_learning", names)
+            self.assertIn("outcome.process.remember_episode", names)
+            self.assertIn("outcome.process.derive_belief", names)
+            self.assertIn("outcome.process.audit_append", names)
+            self.assertTrue(all(elapsed >= 0 for _, elapsed in observed))
+
+    def test_outcome_stage_observer_failure_is_non_authoritative(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            dynamics, ledger, processor = self.make(Path(tmpdir))
+            plan = self.complete_plan(ledger, need="energy")
+            processor.stage_observer = lambda *_: (_ for _ in ()).throw(RuntimeError("observer"))
+            result = processor.process_completed()
+            self.assertEqual(result[0]["plan_id"], plan["plan_id"])
 
 
 if __name__ == "__main__":

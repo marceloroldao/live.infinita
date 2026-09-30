@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import json
 import math
+import time
 from copy import deepcopy
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 
 class NpcNeedOutcomeProcessor:
@@ -33,6 +34,8 @@ class NpcNeedOutcomeProcessor:
         strategy_experience_provider: Any | None = None,
         episodic_memory_provider: Any | None = None,
         belief_provider: Any | None = None,
+        stage_observer: Callable[[str, int], None] | None = None,
+        monotonic_ns: Callable[[], int] = time.perf_counter_ns,
     ) -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -42,6 +45,8 @@ class NpcNeedOutcomeProcessor:
         self.strategy_experience_provider = strategy_experience_provider
         self.episodic_memory_provider = episodic_memory_provider
         self.belief_provider = belief_provider
+        self.stage_observer = stage_observer
+        self.monotonic_ns = monotonic_ns
         self._processed_cache: set[str] | None = None
         self._processed_signature: tuple[int, int, int, int] | None = None
         self._applied_by_plan: dict[str, dict[str, Any]] | None = None
@@ -50,6 +55,21 @@ class NpcNeedOutcomeProcessor:
         for key, value in dict(satisfaction or {}).items():
             if key in self.satisfaction:
                 self.satisfaction[key] = max(0.0, float(value))
+
+    def _stage(self, name: str, fn: Callable[[], Any]) -> Any:
+        if self.stage_observer is None:
+            return fn()
+        started = self.monotonic_ns()
+        try:
+            return fn()
+        finally:
+            try:
+                self.stage_observer(
+                    name,
+                    max(0, self.monotonic_ns() - started),
+                )
+            except Exception:
+                pass
 
     def _signature(self) -> tuple[int, int, int, int] | None:
         try:
@@ -314,14 +334,20 @@ class NpcNeedOutcomeProcessor:
         return result
 
     def process_completed(self) -> list[dict[str, Any]]:
-        processed = self._processed_ids()
+        processed = self._stage(
+            "outcome.process.processed_ids",
+            self._processed_ids,
+        )
         results: list[dict[str, Any]] = []
         pending = getattr(self.plan_ledger, "pending_need_outcome_candidates", None)
         candidates = getattr(self.plan_ledger, "need_outcome_candidates", None)
-        rows = (
-            pending(processed) if callable(pending)
-            else candidates() if callable(candidates)
-            else self.plan_ledger.current()
+        rows = self._stage(
+            "outcome.process.candidates",
+            lambda: (
+                pending(processed) if callable(pending)
+                else candidates() if callable(candidates)
+                else self.plan_ledger.current()
+            ),
         )
         for record in rows:
             plan_id = str(record.get("plan_id") or "").strip()
@@ -336,7 +362,13 @@ class NpcNeedOutcomeProcessor:
                 continue
 
             if need == "social" and intent.get("target_evidence_source") == "observed_social_capability":
-                evidence = self._social_encounter_evidence(npc_id, str(intent.get("target_entity_id") or ""))
+                evidence = self._stage(
+                    "outcome.process.social_evidence",
+                    lambda: self._social_encounter_evidence(
+                        npc_id,
+                        str(intent.get("target_entity_id") or ""),
+                    ),
+                )
                 # A movement plan is not proof of reciprocal interaction. Keep
                 # an exactly-once audit, but do not reduce the need, reward
                 # learning, create a positive episode or derive a belief.
@@ -355,41 +387,72 @@ class NpcNeedOutcomeProcessor:
                     "episode_id": None,
                     "belief": None,
                 }
-                self._append(row)
+                self._stage(
+                    "outcome.process.audit_append",
+                    lambda: self._append(row),
+                )
                 processed.add(plan_id)
                 results.append(row)
                 continue
 
             outcome_id = f"plan-completed:{plan_id}:{need}"
-            outcome = self.need_dynamics.satisfy(
-                npc_id,
-                need,
-                self.satisfaction[need],
-                outcome_id=outcome_id,
-                metadata={
-                    "plan_id": plan_id,
-                    "proposal_id": record.get("proposal_id"),
-                    "plan_revision": int(record.get("plan_revision", 0)),
-                    "completed_steps": len(record.get("completed_steps") or []),
-                    "target_entity_id": intent.get("target_entity_id"),
-                    "strategy_id": intent.get("strategy_id"),
-                    "strategy_phase_index": intent.get("strategy_phase_index"),
-                    "started_logical_tick": record.get("started_logical_tick"),
-                    "completed_logical_tick": record.get("completed_logical_tick"),
-                    "preemption_count": int(record.get("preemption_count", 0)),
-                    "replan_count": int(record.get("replan_count", 0)),
-                },
+            metadata = {
+                "plan_id": plan_id,
+                "proposal_id": record.get("proposal_id"),
+                "plan_revision": int(record.get("plan_revision", 0)),
+                "completed_steps": len(record.get("completed_steps") or []),
+                "target_entity_id": intent.get("target_entity_id"),
+                "strategy_id": intent.get("strategy_id"),
+                "strategy_phase_index": intent.get("strategy_phase_index"),
+                "started_logical_tick": record.get("started_logical_tick"),
+                "completed_logical_tick": record.get("completed_logical_tick"),
+                "preemption_count": int(record.get("preemption_count", 0)),
+                "replan_count": int(record.get("replan_count", 0)),
+            }
+            outcome = self._stage(
+                "outcome.process.satisfy",
+                lambda: self.need_dynamics.satisfy(
+                    npc_id,
+                    need,
+                    self.satisfaction[need],
+                    outcome_id=outcome_id,
+                    metadata=metadata,
+                ),
             )
-            learning = self._learn(record, outcome, npc_id=npc_id, need=need, plan_id=plan_id)
-            strategy_experience = self._learn_strategy(
-                record,
-                npc_id=npc_id,
-                need=need,
-                plan_id=plan_id,
-                outcome_id=outcome_id,
+            learning = self._stage(
+                "outcome.process.learning",
+                lambda: self._learn(
+                    record,
+                    outcome,
+                    npc_id=npc_id,
+                    need=need,
+                    plan_id=plan_id,
+                ),
             )
-            episode = self._remember_episode(record, outcome, npc_id=npc_id, need=need, plan_id=plan_id)
-            belief = self._derive_belief(episode)
+            strategy_experience = self._stage(
+                "outcome.process.strategy_learning",
+                lambda: self._learn_strategy(
+                    record,
+                    npc_id=npc_id,
+                    need=need,
+                    plan_id=plan_id,
+                    outcome_id=outcome_id,
+                ),
+            )
+            episode = self._stage(
+                "outcome.process.remember_episode",
+                lambda: self._remember_episode(
+                    record,
+                    outcome,
+                    npc_id=npc_id,
+                    need=need,
+                    plan_id=plan_id,
+                ),
+            )
+            belief = self._stage(
+                "outcome.process.derive_belief",
+                lambda: self._derive_belief(episode),
+            )
             row = {
                 "need_outcome_schema": "npc_need_outcome_audit_v6",
                 "plan_id": plan_id,
@@ -406,7 +469,10 @@ class NpcNeedOutcomeProcessor:
                 "episode_id": episode.get("episode_id") if isinstance(episode, dict) else None,
                 "belief": deepcopy(belief),
             }
-            self._append(row)
+            self._stage(
+                "outcome.process.audit_append",
+                lambda: self._append(row),
+            )
             processed.add(plan_id)
             results.append(row)
         return results
