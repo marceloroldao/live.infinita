@@ -172,8 +172,57 @@ class ConditionalEventScheduler:
         }, sort_keys=True) + "\\n", encoding="utf-8")
         return {"repaired": True, "removed_line": bad_line}
 
+    def _compaction_manifest(self) -> dict[str, Any] | None:
+        manifest_path = self.path.with_name(self.path.name + ".compaction.json")
+        if not manifest_path.exists():
+            return None
+        try:
+            value = json.loads(manifest_path.read_text(encoding="utf-8"))
+        except (OSError, ValueError, UnicodeError) as exc:
+            raise ConditionalEventError("conditional compaction manifest invalid") from exc
+        if (
+            not isinstance(value, dict)
+            or value.get("schema") != "live-infinita-hot-ledger-compaction/v1"
+            or value.get("kind") != "conditional"
+            or value.get("source") != self.path.name
+            or not isinstance(value.get("archive"), str)
+            or type(value.get("latest_rows")) is not int
+            or int(value["latest_rows"]) < 1
+        ):
+            raise ConditionalEventError("conditional compaction manifest invalid")
+        return value
+
+    @staticmethod
+    def _read_archive_history(path: Path) -> list[dict[str, Any]]:
+        rows: list[dict[str, Any]] = []
+        with path.open("rb") as fh:
+            for line_number, raw in enumerate(fh, start=1):
+                if not raw.strip():
+                    continue
+                try:
+                    value = json.loads(raw)
+                except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+                    raise ConditionalEventError(
+                        f"conditional archive corrupt at line {line_number}"
+                    ) from exc
+                if isinstance(value, dict):
+                    rows.append(value)
+        return rows
+
     def history(self) -> list[dict[str, Any]]:
-        return list(self._iter_history())
+        manifest = self._compaction_manifest()
+        current_rows = list(self._iter_history())
+        if manifest is None:
+            return current_rows
+        archive = self.path.parent / str(manifest["archive"])
+        if not archive.is_file() or archive.is_symlink():
+            raise ConditionalEventError("conditional compaction archive unavailable")
+        # The first latest_rows entries in the hot file are the synthetic
+        # current-state snapshot. They duplicate rows already present in archive.
+        boundary = int(manifest["latest_rows"])
+        if len(current_rows) < boundary:
+            raise ConditionalEventError("conditional compact snapshot truncated")
+        return self._read_archive_history(archive) + current_rows[boundary:]
 
     def current(self) -> list[dict[str, Any]]:
         self._ensure_view()
@@ -211,6 +260,14 @@ class ConditionalEventScheduler:
         else:
             self._view_by_id = None
         return row
+
+    def _cache_only(self, row: dict[str, Any]) -> None:
+        """Advance ephemeral evaluation metadata without growing durable history."""
+        if self._view_by_id is None or self._view_signature != self._signature():
+            return
+        event_id = str(row.get("conditional_event_id") or "").strip()
+        if event_id and event_id in self._view_by_id:
+            self._view_by_id[event_id] = deepcopy(row)
 
     @staticmethod
     def _principal_dict(principal: MutationPrincipal | dict[str, Any]) -> dict[str, Any]:
@@ -475,7 +532,6 @@ class ConditionalEventScheduler:
             updated["true_since_tick"] = true_since
             updated["last_condition_value"] = value
             updated["last_evaluated_tick"] = tick
-            updated["updated_at_unix"] = time.time()
 
             if should_fire:
                 conditional_id = str(row.get("conditional_event_id") or "")
@@ -534,6 +590,28 @@ class ConditionalEventScheduler:
                         if bool(updated.get("one_shot")):
                             updated["status"] = "completed"
 
-            self._append(updated)
+            durable_fields = (
+                "status",
+                "last_error",
+                "last_raw_condition_value",
+                "true_since_tick",
+                "last_condition_value",
+                "last_fired_tick",
+                "fire_count",
+                "last_world_event_id",
+                "last_mutation_decision_id",
+                "last_state_hash",
+                "last_proposal_id",
+                "last_plan_id",
+            )
+            durable_changed = any(updated.get(key) != row.get(key) for key in durable_fields)
+            if durable_changed:
+                updated["updated_at_unix"] = time.time()
+                self._append(updated)
+            else:
+                # The logical tick is useful to in-process diagnostics but is not
+                # a state transition. Persisting it every 500 ms previously grew
+                # this two-condition ledger by hundreds of MB per day.
+                self._cache_only(updated)
             results.append(updated)
         return results

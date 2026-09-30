@@ -128,9 +128,56 @@ class PlanLedger:
                     self._quarantine_torn_tail(offset, raw)
                     break
 
+    def _compaction_manifest(self) -> dict[str, Any] | None:
+        manifest_path = self.path.with_name(self.path.name + ".compaction.json")
+        if not manifest_path.exists():
+            return None
+        try:
+            value = json.loads(manifest_path.read_text(encoding="utf-8"))
+        except (OSError, ValueError, UnicodeError) as exc:
+            raise PlanLedgerError("plan compaction manifest invalid") from exc
+        if (
+            not isinstance(value, dict)
+            or value.get("schema") != "live-infinita-hot-ledger-compaction/v1"
+            or value.get("kind") != "plans"
+            or value.get("source") != self.path.name
+            or not isinstance(value.get("archive"), str)
+            or type(value.get("latest_rows")) is not int
+            or int(value["latest_rows"]) < 1
+        ):
+            raise PlanLedgerError("plan compaction manifest invalid")
+        return value
+
+    @staticmethod
+    def _read_archive_history(path: Path) -> list[dict[str, Any]]:
+        rows: list[dict[str, Any]] = []
+        with path.open("rb") as fh:
+            for line_number, raw in enumerate(fh, start=1):
+                if not raw.strip():
+                    continue
+                try:
+                    value = json.loads(raw)
+                except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+                    raise PlanLedgerError(
+                        f"plan archive corrupt at line {line_number}"
+                    ) from exc
+                if isinstance(value, dict):
+                    rows.append(value)
+        return rows
+
     def history(self) -> list[dict[str, Any]]:
         # Explicit full history; never used to rebuild the hot index.
-        return [row for _, row in self._iter_rows_with_offsets()]
+        current_rows = [row for _, row in self._iter_rows_with_offsets()]
+        manifest = self._compaction_manifest()
+        if manifest is None:
+            return current_rows
+        archive = self.path.parent / str(manifest["archive"])
+        if not archive.is_file() or archive.is_symlink():
+            raise PlanLedgerError("plan compaction archive unavailable")
+        boundary = int(manifest["latest_rows"])
+        if len(current_rows) < boundary:
+            raise PlanLedgerError("plan compact snapshot truncated")
+        return self._read_archive_history(archive) + current_rows[boundary:]
 
     def _read_at(self, offset: int, expected_id: str) -> dict[str, Any]:
         try:
