@@ -7,6 +7,7 @@ from typing import Any
 
 from cold_engine import ColdAuthoritativeWorldEngine
 from conditional_event_scheduler import ConditionalEventScheduler
+from cognitive_world_builder import CognitiveWorldBuilderAgent
 from mutation_gate_service import GuardedMutationService
 from npc_cognitive_stack import NpcCognitiveStack, build_npc_cognitive_stack
 from plan_ledger import PlanLedger
@@ -39,6 +40,7 @@ class AutonomousWorldRuntime:
     scheduler: PlanScheduler
     event_scheduler: WorldEventScheduler
     conditional_event_scheduler: ConditionalEventScheduler
+    world_builder: CognitiveWorldBuilderAgent | None
     cognition: NpcCognitiveStack
     clock: SimulationClock
     world_tick: WorldTickRunner
@@ -225,6 +227,9 @@ def build_authoritative_autonomous_runtime(
     cold_store_dir: Path,
     npc_ids: list[str],
     tick_duration_ms: int = 500,
+    world_builder_enabled: bool = False,
+    cognitive_terrain_file: Path | None = None,
+    world_builder_interval_ticks: int = 240,
 ) -> AutonomousWorldRuntime:
     """Compose the deterministic autonomous world graph, but do not start it.
 
@@ -273,11 +278,25 @@ def build_authoritative_autonomous_runtime(
     )
     clock = SimulationClock(root / "simulation-clock.json", tick_duration_ms=tick_duration_ms)
     cognition.social_exchange_producer.clock_provider = lambda: clock.state().tick
+    builder_file = Path(cognitive_terrain_file) if cognitive_terrain_file is not None else (
+        root.parent / "cognitive-terrain" / "projection.json"
+    )
+    world_builder = (
+        CognitiveWorldBuilderAgent(
+            store,
+            guarded,
+            engine.load_world,
+            projection_file=builder_file,
+            interval_ticks=world_builder_interval_ticks,
+        )
+        if world_builder_enabled else None
+    )
     world_tick = WorldTickRunner(
         clock,
         scheduler,
         event_scheduler=event_scheduler,
         conditional_event_scheduler=conditional_event_scheduler,
+        world_builder_agent=world_builder,
         **cognition.world_tick_kwargs(),
     )
 
@@ -293,6 +312,7 @@ def build_authoritative_autonomous_runtime(
         scheduler=scheduler,
         event_scheduler=event_scheduler,
         conditional_event_scheduler=conditional_event_scheduler,
+        world_builder=world_builder,
         cognition=cognition,
         clock=clock,
         world_tick=world_tick,

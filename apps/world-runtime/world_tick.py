@@ -20,6 +20,7 @@ class WorldTickRunner:
         scheduler: PlanScheduler,
         event_scheduler: WorldEventScheduler | None = None,
         conditional_event_scheduler: ConditionalEventScheduler | None = None,
+        world_builder_agent: Any | None = None,
         plan_arbiter: PlanArbiter | None = None,
         npc_need_scheduler: Any | None = None,
         npc_idle_wander: Any | None = None,
@@ -37,6 +38,7 @@ class WorldTickRunner:
         self.scheduler = scheduler
         self.event_scheduler = event_scheduler
         self.conditional_event_scheduler = conditional_event_scheduler
+        self.world_builder_agent = world_builder_agent
         self.npc_need_scheduler = npc_need_scheduler
         self.npc_idle_wander = npc_idle_wander
         self.npc_need_dynamics = npc_need_dynamics
@@ -107,6 +109,7 @@ class WorldTickRunner:
                 "clock": before.as_dict(),
                 "events": [],
                 "conditional_events": [],
+                "world_builder": [],
                 "causal_observations": [],
                 "npc_need_dynamics": [],
                 "npc_needs": [],
@@ -335,11 +338,31 @@ class WorldTickRunner:
                     "observed_risk": row.get("observed_risk"),
                 })
 
+        world_builder_results: list[dict[str, Any]] = []
+        if self.world_builder_agent is not None:
+            for row in self._stage(
+                "world_builder.evaluate",
+                lambda: self.world_builder_agent.evaluate_tick(after.tick),
+            ):
+                world_builder_results.append({
+                    "tick": row.get("tick"),
+                    "status": row.get("status"),
+                    "entity_id": row.get("entity_id"),
+                    "entity_type": row.get("entity_type"),
+                    "region_id": row.get("region_id"),
+                    "role": row.get("role"),
+                    "projection_id": row.get("projection_id"),
+                    "world_event_id": row.get("world_event_id"),
+                    "mutation_decision_id": row.get("mutation_decision_id"),
+                    "reason": row.get("reason"),
+                })
+
         return {
             "advanced": True,
             "clock": after.as_dict(),
             "events": event_results,
             "conditional_events": conditional_results,
+            "world_builder": world_builder_results,
             "causal_observations": causal_results,
             "npc_need_dynamics": need_dynamics_results,
             "npc_needs": need_results,
