@@ -104,6 +104,8 @@ for file in index.html index.js index.pck index.wasm; do
     [[ -s "$WORK/build/$file" ]] || fail "missing_export_artifact"
 done
 [[ "$(stat -c %s "$WORK/build/index.pck")" -gt 1000000 ]] || fail "export_package_too_small"
+[[ "$(stat -c %s "$WORK/build/index.pck")" -le $((96 * 1024 * 1024)) ]] ||
+    fail "mobile_export_budget"
 echo "FOREST_WEB_EXPORT_OK"
 # Stage on the same filesystem as the site for rename(2) swaps.
 cp -a -- "$WORK/build/." "$CANDIDATE/"
@@ -128,6 +130,12 @@ chown -R www-data:www-data "$CANDIDATE"
 find "$CANDIDATE" -type d -exec chmod 0755 {} +
 find "$CANDIDATE" -type f -exec chmod 0644 {} +
 echo "FOREST_WEB_CANDIDATE_READY"
+[[ "$(sha256sum "$WEB/build.json" | cut -d' ' -f1)" == "$OLD_BUILD_SHA" ]] ||
+    fail "public_site_changed_during_export"
+[[ "$(git -c safe.directory="$REPO" -C "$REPO" rev-parse HEAD)" == "$SHA" ]] ||
+    fail "checkout_changed_during_export"
+if systemctl is-active --quiet "$BROADCASTER"; then fail "broadcast_started_during_export"; fi
+nginx -t >/dev/null 2>&1 || fail "nginx_config_changed"
 # Existing site is retained as a versioned filesystem backup. Only static
 # content switches; nginx configuration and all systemd services stay untouched.
 mv -T -- "$WEB" "$BACKUP/site" || fail "old_site_backup_failed"
