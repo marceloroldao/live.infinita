@@ -55,12 +55,15 @@ func _array_vec2(value: Variant, fallback: Vector2) -> Vector2:
         return Vector2(float(value[0]), float(value[1]))
     return fallback
 
-func project_position(position_data: Dictionary) -> Vector3:
+func project_flat(position_data: Dictionary) -> Vector2:
     var projection = _map.get("runtime_projection", {})
     var world_point := Vector2(float(position_data.get("x", 640.0)), float(position_data.get("y", 360.0)))
     if typeof(projection) != TYPE_DICTIONARY:
         var fallback := world_point - Vector2(640.0, 360.0)
-        return Vector3(fallback.x, float(_features.call("walk_height", fallback.x, fallback.y)), fallback.y)
+        return Vector2(
+            clampf(fallback.x, -_half_m + 1.0, _half_m - 1.0),
+            clampf(fallback.y, -_half_m + 1.0, _half_m - 1.0)
+        )
     var wa := _array_vec2(projection.get("world_anchor_a", []), Vector2(350, 340))
     var wb := _array_vec2(projection.get("world_anchor_b", []), Vector2(930, 390))
     var ma := _array_vec2(projection.get("map_anchor_a_m", []), Vector2(-160, -32))
@@ -68,7 +71,7 @@ func project_position(position_data: Dictionary) -> Vector3:
     var world_axis := wb - wa
     var map_axis := mb - ma
     if world_axis.length() < 0.001 or map_axis.length() < 0.001:
-        return Vector3(ma.x, float(_features.call("walk_height", ma.x, ma.y)), ma.y)
+        return ma
     var wu := world_axis.normalized()
     var wp := Vector2(-wu.y, wu.x)
     var mu := map_axis.normalized()
@@ -79,6 +82,10 @@ func project_position(position_data: Dictionary) -> Vector3:
     var mapped := ma + mu * offset.dot(wu) * scale + mp * offset.dot(wp) * scale
     mapped.x = clampf(mapped.x, -_half_m + 1.0, _half_m - 1.0)
     mapped.y = clampf(mapped.y, -_half_m + 1.0, _half_m - 1.0)
+    return mapped
+
+func project_position(position_data: Dictionary) -> Vector3:
+    var mapped := project_flat(position_data)
     return Vector3(mapped.x, float(_features.call("walk_height", mapped.x, mapped.y)), mapped.y)
 
 func _fill(batch: MultiMeshInstance3D, entities: Array, limit: int, skip_nov: bool) -> int:

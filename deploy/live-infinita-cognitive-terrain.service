@@ -1,0 +1,32 @@
+[Unit]
+Description=Live Infinita — bounded visual terrain projection from local Memoria.ia
+After=local-fs.target live-infinita-memoria-local.service
+Requires=live-infinita-memoria-local.service
+ConditionPathExists=/var/lib/live-infinita/memoria-local/external-episodes-incremental/external-episodes.sqlite3
+ConditionPathExists=/var/lib/live-infinita/memoria-local/nov-ingest.checkpoint.json
+ConditionPathExists=/var/lib/live-infinita/autonomous-world/world.json
+
+[Service]
+Type=oneshot
+User=liveinfinita
+Group=liveinfinita
+WorkingDirectory=/opt/live.infinita
+Environment="PYTHONUNBUFFERED=1"
+Environment="PYTHONPATH=/opt/live.infinita:/opt/live.infinita/apps/world-runtime"
+ExecStart=/opt/live.infinita/.venv/bin/python /opt/live.infinita/apps/world-runtime/cognitive_terrain_projection.py
+TimeoutStartSec=45
+UMask=0027
+Nice=15
+CPUWeight=10
+IOWeight=10
+MemoryHigh=128M
+MemoryMax=256M
+TasksMax=16
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadOnlyPaths=/var/lib/live-infinita/memoria-local
+ReadOnlyPaths=/var/lib/live-infinita/autonomous-world
+ReadWritePaths=/var/lib/live-infinita/cognitive-terrain
+IPAddressDeny=any

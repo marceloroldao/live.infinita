@@ -5,6 +5,7 @@ const LiveVisual = preload("res://world_map_live_visual.gd")
 const LocalMotion = preload("res://world_map_local_motion.gd")
 const Hud = preload("res://world_map_hud.gd")
 const Layout = preload("res://world_map_layout.gd")
+const CognitiveTerrain = preload("res://world_map_cognitive_terrain.gd")
 const MAP_PATH := "res://world_map_001.json"
 const TILE_M := 64.0
 const MAX_ACTIVE_TILES := 9
@@ -32,6 +33,7 @@ var _live_hot_count := 0
 var _live_warm_count := 0
 var _live_region_count := 0
 var _live_visual: RefCounted
+var _cognitive_terrain: RefCounted
 var _local_motion: RefCounted
 var _local_surface := "terrain"
 var _local_block_reason := ""
@@ -55,6 +57,7 @@ func _ready() -> void:
     _layout = Layout.new(_map)
     _features = Features.new(Callable(self, "_height"), _layout.half_m)
     _live_visual = LiveVisual.new(self, _features, _map)
+    _cognitive_terrain = CognitiveTerrain.new(self)
     _local_motion = LocalMotion.new(Callable(_features, "walk_height"), _layout.half_m)
     _position = _waypoint(_route[0])
     for argument in OS.get_cmdline_user_args():
@@ -102,8 +105,12 @@ func _material(color: Color) -> StandardMaterial3D:
 func _height(x: float, z: float) -> float:
     var rise := 4.0 if x > 175.0 and z < -70.0 else 1.0
     var natural := (sin(x * 0.012) * 1.8 + cos(z * 0.016) * 1.6 + sin((x + z) * 0.021) * 0.9) * rise
+    var cognitive := 0.0
+    if _cognitive_terrain != null:
+        cognitive = float(_cognitive_terrain.call("height_delta", x, z))
+    var shaped := natural + cognitive
     var bank_mix := clampf((absf(x - 32.0) - 10.0) / 20.0, 0.0, 1.0)
-    return lerpf(minf(natural, -2.3), natural, bank_mix)
+    return lerpf(minf(shaped, -2.3), shaped, bank_mix)
 func _waypoint(cell: Array) -> Vector3:
     var flat: Vector2 = _layout.cell_center(cell)
     return Vector3(flat.x, float(_features.call("walk_height", flat.x, flat.y)), flat.y)
@@ -173,6 +180,13 @@ func _decoration(parent: Node3D, cx: int, cz: int, index: int, biome: String) ->
     n.position = Vector3(x, _height(x, z), z)
     n.scale = Vector3.ONE * (0.75 if kind == "tree" else 0.90)
     parent.add_child(n)
+func _rebuild_active_tiles() -> void:
+    for id in _tiles.keys().duplicate():
+        var stale: Node3D = _tiles[id]
+        _tiles.erase(id)
+        stale.queue_free()
+    _sync_tiles()
+
 func _sync_tiles() -> void:
     var cx := _cell(_position.x)
     var cz := _cell(_position.z)
@@ -199,11 +213,14 @@ func _sync_tiles() -> void:
             _tiles.erase(id)
             stale.queue_free()
     assert(_tiles.size() <= MAX_ACTIVE_TILES)
-func _on_world_slice(observer: Dictionary, current_region_id: String, hot_entities: Array, warm_entities: Array, region_descriptors: Array, sequence: int) -> void:
+func _on_world_slice(observer: Dictionary, current_region_id: String, hot_entities: Array, warm_entities: Array, region_descriptors: Array, sequence: int, cognitive_terrain: Dictionary) -> void:
     if observer.is_empty():
         return
     var first_bind := not _live_authoritative
     var old_cell := Vector2i(_cell(_position.x), _cell(_position.z))
+    var terrain_changed: bool = bool(_cognitive_terrain.update(
+        cognitive_terrain, Callable(_live_visual, "project_flat")
+    ))
     var projected: Vector3 = _live_visual.project_position(observer)
     _last_live_position = projected
     _has_live_position = true
@@ -217,8 +234,13 @@ func _on_world_slice(observer: Dictionary, current_region_id: String, hot_entiti
     _live_hot_count = int(counts.get("hot", 0))
     _live_warm_count = int(counts.get("warm", 0))
     _live_region_count = _live_visual.update_regions(region_descriptors, current_region_id)
+    if terrain_changed:
+        _rebuild_active_tiles()
+        print("WORLD_MAP_MEMORY_TERRAIN projection=%s lakes=%d" % [
+            _cognitive_terrain.projection_id(), _cognitive_terrain.lake_count()
+        ])
     if not _local_explore_enabled:
-        if old_cell != Vector2i(_cell(_position.x), _cell(_position.z)):
+        if not terrain_changed and old_cell != Vector2i(_cell(_position.x), _cell(_position.z)):
             _sync_tiles()
         _follow_camera()
     _update_caption()

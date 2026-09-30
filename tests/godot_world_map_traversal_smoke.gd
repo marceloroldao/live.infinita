@@ -91,11 +91,55 @@ func run() -> void:
         check(stage._tiles.size() <= 9, "Distant POI must preserve 3x3 streaming cap: " + poi["label"])
         check(stage.find_child(poi["node"], true, false) != null, "Distant POI must materialize: " + poi["label"])
 
+    var memory_center: Vector2 = stage._live_visual.project_flat({"x":640.0,"y":360.0})
+    var base_memory_height: float = float(stage._height(memory_center.x, memory_center.y))
+    var cognitive_fixture := {
+        "schema": "live-infinita-cognitive-terrain/v1",
+        "projection_id": "smoke-memory-terrain",
+        "policy": {
+            "visual_only": true,
+            "world_write_authority": false,
+            "selection_authority": false,
+        },
+        "regions": [
+            {
+                "region_id":"clearing",
+                "center":{"x":640.0,"y":360.0},
+                "cognitive_mass":1.0,
+                "elevation_bias_m":16.0,
+                "influence_radius_m":120.0,
+                "terrain_role":"uplift",
+                "lake_candidate":false,
+            },
+            {
+                "region_id":"meadow",
+                "center":{"x":760.0,"y":560.0},
+                "cognitive_mass":0.0,
+                "elevation_bias_m":-8.0,
+                "influence_radius_m":100.0,
+                "terrain_role":"basin",
+                "lake_candidate":true,
+            },
+        ],
+        "transitions": [
+            {
+                "from_region_id":"clearing",
+                "to_region_id":"meadow",
+                "strength":0.8,
+                "ridge_height_m":2.0,
+                "ridge_width_m":40.0,
+            }
+        ],
+    }
     stage._on_world_slice(
         {"x": 640.0, "y": 360.0}, "clearing", [], [],
         [{"id":"clearing","center":{"x":640.0,"y":360.0},"radius":150.0}],
-        999
+        999, cognitive_fixture
     )
+    check(stage._height(memory_center.x, memory_center.y) > base_memory_height + 5.0,
+        "Repeated memory must lift terrain visually")
+    check(stage._cognitive_terrain.lake_count() == 1, "Memory basin must create one visual lake")
+    check(stage._tiles.size() <= 9, "Cognitive terrain rebuild must preserve tile cap")
     var authoritative: Vector3 = stage._position
     Input.action_press("ui_right")
     stage._process(0.20)
@@ -112,7 +156,7 @@ func run() -> void:
     stage._on_world_slice(
         {"x": 930.0, "y": 390.0}, "shelter", [], [],
         [{"id":"shelter","center":{"x":930.0,"y":390.0},"radius":120.0}],
-        1000
+        1000, cognitive_fixture
     )
     check(stage._position.distance_to(explored) < 0.001, "Live update must not overwrite local explorer")
     var latest_live: Vector3 = stage._live_visual.project_position({"x":930.0,"y":390.0})

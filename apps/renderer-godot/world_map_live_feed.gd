@@ -1,6 +1,6 @@
 extends Node
 
-signal world_slice_received(observer: Dictionary, current_region_id: String, hot_entities: Array, warm_entities: Array, region_descriptors: Array, sequence: int)
+signal world_slice_received(observer: Dictionary, current_region_id: String, hot_entities: Array, warm_entities: Array, region_descriptors: Array, sequence: int, cognitive_terrain: Dictionary)
 
 const RECONNECT_MAX_MS := 12000
 var socket := WebSocketPeer.new()
@@ -85,6 +85,9 @@ func _accept_packet(raw: String) -> void:
     var regions = interest.get("region_descriptors", [])
     if typeof(hot) != TYPE_ARRAY or typeof(warm) != TYPE_ARRAY or typeof(regions) != TYPE_ARRAY:
         return
+    var cognitive_terrain = delivery.get("cognitive_terrain", {})
+    if typeof(cognitive_terrain) != TYPE_DICTIONARY:
+        cognitive_terrain = {}
     world_slice_received.emit(
         Dictionary(observer).duplicate(true),
         str(interest.get("current_region_id", "")),
@@ -92,4 +95,5 @@ func _accept_packet(raw: String) -> void:
         Array(warm).duplicate(true),
         Array(regions).duplicate(true),
         int(world.get("sequence", -1)),
+        Dictionary(cognitive_terrain).duplicate(true),
     )
