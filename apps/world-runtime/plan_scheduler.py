@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from typing import Any
+import time
+from typing import Any, Callable
 
 from packages.spatial import (
     AgentIntentResolver,
@@ -24,12 +25,32 @@ class PlanScheduler:
         resolver: AgentIntentResolver,
         guarded_mutations: GuardedMutationService,
         proposal_ledger: Any | None = None,
+        stage_observer: Callable[[str, int], None] | None = None,
+        monotonic_ns: Callable[[], int] = time.perf_counter_ns,
     ) -> None:
         self.ledger = ledger
         self.planner = planner
         self.resolver = resolver
         self.guarded = guarded_mutations
         self.proposal_ledger = proposal_ledger
+        self.stage_observer = stage_observer
+        self.monotonic_ns = monotonic_ns
+
+    def _stage(self, name: str, fn: Callable[[], Any]) -> Any:
+        if self.stage_observer is None:
+            return fn()
+        started = self.monotonic_ns()
+        try:
+            return fn()
+        finally:
+            try:
+                self.stage_observer(
+                    name,
+                    max(0, self.monotonic_ns() - started),
+                )
+            except Exception:
+                # Profiling is observational only.
+                pass
 
     @staticmethod
     def _principal(value: dict[str, Any]) -> MutationPrincipal:
@@ -109,16 +130,22 @@ class PlanScheduler:
         else:
             principal_dict = dict(principal)
             MutationPrincipal.from_dict(principal_dict)
-        plan = self.planner.plan(intent)
-        return self.ledger.create(
-            proposal_id=proposal_id,
-            proposer_id=proposer_id,
-            principal=principal_dict,
-            intent=intent,
-            plan=plan.as_dict(),
-            idempotency_key=idempotency_key,
-            priority=int(priority),
-            actor_entity_id=plan.actor_entity_id,
+        plan = self._stage(
+            "plan.schedule.plan",
+            lambda: self.planner.plan(intent),
+        )
+        return self._stage(
+            "plan.schedule.ledger_create",
+            lambda: self.ledger.create(
+                proposal_id=proposal_id,
+                proposer_id=proposer_id,
+                principal=principal_dict,
+                intent=intent,
+                plan=plan.as_dict(),
+                idempotency_key=idempotency_key,
+                priority=int(priority),
+                actor_entity_id=plan.actor_entity_id,
+            ),
         )
 
     def assess_resume(self, record: dict[str, Any]) -> dict[str, str]:
@@ -207,92 +234,164 @@ class PlanScheduler:
         return [self.replan(str(row["plan_id"])) for row in rows]
 
     def tick(self, plan_id: str, logical_tick: int | None = None) -> dict[str, Any]:
-        record = self.ledger.get(plan_id)
+        record = self._stage(
+            "plan.tick.lookup",
+            lambda: self.ledger.get(plan_id),
+        )
         if record is None:
             raise KeyError("plan not found")
         status = str(record.get("status") or "")
         if status in self.ledger.TERMINAL:
-            self._commit_proposal_if_complete(record)
+            self._stage(
+                "plan.tick.proposal_commit",
+                lambda: self._commit_proposal_if_complete(record),
+            )
             return record
         if status == "waiting":
             return record
         if status == "replanning":
-            record = self.replan(plan_id)
+            record = self._stage(
+                "plan.tick.replan",
+                lambda: self.replan(plan_id),
+            )
             if str(record.get("status") or "") in self.ledger.TERMINAL:
                 return record
         if str(record.get("status") or "") == "planned":
             updates: dict[str, Any] = {}
             if logical_tick is not None and record.get("started_logical_tick") is None:
                 updates["started_logical_tick"] = int(logical_tick)
-            record = self.ledger.transition(plan_id, "running", **updates)
+            record = self._stage(
+                "plan.tick.transition_running",
+                lambda: self.ledger.transition(plan_id, "running", **updates),
+            )
 
-        plan = self._rehydrate_plan(record["plan"])
+        plan = self._stage(
+            "plan.tick.rehydrate",
+            lambda: self._rehydrate_plan(record["plan"]),
+        )
         index = int(record.get("next_step_index", 0))
         if index >= len(plan.steps):
             updates = {"completed_logical_tick": int(logical_tick)} if logical_tick is not None else {}
-            record = self.ledger.transition(plan_id, "completed", **updates)
-            self._commit_proposal_if_complete(record)
+            record = self._stage(
+                "plan.tick.transition_completed",
+                lambda: self.ledger.transition(plan_id, "completed", **updates),
+            )
+            self._stage(
+                "plan.tick.proposal_commit",
+                lambda: self._commit_proposal_if_complete(record),
+            )
             return record
 
         try:
-            step = self.planner.revalidate_step(plan, index)
+            step = self._stage(
+                "plan.tick.revalidate",
+                lambda: self.planner.revalidate_step(plan, index),
+            )
         except ValueError as exc:
-            return self.ledger.transition(plan_id, "replanning", last_error=str(exc))
+            return self._stage(
+                "plan.tick.transition_replanning",
+                lambda: self.ledger.transition(
+                    plan_id,
+                    "replanning",
+                    last_error=str(exc),
+                ),
+            )
 
         try:
-            resolved = self.resolver.resolve(step.intent)
+            resolved = self._stage(
+                "plan.tick.resolve",
+                lambda: self.resolver.resolve(step.intent),
+            )
         except ValueError as exc:
-            failed = self.ledger.transition(plan_id, "failed", last_error=str(exc))
-            self._reject_proposal(failed, str(exc))
+            failed = self._stage(
+                "plan.tick.transition_failed",
+                lambda: self.ledger.transition(
+                    plan_id,
+                    "failed",
+                    last_error=str(exc),
+                ),
+            )
+            self._stage(
+                "plan.tick.proposal_reject",
+                lambda: self._reject_proposal(failed, str(exc)),
+            )
             return failed
 
-        principal = self._principal(record["principal"])
-        result = self.guarded.commit(
-            list(resolved.operations),
-            principal=principal,
-            context={
-                "plan_id": plan_id,
-                "proposal_id": record.get("proposal_id"),
-                "plan_priority": int(record.get("priority", 0)),
-                "plan_revision": int(record.get("plan_revision", 0)),
-                "logical_tick": int(logical_tick) if logical_tick is not None else None,
-                "intent_plan": {
-                    "intent_type": plan.intent_type,
-                    "step_index": index,
-                    "total_steps": len(plan.steps),
-                    "step_kind": step.kind,
-                    "goal_region_id": plan.goal_region_id,
-                    "region_path": list(plan.region_path),
-                },
+        principal = self._stage(
+            "plan.tick.principal",
+            lambda: self._principal(record["principal"]),
+        )
+        narration = self._stage(
+            "plan.tick.narration",
+            lambda: self._public_narration(plan, step),
+        )
+        context = {
+            "plan_id": plan_id,
+            "proposal_id": record.get("proposal_id"),
+            "plan_priority": int(record.get("priority", 0)),
+            "plan_revision": int(record.get("plan_revision", 0)),
+            "logical_tick": int(logical_tick) if logical_tick is not None else None,
+            "intent_plan": {
+                "intent_type": plan.intent_type,
+                "step_index": index,
+                "total_steps": len(plan.steps),
+                "step_kind": step.kind,
+                "goal_region_id": plan.goal_region_id,
+                "region_path": list(plan.region_path),
             },
-            narration=self._public_narration(plan, step),
+        }
+        result = self._stage(
+            "plan.tick.guarded_commit",
+            lambda: self.guarded.commit(
+                list(resolved.operations),
+                principal=principal,
+                context=context,
+                narration=narration,
+            ),
         )
         audit = result.get("audit") or {}
-        decision_id = str(audit.get("mutation_decision_id") or "").strip() or None
+        decision_id = str(
+            audit.get("mutation_decision_id") or ""
+        ).strip() or None
         if not result.get("ok"):
-            reason = str((result.get("decision") or {}).get("reason") or "mutation rejected")
-            failed = self.ledger.transition(
-                plan_id,
-                "failed",
-                last_error=reason,
-                last_mutation_decision_id=decision_id,
+            reason = str(
+                (result.get("decision") or {}).get("reason")
+                or "mutation rejected"
             )
-            self._reject_proposal(failed, reason)
+            failed = self._stage(
+                "plan.tick.transition_failed",
+                lambda: self.ledger.transition(
+                    plan_id,
+                    "failed",
+                    last_error=reason,
+                    last_mutation_decision_id=decision_id,
+                ),
+            )
+            self._stage(
+                "plan.tick.proposal_reject",
+                lambda: self._reject_proposal(failed, reason),
+            )
             return failed
 
         event = result.get("event") or {}
         world = result.get("world") or {}
         event_id = str(event.get("event_id") or "").strip() or None
         state_hash = str(world.get("state_hash") or "").strip() or None
-        updated = self.ledger.mark_step_completed(
-            plan_id,
-            step_index=index,
-            mutation_decision_id=decision_id,
-            world_event_id=event_id,
-            state_hash=state_hash,
-            logical_tick=logical_tick,
+        updated = self._stage(
+            "plan.tick.mark_step_completed",
+            lambda: self.ledger.mark_step_completed(
+                plan_id,
+                step_index=index,
+                mutation_decision_id=decision_id,
+                world_event_id=event_id,
+                state_hash=state_hash,
+                logical_tick=logical_tick,
+            ),
         )
-        self._commit_proposal_if_complete(updated)
+        self._stage(
+            "plan.tick.proposal_commit",
+            lambda: self._commit_proposal_if_complete(updated),
+        )
         return updated
 
     def tick_all(self, logical_tick: int | None = None) -> list[dict[str, Any]]:

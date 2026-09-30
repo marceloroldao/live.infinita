@@ -132,6 +132,60 @@ class PlanSchedulerTest(unittest.TestCase):
         self.assertEqual(a["plan_id"], b["plan_id"])
         self.assertEqual(len(self.ledger.current()), 1)
 
+    def test_stage_observer_decomposes_schedule_and_tick(self) -> None:
+        observed: list[tuple[str, int]] = []
+        self.scheduler.stage_observer = lambda name, elapsed: observed.append(
+            (name, elapsed)
+        )
+        plan = self.schedule_trip()
+        result = self.scheduler.tick(plan["plan_id"])
+
+        self.assertEqual(result["next_step_index"], 1)
+        names = [name for name, _ in observed]
+        self.assertIn("plan.schedule.plan", names)
+        self.assertIn("plan.schedule.ledger_create", names)
+        self.assertIn("plan.tick.lookup", names)
+        self.assertIn("plan.tick.transition_running", names)
+        self.assertIn("plan.tick.revalidate", names)
+        self.assertIn("plan.tick.resolve", names)
+        self.assertIn("plan.tick.narration", names)
+        self.assertIn("plan.tick.guarded_commit", names)
+        self.assertIn("plan.tick.mark_step_completed", names)
+        self.assertTrue(all(elapsed >= 0 for _, elapsed in observed))
+
+    def test_stage_observer_failure_never_controls_authoritative_execution(self) -> None:
+        def broken_observer(name: str, elapsed: int) -> None:
+            raise RuntimeError("observer unavailable")
+
+        self.scheduler.stage_observer = broken_observer
+        plan = self.schedule_trip()
+        result = self.scheduler.tick(plan["plan_id"])
+
+        self.assertEqual(result["status"], "running")
+        self.assertEqual(result["next_step_index"], 1)
+        self.assertEqual(self.store.get_entity("nov")["region_id"], "r1")
+
+    def test_tick_profiler_wires_same_observer_into_scheduler(self) -> None:
+        source = (RUNTIME / "tick_driver_main.py").read_text(encoding="utf-8")
+        self.assertIn(
+            "scheduler.stage_observer = profiler.observe_stage",
+            source,
+        )
+
+    def test_008h_rollout_is_observational_and_single_writer_only(self) -> None:
+        script = (
+            ROOT / "deploy" / "apply-plan-stage-profiling-008h.sh"
+        ).read_text(encoding="utf-8")
+        self.assertIn('systemctl stop "$SERVICE"', script)
+        self.assertIn("plan_scheduler.py", script)
+        self.assertIn("tick_driver_main.py", script)
+        self.assertIn("current_tick >= baseline_tick + 2", script)
+        self.assertIn("world-tick-profile.json", script)
+        self.assertNotIn("hot_ledger_compactor", script)
+        self.assertNotIn("systemctl restart live-infinita.service", script)
+        self.assertNotIn("systemctl restart live-infinita-renderer.service", script)
+        self.assertNotIn("systemctl restart live-infinita-memoria-local.service", script)
+
 
 if __name__ == "__main__":
     unittest.main()

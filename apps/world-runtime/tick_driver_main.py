@@ -59,6 +59,9 @@ def build_driver(world_tick_runner, data_dir: Path, owner_id: str | None = None)
         profiler = WorldTickProfiler(Path(data_dir) / "world-tick-profile.json")
         authoritative = getattr(world_tick_runner, "runner", world_tick_runner)
         authoritative.stage_observer = profiler.observe_stage
+        scheduler = getattr(authoritative, "scheduler", None)
+        if scheduler is not None and hasattr(scheduler, "stage_observer"):
+            scheduler.stage_observer = profiler.observe_stage
         tick_observer = profiler.observe_tick
         stage_observer = profiler.observe_stage
     return WorldTickDriver(
