@@ -39,6 +39,7 @@ class ForestWebRolloutTests(unittest.TestCase):
             'mktemp -d /var/www/.live-infinita-godot.stage.',
             'mktemp -d /var/www/.live-infinita-godot.backup.',
             'cp -a -- "$WEB/nov-preview" "$STAGE/nov-preview"',
+            'fail "nov_preview_symlink"',
             'cmp -s "$STAGE/nov-preview/build.json"',
             'mv -T -- "$WEB" "$BACKUP/site"',
             'mv -T -- "$STAGE" "$WEB"',
