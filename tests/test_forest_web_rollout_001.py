@@ -33,7 +33,7 @@ class ForestWebRolloutTests(unittest.TestCase):
         self.assertNotIn(' --path "/opt/live.infinita/apps/renderer-godot"', text)
         self.assertNotIn(' --path "$WEB"', text)
 
-    def test_atomic_site_swap_and_preserved_independent_preview(self):
+    def test_rename_swap_and_preserved_independent_preview(self):
         text = SCRIPT.read_text()
         for key in (
             'mktemp -d /var/www/.live-infinita-godot.stage.',
@@ -46,7 +46,7 @@ class ForestWebRolloutTests(unittest.TestCase):
             'FOREST001_WEB_ROLLBACK_OK',
             'FOREST001_WEB_BACKUP_PATH',
             'FOREST001_NOV_PREVIEW_PRESERVED',
-            'FOREST001_WEB_ATOMIC_SWAP_OK',
+            'FOREST001_WEB_RENAME_SWAP_OK',
         ):
             self.assertIn(key, text)
         self.assertNotIn('rsync -a --delete', text)
