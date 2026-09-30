@@ -38,6 +38,18 @@ def build_from_environment():
         raise RuntimeError("LIVE_INFINITA_TICK_DURATION_MS must be an integer") from exc
     if tick_ms <= 0:
         raise RuntimeError("LIVE_INFINITA_TICK_DURATION_MS must be positive")
+    try:
+        builder_interval = int(str(os.getenv("LIVE_INFINITA_WORLD_BUILDER_INTERVAL_TICKS", "240")).strip())
+    except ValueError as exc:
+        raise RuntimeError("LIVE_INFINITA_WORLD_BUILDER_INTERVAL_TICKS must be an integer") from exc
+    if builder_interval < 8:
+        raise RuntimeError("LIVE_INFINITA_WORLD_BUILDER_INTERVAL_TICKS must be >= 8")
+    terrain_value = str(os.getenv(
+        "LIVE_INFINITA_COGNITIVE_TERRAIN_FILE",
+        str(data_dir.parent / "cognitive-terrain" / "projection.json"),
+    )).strip()
+    if not terrain_value:
+        raise RuntimeError("LIVE_INFINITA_COGNITIVE_TERRAIN_FILE must not be empty")
 
     return build_authoritative_autonomous_runtime(
         bootstrap_file=bootstrap_file,
@@ -45,6 +57,9 @@ def build_from_environment():
         cold_store_dir=cold_store_dir,
         npc_ids=_npc_ids(),
         tick_duration_ms=tick_ms,
+        world_builder_enabled=_flag_enabled("LIVE_INFINITA_WORLD_BUILDER"),
+        cognitive_terrain_file=Path(terrain_value),
+        world_builder_interval_ticks=builder_interval,
     )
 
 
