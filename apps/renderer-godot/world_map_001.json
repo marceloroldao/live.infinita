@@ -1,0 +1,19 @@
+{
+  "schema": "live-infinita-visual-world-map/v1",
+  "name": "Vale de Nov",
+  "seed": 18471,
+  "grid_size": 16,
+  "tile_size_m": 64,
+  "active_radius_tiles": 1,
+  "max_decorations_per_tile": 6,
+  "start": [2, 7],
+  "landmarks": [
+    {"id": "shelter", "name": "Abrigo", "cell": [2, 7], "biome": "forest"},
+    {"id": "old_grove", "name": "Bosque antigo", "cell": [5, 7], "biome": "clearing"},
+    {"id": "river_crossing", "name": "Travessia do rio", "cell": [8, 7], "biome": "river"},
+    {"id": "village", "name": "Aldeia", "cell": [11, 9], "biome": "village"},
+    {"id": "ridge", "name": "Mirante", "cell": [12, 4], "biome": "hills"}
+  ],
+  "route": [[2,7],[5,7],[7,7],[8,7],[9,7],[11,9],[12,4],[9,5],[9,7],[8,7],[7,7],[5,7],[2,7]],
+  "license": "Original visual layout; compatible with bundled Quaternius CC0 models"
+}
