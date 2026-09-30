@@ -167,12 +167,12 @@ find "$STAGE" -type d -exec chmod 0755 {} +
 find "$STAGE" -type f -exec chmod 0644 {} +
 [[ -s "$STAGE/build.json" ]] || fail "build_metadata_missing"
 
-# Both renames occur on /var/www's same filesystem; old release remains
-# hidden in an unserved root-only backup directory.
+# Two same-filesystem renames minimize the publication gap (brief 404 is
+# possible between them); the old site stays in a private rollback directory.
 mv -T -- "$WEB" "$BACKUP/site" || fail "save_previous_site"
 saved_old=1
 mv -T -- "$STAGE" "$WEB" || fail "publish_rename"
-echo "FOREST001_WEB_ATOMIC_SWAP_OK"
+echo "FOREST001_WEB_RENAME_SWAP_OK"
 
 # Validate the actual local nginx vhost/alias and original Nov preview.
 url=https://live.etbra.com.br/godot
