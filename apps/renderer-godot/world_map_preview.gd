@@ -1,7 +1,9 @@
 extends Node3D
-# Isolated visual tour: no network I/O, filesystem writes, or World State mutation.
+# Isolated 3D preview. Optional one-way Nov observer; never writes World State.
 const Catalog = preload("res://nature_asset_catalog.gd")
 const Features = preload("res://world_map_features.gd")
+const NovFollow = preload("res://nov_map_follow.gd")
+const NOV_PROJECTION_PATH := "res://nov_map_projection_001.json"
 const MAP_PATH := "res://world_map_001.json"
 const TILE_M := 64.0
 const GRID := 16
@@ -25,6 +27,12 @@ var _route: Array = []
 var _leg := 1
 var _position := Vector3.ZERO
 var _clock := 0.0
+var _follow_nov := false
+var _has_follow_pose := false
+var _nov_follow: RefCounted
+var _follow_status := "desligado"
+var _follow_region := ""
+var _follow_sequence := -1
 
 func _ready() -> void:
     var data = JSON.parse_string(FileAccess.get_file_as_string(MAP_PATH))
@@ -42,6 +50,8 @@ func _ready() -> void:
         _route_points.append(_waypoint(waypoint))
     _position = _waypoint(_route[0])
     for argument in OS.get_cmdline_user_args():
+        if str(argument) == "--follow-nov":
+            _follow_nov = true
         if str(argument).begins_with("--preview-cell="):
             var pieces := str(argument).trim_prefix("--preview-cell=").split(",")
             if pieces.size() == 2 and pieces[0].is_valid_int() and pieces[1].is_valid_int():
@@ -49,10 +59,49 @@ func _ready() -> void:
                 var pz := pieces[1].to_int()
                 if px >= 0 and px < GRID and pz >= 0 and pz < GRID:
                     _position = _waypoint([px, pz])
+    if _follow_nov:
+        _start_nov_follow()
     _build_stage()
     _sync_tiles()
     _update_caption()
     print("WORLD_MAP_PREVIEW_READY grid=16x16 meters=1024 active_tiles=%d decor_budget=%d" % [_tiles.size(), MAX_ACTIVE_DECOR])
+
+func _nov_socket_url() -> String:
+    if OS.has_feature("web"):
+        var scheme := "wss://" if str(JavaScriptBridge.eval("window.location.protocol")) == "https:" else "ws://"
+        return scheme + str(JavaScriptBridge.eval("window.location.host")) + "/ws"
+    return "ws://127.0.0.1:8080/ws"
+
+func _start_nov_follow() -> void:
+    var data = JSON.parse_string(FileAccess.get_file_as_string(NOV_PROJECTION_PATH))
+    if typeof(data) != TYPE_DICTIONARY:
+        _follow_status = "mapping_indisponivel"
+        return
+    _nov_follow = NovFollow.new(data)
+    _nov_follow.start(_nov_socket_url())
+    _follow_status = "aguardando_nov"
+    print("NOV_MAP_FOLLOW_READ_ONLY_ENABLED")
+
+func _tick_nov_follow(delta: float) -> void:
+    if _nov_follow == null:
+        return
+    var value: Dictionary = _nov_follow.poll()
+    _follow_status = str(value.get("status", "sem_dados"))
+    if value.get("fresh") != true or value.get("has_pose") != true:
+        return
+    var target: Vector2 = value["position"]
+    if not _has_follow_pose:
+        _position.x = target.x
+        _position.z = target.y
+        _has_follow_pose = true
+    else:
+        var alpha := 1.0 - exp(-delta * 3.0)
+        _position.x = lerpf(_position.x, target.x, alpha)
+        _position.z = lerpf(_position.z, target.y, alpha)
+    _follow_region = str(value["region_id"])
+    if _follow_sequence != int(value["sequence"]):
+        _follow_sequence = int(value["sequence"])
+        print("NOV_MAP_FOLLOW_ACCEPTED seq=%d region=%s" % [_follow_sequence, _follow_region])
 
 func _build_stage() -> void:
     var light := DirectionalLight3D.new()
@@ -218,14 +267,17 @@ func _follow_camera() -> void:
 func _update_caption() -> void:
     var cx := _cell(_position.x)
     var cz := _cell(_position.z)
-    _status.text = "LIVE INFINITA / VALE DE NOV\n1.024 x 1.024 m | %d setores ativos | max %d decoracoes\nSetor %d,%d - %s | percurso visual (sem World State)\nSetas: explorar manualmente" % [_tiles.size(), MAX_ACTIVE_DECOR, cx, cz, _biome(cx, cz)]
+    var mode := ("Nov real / leitura: %s / %s / seq %d" % [_follow_status, _follow_region, _follow_sequence]) if _follow_nov else "Percurso demonstrativo / setas: explorar"
+    _status.text = "LIVE INFINITA / VALE DE NOV\n1.024 x 1.024 m | %d setores ativos | max %d decoracoes\nSetor %d,%d - %s\n%s" % [_tiles.size(), MAX_ACTIVE_DECOR, cx, cz, _biome(cx, cz), mode]
 
 func _process(delta: float) -> void:
     if _route.size() < 2:
         return
     var input := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
     var old_cell := Vector2i(_cell(_position.x), _cell(_position.z))
-    if input.length_squared() > 0.01:
+    if _follow_nov:
+        _tick_nov_follow(delta)
+    elif input.length_squared() > 0.01:
         _position.x = clampf(_position.x + input.x * TOUR_SPEED_MPS * delta, -HALF + 1.0, HALF - 1.0)
         _position.z = clampf(_position.z + input.y * TOUR_SPEED_MPS * delta, -HALF + 1.0, HALF - 1.0)
     else:
