@@ -87,8 +87,15 @@ class ProposalLedgerBridge:
     def _find(self, origin: str, source_proposal_id: str) -> dict[str, Any]:
         origin = str(origin).strip().lower()
         source_proposal_id = str(source_proposal_id).strip()
-        row = next((item for item in self.ledger.current()
-                    if item.get("origin") == origin and item.get("source_proposal_id") == source_proposal_id), None)
+        indexed = getattr(self.ledger, "get_by_source", None)
+        if callable(indexed):
+            row = indexed(origin, source_proposal_id)
+        else:
+            row = next((
+                item for item in self.ledger.current()
+                if item.get("origin") == origin
+                and item.get("source_proposal_id") == source_proposal_id
+            ), None)
         if row is None:
             raise KeyError("proposal not mirrored")
         return row

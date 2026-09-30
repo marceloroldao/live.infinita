@@ -253,6 +253,8 @@ def build_authoritative_autonomous_runtime(
     regions = region_catalog_from_world(engine.load_world())
     guarded = GuardedMutationService(engine, decision_log_file=root / "mutation-decisions.jsonl")
     proposals = ProposalLedger(root / "proposals.jsonl")
+    # Warm derived lookup metadata before any NPC can propose/schedule work.
+    proposals.warm_index()
     plans = PlanLedger(root / "plans.jsonl")
     # Hydrate derived plan lookup metadata before the tick profiler/driver starts.
     # With the persistent sidecar this is a bounded metadata load, not a JSONL scan.
