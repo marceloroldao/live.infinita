@@ -49,6 +49,21 @@ class WorldMapTests(unittest.TestCase):
             self.assertNotIn(forbidden, script)
         self.assertLess(len(script), 12500)
 
+    def test_real_visual_features_are_bounded_and_read_only(self):
+        features = (SCENE / "world_map_features.gd").read_text(encoding="utf-8")
+        script = SCRIPT.read_text(encoding="utf-8")
+        for required in ("func _water(", "func _bridge(", "func _hut(",
+                         "func _village(", "func _landmark(", "func _path(",
+                         "func decorate(", "WORLD_MAP_TILE_READY"):
+            self.assertIn(required, features + script)
+        for forbidden in ("WebSocket", "HTTPClient", "FileAccess", "DirAccess",
+                          "post_world", "submit_intent", "set_world"):
+            self.assertNotIn(forbidden, features)
+        self.assertIn('if cx == 8 and cz == 7:', features)
+        self.assertIn('if cx == 11 and cz == 9:', features)
+        self.assertIn('for index in range(steps):', features)
+        self.assertIn('var features: Array[String] = _features.decorate(', script)
+
     def test_preserves_cold_world_contract(self):
         text = (ROOT / "docs/PERSISTENT_REGIONS_LONG_TRAVEL_001.md").read_text()
         self.assertIn("HOT <= 96", text)
