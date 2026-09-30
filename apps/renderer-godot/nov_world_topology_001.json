@@ -1,0 +1,36 @@
+{
+  "schema": "live-infinita-nov-world-map-topology/v1",
+  "world_id": "nov-live-autonomous-001",
+  "authoritative_regions": {
+    "shelter": {
+      "label": "Abrigo de Nov",
+      "world_center": [930.0, 390.0],
+      "radius": 120.0,
+      "biome": "forest",
+      "neighbors": ["clearing"],
+      "map_cell": [2, 7]
+    },
+    "clearing": {
+      "label": "Clareira Central",
+      "world_center": [640.0, 360.0],
+      "radius": 150.0,
+      "biome": "forest",
+      "neighbors": ["shelter", "deep_forest"],
+      "map_cell": [5, 7]
+    },
+    "deep_forest": {
+      "label": "Floresta Profunda",
+      "world_center": [350.0, 340.0],
+      "radius": 170.0,
+      "biome": "forest",
+      "neighbors": ["clearing"],
+      "map_cell": [5, 4]
+    }
+  },
+  "authoritative_edges": [
+    ["shelter", "clearing"],
+    ["clearing", "deep_forest"]
+  ],
+  "visual_expansion_regions": ["river", "village", "hills"],
+  "preview_only": true
+}

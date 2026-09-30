@@ -18,7 +18,9 @@ func add_to_tile(tile: Node3D, cx: int, cz: int, biome: String, points: Array, h
     if cx == 2 and cz == 7:
         _landmark(tile, Vector3(-352.0, height_fn.call(-352.0, -32.0), -32.0), Color("#bc914e"))
     if cx == 5 and cz == 7:
-        _landmark(tile, Vector3(-160.0, height_fn.call(-160.0, -32.0), -32.0), Color("#477b3a"))
+        _landmark(tile, Vector3(-160.0, height_fn.call(-160.0, -32.0), -32.0), Color("#78a95b"))
+    if cx == 5 and cz == 4:
+        _landmark(tile, Vector3(-160.0, height_fn.call(-160.0, -224.0), -224.0), Color("#274b32"))
     if cx == 12 and cz == 4:
         _landmark(tile, Vector3(288.0, height_fn.call(288.0, -224.0), -224.0), Color("#c9caaf"))
 

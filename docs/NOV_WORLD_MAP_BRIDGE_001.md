@@ -16,7 +16,7 @@ nem acrescentar endpoint, serviço ou rota de escrita.
 `nov-live-autonomous-001` às três regiões existentes:
 `shelter`, `clearing` e `deep_forest`, com âncoras conhecidas
 `(930,390)`, `(640,360)` e `(350,340)`. As células
-`[2,7]`, `[7,7]` e `[5,7]` são **somente apresentação**.
+`[2,7]`, `[5,7]` e `[5,4]` são **somente apresentação**. Essa composição preserva o grafo real `shelter ↔ clearing ↔ deep_forest`; não existe aresta direta entre `shelter` e `deep_forest`.
 O fator 0,35 m/ unidade lógica não é uma conversão física medida.
 Mudanças de região podem deslocar a câmera visualmente; esse mapa
 não é a nova topologia autoritativa nem altera o caminho de Nov.
@@ -53,7 +53,8 @@ tour automático e não inventa deslocamento. O renderer principal
 - Log esperado: `NOV_MAP_FOLLOW_READ_ONLY_ENABLED`,
   `NOV_MAP_FOLLOW_ACCEPTED`, `NOV_MAP_FOLLOW_SMOKE_OK`.
 
-Não publicar `/godot/`, não alterar serviço e não mesclar os PRs
-empilhados antes do gate de CPU/FPS e inspeção visual humana.
-O passo posterior é alinhar uma topologia espacial real do mapa à
-origem autoritativa, substituindo as âncoras demonstrativas.
+Não alterar o serviço de produção nem mesclar os PRs empilhados antes
+dos gates de CPU/FPS e inspeção visual. A topologia das três regiões
+autoritativas agora está registrada em `nov_world_topology_001.json`;
+rio, aldeia e hills continuam expansão visual, não fatos do World State.
+O perfil CPU e seus limites estão em `WORLD_MAP_CPU_PROFILE_001.md`.
