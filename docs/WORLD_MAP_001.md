@@ -11,9 +11,11 @@ determinísticas com o catálogo Quaternius CC0 já incluído no projeto.
 O roteiro visual passa por abrigo, bosque antigo, travessia do rio,
 aldeia e mirante. O segundo corte adiciona água superficial no leito
 rebaixado, ponte visual no setor 8,7, trilhas locais, cabanas modulares,
-praça e marcos com letreiros. A água não tem simulação hidráulica; casas,
-ponte e caminhos ainda são geometria sem colisão ou ações. Em modo
-offline o marcador de Nov percorre a rota demonstrativa; em modo live ele
+praça e marcos com letreiros. A água não tem simulação hidráulica.
+As casas agora recebem um collider simples nas paredes e a ponte dois
+colliders laterais; árvores, pedras e plantas continuam sem corpos físicos
+para preservar o orçamento. Em modo offline o marcador de Nov percorre a
+rota demonstrativa; em modo live ele
 segue `delivery.observer`, resolvido pelo SpatialSession a partir da posição
 autoritativa de `nov`. Entidades HOT/WARM são apenas marcadores visuais.
 As regiões do mapa continuam sendo apresentação e não criam verdade paralela.
@@ -31,6 +33,9 @@ aproximadamente 440 MB de RSS e 28% de CPU no ponto amostrado.
 A dimensão do mundo não altera os tetos existentes do Spatial Resolver.
 O overlay replica explicitamente os limites HOT 96 / WARM 192 e usa
 `MultiMesh` para os marcadores, sem materializar a memória fria no Godot.
+O SpatialSession entrega no máximo 16 descritores de região local
+(região atual + vizinhas candidatas); o Godot os projeta como anéis de
+48 segmentos. Colliders também são locais: máximo lógico de 3 por setor.
 
 ## Fronteira de segurança
 
@@ -53,16 +58,20 @@ godot --headless --path /tmp/COPIA_ISOLADA res://world_map_preview.tscn --quit-a
 O marcador offline esperado é `WORLD_MAP_PREVIEW_READY`, com 9 setores e
 limite de 54 decorações. Com o runtime disponível deve aparecer também
 `WORLD_MAP_LIVE_BOUND`, incluindo região, sequence, célula e contagens
-HOT/WARM. O import no checkout usado pelo renderer nativo não é permitido.
+HOT/WARM/regiões. O smoke de regiões/colisão confirmou 3 anéis persistentes,
+2 corpos estáticos na ponte e 9 corpos estáticos ao materializar os 9 setores
+da aldeia. O import no checkout usado pelo renderer nativo não é permitido.
 O rollout Web usa `/godot/world-map-preview/` e troca atômica independente.
 
 ## Evolução
 
 1. Concluído: captura visual isolada e aferição inicial de CPU/RAM.
 2. Concluído: pose autoritativa de Nov e overlay HOT/WARM somente leitura.
-3. Próximo: alinhar as regiões persistentes ao mapa e adicionar travessia
-   física/colisões sem dar autoridade ao renderer.
-4. Depois: promover o mapa para a captura nativa por rollout independente.
+3. Concluído neste corte: regiões persistentes locais projetadas no mapa e
+   primeira camada bounded de colisão em ponte/casas.
+4. Próximo: locomoção física local para exploração manual e contrato de
+   travessabilidade, mantendo o movimento autoritativo no runtime.
+5. Depois: promover o mapa para a captura nativa por rollout independente.
 
 Referências de assets: Quaternius Stylized Nature MegaKit (CC0) e
 Medieval Village MegaKit (CC0). Terrain3D (MIT) fica como opção

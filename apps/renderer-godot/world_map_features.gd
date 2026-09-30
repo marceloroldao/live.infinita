@@ -6,6 +6,7 @@ const RIVER_X := 32.0
 const BRIDGE_Z := -32.0
 const BRIDGE_Y := 3.5
 const MAX_HOUSES_PER_TILE := 1
+const MAX_COLLIDERS_PER_TILE := 3
 var _height_fn: Callable
 
 func add_to_tile(tile: Node3D, cx: int, cz: int, biome: String, points: Array, height_fn: Callable, walk_fn: Callable) -> void:
@@ -43,6 +44,19 @@ func _box(parent: Node3D, name: String, center: Vector3, size: Vector3, color: C
     mesh_node.material_override = _material(color)
     parent.add_child(mesh_node)
     return mesh_node
+
+func _solid_box(parent: Node3D, name: String, center: Vector3, size: Vector3, color: Color) -> MeshInstance3D:
+    var visual := _box(parent, name, center, size, color)
+    var body := StaticBody3D.new()
+    body.name = name + "_Collider"
+    body.position = center
+    var shape := BoxShape3D.new()
+    shape.size = size
+    var collision := CollisionShape3D.new()
+    collision.shape = shape
+    body.add_child(collision)
+    parent.add_child(body)
+    return visual
 
 func _path(parent: Node3D, cx: int, cz: int, points: Array, walk_fn: Callable) -> void:
     var x0 := float(cx) * CELL_M - HALF
@@ -98,7 +112,7 @@ func _bridge(tile: Node3D) -> void:
             Vector3(13.3 + float(i) * 2.65, BRIDGE_Y + 0.045, BRIDGE_Z),
             Vector3(2.45, 0.13, 5.6), Color("#ac8256"))
     for side in [-1.0, 1.0]:
-        _box(tile, "BridgeRail", Vector3(RIVER_X, BRIDGE_Y + 0.95, BRIDGE_Z + side * 3.0),
+        _solid_box(tile, "BridgeRail", Vector3(RIVER_X, BRIDGE_Y + 0.95, BRIDGE_Z + side * 3.0),
             Vector3(40.0, 0.16, 0.18), Color("#62482f"))
         for i in range(5):
             _box(tile, "BridgePost", Vector3(13.5 + float(i) * 9.2, BRIDGE_Y + 0.55, BRIDGE_Z + side * 3.0),
@@ -113,7 +127,7 @@ func _house(tile: Node3D, cx: int, cz: int, height_fn: Callable) -> void:
     root.position = Vector3(x, y, z)
     tile.add_child(root)
     var plaster := Color("#d6be91") if cx % 2 == 0 else Color("#bca382")
-    _box(root, "Walls", Vector3(0, 1.8, 0), Vector3(6.4, 3.6, 6.2), plaster)
+    _solid_box(root, "Walls", Vector3(0, 1.8, 0), Vector3(6.4, 3.6, 6.2), plaster)
     _box(root, "Door", Vector3(0, 1.1, 3.13), Vector3(1.4, 2.2, 0.12), Color("#60422e"))
     for side in [-1.0, 1.0]:
         var roof := _box(root, "RoofSlope", Vector3(side * 1.6, 4.08, 0),

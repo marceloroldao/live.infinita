@@ -13,6 +13,8 @@ from packages.spatial import (
     SpatialResolver,
 )
 
+MAX_LOCAL_REGION_DESCRIPTORS = 16
+
 
 class SpatialSession:
     """Observer-local projection of the authoritative global World State.
@@ -466,11 +468,17 @@ class SpatialSession:
 
         local = {key: deepcopy(value) for key, value in world.items() if key not in {"entities", "regions"}}
         local["entities"] = hot_entities
+        region_descriptors = [
+            deepcopy(region)
+            for region in sorted(candidate_regions, key=lambda row: str(row.get("id", "")))[:MAX_LOCAL_REGION_DESCRIPTORS]
+        ]
         local["interest"] = {
             **interest,
             **candidate_meta,
             "observer_entity_id": view.get("observer_entity_id"),
             "warm_entities": warm_entities,
+            "region_descriptors": region_descriptors,
+            "region_descriptors_total": len(region_descriptors),
             "source_entities_total": source_entities_total,
             "source_regions_total": source_regions_total,
             "materialized_entities_total": len(hot_entities),

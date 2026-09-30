@@ -59,6 +59,8 @@ class SpatialSessionColdStoreTest(unittest.TestCase):
             self.assertLessEqual(interest["cold_payload_resident_entities"], 3)
             self.assertIn("nov", {row["id"] for row in local["entities"]})
             self.assertTrue(interest["cold_omitted"])
+            self.assertEqual([row["id"] for row in interest["region_descriptors"]], ["r0", "r1"])
+            self.assertEqual(interest["region_descriptors_total"], 2)
 
     def test_cold_delta_moves_observer_without_rehydrating_world(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

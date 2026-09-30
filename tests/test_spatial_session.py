@@ -48,6 +48,22 @@ class SpatialSessionTest(unittest.TestCase):
         self.assertIn("tree_warm", local["interest"]["warm"]["entity_ids"])
         self.assertNotIn("castle_far", local["interest"]["warm"]["entity_ids"])
 
+    def test_region_descriptors_are_local_and_bounded(self) -> None:
+        local = self.session.build(self.world, self.session.default_view(self.world))
+        regions = local["interest"]["region_descriptors"]
+        self.assertEqual([row["id"] for row in regions], ["field_b", "forest_a"])
+        self.assertEqual(local["interest"]["region_descriptors_total"], 2)
+        self.assertNotIn("regions", local)
+
+        many = dict(self.world)
+        many["regions"] = [
+            {"id": f"r{index:02d}", "center": {"x": index * 10, "y": 0}, "radius": 5}
+            for index in range(30)
+        ]
+        limited = self.session.build(many, self.session.default_view(many))
+        self.assertEqual(len(limited["interest"]["region_descriptors"]), 16)
+        self.assertEqual(limited["interest"]["region_descriptors_total"], 16)
+
     def test_warm_entities_are_metadata_not_full_materialization(self) -> None:
         local = self.session.build(self.world, self.session.default_view(self.world))
         warm = {row["id"]: row for row in local["interest"]["warm_entities"]}

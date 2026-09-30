@@ -86,6 +86,21 @@ class WorldMapTests(unittest.TestCase):
         self.assertIn("project_position", visual)
         self.assertIn("update_markers", visual)
 
+    def test_persistent_region_overlay_and_collision_budget(self):
+        feed = (SCENE / "world_map_live_feed.gd").read_text(encoding="utf-8")
+        visual = (SCENE / "world_map_live_visual.gd").read_text(encoding="utf-8")
+        features = (SCENE / "world_map_features.gd").read_text(encoding="utf-8")
+        self.assertIn("region_descriptors", feed)
+        self.assertIn("MAX_LOCAL_REGIONS := 16", visual)
+        self.assertIn("REGION_RING_SEGMENTS := 48", visual)
+        self.assertIn("func update_regions(", visual)
+        self.assertIn("ImmediateMesh.new()", visual)
+        self.assertIn("MAX_COLLIDERS_PER_TILE := 3", features)
+        self.assertIn("StaticBody3D.new()", features)
+        self.assertIn("BoxShape3D.new()", features)
+        self.assertIn('_solid_box(tile, "BridgeRail"', features)
+        self.assertIn('_solid_box(root, "Walls"', features)
+
     def test_web_rollout_is_separate_and_atomic(self):
         rollout = (ROOT / "deploy/export-world-map-preview-web.sh").read_text()
         self.assertIn('PREVIEW_NAME="world-map-preview"', rollout)

@@ -33,6 +33,7 @@ var _live_region_id := ""
 var _live_sequence := -1
 var _live_hot_count := 0
 var _live_warm_count := 0
+var _live_region_count := 0
 var _live_visual: RefCounted
 
 func _ready() -> void:
@@ -215,7 +216,7 @@ func _sync_tiles() -> void:
             stale.queue_free()
     assert(_tiles.size() <= MAX_ACTIVE_TILES)
 
-func _on_world_slice(observer: Dictionary, current_region_id: String, hot_entities: Array, warm_entities: Array, sequence: int) -> void:
+func _on_world_slice(observer: Dictionary, current_region_id: String, hot_entities: Array, warm_entities: Array, region_descriptors: Array, sequence: int) -> void:
     if observer.is_empty():
         return
     var first_bind := not _live_authoritative
@@ -228,12 +229,13 @@ func _on_world_slice(observer: Dictionary, current_region_id: String, hot_entiti
     var counts: Dictionary = _live_visual.update_markers(hot_entities, warm_entities)
     _live_hot_count = int(counts.get("hot", 0))
     _live_warm_count = int(counts.get("warm", 0))
+    _live_region_count = _live_visual.update_regions(region_descriptors, current_region_id)
     if old_cell != Vector2i(_cell(_position.x), _cell(_position.z)):
         _sync_tiles()
     _follow_camera()
     _update_caption()
     if first_bind:
-        print("WORLD_MAP_LIVE_BOUND region=%s sequence=%d cell=%d:%d hot=%d warm=%d" % [_live_region_id, _live_sequence, _cell(_position.x), _cell(_position.z), _live_hot_count, _live_warm_count])
+        print("WORLD_MAP_LIVE_BOUND region=%s sequence=%d cell=%d:%d hot=%d warm=%d regions=%d" % [_live_region_id, _live_sequence, _cell(_position.x), _cell(_position.z), _live_hot_count, _live_warm_count, _live_region_count])
 
 func _follow_camera() -> void:
     _walker.position = _position + Vector3(0, 1.1, 0)
@@ -245,7 +247,7 @@ func _update_caption() -> void:
     var cz := _cell(_position.z)
     if _live_authoritative:
         var feed_state := str(_live_feed.get("connection_state")) if _live_feed != null else "sem feed"
-        _status.text = "LIVE INFINITA / VALE DE NOV\n1.024 x 1.024 m | %d setores ativos | max %d decoracoes\nNOV autoritativo | regiao %s | seq %d | %s\nSetor %d,%d - %s | HOT %d / WARM %d | somente leitura" % [_tiles.size(), MAX_ACTIVE_DECOR, _live_region_id, _live_sequence, feed_state, cx, cz, _biome(cx, cz), _live_hot_count, _live_warm_count]
+        _status.text = "LIVE INFINITA / VALE DE NOV\n1.024 x 1.024 m | %d setores ativos | max %d decoracoes\nNOV autoritativo | regiao %s | seq %d | %s\nSetor %d,%d - %s | HOT %d / WARM %d / REG %d | somente leitura" % [_tiles.size(), MAX_ACTIVE_DECOR, _live_region_id, _live_sequence, feed_state, cx, cz, _biome(cx, cz), _live_hot_count, _live_warm_count, _live_region_count]
     else:
         _status.text = "LIVE INFINITA / VALE DE NOV\n1.024 x 1.024 m | %d setores ativos | max %d decoracoes\nSetor %d,%d - %s | percurso visual offline\nSetas: explorar manualmente" % [_tiles.size(), MAX_ACTIVE_DECOR, cx, cz, _biome(cx, cz)]
 
