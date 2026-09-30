@@ -6,7 +6,7 @@ import shutil
 import time
 from copy import deepcopy
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 from plan_scheduler import PlanScheduler
 from proposal_ledger import ProposalLedger
@@ -47,6 +47,8 @@ class NpcNeedScheduler:
         strategy_compiler: Any | None = None,
         strategy_executor: Any | None = None,
         social_opportunity_provider: Any | None = None,
+        stage_observer: Callable[[str, int], None] | None = None,
+        monotonic_ns: Callable[[], int] = time.perf_counter_ns,
     ) -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -64,6 +66,8 @@ class NpcNeedScheduler:
         self.strategy_compiler = strategy_compiler
         self.strategy_executor = strategy_executor
         self.social_opportunity_provider = social_opportunity_provider
+        self.stage_observer = stage_observer
+        self.monotonic_ns = monotonic_ns
         self._index_ready = False
         self._index_signature: tuple[int, int, int, int] | None = None
         self._scheduled_ticks: dict[tuple[str, str], int] = {}
@@ -72,6 +76,21 @@ class NpcNeedScheduler:
         # Recover exactly one malformed legacy record left by the historical
         # crash-tail-then-append bug. Preserve evidence; broader corruption is fatal.
         self.repair_legacy_single_invalid_record()
+
+    def _stage(self, name: str, fn: Callable[[], Any]) -> Any:
+        if self.stage_observer is None:
+            return fn()
+        started = self.monotonic_ns()
+        try:
+            return fn()
+        finally:
+            try:
+                self.stage_observer(
+                    name,
+                    max(0, self.monotonic_ns() - started),
+                )
+            except Exception:
+                pass
 
     def repair_legacy_single_invalid_record(self) -> dict[str, Any]:
         marker = self.path.with_suffix(self.path.suffix + ".legacy-repair-v1.json")
@@ -575,16 +594,25 @@ class NpcNeedScheduler:
         tick = int(tick)
         results: list[dict[str, Any]] = []
         for npc_id in self.npc_ids:
-            entity = self._entity(npc_id)
+            entity = self._stage(
+                "need.evaluate.entity",
+                lambda: self._entity(npc_id),
+            )
             if entity is None:
                 continue
-            values = self._need_values(entity)
+            values = self._stage(
+                "need.evaluate.need_values",
+                lambda: self._need_values(entity),
+            )
             candidates = [(name, value, self.DEFAULT_PRIORITIES[name], value * self.DEFAULT_PRIORITIES[name]) for name, value in values.items() if value >= self.threshold]
             if not candidates:
                 continue
             candidates.sort(key=lambda item: (-item[3], -item[2], item[0]))
             need, severity, priority, utility = candidates[0]
-            ongoing = self._ongoing_goal(npc_id, need)
+            ongoing = self._stage(
+                "need.evaluate.ongoing_goal",
+                lambda: self._ongoing_goal(npc_id, need),
+            )
             if ongoing is not None:
                 results.append({
                     "npc_id": npc_id,
@@ -595,13 +623,22 @@ class NpcNeedScheduler:
                     "strategy_execution_id": ongoing["strategy_execution_id"],
                 })
                 continue
-            last_tick = self._last_tick(npc_id, need)
+            last_tick = self._stage(
+                "need.evaluate.cooldown_lookup",
+                lambda: self._last_tick(npc_id, need),
+            )
             if last_tick is not None and tick - last_tick < self.cooldown_ticks:
                 results.append({"npc_id": npc_id, "need": need, "status": "cooldown", "tick": tick})
                 continue
 
-            context = self._context_for(entity, tick=tick)
-            intent, target_ranking, strategy, strategy_ranking = self._intent_for(entity, need, context)
+            context = self._stage(
+                "need.evaluate.context",
+                lambda: self._context_for(entity, tick=tick),
+            )
+            intent, target_ranking, strategy, strategy_ranking = self._stage(
+                "need.evaluate.intent_for",
+                lambda: self._intent_for(entity, need, context),
+            )
             if intent is None:
                 row = {
                     "need_schema": "npc_need_v6",
@@ -613,7 +650,10 @@ class NpcNeedScheduler:
                     "proposal_id": None, "plan_id": None, "strategy_execution_id": None,
                     "created_at_unix": time.time(),
                 }
-                self._append(row)
+                self._stage(
+                    "need.evaluate.audit_append",
+                    lambda: self._append(row),
+                )
                 results.append(row)
                 continue
 
@@ -622,13 +662,16 @@ class NpcNeedScheduler:
                 selected_target_id = str((strategy or {}).get("target_entity_id") or "")
             composite_plan = None
             if selected_target_id and self._composite_enabled():
-                chosen, composite_ranking, compiled = self._choose_composite(
-                    entity=entity,
-                    need=need,
-                    target_id=selected_target_id,
-                    context=context,
-                    target_ranking=target_ranking,
-                    severity=severity,
+                chosen, composite_ranking, compiled = self._stage(
+                    "need.evaluate.choose_composite",
+                    lambda: self._choose_composite(
+                        entity=entity,
+                        need=need,
+                        target_id=selected_target_id,
+                        context=context,
+                        target_ranking=target_ranking,
+                        severity=severity,
+                    ),
                 )
                 if chosen is not None:
                     strategy = chosen
@@ -645,26 +688,32 @@ class NpcNeedScheduler:
                 "strategy_id": strategy_id,
             }
             idem = f"npc-need:{npc_id}:{need}:{tick // max(1, self.cooldown_ticks or 1)}"
-            proposal = self.proposals.propose(
-                origin="npc_need",
-                proposer_id=f"npc:{npc_id}",
-                proposal_kind="agent_intent",
-                payload={"intent": deepcopy(goal_intent)},
-                metadata={
-                    "need": need, "severity": severity, "utility": utility, "tick": tick,
-                    "plan_priority": priority, "selected_target_entity_id": selected_target_id,
-                    "learning_context": deepcopy(context), "target_ranking": deepcopy(target_ranking),
-                    "strategy_id": strategy_id, "strategy": deepcopy(strategy),
-                    "strategy_ranking": deepcopy(strategy_ranking),
-                    "strategy_plan": deepcopy(composite_plan),
-                },
-                idempotency_key=idem,
+            proposal = self._stage(
+                "need.evaluate.proposal_propose",
+                lambda: self.proposals.propose(
+                    origin="npc_need",
+                    proposer_id=f"npc:{npc_id}",
+                    proposal_kind="agent_intent",
+                    payload={"intent": deepcopy(goal_intent)},
+                    metadata={
+                        "need": need, "severity": severity, "utility": utility, "tick": tick,
+                        "plan_priority": priority, "selected_target_entity_id": selected_target_id,
+                        "learning_context": deepcopy(context), "target_ranking": deepcopy(target_ranking),
+                        "strategy_id": strategy_id, "strategy": deepcopy(strategy),
+                        "strategy_ranking": deepcopy(strategy_ranking),
+                        "strategy_plan": deepcopy(composite_plan),
+                    },
+                    idempotency_key=idem,
+                ),
             )
             if proposal.get("status") == "proposed":
-                proposal = self.proposals.approve(
-                    str(proposal["proposal_id"]),
-                    decided_by=f"need_policy:{need}",
-                    reason=f"deterministic need threshold reached: {severity:.3f}; utility={utility:.3f}; strategy={strategy_id}",
+                proposal = self._stage(
+                    "need.evaluate.proposal_approve",
+                    lambda: self.proposals.approve(
+                        str(proposal["proposal_id"]),
+                        decided_by=f"need_policy:{need}",
+                        reason=f"deterministic need threshold reached: {severity:.3f}; utility={utility:.3f}; strategy={strategy_id}",
+                    ),
                 )
 
             principal = {"source": "npc_need", "actor_id": npc_id, "authority": "entity_agent", "subject_entity_id": npc_id}
@@ -673,23 +722,29 @@ class NpcNeedScheduler:
             if composite_plan is not None:
                 start_fn = getattr(self.strategy_executor, "start", None)
                 if callable(start_fn):
-                    execution = start_fn(
-                        deepcopy(composite_plan),
-                        principal=principal,
-                        proposer_id=f"npc:{npc_id}",
-                        proposal_id=str(proposal["proposal_id"]),
-                        priority=priority,
-                        idempotency_key=f"npc-need-strategy:{proposal['proposal_id']}",
+                    execution = self._stage(
+                        "need.evaluate.strategy_start",
+                        lambda: start_fn(
+                            deepcopy(composite_plan),
+                            principal=principal,
+                            proposer_id=f"npc:{npc_id}",
+                            proposal_id=str(proposal["proposal_id"]),
+                            priority=priority,
+                            idempotency_key=f"npc-need-strategy:{proposal['proposal_id']}",
+                        ),
                     )
                     strategy_execution_id = execution.get("strategy_execution_id")
             if strategy_execution_id is None:
-                plan = self.plans.schedule(
-                    intent=deepcopy(intent),
-                    principal=principal,
-                    proposer_id=f"npc:{npc_id}",
-                    proposal_id=str(proposal["proposal_id"]),
-                    idempotency_key=f"npc-need-plan:{proposal['proposal_id']}",
-                    priority=priority,
+                plan = self._stage(
+                    "need.evaluate.plan_schedule",
+                    lambda: self.plans.schedule(
+                        intent=deepcopy(intent),
+                        principal=principal,
+                        proposer_id=f"npc:{npc_id}",
+                        proposal_id=str(proposal["proposal_id"]),
+                        idempotency_key=f"npc-need-plan:{proposal['proposal_id']}",
+                        priority=priority,
+                    ),
                 )
                 plan_id = plan.get("plan_id")
 
@@ -705,6 +760,9 @@ class NpcNeedScheduler:
                 "strategy_execution_id": strategy_execution_id,
                 "created_at_unix": time.time(),
             }
-            self._append(row)
+            self._stage(
+                "need.evaluate.audit_append",
+                lambda: self._append(row),
+            )
             results.append(row)
         return results

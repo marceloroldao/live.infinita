@@ -351,6 +351,42 @@ class NpcNeedSchedulerTest(unittest.TestCase):
                 self.assertEqual(scheduler._last_tick("npc", "energy"), 41)
                 self.assertEqual(replay.call_count, 2)
 
+    def test_stage_observer_decomposes_need_evaluation(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            scheduler, _, _ = self.make(
+                Path(tmpdir),
+                {"energy": 0.9},
+                rest_target_entity_id="bed",
+            )
+            observed = []
+            scheduler.stage_observer = lambda name, elapsed: observed.append((name, elapsed))
+            result = scheduler.evaluate_tick(5)
+            self.assertEqual(result[0]["status"], "scheduled")
+            names = [name for name, _ in observed]
+            self.assertIn("need.evaluate.entity", names)
+            self.assertIn("need.evaluate.need_values", names)
+            self.assertIn("need.evaluate.ongoing_goal", names)
+            self.assertIn("need.evaluate.cooldown_lookup", names)
+            self.assertIn("need.evaluate.context", names)
+            self.assertIn("need.evaluate.intent_for", names)
+            self.assertIn("need.evaluate.proposal_propose", names)
+            self.assertIn("need.evaluate.proposal_approve", names)
+            self.assertIn("need.evaluate.plan_schedule", names)
+            self.assertIn("need.evaluate.audit_append", names)
+            self.assertTrue(all(elapsed >= 0 for _, elapsed in observed))
+
+    def test_need_stage_observer_failure_is_non_authoritative(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            scheduler, _, plans = self.make(
+                Path(tmpdir),
+                {"energy": 0.9},
+                rest_target_entity_id="bed",
+            )
+            scheduler.stage_observer = lambda *_: (_ for _ in ()).throw(RuntimeError("observer"))
+            result = scheduler.evaluate_tick(5)
+            self.assertEqual(result[0]["status"], "scheduled")
+            self.assertEqual(len(plans.calls), 1)
+
 
 if __name__ == "__main__":
     unittest.main()
