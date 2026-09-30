@@ -97,6 +97,15 @@ class TikTokLifecycleTest(unittest.TestCase):
         self.assertIn("Restart=on-failure", unit)
         self.assertIn("RestartSec=30", unit)
         self.assertIn("LimitNOFILE=65536", unit)
+        self.assertIn("PartOf=live-infinita.service", unit)
+
+    def test_lifecycle_rollout_is_bounded_and_rollback_safe(self) -> None:
+        script = (ROOT / "deploy" / "apply-tiktok-lifecycle-008a.sh").read_text(encoding="utf-8")
+        self.assertIn("rollback()", script)
+        self.assertIn("systemctl daemon-reload", script)
+        self.assertIn("systemctl restart live-infinita-tiktok.service", script)
+        self.assertIn("systemctl show live-infinita-tiktok.service -p PartOf --value", script)
+        self.assertNotIn("systemctl restart live-infinita.service", script)
 
 
 if __name__ == "__main__":
