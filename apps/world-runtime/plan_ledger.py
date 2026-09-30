@@ -2,11 +2,14 @@ from __future__ import annotations
 
 import json
 import os
+import sqlite3
 import time
 import uuid
 from copy import deepcopy
 from pathlib import Path
 from typing import Any
+
+from plan_ledger_sidecar import PlanLedgerSidecar, PlanLedgerSidecarError
 
 
 class PlanLedgerError(ValueError):
@@ -40,6 +43,7 @@ class PlanLedger:
         self._view_idempotency: dict[str, str] = {}
         self._view_need_candidates: dict[str, int] = {}
         self._view_signature: tuple[int, int, int, int] | None = None
+        self._sidecar = PlanLedgerSidecar(self.path)
 
     @staticmethod
     def _eligible_need_candidate(row: dict[str, Any]) -> bool:
@@ -58,15 +62,43 @@ class PlanLedger:
             return None
         return stat.st_dev, stat.st_ino, stat.st_size, stat.st_mtime_ns
 
-    def _ensure_view(self) -> None:
-        if self._view_by_id is not None and self._view_signature == self._signature():
-            return
-        # Stream on restart. Never retain complete terminal plan objects.
+    def _install_view(
+        self,
+        *,
+        order: list[str],
+        offsets: dict[str, int],
+        keys: dict[str, str],
+        statuses: dict[str, str],
+        candidates: dict[str, int],
+        signature: tuple[int, int, int, int] | None,
+    ) -> None:
+        hot: dict[str, dict[str, Any]] = {}
+        for plan_id in order:
+            if statuses.get(plan_id) not in self.TERMINAL:
+                row = self._read_at(offsets[plan_id], plan_id)
+                hot[plan_id] = row
+        idempotency: dict[str, str] = {}
+        for plan_id in order:
+            key = keys.get(plan_id, "")
+            if key:
+                idempotency.setdefault(key, plan_id)
+        self._view_by_id = hot
+        self._view_offsets = offsets
+        self._view_order = order
+        self._view_active_ids = {
+            plan_id: None for plan_id in order if plan_id in hot
+        }
+        self._view_idempotency = idempotency
+        self._view_need_candidates = candidates
+        self._view_signature = signature
+
+    def _rebuild_view_from_jsonl(self) -> None:
+        # Safe compatibility fallback if the derived sidecar is unavailable.
         for _ in range(3):
             before = self._signature()
             offsets: dict[str, int] = {}
-            hot: dict[str, dict[str, Any]] = {}
             keys: dict[str, str] = {}
+            statuses: dict[str, str] = {}
             candidates: dict[str, int] = {}
             order: list[str] = []
             for offset, row in self._iter_rows_with_offsets():
@@ -77,32 +109,75 @@ class PlanLedger:
                     order.append(plan_id)
                 offsets[plan_id] = offset
                 keys[plan_id] = str(row.get("idempotency_key") or "")
-                if row.get("status") not in self.TERMINAL:
-                    hot[plan_id] = row
-                else:
-                    hot.pop(plan_id, None)
+                statuses[plan_id] = str(row.get("status") or "")
                 if self._eligible_need_candidate(row):
                     candidates[plan_id] = offset
                 else:
                     candidates.pop(plan_id, None)
             after = self._signature()
             if before == after:
-                idempotency: dict[str, str] = {}
-                for plan_id in order:
-                    key = keys.get(plan_id, "")
-                    if key:
-                        idempotency.setdefault(key, plan_id)
-                self._view_by_id = hot
-                self._view_offsets = offsets
-                self._view_order = order
-                self._view_active_ids = {
-                    plan_id: None for plan_id in order if plan_id in hot
-                }
-                self._view_idempotency = idempotency
-                self._view_need_candidates = candidates
-                self._view_signature = after
+                self._install_view(
+                    order=order,
+                    offsets=offsets,
+                    keys=keys,
+                    statuses=statuses,
+                    candidates=candidates,
+                    signature=after,
+                )
                 return
         raise PlanLedgerError("plan ledger changed while rebuilding current state")
+
+    def _ensure_view(self) -> None:
+        current_signature = self._signature()
+        if self._view_by_id is not None and self._view_signature == current_signature:
+            return
+        if current_signature is None:
+            self._install_view(
+                order=[],
+                offsets={},
+                keys={},
+                statuses={},
+                candidates={},
+                signature=None,
+            )
+            return
+
+        try:
+            # SQLite contains only derived lookup metadata. ensure() either applies
+            # the small JSONL tail or rebuilds the cache when source identity changed.
+            self._sidecar.ensure()
+            before = self._signature()
+            rows = self._sidecar.materialized_rows()
+            offsets: dict[str, int] = {}
+            keys: dict[str, str] = {}
+            statuses: dict[str, str] = {}
+            candidates: dict[str, int] = {}
+            order: list[str] = []
+            for plan_id, _first_seq, offset, key, status, need_candidate in rows:
+                order.append(plan_id)
+                offsets[plan_id] = offset
+                keys[plan_id] = key
+                statuses[plan_id] = status
+                if need_candidate:
+                    candidates[plan_id] = offset
+            after = self._signature()
+            if before != after:
+                raise PlanLedgerSidecarError(
+                    "plan ledger changed while materializing sidecar"
+                )
+            self._install_view(
+                order=order,
+                offsets=offsets,
+                keys=keys,
+                statuses=statuses,
+                candidates=candidates,
+                signature=after,
+            )
+            return
+        except (PlanLedgerSidecarError, sqlite3.DatabaseError, OSError, ValueError):
+            # Availability never depends on the derived index. Corrupt/missing
+            # sidecar state falls back to authoritative JSONL replay.
+            self._rebuild_view_from_jsonl()
 
     def _iter_rows_with_offsets(self):
         # Stream durable rows; quarantine ONLY a torn final append.
@@ -220,6 +295,19 @@ class PlanLedger:
         return [row for plan_id in self._view_order
                 if (row := self._latest(plan_id)) is not None]
 
+    def warm_index(self) -> dict[str, Any]:
+        """Hydrate lookup metadata before the tick driver starts."""
+        started = time.perf_counter()
+        self._ensure_view()
+        self._sidecar.flush()
+        return {
+            "plans": len(self._view_order),
+            "active": len(self._view_active_ids),
+            "need_candidates": len(self._view_need_candidates),
+            "elapsed_ms": round((time.perf_counter() - started) * 1000.0, 3),
+            "sidecar": str(self._sidecar.path),
+        }
+
     def get(self, plan_id: str) -> dict[str, Any] | None:
         self._ensure_view()
         return self._latest(str(plan_id or "").strip())
@@ -281,6 +369,15 @@ class PlanLedger:
 
         after = self._signature()
         expected_size = (before[2] if before else 0) + len(payload)
+        offset = before[2] if before else 0
+        if after is not None and after[2] == expected_size and (
+            before is None or after[:2] == before[:2]
+        ):
+            self._sidecar.note_append(
+                offset=offset,
+                row=row,
+                source_signature=after,
+            )
         if cached and after is not None and after[2] == expected_size and (
             before is None or after[:2] == before[:2]
         ):
@@ -296,7 +393,6 @@ class PlanLedger:
                 else:
                     if old_offset is None:
                         self._view_order.append(plan_id)
-                    offset = before[2] if before else 0
                     self._view_offsets[plan_id] = offset
                     if row.get("status") not in self.TERMINAL:
                         self._view_by_id[plan_id] = deepcopy(row)

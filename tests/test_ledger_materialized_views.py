@@ -37,13 +37,15 @@ class MaterializedLedgerViewTests(unittest.TestCase):
         with patch.object(ledger, "_iter_rows_with_offsets", wraps=ledger._iter_rows_with_offsets) as replay:
             with patch.object(ledger, "history", side_effect=AssertionError("no full history materialization")):
                 self.assertEqual(ledger.get("one"), initial)
-            self.assertEqual(replay.call_count, 1)
+            # 008F rebuilds/loads lookup metadata through the derived
+            # sidecar, so the authoritative JSONL iterator is not needed here.
+            self.assertEqual(replay.call_count, 0)
             ledger._append(_row("plan_id", "two", "running"))
             ledger._append(_row("plan_id", "one", "completed"))
             self.assertEqual(ledger.get("one")["status"], "completed")
             self.assertEqual([r["plan_id"] for r in ledger.active()], ["two"])
             self.assertEqual([r["plan_id"] for r in ledger.current()], ["one", "two"])
-            self.assertEqual(replay.call_count, 1)
+            self.assertEqual(replay.call_count, 0)
             returned = ledger.get("one")
             returned["nested"]["count"] = 999
             self.assertEqual(ledger.get("one")["nested"]["count"], 1)
