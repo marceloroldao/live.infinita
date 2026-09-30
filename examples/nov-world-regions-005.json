@@ -1,0 +1,18 @@
+{
+  "schema": "live-infinita-region-topology/v1",
+  "source_map": "apps/renderer-godot/world_map_001.json",
+  "regions": [
+    {"id":"clearing","center":{"x":640.0,"y":360.0},"radius":150.0,"biome":"forest","neighbors":["deep_forest","shelter"],"metadata":{"label":"Clareira Central"}},
+    {"id":"shelter","center":{"x":930.0,"y":390.0},"radius":120.0,"biome":"forest","neighbors":["clearing","ruins"],"metadata":{"label":"Abrigo de Nov","map_landmark_id":"shelter"}},
+    {"id":"deep_forest","center":{"x":350.0,"y":340.0},"radius":170.0,"biome":"forest","neighbors":["clearing","river_crossing","ruins"],"metadata":{"label":"Floresta Profunda","map_landmark_id":"old_grove"}},
+    {"id":"river_crossing","center":{"x":-230.0,"y":290.0},"radius":110.0,"biome":"river","neighbors":["deep_forest","village","waterfall_overlook"],"metadata":{"label":"Travessia do rio","map_landmark_id":"river_crossing"}},
+    {"id":"village","center":{"x":-776.666667,"y":-146.666667},"radius":180.0,"biome":"village","neighbors":["meadow","ridge","river_crossing"],"metadata":{"label":"Aldeia","map_landmark_id":"village"}},
+    {"id":"ridge","center":{"x":-1053.333333,"y":803.333333},"radius":170.0,"biome":"hills","neighbors":["stone_circle","village","watchtower"],"metadata":{"label":"Mirante","map_landmark_id":"ridge"}},
+    {"id":"waterfall_overlook","center":{"x":-573.333333,"y":2013.333333},"radius":180.0,"biome":"waterfall","neighbors":["river_crossing","watchtower"],"metadata":{"label":"Mirante da cachoeira","map_landmark_id":"waterfall_overlook"}},
+    {"id":"watchtower","center":{"x":-1170.0,"y":2156.666667},"radius":170.0,"biome":"highlands","neighbors":["ridge","waterfall_overlook"],"metadata":{"label":"Torre do norte","map_landmark_id":"watchtower"}},
+    {"id":"stone_circle","center":{"x":-2020.0,"y":720.0},"radius":180.0,"biome":"moor","neighbors":["cave","ridge"],"metadata":{"label":"Círculo de pedras","map_landmark_id":"stone_circle"}},
+    {"id":"cave","center":{"x":-2273.333333,"y":-860.0},"radius":180.0,"biome":"rocky","neighbors":["meadow","stone_circle"],"metadata":{"label":"Caverna leste","map_landmark_id":"cave"}},
+    {"id":"meadow","center":{"x":-1240.0,"y":-1550.0},"radius":260.0,"biome":"meadow","neighbors":["cave","village"],"metadata":{"label":"Pradaria sul","map_landmark_id":"meadow"}},
+    {"id":"ruins","center":{"x":1813.333333,"y":1440.0},"radius":180.0,"biome":"ruins","neighbors":["deep_forest","shelter"],"metadata":{"label":"Ruínas antigas","map_landmark_id":"ruins"}}
+  ]
+}

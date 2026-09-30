@@ -91,6 +91,19 @@ class ColdAuthoritativeWorldEngineTest(unittest.TestCase):
         self.assertEqual(verification["events"], 3)
         self.assertEqual(verification["deltas"], 3)
 
+    def test_reset_preserves_persistent_region_growth_and_replay(self) -> None:
+        grown = self.engine.load_world()["regions"] + [
+            {"id": "r2", "center": {"x": 800, "y": 0}, "radius": 120, "neighbors": ["r1"]}
+        ]
+        grown[1] = dict(grown[1])
+        grown[1]["neighbors"] = ["r0", "r2"]
+        self.engine.commit_operations([
+            {"op": "set_world", "path": ["regions"], "value": grown}
+        ], source="test-topology-growth")
+        _, _, reset_world = self.engine.commit_action("reset")
+        self.assertEqual([row["id"] for row in reset_world["regions"]], ["r0", "r1", "r2"])
+        self.assertTrue(self.engine.verify_replay()["ok"])
+
     def test_restart_preserves_authoritative_cold_state_and_replay(self) -> None:
         self.engine.commit_action("move_tree")
         state_hash = self.engine.load_world()["state_hash"]

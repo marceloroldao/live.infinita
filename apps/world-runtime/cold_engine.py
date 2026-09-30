@@ -203,6 +203,7 @@ class ColdAuthoritativeWorldEngine:
         for operation in delta.get("operations", []):
             op = operation.get("op")
             if op == "replace_world_from_bootstrap":
+                persistent_regions = copy.deepcopy(result.get("regions"))
                 bootstrap = self._load_json(self.bootstrap_file)
                 if mutate_store:
                     result = externalize_world_entities(bootstrap, self.cold_store)
@@ -210,6 +211,8 @@ class ColdAuthoritativeWorldEngine:
                     result = copy.deepcopy(bootstrap)
                     result["entities"] = []
                     result["cold_entities"] = copy.deepcopy(world.get("cold_entities", {}))
+                if isinstance(persistent_regions, list) and persistent_regions:
+                    result["regions"] = persistent_regions
                 continue
             if op in {"create", "set", "move", "remove", "link", "unlink"}:
                 if mutate_store:

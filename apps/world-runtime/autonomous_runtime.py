@@ -243,9 +243,9 @@ def build_authoritative_autonomous_runtime(
     cold_root.mkdir(parents=True, exist_ok=True)
 
     bootstrap_value = _bootstrap_world(bootstrap)
-    regions = region_catalog_from_world(bootstrap_value)
     store = FileRegionColdStore(cold_root)
     engine = ColdAuthoritativeWorldEngine(bootstrap, root, store)
+    regions = region_catalog_from_world(engine.load_world())
     guarded = GuardedMutationService(engine, decision_log_file=root / "mutation-decisions.jsonl")
     proposals = ProposalLedger(root / "proposals.jsonl")
     plans = PlanLedger(root / "plans.jsonl")

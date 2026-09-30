@@ -87,6 +87,33 @@ class AutonomousRuntimeTest(unittest.TestCase):
             self.assertEqual(second.clock.state().tick, 1)
             self.assertEqual(second.store.get_entity("npc")["region_id"], "r0")
 
+    def test_reopen_initializes_catalog_from_persisted_world_growth(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            bootstrap = self._bootstrap(root)
+            first = build_authoritative_autonomous_runtime(
+                bootstrap_file=bootstrap,
+                data_dir=root / "data",
+                cold_store_dir=root / "cold",
+                npc_ids=["npc"],
+            )
+            grown = first.engine.load_world()["regions"] + [
+                {"id": "r2", "center": {"x": 40, "y": 0}, "radius": 10, "neighbors": ["r1"]}
+            ]
+            grown[1] = dict(grown[1])
+            grown[1]["neighbors"] = ["r0", "r2"]
+            first.engine.commit_operations([
+                {"op": "set_world", "path": ["regions"], "value": grown}
+            ], source="test-persisted-topology")
+
+            second = build_authoritative_autonomous_runtime(
+                bootstrap_file=bootstrap,
+                data_dir=root / "data",
+                cold_store_dir=root / "cold",
+                npc_ids=["npc"],
+            )
+            self.assertEqual(second.regions.route("r0", "r2"), ["r0", "r1", "r2"])
+
     def test_invalid_topology_fails_closed(self):
         with self.assertRaises(ValueError):
             region_catalog_from_world({
