@@ -326,16 +326,101 @@ def compact_proposals(path: Path) -> dict[str, Any]:
             compact.unlink()
 
 
+def compact_need_scheduler(path: Path) -> dict[str, Any]:
+    if not path.is_file() or path.is_symlink():
+        raise CompactionError("npc need scheduler ledger unavailable")
+    manifest_path = path.with_name(path.name + ".compaction.json")
+    if manifest_path.exists():
+        value = json.loads(manifest_path.read_text(encoding="utf-8"))
+        if isinstance(value, dict) and value.get("schema") == MANIFEST_SCHEMA:
+            return {**value, "already_compacted": True}
+        raise CompactionError("npc need compaction manifest invalid")
+
+    latest_audit: dict[tuple[str, str], tuple[int, dict[str, Any]]] = {}
+    latest_scheduled_original: dict[tuple[str, str], tuple[int, dict[str, Any]]] = {}
+    latest_scheduled_actual: dict[tuple[str, str], tuple[int, dict[str, Any]]] = {}
+    digest = sha256()
+    rows = 0
+    for seq, (_, row, raw) in enumerate(_iter_strict_jsonl(path)):
+        digest.update(raw)
+        rows += 1
+        npc_id = str(row.get("npc_id") or "").strip()
+        original_need = str(
+            row.get("original_need") or row.get("need") or ""
+        ).strip()
+        if not npc_id or not original_need:
+            raise CompactionError("npc need row without audit key")
+        audit_key = (npc_id, original_need)
+        latest_audit[audit_key] = (seq, row)
+        if row.get("status") == "scheduled":
+            latest_scheduled_original[audit_key] = (seq, row)
+            actual_need = str(row.get("need") or "").strip()
+            if actual_need:
+                latest_scheduled_actual[(npc_id, actual_need)] = (seq, row)
+
+    selected_by_seq: dict[int, dict[str, Any]] = {}
+    for seq, row in latest_audit.values():
+        selected_by_seq[seq] = row
+    for seq, row in latest_scheduled_original.values():
+        selected_by_seq[seq] = row
+    for seq, row in latest_scheduled_actual.values():
+        selected_by_seq[seq] = row
+    if not selected_by_seq:
+        raise CompactionError("npc need ledger has no hot state rows")
+
+    fd, temp_name = tempfile.mkstemp(
+        prefix=path.name + ".compact-", dir=path.parent
+    )
+    compact = Path(temp_name)
+    try:
+        with os.fdopen(fd, "wb") as out:
+            for seq in sorted(selected_by_seq):
+                out.write(_canonical(selected_by_seq[seq]))
+            out.flush()
+            os.fsync(out.fileno())
+        compact_bytes = compact.stat().st_size
+        original_bytes = path.stat().st_size
+        source_digest = digest.hexdigest()
+        archive = _archive_name(path, source_digest)
+        manifest = {
+            "schema": MANIFEST_SCHEMA,
+            "kind": "npc_need_scheduler",
+            "source": path.name,
+            "archive": archive.name,
+            "source_sha256": source_digest,
+            "original_rows": rows,
+            "latest_rows": len(selected_by_seq),
+            "latest_audit_keys": len(latest_audit),
+            "latest_scheduled_original_keys": len(latest_scheduled_original),
+            "latest_scheduled_actual_keys": len(latest_scheduled_actual),
+            "original_bytes": original_bytes,
+            "compact_bytes": compact_bytes,
+            "history_deleted": False,
+        }
+        _atomic_swap(
+            source=path,
+            compact=compact,
+            archive=archive,
+            manifest=manifest,
+        )
+        return manifest
+    finally:
+        if compact.exists():
+            compact.unlink()
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--conditional", type=Path)
     parser.add_argument("--plans", type=Path)
     parser.add_argument("--proposals", type=Path)
+    parser.add_argument("--needs", type=Path)
     args = parser.parse_args()
     if (
         args.conditional is None
         and args.plans is None
         and args.proposals is None
+        and args.needs is None
     ):
         raise SystemExit("at least one ledger path is required")
     results: list[dict[str, Any]] = []
@@ -345,6 +430,8 @@ def main() -> None:
         results.append(compact_plans(args.plans))
     if args.proposals is not None:
         results.append(compact_proposals(args.proposals))
+    if args.needs is not None:
+        results.append(compact_need_scheduler(args.needs))
     print(
         "HOT_LEDGER_COMPACTION_OK "
         + json.dumps(results, sort_keys=True, separators=(",", ":")),
