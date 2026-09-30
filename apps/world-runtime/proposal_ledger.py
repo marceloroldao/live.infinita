@@ -2,11 +2,14 @@ from __future__ import annotations
 
 import json
 import os
+import sqlite3
 import time
 import uuid
 from copy import deepcopy
 from pathlib import Path
 from typing import Any
+
+from proposal_ledger_sidecar import ProposalLedgerSidecar, ProposalLedgerSidecarError
 
 
 class ProposalLedgerError(ValueError):
@@ -37,10 +40,13 @@ class ProposalLedger:
     def __init__(self, path: Path) -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        self._view_by_id: dict[str, dict[str, Any]] | None = None
+        self._view_offsets: dict[str, int] | None = None
         self._view_order: list[str] = []
         self._view_idempotency: dict[str, str] = {}
+        self._view_source: dict[tuple[str, str], str] = {}
+        self._view_status: dict[str, str] = {}
         self._view_signature: tuple[int, int, int, int] | None = None
+        self._sidecar = ProposalLedgerSidecar(self.path)
 
     def _signature(self) -> tuple[int, int, int, int] | None:
         try:
@@ -49,7 +55,7 @@ class ProposalLedger:
             return None
         return stat.st_dev, stat.st_ino, stat.st_size, stat.st_mtime_ns
 
-    def _iter_current(self):
+    def _iter_rows_with_offsets(self):
         if not self.path.exists():
             return
         with self.path.open("rb") as fh:
@@ -71,35 +77,147 @@ class ProposalLedger:
                         f"torn proposal ledger tail at byte {offset}"
                     ) from exc
                 if isinstance(value, dict):
-                    yield value
+                    yield offset, value
 
-    def _ensure_view(self) -> None:
-        if self._view_by_id is not None and self._view_signature == self._signature():
-            return
+    def _iter_current(self):
+        for _, row in self._iter_rows_with_offsets():
+            yield row
+
+    def _read_at(self, offset: int, expected_id: str) -> dict[str, Any]:
+        try:
+            with self.path.open("rb") as fh:
+                fh.seek(int(offset))
+                row = json.loads(fh.readline())
+        except (OSError, ValueError, TypeError) as exc:
+            raise ProposalLedgerError("indexed proposal record unavailable") from exc
+        if (
+            not isinstance(row, dict)
+            or str(row.get("proposal_id") or "").strip() != expected_id
+        ):
+            raise ProposalLedgerError("indexed proposal record identity mismatch")
+        return row
+
+    def _install_view(
+        self,
+        *,
+        order: list[str],
+        offsets: dict[str, int],
+        keys: dict[str, str],
+        statuses: dict[str, str],
+        sources: dict[tuple[str, str], str],
+        signature: tuple[int, int, int, int] | None,
+    ) -> None:
+        idempotency: dict[str, str] = {}
+        for proposal_id in order:
+            key = keys.get(proposal_id, "")
+            if key:
+                idempotency.setdefault(key, proposal_id)
+        self._view_offsets = offsets
+        self._view_order = order
+        self._view_idempotency = idempotency
+        self._view_source = sources
+        self._view_status = statuses
+        self._view_signature = signature
+
+    def _rebuild_view_from_jsonl(self) -> None:
         for _ in range(3):
             before = self._signature()
-            latest: dict[str, dict[str, Any]] = {}
+            offsets: dict[str, int] = {}
+            keys: dict[str, str] = {}
+            statuses: dict[str, str] = {}
+            sources: dict[tuple[str, str], str] = {}
             order: list[str] = []
-            for row in self._iter_current():
+            for offset, row in self._iter_rows_with_offsets():
                 proposal_id = str(row.get("proposal_id") or "").strip()
                 if not proposal_id:
                     continue
-                if proposal_id not in latest:
+                if proposal_id not in offsets:
                     order.append(proposal_id)
-                latest[proposal_id] = row
+                offsets[proposal_id] = offset
+                keys[proposal_id] = str(row.get("idempotency_key") or "")
+                statuses[proposal_id] = str(row.get("status") or "")
+                origin = str(row.get("origin") or "").strip().lower()
+                source_id = str(row.get("source_proposal_id") or "").strip()
+                if origin and source_id:
+                    sources[(origin, source_id)] = proposal_id
             after = self._signature()
             if before == after:
-                keys: dict[str, str] = {}
-                for proposal_id in order:
-                    key = str(latest[proposal_id].get("idempotency_key") or "")
-                    if key:
-                        keys.setdefault(key, proposal_id)
-                self._view_by_id = latest
-                self._view_order = order
-                self._view_idempotency = keys
-                self._view_signature = after
+                self._install_view(
+                    order=order,
+                    offsets=offsets,
+                    keys=keys,
+                    statuses=statuses,
+                    sources=sources,
+                    signature=after,
+                )
                 return
-        raise ProposalLedgerError("proposal ledger changed while rebuilding current state")
+        raise ProposalLedgerError(
+            "proposal ledger changed while rebuilding current state"
+        )
+
+    def _ensure_view(self) -> None:
+        current_signature = self._signature()
+        if (
+            self._view_offsets is not None
+            and self._view_signature == current_signature
+        ):
+            return
+        if current_signature is None:
+            self._install_view(
+                order=[],
+                offsets={},
+                keys={},
+                statuses={},
+                sources={},
+                signature=None,
+            )
+            return
+
+        try:
+            self._sidecar.ensure()
+            before = self._signature()
+            rows = self._sidecar.materialized_rows()
+            offsets: dict[str, int] = {}
+            keys: dict[str, str] = {}
+            statuses: dict[str, str] = {}
+            sources: dict[tuple[str, str], str] = {}
+            order: list[str] = []
+            for (
+                proposal_id,
+                _first_seq,
+                offset,
+                key,
+                status,
+                origin,
+                source_id,
+            ) in rows:
+                order.append(proposal_id)
+                offsets[proposal_id] = offset
+                keys[proposal_id] = key
+                statuses[proposal_id] = status
+                if origin and source_id:
+                    sources[(origin, source_id)] = proposal_id
+            after = self._signature()
+            if before != after:
+                raise ProposalLedgerSidecarError(
+                    "proposal ledger changed while materializing sidecar"
+                )
+            self._install_view(
+                order=order,
+                offsets=offsets,
+                keys=keys,
+                statuses=statuses,
+                sources=sources,
+                signature=after,
+            )
+            return
+        except (
+            ProposalLedgerSidecarError,
+            sqlite3.DatabaseError,
+            OSError,
+            ValueError,
+        ):
+            self._rebuild_view_from_jsonl()
 
     def _compaction_manifest(self) -> dict[str, Any] | None:
         manifest_path = self.path.with_name(self.path.name + ".compaction.json")
@@ -153,21 +271,52 @@ class ProposalLedger:
 
     def current(self) -> list[dict[str, Any]]:
         self._ensure_view()
-        assert self._view_by_id is not None
-        return [deepcopy(self._view_by_id[proposal_id]) for proposal_id in self._view_order]
+        assert self._view_offsets is not None
+        return [
+            self._read_at(self._view_offsets[proposal_id], proposal_id)
+            for proposal_id in self._view_order
+        ]
+
+    def warm_index(self) -> dict[str, Any]:
+        started = time.perf_counter()
+        self._ensure_view()
+        self._sidecar.flush()
+        assert self._view_offsets is not None
+        return {
+            "proposals": len(self._view_order),
+            "nonterminal": sum(
+                1 for status in self._view_status.values()
+                if status not in self.TERMINAL
+            ),
+            "elapsed_ms": round(
+                (time.perf_counter() - started) * 1000.0, 3
+            ),
+            "sidecar": str(self._sidecar.path),
+        }
 
     def get(self, proposal_id: str) -> dict[str, Any] | None:
         self._ensure_view()
-        assert self._view_by_id is not None
-        row = self._view_by_id.get(str(proposal_id or "").strip())
-        return deepcopy(row) if row is not None else None
+        assert self._view_offsets is not None
+        proposal_id = str(proposal_id or "").strip()
+        offset = self._view_offsets.get(proposal_id)
+        return self._read_at(offset, proposal_id) if offset is not None else None
 
     def get_by_idempotency_key(self, key: str) -> dict[str, Any] | None:
         self._ensure_view()
-        assert self._view_by_id is not None
         proposal_id = self._view_idempotency.get(str(key or "").strip())
-        row = self._view_by_id.get(proposal_id) if proposal_id else None
-        return deepcopy(row) if row is not None else None
+        return self.get(proposal_id) if proposal_id else None
+
+    def get_by_source(
+        self,
+        origin: str,
+        source_proposal_id: str,
+    ) -> dict[str, Any] | None:
+        self._ensure_view()
+        proposal_id = self._view_source.get((
+            str(origin or "").strip().lower(),
+            str(source_proposal_id or "").strip(),
+        ))
+        return self.get(proposal_id) if proposal_id else None
 
     def _append(self, record: dict[str, Any]) -> dict[str, Any]:
         payload = (
@@ -175,7 +324,17 @@ class ProposalLedger:
             + "\n"
         ).encode("utf-8")
         before = self._signature()
-        cached = self._view_by_id is not None and self._view_signature == before
+        cached = (
+            self._view_offsets is not None
+            and self._view_signature == before
+        )
+        proposal_id = str(record.get("proposal_id") or "").strip()
+        previous = (
+            self.get(proposal_id)
+            if cached and proposal_id and proposal_id in self._view_offsets
+            else None
+        )
+
         fd = os.open(self.path, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o644)
         try:
             written = os.write(fd, payload)
@@ -185,33 +344,53 @@ class ProposalLedger:
                 )
             os.fsync(fd)
         except BaseException:
-            self._view_by_id = None
+            self._view_offsets = None
             raise
         finally:
             os.close(fd)
 
         after = self._signature()
         expected_size = (before[2] if before else 0) + len(payload)
-        if cached and after is not None and after[2] == expected_size and (
-            before is None or after[:2] == before[:2]
-        ):
-            assert self._view_by_id is not None
-            proposal_id = str(record.get("proposal_id") or "").strip()
-            if proposal_id:
-                previous = self._view_by_id.get(proposal_id)
-                old_key = str(previous.get("idempotency_key") or "") if previous else ""
-                key = str(record.get("idempotency_key") or "")
-                if previous is not None and old_key != key:
-                    self._view_by_id = None
-                else:
-                    if previous is None:
-                        self._view_order.append(proposal_id)
-                    self._view_by_id[proposal_id] = deepcopy(record)
-                    if key:
-                        self._view_idempotency.setdefault(key, proposal_id)
+        offset = before[2] if before else 0
+        append_is_exact = (
+            after is not None
+            and after[2] == expected_size
+            and (before is None or after[:2] == before[:2])
+        )
+        if append_is_exact:
+            self._sidecar.note_append(
+                offset=offset,
+                row=record,
+                source_signature=after,
+            )
+
+        if cached and append_is_exact:
+            assert self._view_offsets is not None
+            old_key = (
+                str(previous.get("idempotency_key") or "")
+                if previous else ""
+            )
+            key = str(record.get("idempotency_key") or "")
+            if previous is not None and old_key != key:
+                self._view_offsets = None
+            else:
+                if proposal_id not in self._view_offsets:
+                    self._view_order.append(proposal_id)
+                self._view_offsets[proposal_id] = offset
+                if key:
+                    self._view_idempotency.setdefault(key, proposal_id)
+                self._view_status[proposal_id] = str(
+                    record.get("status") or ""
+                )
+                origin = str(record.get("origin") or "").strip().lower()
+                source_id = str(
+                    record.get("source_proposal_id") or ""
+                ).strip()
+                if origin and source_id:
+                    self._view_source[(origin, source_id)] = proposal_id
             self._view_signature = after
         else:
-            self._view_by_id = None
+            self._view_offsets = None
         return record
 
     def propose(
