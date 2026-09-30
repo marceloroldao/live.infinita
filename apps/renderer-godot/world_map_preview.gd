@@ -1,6 +1,7 @@
 extends Node3D
 # Isolated visual tour: no network I/O, filesystem writes, or World State mutation.
 const Catalog = preload("res://nature_asset_catalog.gd")
+const Features = preload("res://world_map_features.gd")
 const MAP_PATH := "res://world_map_001.json"
 const TILE_M := 64.0
 const GRID := 16
@@ -13,6 +14,8 @@ const TOUR_SPEED_MPS := 13.0
 
 var _map: Dictionary = {}
 var _catalog: RefCounted
+var _features: RefCounted
+var _route_points: Array = []
 var _tiles: Dictionary = {}
 var _resource_cache: Dictionary = {}
 var _walker: MeshInstance3D
@@ -34,7 +37,18 @@ func _ready() -> void:
         push_error("WORLD_MAP_PREVIEW_NO_ROUTE")
         return
     _catalog = Catalog.new()
+    _features = Features.new()
+    for waypoint in _route:
+        _route_points.append(_waypoint(waypoint))
     _position = _waypoint(_route[0])
+    for argument in OS.get_cmdline_user_args():
+        if str(argument).begins_with("--preview-cell="):
+            var pieces := str(argument).trim_prefix("--preview-cell=").split(",")
+            if pieces.size() == 2 and pieces[0].is_valid_int() and pieces[1].is_valid_int():
+                var px := pieces[0].to_int()
+                var pz := pieces[1].to_int()
+                if px >= 0 and px < GRID and pz >= 0 and pz < GRID:
+                    _position = _waypoint([px, pz])
     _build_stage()
     _sync_tiles()
     _update_caption()
@@ -85,12 +99,21 @@ func _material(color: Color) -> StandardMaterial3D:
 
 func _height(x: float, z: float) -> float:
     var rise := 4.0 if x > 175.0 and z < -70.0 else 1.0
-    return (sin(x * 0.012) * 1.8 + cos(z * 0.016) * 1.6 + sin((x + z) * 0.021) * 0.9) * rise
+    var natural := (sin(x * 0.012) * 1.8 + cos(z * 0.016) * 1.6 + sin((x + z) * 0.021) * 0.9) * rise
+    var shore := clampf((absf(x - 32.0) - 10.0) / 20.0, 0.0, 1.0)
+    return lerpf(minf(natural, -3.25), natural, shore)
+
+func _walk_height(x: float, z: float) -> float:
+    var base := _height(x, z)
+    if absf(z + 32.0) > 2.4 or x < 7.0 or x > 57.0:
+        return base
+    var deck_mix := clampf(minf(x - 7.0, 57.0 - x) / 5.0, 0.0, 1.0)
+    return lerpf(base, 3.62, deck_mix)
 
 func _waypoint(cell: Array) -> Vector3:
     var x := (float(cell[0]) + 0.5) * TILE_M - HALF
     var z := (float(cell[1]) + 0.5) * TILE_M - HALF
-    return Vector3(x, _height(x, z), z)
+    return Vector3(x, _walk_height(x, z), z)
 
 func _cell(value: float) -> int:
     return clampi(floori((value + HALF) / TILE_M), 0, GRID - 1)
@@ -175,6 +198,8 @@ func _sync_tiles() -> void:
             add_child(tile)
             var biome := _biome(x, z)
             tile.add_child(_terrain(x, z, biome))
+            _features.add_to_tile(tile, x, z, biome, _route_points, Callable(self, "_height"), Callable(self, "_walk_height"))
+            print("WORLD_MAP_TILE_READY cell=%s biome=%s" % [id, biome])
             for i in range(DECOR_PER_TILE):
                 _decoration(tile, x, z, i, biome)
             _tiles[id] = tile
@@ -210,7 +235,7 @@ func _process(delta: float) -> void:
         _position.z = flat.y
         if flat.distance_to(Vector2(target.x, target.z)) < 0.1:
             _leg = (_leg + 1) % _route.size()
-    _position.y = _height(_position.x, _position.z)
+    _position.y = _walk_height(_position.x, _position.z)
     if old_cell != Vector2i(_cell(_position.x), _cell(_position.z)):
         _sync_tiles()
     _follow_camera()
