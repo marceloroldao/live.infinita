@@ -124,6 +124,12 @@ jobs:
           "$GODOT_BIN" --headless --path apps/renderer-godot \
             res://nature_preview.tscn --quit-after 2 2>&1 | tee /tmp/godot-nature-preview.log
           ! grep -E 'SCRIPT ERROR|Parser Error' /tmp/godot-nature-preview.log
+          # Forest prototype remains optional; it exercises the bundled
+          # Standard glTF models but never becomes run/main_scene.
+          "$GODOT_BIN" --headless --path apps/renderer-godot \
+            res://forest_preview.tscn --quit-after 3 2>&1 | tee /tmp/godot-forest-preview.log
+          grep -F 'FOREST_PREVIEW_READY' /tmp/godot-forest-preview.log
+          ! grep -E 'SCRIPT ERROR|Parser Error|^ERROR:' /tmp/godot-forest-preview.log
           # Nov's independent visual component is safe without the vendor ZIP.
           "$GODOT_BIN" --headless --path apps/renderer-godot \
             res://nov_character_preview.tscn --quit-after 2 2>&1 | tee /tmp/godot-nov-preview.log
