@@ -123,7 +123,12 @@ echo "FOREST001_SOURCE_INSTALLED"
 
 # Run only parser checks, not a full editor import in the running service's
 # project tree; the 46 MB optional glTF pack does not enter the live main scene.
-GODOT_SILENCE_ROOT_WARNING=1 "$GODOT" --headless --path "$TARGET" \
+# Parse from a root-private, asset-free project; never run root Godot in the
+# live project tree, which would risk changing the service owner's import cache.
+git -c safe.directory="$REPO" -C "$REPO" show \
+    "$SHA:apps/renderer-godot/project.godot" >"$STAGE/project.godot" ||
+    fail "project_manifest_unavailable"
+GODOT_SILENCE_ROOT_WARNING=1 "$GODOT" --headless --path "$STAGE" \
     --check-only --script diorama.gd >"$STAGE/godot-parse.log" 2>&1 ||
     fail "godot_parse_failed"
 if grep -Eq 'SCRIPT ERROR|Parser Error|^ERROR:' "$STAGE/godot-parse.log"; then
