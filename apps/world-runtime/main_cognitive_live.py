@@ -313,7 +313,10 @@ async def manager_simulator_comment(request: ManagerSimulatorCommentRequest) -> 
                 collective_state=collective_state,
                 interaction_result=main_live._response_story_summary(runtime_response),
             )
-            await main_live._broadcast_story_cue(cue)
+            await main_live._broadcast_story_cue(
+                cue,
+                memory_eligible=False,
+            )
     except NarrationSuppressed as exc:
         narration_suppressed = str(exc) or "collective_cooldown"
     except Exception:

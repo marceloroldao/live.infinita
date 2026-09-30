@@ -3,6 +3,7 @@ Description=Live Infinita TikTok Live Source Bridge
 After=network-online.target live-infinita.service
 Wants=network-online.target
 Requires=live-infinita.service
+PartOf=live-infinita.service
 
 [Service]
 Type=simple

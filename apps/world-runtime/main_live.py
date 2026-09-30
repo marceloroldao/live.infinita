@@ -21,6 +21,11 @@ from mutation_gate_service import GuardedMutationService
 from story_narrator import LiveStoryNarrator, StoryCue
 from packages.narration_spool import append_cue
 from packages.observability.runtime_metrics import recent_jsonl
+from packages.observability.cognitive_evidence import (
+    CognitiveEvidenceLedger,
+    audience_comment_evidence,
+    narrator_output_evidence,
+)
 
 app = main_spatial.app
 APP_STARTED_AT = time.time()
@@ -28,6 +33,17 @@ TIKTOK_STATUS_FILE = core.DATA_DIR / "tiktok-status.json"
 COLLECTIVE_STATE_FILE = core.DATA_DIR / "collective-intent-state.json"
 collective_intent = CollectiveIntentEngine(COLLECTIVE_STATE_FILE)
 story_narrator = LiveStoryNarrator()
+try:
+    cognitive_evidence_ledger: CognitiveEvidenceLedger | None = CognitiveEvidenceLedger(
+        core.DATA_DIR / "cognitive-evidence.jsonl"
+    )
+except Exception as exc:
+    # A damaged/unavailable social-memory ledger must not take the live runtime down.
+    print(
+        f"[memory] cognitive evidence ledger unavailable: {type(exc).__name__}: {exc}",
+        flush=True,
+    )
+    cognitive_evidence_ledger = None
 _story_narration_lock = asyncio.Lock()
 collective_evolver = (
     CollectiveWorldEvolver(main_spatial.cold_store)
@@ -175,12 +191,39 @@ def _response_story_summary(response: Any) -> dict[str, Any]:
     return result
 
 
-async def _broadcast_story_cue(cue: StoryCue) -> None:
-    """Send voice cue to audio and a matching transient caption to visual clients."""
+async def _broadcast_story_cue(
+    cue: StoryCue,
+    *,
+    causal_parent_record_keys: tuple[str, ...] = (),
+    memory_eligible: bool = True,
+) -> None:
+    """Send voice cue and preserve generated speech in its own memory lane."""
     payload = cue.as_dict()
     # Persist presentation-only speech before delivery: disconnected audio clients
     # can recover cues without replaying or mutating authoritative World State.
-    await asyncio.to_thread(append_cue, core.DATA_DIR / "audio" / "narration-cue-spool.jsonl", payload)
+    await asyncio.to_thread(
+        append_cue,
+        core.DATA_DIR / "audio" / "narration-cue-spool.jsonl",
+        payload,
+    )
+    if (
+        memory_eligible
+        and cognitive_evidence_ledger is not None
+        and str(payload.get("text") or "").strip()
+    ):
+        try:
+            record = narrator_output_evidence(
+                core.engine.load_world(),
+                payload,
+                causal_parent_record_keys=causal_parent_record_keys,
+            )
+            await asyncio.to_thread(cognitive_evidence_ledger.append, record)
+        except Exception as exc:
+            # Social memory must never block narration delivery.
+            print(
+                f"[memory] narrator evidence skipped: {type(exc).__name__}: {exc}",
+                flush=True,
+            )
     await core.broadcast({"type": "narration_cue", "cue": payload})
     # A second world projection updates the existing Godot narration panel without
     # persisting presentation prose into authoritative World State.
@@ -191,7 +234,12 @@ async def _broadcast_story_cue(cue: StoryCue) -> None:
     })
 
 
-async def _narrate_comment(comment: dict[str, Any], interaction_result: dict[str, Any]) -> None:
+async def _narrate_comment(
+    comment: dict[str, Any],
+    interaction_result: dict[str, Any],
+    *,
+    parent_record_key: str | None = None,
+) -> None:
     try:
         async with _story_narration_lock:
             cue = await asyncio.to_thread(
@@ -202,7 +250,12 @@ async def _narrate_comment(comment: dict[str, Any], interaction_result: dict[str
                 collective_state=collective_intent.snapshot(),
                 interaction_result=interaction_result,
             )
-            await _broadcast_story_cue(cue)
+            await _broadcast_story_cue(
+                cue,
+                causal_parent_record_keys=(
+                    (parent_record_key,) if parent_record_key else ()
+                ),
+            )
     except asyncio.CancelledError:
         raise
     except Exception:
@@ -219,6 +272,7 @@ async def _collective_gateway_payload(payload: dict[str, Any]):
     kind = str(payload.get("kind") or "text").strip().lower()
     signal: dict[str, Any] | None = None
     story_comment: dict[str, Any] | None = None
+    parent_record_key: str | None = None
     if source in {"tiktok", "youtube"} and kind == "text":
         story_comment = story_narrator.observe_comment(
             source=source,
@@ -233,6 +287,20 @@ async def _collective_gateway_payload(payload: dict[str, Any]):
             display_name=payload.get("display_name"),
             text=str(payload.get("text") or ""),
         )
+        try:
+            evidence = audience_comment_evidence(
+                core.engine.load_world(),
+                story_comment,
+            )
+            if cognitive_evidence_ledger is not None:
+                await asyncio.to_thread(cognitive_evidence_ledger.append, evidence)
+                parent_record_key = str(evidence["record_key"])
+        except Exception as exc:
+            # Memory capture is durable when available but never blocks the source bridge.
+            print(
+                f"[memory] audience evidence skipped: {type(exc).__name__}: {exc}",
+                flush=True,
+            )
     response = await _original_gateway_payload(payload)
     if signal is not None:
         await core.broadcast({
@@ -243,7 +311,11 @@ async def _collective_gateway_payload(payload: dict[str, Any]):
     if story_comment is not None:
         # Do not hold the source bridge HTTP request while the narrator phrases the story.
         asyncio.create_task(
-            _narrate_comment(story_comment, _response_story_summary(response)),
+            _narrate_comment(
+                story_comment,
+                _response_story_summary(response),
+                parent_record_key=parent_record_key,
+            ),
             name=f"live-story-{story_comment.get('source_event_id') or int(time.time() * 1000)}",
         )
     return response

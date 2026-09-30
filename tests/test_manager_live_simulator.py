@@ -26,7 +26,8 @@ class ManagerLiveSimulatorTests(unittest.TestCase):
         self.assertIn('main_spatial._AUDIENCE_AUTO_ACTIONS', source)
         self.assertIn('main_spatial._audience_ai_fallback', source)
         self.assertIn('main_live.story_narrator.render_interaction', source)
-        self.assertIn('main_live._broadcast_story_cue(cue)', source)
+        self.assertIn('await main_live._broadcast_story_cue(', source)
+        self.assertIn('memory_eligible=False', source)
 
     def test_simulator_is_blocked_during_fresh_real_tiktok_live(self) -> None:
         source = (ROOT / "apps" / "world-runtime" / "main_cognitive_live.py").read_text(encoding="utf-8")

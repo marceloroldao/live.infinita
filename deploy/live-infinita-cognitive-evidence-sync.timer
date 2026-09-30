@@ -1,0 +1,13 @@
+[Unit]
+Description=Live Infinita — near-real-time social memory synchronization
+
+[Timer]
+OnBootSec=1min
+OnUnitInactiveSec=30s
+RandomizedDelaySec=5s
+AccuracySec=5s
+Persistent=false
+Unit=live-infinita-cognitive-evidence-sync.service
+
+[Install]
+WantedBy=timers.target
