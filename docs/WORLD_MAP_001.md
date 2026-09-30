@@ -14,10 +14,12 @@ rebaixado, ponte visual no setor 8,7, trilhas locais, cabanas modulares,
 praça e marcos com letreiros. A água não tem simulação hidráulica.
 As casas agora recebem um collider simples nas paredes e a ponte dois
 colliders laterais; árvores, pedras e plantas continuam sem corpos físicos
-para preservar o orçamento. Em modo offline o marcador de Nov percorre a
-rota demonstrativa; em modo live ele
-segue `delivery.observer`, resolvido pelo SpatialSession a partir da posição
-autoritativa de `nov`. Entidades HOT/WARM são apenas marcadores visuais.
+para preservar o orçamento. Em modo offline o marcador de Nov percorre a rota demonstrativa. Em modo
+live ele segue `delivery.observer`, resolvido pelo SpatialSession a partir da
+posição autoritativa de `nov`. O HUD expõe **EXPLORAR LOCAL**: esse modo
+desacopla temporariamente o explorador visual da pose live, ativa controles
+touch e usa um `CharacterBody3D` somente local. **VOLTAR AO NOV** restaura
+a última pose autoritativa recebida. Entidades HOT/WARM são apenas marcadores visuais.
 As regiões do mapa continuam sendo apresentação e não criam verdade paralela.
 
 ## Custos e limites
@@ -42,7 +44,9 @@ O SpatialSession entrega no máximo 16 descritores de região local
 A cena usa `/ws` exclusivamente como entrada. `world_map_live_feed.gd`
 não envia `interest_update`, intents ou qualquer outro pacote; também não
 escreve em banco, World State ou Memoria.ia. O servidor continua sendo a
-autoridade e entrega uma fatia espacial bounded. O mapa permanece fora de
+autoridade e entrega uma fatia espacial bounded. O explorador local também
+não envia comandos: água fora da ponte, limite do mapa, degrau máximo e
+obstáculos são resolvidos somente no Godot. O mapa permanece fora de
 `main.tscn`, portanto a transmissão nativa atual não é substituída.
 
 ## Validação isolada
@@ -60,7 +64,10 @@ limite de 54 decorações. Com o runtime disponível deve aparecer também
 `WORLD_MAP_LIVE_BOUND`, incluindo região, sequence, célula e contagens
 HOT/WARM/regiões. O smoke de regiões/colisão confirmou 3 anéis persistentes,
 2 corpos estáticos na ponte e 9 corpos estáticos ao materializar os 9 setores
-da aldeia. O import no checkout usado pelo renderer nativo não é permitido.
+da aldeia. O smoke de travessabilidade confirma água bloqueada fora da ponte,
+ponte atravessável, casa bloqueada, modo live imune a input local, exploração
+local física e retorno exato à pose autoritativa. O import no checkout usado
+pelo renderer nativo não é permitido.
 O rollout Web usa `/godot/world-map-preview/` e troca atômica independente.
 
 ## Evolução
@@ -69,9 +76,11 @@ O rollout Web usa `/godot/world-map-preview/` e troca atômica independente.
 2. Concluído: pose autoritativa de Nov e overlay HOT/WARM somente leitura.
 3. Concluído neste corte: regiões persistentes locais projetadas no mapa e
    primeira camada bounded de colisão em ponte/casas.
-4. Próximo: locomoção física local para exploração manual e contrato de
-   travessabilidade, mantendo o movimento autoritativo no runtime.
-5. Depois: promover o mapa para a captura nativa por rollout independente.
+4. Concluído neste corte: locomoção física local, contrato de
+   travessabilidade e controles touch separados da autoridade do NOV.
+5. Próximo: ampliar o cenário com novos pontos de interesse/regiões visuais
+   mantendo streaming 3×3 e o mesmo contrato bounded.
+6. Depois: promover o mapa para a captura nativa por rollout independente.
 
 Referências de assets: Quaternius Stylized Nature MegaKit (CC0) e
 Medieval Village MegaKit (CC0). Terrain3D (MIT) fica como opção

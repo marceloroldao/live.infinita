@@ -101,6 +101,39 @@ class WorldMapTests(unittest.TestCase):
         self.assertIn('_solid_box(tile, "BridgeRail"', features)
         self.assertIn('_solid_box(root, "Walls"', features)
 
+    def test_local_traversability_is_physical_read_only_and_bounded(self):
+        traversal = (SCENE / "world_map_traversability.gd").read_text(encoding="utf-8")
+        motion = (SCENE / "world_map_local_motion.gd").read_text(encoding="utf-8")
+        hud = (SCENE / "world_map_hud.gd").read_text(encoding="utf-8")
+        preview = SCRIPT.read_text(encoding="utf-8")
+        for required in (
+            'RIVER_HALF_WIDTH := 10.0', 'BRIDGE_HALF_WIDTH := 3.1',
+            'MAX_STEP_M := 1.25', 'MAX_COLLISION_HITS := 8',
+            'river_without_bridge', 'static_obstacle', 'intersect_shape',
+        ):
+            self.assertIn(required, traversal)
+        for required in (
+            'CharacterBody3D.new()', 'move_and_slide()', 'BODY_CENTER_Y := 0.9',
+            'LocalExplorerBody', 'validate_step(current, candidate, space_state)',
+        ):
+            self.assertIn(required, motion)
+        self.assertIn('LocalMotion = preload("res://world_map_local_motion.gd")', preview)
+        self.assertIn('Hud = preload("res://world_map_hud.gd")', preview)
+        self.assertIn('get_world_3d().direct_space_state', preview)
+        self.assertIn('EXPLORAR LOCAL', hud)
+        self.assertIn('VOLTAR AO NOV', hud)
+        self.assertIn('nao move NOV', hud)
+        self.assertIn('Input.action_press(action)', hud)
+        self.assertIn('_last_live_position', preview)
+        self.assertIn('_on_local_mode', preview)
+        for source in (traversal, motion, hud):
+            for forbidden in (
+                "WebSocket", "HTTPClient", "FileAccess", "DirAccess",
+                "send_text", "send_json", "submit_intent", "post_world",
+            ):
+                self.assertNotIn(forbidden, source)
+        self.assertTrue((ROOT / "tests/godot_world_map_traversal_smoke.gd").exists())
+
     def test_web_rollout_is_separate_and_atomic(self):
         rollout = (ROOT / "deploy/export-world-map-preview-web.sh").read_text()
         self.assertIn('PREVIEW_NAME="world-map-preview"', rollout)
@@ -109,6 +142,12 @@ class WorldMapTests(unittest.TestCase):
         self.assertIn('.world-map-preview.stage.', rollout)
         self.assertIn('/godot/world-map-preview/', rollout)
         self.assertIn('/nov-preview/', rollout)
+        self.assertIn('SMOKE_TEST="$SOURCE_DIR/tests/godot_world_map_traversal_smoke.gd"', rollout)
+        self.assertIn('World-map traversal smoke: 0 failures', rollout)
+        self.assertIn('"traversability": "local-physics-read-only"', rollout)
+        self.assertIn('"touch_controls": true', rollout)
+        for required in ("world_map_hud.gd", "world_map_local_motion.gd", "world_map_traversability.gd"):
+            self.assertIn(required, rollout)
         for forbidden in ("systemctl restart", "nginx -s", "main.tscn >", "World State"):
             if forbidden == "World State":
                 continue

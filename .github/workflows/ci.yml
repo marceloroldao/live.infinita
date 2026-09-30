@@ -137,6 +137,11 @@ jobs:
           "$GODOT_BIN" --headless --path apps/renderer-godot \
             --script ../../tests/godot_presentation_smoke.gd 2>&1 | tee /tmp/godot-contracts.log
           ! grep -E 'SCRIPT ERROR|^ERROR:' /tmp/godot-contracts.log
+          "$GODOT_BIN" --headless --path apps/renderer-godot --audio-driver Dummy \
+            --script ../../tests/godot_world_map_traversal_smoke.gd -- --offline-tour \
+            2>&1 | tee /tmp/godot-world-map-traversal.log
+          grep -F 'World-map traversal smoke: 0 failures' /tmp/godot-world-map-traversal.log
+          ! grep -E 'SCRIPT ERROR|World-map traversal smoke: [1-9][0-9]* failures' /tmp/godot-world-map-traversal.log
 
       - name: Smoke-test native portrait server renderer
         shell: bash

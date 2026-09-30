@@ -8,6 +8,7 @@ PROJECT_DIR="${PROJECT_DIR:-$SOURCE_DIR/apps/renderer-godot}"
 WEB_ROOT="${WEB_ROOT:-/var/www/live-infinita-godot}"
 ENGINE_ROOT="${GODOT_ENGINE_ROOT:-/opt/live-infinita-godot/engine}"
 PREVIEW_NAME="world-map-preview"
+SMOKE_TEST="$SOURCE_DIR/tests/godot_world_map_traversal_smoke.gd"
 SOURCE_SHA="${LIVE_INFINITA_SOURCE_SHA:-$(git -C "$SOURCE_DIR" rev-parse --short HEAD 2>/dev/null || echo unknown)}"
 
 if [[ ${EUID} -ne 0 ]]; then
@@ -15,7 +16,7 @@ if [[ ${EUID} -ne 0 ]]; then
   exit 1
 fi
 
-for required in "$PROJECT_DIR/project.godot" "$PROJECT_DIR/export_presets.cfg" "$PROJECT_DIR/world_map_preview.tscn" "$PROJECT_DIR/world_map_preview.gd" "$PROJECT_DIR/world_map_live_feed.gd" "$PROJECT_DIR/world_map_live_visual.gd" "$PROJECT_DIR/world_map_features.gd" "$PROJECT_DIR/world_map_001.json" "$PROJECT_DIR/nature_asset_catalog.gd"; do
+for required in "$PROJECT_DIR/project.godot" "$PROJECT_DIR/export_presets.cfg" "$PROJECT_DIR/world_map_preview.tscn" "$PROJECT_DIR/world_map_preview.gd" "$PROJECT_DIR/world_map_live_feed.gd" "$PROJECT_DIR/world_map_live_visual.gd" "$PROJECT_DIR/world_map_hud.gd" "$PROJECT_DIR/world_map_local_motion.gd" "$PROJECT_DIR/world_map_traversability.gd" "$PROJECT_DIR/world_map_features.gd" "$PROJECT_DIR/world_map_001.json" "$PROJECT_DIR/nature_asset_catalog.gd" "$SMOKE_TEST"; do
   if [[ ! -f "$required" ]]; then
     echo "Arquivo Godot ausente: $required" >&2
     exit 2
@@ -70,6 +71,7 @@ PY
 
 # Import glTF into the isolated project before exporting the scene.
 IMPORT_LOG="$TEMP_ROOT/import.log"
+SMOKE_LOG="$TEMP_ROOT/traversability-smoke.log"
 EXPORT_LOG="$TEMP_ROOT/export.log"
 echo "[world-map-preview] Importando recursos em cópia isolada."
 set +e
@@ -82,6 +84,22 @@ if ((IMPORT_STATUS != 0)) || grep -Eiq 'SCRIPT ERROR:|Parse Error:|Failed to loa
   exit 6
 fi
 
+echo "[world-map-preview] Validando travessabilidade física e modo local."
+set +e
+GODOT_SILENCE_ROOT_WARNING=1 "$GODOT_BIN" --headless --audio-driver Dummy --path "$WORK_PROJECT" --script "$SMOKE_TEST" -- --offline-tour >"$SMOKE_LOG" 2>&1
+SMOKE_STATUS=$?
+set -e
+if ((SMOKE_STATUS != 0)) || grep -Eiq 'SCRIPT ERROR:|Parse Error:|Failed to load script|^ERROR:' "$SMOKE_LOG"; then
+  cat "$SMOKE_LOG" >&2
+  echo "Falha no smoke de travessabilidade; prévia anterior preservada." >&2
+  exit 7
+fi
+grep -q 'World-map traversal smoke: 0 failures' "$SMOKE_LOG" || {
+  cat "$SMOKE_LOG" >&2
+  echo "Smoke não confirmou zero falhas; prévia anterior preservada." >&2
+  exit 7
+}
+
 echo "[world-map-preview] Exportando Web em diretório temporário."
 set +e
 GODOT_SILENCE_ROOT_WARNING=1 "$GODOT_BIN" --headless --path "$WORK_PROJECT" --export-release "Web" "$BUILD_DIR/index.html" >"$EXPORT_LOG" 2>&1
@@ -90,13 +108,13 @@ set -e
 if ((EXPORT_STATUS != 0)) || grep -Eiq 'SCRIPT ERROR:|Parse Error:|Failed to load script|^ERROR:' "$EXPORT_LOG"; then
   cat "$EXPORT_LOG" >&2
   echo "Falha no export Godot; transmissão atual preservada." >&2
-  exit 7
+  exit 8
 fi
 if [[ ! -s "$BUILD_DIR/index.html" ]] ||
    ! find "$BUILD_DIR" -maxdepth 1 -type f -name '*.wasm' -size +0c -print -quit | grep -q . ||
    ! find "$BUILD_DIR" -maxdepth 1 -type f -name '*.pck' -size +0c -print -quit | grep -q .; then
   echo "Export Web incompleto (index.html / wasm / pck ausente)." >&2
-  exit 8
+  exit 9
 fi
 
 cat >"$BUILD_DIR/build.json" <<EOF
@@ -105,7 +123,9 @@ cat >"$BUILD_DIR/build.json" <<EOF
   "project": "Live Infinita - Vale de Nov world-map preview",
   "scene": "res://world_map_preview.tscn",
   "renderer": "godot-web",
-  "map_schema": "live-infinita-visual-world-map/v1"
+  "map_schema": "live-infinita-visual-world-map/v1",
+  "traversability": "local-physics-read-only",
+  "touch_controls": true
 }
 EOF
 
@@ -119,7 +139,7 @@ find "$STAGE" -type f -exec chmod 0644 {} +
 TARGET="$WEB_ROOT/$PREVIEW_NAME"
 if [[ -e "$TARGET" && ! -d "$TARGET" ]]; then
   echo "Destino ocupado por arquivo: $TARGET" >&2
-  exit 9
+  exit 10
 fi
 if [[ -d "$TARGET" ]]; then
   BACKUP="$WEB_ROOT/.world-map-preview.previous.$$"
@@ -130,7 +150,7 @@ if ! mv -- "$STAGE" "$TARGET"; then
     mv -- "$BACKUP" "$TARGET"
   fi
   echo "Falha ao publicar; prévia anterior restaurada." >&2
-  exit 10
+  exit 11
 fi
 STAGE=""
 [[ -z "$BACKUP" ]] || rm -rf -- "$BACKUP"
