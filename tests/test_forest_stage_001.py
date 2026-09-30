@@ -30,7 +30,7 @@ class ForestStageTests(unittest.TestCase):
         self.assertIn('func _forest_trees(', content)
         self.assertIn('FOREST_TREE_COUNT := 17', content)
         self.assertIn('FOREST_STONE_COUNT := 19', content)
-        self.assertIn('"_normalized_biome"', '"_normalized_biome"')
+        self.assertIn('func _normalized_biome(', atmosphere)
         self.assertIn('return {current: 1.0}', atmosphere)
         for forbidden in ("FileAccess.open", "DirAccess.", "randf(", "randi(",
                           "set_world", "post_world", "WorldState.", "submit_intent"):
