@@ -6,6 +6,7 @@ var _status: Label
 var _toggle: Button
 var _direction_buttons: Array[Button] = []
 var _local_mode := false
+var _world_size_m := 1024
 
 func _ready() -> void:
     _status = Label.new()
@@ -70,6 +71,9 @@ func _apply_mode(enabled: bool, notify: bool) -> void:
         _release_all()
     if notify:
         local_mode_changed.emit(enabled)
+func configure(world_size_m: int) -> void:
+    _world_size_m = world_size_m
+
 func set_status(text: String) -> void:
     _status.text = text
 
@@ -87,8 +91,8 @@ func update_live(
     regions: int
 ) -> void:
     set_status(
-        "LIVE INFINITA / VALE DE NOV\n1.024 x 1.024 m | %d setores ativos | max %d decoracoes\nNOV autoritativo | regiao %s | seq %d | %s\nSetor %d,%d - %s | HOT %d / WARM %d / REG %d | somente leitura"
-        % [active_tiles, decor_limit, region_id, sequence, connection, cx, cz, biome, hot, warm, regions]
+        "LIVE INFINITA / VALE DE NOV\n%d x %d m | %d setores ativos | max %d decoracoes\nNOV autoritativo | regiao %s | seq %d | %s\nSetor %d,%d - %s | HOT %d / WARM %d / REG %d | somente leitura"
+        % [_world_size_m, _world_size_m, active_tiles, decor_limit, region_id, sequence, connection, cx, cz, biome, hot, warm, regions]
     )
 
 func update_local(
@@ -104,8 +108,8 @@ func update_local(
     var blocked := " | bloqueio " + blocked_reason if not blocked_reason.is_empty() else ""
     var mode := "EXPLORADOR LOCAL - nao move NOV" if explicit_local else "tour local offline"
     set_status(
-        "LIVE INFINITA / VALE DE NOV\n1.024 x 1.024 m | %d setores ativos | max %d decoracoes\n%s\nSetor %d,%d - %s | %s%s"
-        % [active_tiles, decor_limit, mode, cx, cz, biome, surface, blocked]
+        "LIVE INFINITA / VALE DE NOV\n%d x %d m | %d setores ativos | max %d decoracoes\n%s\nSetor %d,%d - %s | %s%s"
+        % [_world_size_m, _world_size_m, active_tiles, decor_limit, mode, cx, cz, biome, surface, blocked]
     )
 
 func _exit_tree() -> void:

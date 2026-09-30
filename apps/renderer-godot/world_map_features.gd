@@ -1,32 +1,56 @@
 extends RefCounted
 # Visual-only lightweight landmarks, paths and bridge; never affects simulation.
 const CELL_M := 64.0
-const HALF := 512.0
 const RIVER_X := 32.0
 const BRIDGE_Z := -32.0
 const BRIDGE_Y := 3.5
 const MAX_HOUSES_PER_TILE := 1
 const MAX_COLLIDERS_PER_TILE := 3
+const MAX_PATH_STEPS_PER_SEGMENT := 384
 var _height_fn: Callable
+var _half_m := 512.0
 
-func add_to_tile(tile: Node3D, cx: int, cz: int, biome: String, points: Array, height_fn: Callable, walk_fn: Callable) -> void:
+func _cell_for_world(value: float) -> int:
+    return floori((value + _half_m) / CELL_M)
+
+func _matches_cell(value: Variant, cx: int, cz: int) -> bool:
+    return typeof(value) == TYPE_ARRAY and value.size() == 2 and int(value[0]) == cx and int(value[1]) == cz
+
+func _cell_center(cx: int, cz: int) -> Vector3:
+    var x := (float(cx) + 0.5) * CELL_M - _half_m
+    var z := (float(cz) + 0.5) * CELL_M - _half_m
+    return Vector3(x, float(_height_fn.call(x, z)), z)
+
+func _landmark_tint(kind: String) -> Color:
+    match kind:
+        "waterfall": return Color("#5db7cf")
+        "watchtower": return Color("#caa66c")
+        "stone_circle": return Color("#a8a59a")
+        "cave": return Color("#6f6a63")
+        "meadow": return Color("#8fbd68")
+        "ruins": return Color("#aa8f70")
+        "village": return Color("#ddb272")
+        "bridge": return Color("#59b0ca")
+        _: return Color("#bc914e")
+
+func add_to_tile(tile: Node3D, cx: int, cz: int, biome: String, points: Array, height_fn: Callable, walk_fn: Callable, landmarks: Array) -> void:
     _path(tile, cx, cz, points, walk_fn)
     if biome == "river":
         _water(tile, cz)
-        if cz == 7:
+        if cx == _cell_for_world(RIVER_X) and cz == _cell_for_world(BRIDGE_Z):
             _bridge(tile)
     if biome == "village":
-        _village(tile, cx, cz, height_fn)
-    if cx == 2 and cz == 7:
-        _landmark(tile, Vector3(-352.0, height_fn.call(-352.0, -32.0), -32.0), Color("#bc914e"), "Abrigo")
-    if cx == 5 and cz == 7:
-        _landmark(tile, Vector3(-160.0, height_fn.call(-160.0, -32.0), -32.0), Color("#477b3a"), "Bosque antigo")
-    if cx == 8 and cz == 7:
-        _landmark(tile, Vector3(52.0, height_fn.call(52.0, -24.0), -24.0), Color("#59b0ca"), "Travessia do rio")
-    if cx == 11 and cz == 9:
-        _landmark(tile, Vector3(233.0, height_fn.call(233.0, 105.0), 105.0), Color("#ddb272"), "Aldeia")
-    if cx == 12 and cz == 4:
-        _landmark(tile, Vector3(288.0, height_fn.call(288.0, -224.0), -224.0), Color("#c9caaf"), "Mirante")
+        _village(tile, cx, cz, height_fn, landmarks)
+    for item in landmarks:
+        if typeof(item) != TYPE_DICTIONARY:
+            continue
+        var landmark: Dictionary = item
+        if not _matches_cell(landmark.get("cell"), cx, cz):
+            continue
+        var pos := _cell_center(cx, cz)
+        var kind := str(landmark.get("kind", "beacon"))
+        _landmark(tile, pos, _landmark_tint(kind), str(landmark.get("name", landmark.get("id", "Marco"))))
+        _special_landmark(tile, pos, kind)
 
 func _material(color: Color) -> StandardMaterial3D:
     var material := StandardMaterial3D.new()
@@ -59,8 +83,8 @@ func _solid_box(parent: Node3D, name: String, center: Vector3, size: Vector3, co
     return visual
 
 func _path(parent: Node3D, cx: int, cz: int, points: Array, walk_fn: Callable) -> void:
-    var x0 := float(cx) * CELL_M - HALF
-    var z0 := float(cz) * CELL_M - HALF
+    var x0 := float(cx) * CELL_M - _half_m
+    var z0 := float(cz) * CELL_M - _half_m
     var surface := SurfaceTool.new()
     surface.begin(Mesh.PRIMITIVE_TRIANGLES)
     var verts := 0
@@ -71,7 +95,9 @@ func _path(parent: Node3D, cx: int, cz: int, points: Array, walk_fn: Callable) -
         if axis.length_squared() < 0.01:
             continue
         var normal := Vector2(-axis.y, axis.x).normalized() * 2.5
-        var steps := maxi(1, ceili(axis.length() / 2.0))
+        if maxf(a.x, b.x) < x0 - 3.0 or minf(a.x, b.x) > x0 + CELL_M + 3.0 or maxf(a.z, b.z) < z0 - 3.0 or minf(a.z, b.z) > z0 + CELL_M + 3.0:
+            continue
+        var steps := mini(MAX_PATH_STEPS_PER_SEGMENT, maxi(1, ceili(axis.length() / 2.0)))
         for index in range(steps):
             var p := Vector2(a.x, a.z).lerp(Vector2(b.x, b.z), float(index) / steps)
             var q := Vector2(a.x, a.z).lerp(Vector2(b.x, b.z), float(index + 1) / steps)
@@ -97,7 +123,7 @@ func _path(parent: Node3D, cx: int, cz: int, points: Array, walk_fn: Callable) -
     parent.add_child(instance)
 
 func _water(tile: Node3D, cz: int) -> void:
-    var z := float(cz) * CELL_M - HALF + 32.0
+    var z := float(cz) * CELL_M - _half_m + 32.0
     _box(tile, "RiverWater", Vector3(RIVER_X, -2.13, z), Vector3(20.0, 0.12, CELL_M), Color("#398faf"))
     # The bank is formed by the terrain itself; water is an inexpensive material.
     for shore in [-1.0, 1.0]:
@@ -119,8 +145,8 @@ func _bridge(tile: Node3D) -> void:
                 Vector3(0.22, 1.35, 0.22), Color("#725337"))
 
 func _house(tile: Node3D, cx: int, cz: int, height_fn: Callable) -> void:
-    var x := float(cx) * CELL_M - HALF + (15.0 if (cx + cz) % 2 == 0 else 49.0)
-    var z := float(cz) * CELL_M - HALF + (17.0 if cz % 2 == 0 else 47.0)
+    var x := float(cx) * CELL_M - _half_m + (15.0 if (cx + cz) % 2 == 0 else 49.0)
+    var z := float(cz) * CELL_M - _half_m + (17.0 if cz % 2 == 0 else 47.0)
     var y := float(height_fn.call(x, z))
     var root := Node3D.new()
     root.name = "VillageHouse_%d_%d" % [cx, cz]
@@ -148,8 +174,33 @@ func _landmark(tile: Node3D, pos: Vector3, tint: Color, title: String) -> void:
     label.pixel_size = 0.012
     tile.add_child(label)
 
-func _init(height_fn: Callable = Callable()) -> void:
+func _special_landmark(tile: Node3D, pos: Vector3, kind: String) -> void:
+    match kind:
+        "ruins":
+            _solid_box(tile, "RuinsWallA", pos + Vector3(-3, 1.3, 0), Vector3(0.8, 2.6, 7.0), Color("#777067"))
+            _solid_box(tile, "RuinsWallB", pos + Vector3(2, 1.0, -2), Vector3(5.0, 2.0, 0.8), Color("#81786d"))
+        "watchtower":
+            _solid_box(tile, "WatchtowerBase", pos + Vector3(0, 2.0, 0), Vector3(3.2, 4.0, 3.2), Color("#7a6044"))
+            _box(tile, "WatchtowerTop", pos + Vector3(0, 4.6, 0), Vector3(6.0, 0.5, 6.0), Color("#5e4935"))
+        "stone_circle":
+            for i in range(8):
+                var angle := TAU * float(i) / 8.0
+                _box(tile, "StandingStone_%d" % i, pos + Vector3(cos(angle) * 6.0, 1.4, sin(angle) * 6.0), Vector3(1.1, 2.8, 1.1), Color("#85847d"))
+        "cave":
+            _solid_box(tile, "CaveSideA", pos + Vector3(-3.0, 2.0, 0), Vector3(2.2, 4.0, 5.0), Color("#5f5b56"))
+            _solid_box(tile, "CaveSideB", pos + Vector3(3.0, 2.0, 0), Vector3(2.2, 4.0, 5.0), Color("#5f5b56"))
+            _box(tile, "CaveLintel", pos + Vector3(0, 4.3, 0), Vector3(8.0, 1.0, 5.0), Color("#57534f"))
+        "meadow":
+            _box(tile, "MeadowMast", pos + Vector3(0, 3.0, 0), Vector3(0.7, 6.0, 0.7), Color("#9b7b4f"))
+            _box(tile, "MeadowBladeA", pos + Vector3(0, 5.6, 0.2), Vector3(7.0, 0.35, 0.35), Color("#d1c49e"))
+            var blade := _box(tile, "MeadowBladeB", pos + Vector3(0, 5.6, 0.2), Vector3(7.0, 0.35, 0.35), Color("#d1c49e"))
+            blade.rotation_degrees.z = 90.0
+        "waterfall":
+            _box(tile, "WaterfallSheet", Vector3(RIVER_X + 10.0, pos.y + 4.0, pos.z), Vector3(1.0, 8.0, 8.0), Color("#5ab7d0"))
+
+func _init(height_fn: Callable = Callable(), half_m: float = 512.0) -> void:
     _height_fn = height_fn
+    _half_m = half_m
 
 func walk_height(x: float, z: float) -> float:
     var ground: float = float(_height_fn.call(x, z))
@@ -162,13 +213,16 @@ func walk_height(x: float, z: float) -> float:
 func _hut(tile: Node3D, cx: int, cz: int, height_fn: Callable) -> void:
     _house(tile, cx, cz, height_fn)
 
-func _village(tile: Node3D, cx: int, cz: int, height_fn: Callable) -> void:
+func _village(tile: Node3D, cx: int, cz: int, height_fn: Callable, landmarks: Array) -> void:
     _hut(tile, cx, cz, height_fn)
-    if cx == 11 and cz == 9:
-        var x := 224.0
-        var z := 96.0
-        var y: float = float(height_fn.call(x, z))
-        _box(tile, "VillageSquare", Vector3(x, y + 0.05, z),
+    for item in landmarks:
+        if typeof(item) != TYPE_DICTIONARY:
+            continue
+        var landmark: Dictionary = item
+        if str(landmark.get("kind", "")) != "village" or not _matches_cell(landmark.get("cell"), cx, cz):
+            continue
+        var center := _cell_center(cx, cz)
+        _box(tile, "VillageSquare", center + Vector3(0, 0.05, 0),
             Vector3(12.0, 0.12, 12.0), Color("#aa9876"))
 
 func decorate(tile: Node3D, cx: int, cz: int, biome: String, landmarks: Array, route: Array) -> Array[String]:
@@ -176,24 +230,25 @@ func decorate(tile: Node3D, cx: int, cz: int, biome: String, landmarks: Array, r
     for cell in route:
         if typeof(cell) != TYPE_ARRAY or cell.size() != 2:
             continue
-        var x := (float(cell[0]) + 0.5) * CELL_M - HALF
-        var z := (float(cell[1]) + 0.5) * CELL_M - HALF
+        var x := (float(cell[0]) + 0.5) * CELL_M - _half_m
+        var z := (float(cell[1]) + 0.5) * CELL_M - _half_m
         points.append(Vector3(x, float(_height_fn.call(x, z)), z))
-    add_to_tile(tile, cx, cz, biome, points, _height_fn, Callable(self, "walk_height"))
+    add_to_tile(tile, cx, cz, biome, points, _height_fn, Callable(self, "walk_height"), landmarks)
     var features: Array[String] = []
     if not points.is_empty():
         features.append("trail")
     if biome == "river":
         features.append("water")
-    if cx == 8 and cz == 7:
+    if cx == _cell_for_world(RIVER_X) and cz == _cell_for_world(BRIDGE_Z):
         features.append("bridge")
     if biome == "village":
         features.append("modular_hut")
-    if cx == 11 and cz == 9:
-        features.append("village_square")
+    for item in landmarks:
+        if typeof(item) == TYPE_DICTIONARY and str(item.get("kind", "")) == "village" and _matches_cell(item.get("cell"), cx, cz):
+            features.append("village_square")
     for landmark in landmarks:
         if typeof(landmark) != TYPE_DICTIONARY:
             continue
-        if landmark.get("cell") == [cx, cz]:
+        if _matches_cell(landmark.get("cell"), cx, cz):
             features.append("landmark_" + str(landmark.get("id", "")))
     return features

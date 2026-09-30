@@ -16,8 +16,10 @@ class WorldMapTests(unittest.TestCase):
     def test_manifest_cells_and_route(self):
         data = json.loads(MAP.read_text(encoding="utf-8"))
         self.assertEqual(data["schema"], "live-infinita-visual-world-map/v1")
-        self.assertEqual(data["grid_size"], 16)
+        self.assertEqual(data["grid_size"], 32)
         self.assertEqual(data["tile_size_m"], 64)
+        self.assertEqual(data["grid_size"] ** 2, 1024)
+        self.assertEqual(data["grid_size"] * data["tile_size_m"], 2048)
         self.assertEqual(data["active_radius_tiles"], 1)
         self.assertEqual(data["max_decorations_per_tile"], 6)
         cells = data["grid_size"]
@@ -31,7 +33,33 @@ class WorldMapTests(unittest.TestCase):
             self.assertNotIn(landmark["id"], ids)
             ids.add(landmark["id"])
             self.assertIn(landmark["cell"], data["route"])
-        self.assertGreaterEqual(len(ids), 5)
+        self.assertGreaterEqual(len(ids), 11)
+        for expected in ("waterfall_overlook", "watchtower", "stone_circle", "cave", "meadow", "ruins"):
+            self.assertIn(expected, ids)
+        self.assertEqual(data["start"], [10, 15])
+
+    def test_two_kilometer_layout_preserves_central_coordinates(self):
+        data = json.loads(MAP.read_text(encoding="utf-8"))
+        half = data["grid_size"] * data["tile_size_m"] / 2
+
+        def center(cell):
+            return (
+                (cell[0] + 0.5) * data["tile_size_m"] - half,
+                (cell[1] + 0.5) * data["tile_size_m"] - half,
+            )
+
+        landmarks = {item["id"]: item for item in data["landmarks"]}
+        self.assertEqual(center(landmarks["shelter"]["cell"]), (-352.0, -32.0))
+        self.assertEqual(center(landmarks["old_grove"]["cell"]), (-160.0, -32.0))
+        self.assertEqual(center(landmarks["river_crossing"]["cell"]), (32.0, -32.0))
+        self.assertEqual(center(landmarks["village"]["cell"]), (224.0, 96.0))
+        distant = [center(landmarks[key]["cell"]) for key in ("ruins", "watchtower", "stone_circle", "cave", "meadow")]
+        self.assertTrue(any(abs(x) > 512 or abs(z) > 512 for x, z in distant))
+        layout = (SCENE / "world_map_layout.gd").read_text(encoding="utf-8")
+        preview = SCRIPT.read_text(encoding="utf-8")
+        self.assertIn("half_m = float(grid_size) * tile_size_m * 0.5", layout)
+        self.assertNotIn("const GRID := 16", preview)
+        self.assertNotIn("const HALF :=", preview)
 
     def test_scene_is_isolated_and_bounded(self):
         script = SCRIPT.read_text(encoding="utf-8")
@@ -59,9 +87,12 @@ class WorldMapTests(unittest.TestCase):
         for forbidden in ("WebSocket", "HTTPClient", "FileAccess", "DirAccess",
                           "post_world", "submit_intent", "set_world"):
             self.assertNotIn(forbidden, features)
-        self.assertIn('if cx == 8 and cz == 7:', features)
-        self.assertIn('if cx == 11 and cz == 9:', features)
+        self.assertIn('cx == _cell_for_world(RIVER_X)', features)
+        self.assertIn('func _special_landmark(', features)
+        for feature in ("RuinsWallA", "WatchtowerBase", "StandingStone_", "CaveSideA", "MeadowMast", "WaterfallSheet"):
+            self.assertIn(feature, features)
         self.assertIn('for index in range(steps):', features)
+        self.assertIn('maxf(a.x, b.x)', features)
         self.assertIn('var features: Array[String] = _features.decorate(', script)
 
     def test_live_spatial_feed_is_read_only_and_bounded(self):
@@ -119,6 +150,9 @@ class WorldMapTests(unittest.TestCase):
             self.assertIn(required, motion)
         self.assertIn('LocalMotion = preload("res://world_map_local_motion.gd")', preview)
         self.assertIn('Hud = preload("res://world_map_hud.gd")', preview)
+        self.assertIn('Layout = preload("res://world_map_layout.gd")', preview)
+        self.assertIn('_layout.half_m', preview)
+        self.assertIn('var _half_m := 512.0', traversal)
         self.assertIn('get_world_3d().direct_space_state', preview)
         self.assertIn('EXPLORAR LOCAL', hud)
         self.assertIn('VOLTAR AO NOV', hud)
@@ -146,7 +180,7 @@ class WorldMapTests(unittest.TestCase):
         self.assertIn('World-map traversal smoke: 0 failures', rollout)
         self.assertIn('"traversability": "local-physics-read-only"', rollout)
         self.assertIn('"touch_controls": true', rollout)
-        for required in ("world_map_hud.gd", "world_map_local_motion.gd", "world_map_traversability.gd"):
+        for required in ("world_map_hud.gd", "world_map_local_motion.gd", "world_map_traversability.gd", "world_map_layout.gd"):
             self.assertIn(required, rollout)
         for forbidden in ("systemctl restart", "nginx -s", "main.tscn >", "World State"):
             if forbidden == "World State":

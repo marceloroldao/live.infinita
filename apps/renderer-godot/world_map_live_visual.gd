@@ -4,7 +4,6 @@ const MAX_HOT_MARKERS := 96
 const MAX_WARM_MARKERS := 192
 const MAX_LOCAL_REGIONS := 16
 const REGION_RING_SEGMENTS := 48
-const HALF := 512.0
 
 var _host: Node3D
 var _features: RefCounted
@@ -13,11 +12,13 @@ var _hot_markers: MultiMeshInstance3D
 var _warm_markers: MultiMeshInstance3D
 var _region_root: Node3D
 var _region_signature := ""
+var _half_m := 512.0
 
 func _init(host: Node3D, features: RefCounted, map_data: Dictionary) -> void:
     _host = host
     _features = features
     _map = map_data
+    _half_m = float(int(_map.get("grid_size", 16))) * float(_map.get("tile_size_m", 64)) * 0.5
 
 func build() -> void:
     _hot_markers = _marker_batch("HotEntities", Color("#ec764f"), 0.40)
@@ -76,8 +77,8 @@ func project_position(position_data: Dictionary) -> Vector3:
     var scale := map_axis.length() / world_axis.length()
     var offset := world_point - wa
     var mapped := ma + mu * offset.dot(wu) * scale + mp * offset.dot(wp) * scale
-    mapped.x = clampf(mapped.x, -HALF + 1.0, HALF - 1.0)
-    mapped.y = clampf(mapped.y, -HALF + 1.0, HALF - 1.0)
+    mapped.x = clampf(mapped.x, -_half_m + 1.0, _half_m - 1.0)
+    mapped.y = clampf(mapped.y, -_half_m + 1.0, _half_m - 1.0)
     return Vector3(mapped.x, float(_features.call("walk_height", mapped.x, mapped.y)), mapped.y)
 
 func _fill(batch: MultiMeshInstance3D, entities: Array, limit: int, skip_nov: bool) -> int:

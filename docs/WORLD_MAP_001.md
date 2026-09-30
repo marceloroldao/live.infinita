@@ -2,16 +2,17 @@
 
 ## Objetivo
 
-Protótipo de um mapa explorável de 1.024 × 1.024 metros, composto por
-256 setores lógicos de 64 × 64 metros. O manifesto
+Protótipo de um mapa explorável de 2.048 × 2.048 metros, composto por
+1.024 setores lógicos de 64 × 64 metros. O manifesto
 `apps/renderer-godot/world_map_001.json` mantém a planta e pontos de
 interesse; a cena `world_map_preview.tscn` gera relevos e decorações
 determinísticas com o catálogo Quaternius CC0 já incluído no projeto.
 
-O roteiro visual passa por abrigo, bosque antigo, travessia do rio,
-aldeia e mirante. O segundo corte adiciona água superficial no leito
-rebaixado, ponte visual no setor 8,7, trilhas locais, cabanas modulares,
-praça e marcos com letreiros. A água não tem simulação hidráulica.
+O roteiro visual preserva abrigo, bosque antigo, travessia do rio,
+aldeia e mirante nas mesmas coordenadas físicas e acrescenta seis destinos
+distantes: mirante da cachoeira, torre do norte, círculo de pedras, caverna
+leste, pradaria sul e ruínas antigas. A ponte continua em x=32/z=-32; com a
+malha 32×32 ela passa ao setor 16,15 sem mudar de lugar no mundo. A água não tem simulação hidráulica.
 As casas agora recebem um collider simples nas paredes e a ponte dois
 colliders laterais; árvores, pedras e plantas continuam sem corpos físicos
 para preservar o orçamento. Em modo offline o marcador de Nov percorre a rota demonstrativa. Em modo
@@ -31,6 +32,12 @@ setores fora do raio, usa modelos do catálogo local e iluminação sem sombras.
 território não possui nós ativos. O smoke headless ficou perto de 200 MB
 de RSS; uma execução X11 isolada via Xvfb/llvmpipe, já com feed live, mediu
 aproximadamente 440 MB de RSS e 28% de CPU no ponto amostrado.
+
+A expansão 16×16 → 32×32 quadruplica apenas o espaço lógico (256 → 1.024
+setores). O renderer continua materializando no máximo 3×3 setores, portanto
+o teto visual permanece 9 setores / 54 decorações. Os segmentos de trilha
+agora são descartados por bounding box antes da tesselação quando não cruzam
+o setor ativo.
 
 A dimensão do mundo não altera os tetos existentes do Spatial Resolver.
 O overlay replica explicitamente os limites HOT 96 / WARM 192 e usa
@@ -78,9 +85,11 @@ O rollout Web usa `/godot/world-map-preview/` e troca atômica independente.
    primeira camada bounded de colisão em ponte/casas.
 4. Concluído neste corte: locomoção física local, contrato de
    travessabilidade e controles touch separados da autoridade do NOV.
-5. Próximo: ampliar o cenário com novos pontos de interesse/regiões visuais
-   mantendo streaming 3×3 e o mesmo contrato bounded.
-6. Depois: promover o mapa para a captura nativa por rollout independente.
+5. Concluído: expansão para 2.048 × 2.048 m / 1.024 setores e seis novos
+   destinos, mantendo streaming 3×3 e coordenadas centrais compatíveis.
+6. Próximo: enriquecer os novos destinos com eventos/ações locais sem criar
+   autoridade paralela ao World State.
+7. Depois: promover o mapa para a captura nativa por rollout independente.
 
 Referências de assets: Quaternius Stylized Nature MegaKit (CC0) e
 Medieval Village MegaKit (CC0). Terrain3D (MIT) fica como opção

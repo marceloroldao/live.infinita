@@ -1,6 +1,5 @@
 extends RefCounted
 
-const HALF := 512.0
 const MAP_MARGIN := 1.0
 const RIVER_X := 32.0
 const RIVER_HALF_WIDTH := 10.0
@@ -14,12 +13,14 @@ const CAPSULE_HEIGHT := 1.8
 const MAX_COLLISION_HITS := 8
 
 var _walk_height: Callable
+var _half_m := 512.0
 
-func _init(walk_height: Callable) -> void:
+func _init(walk_height: Callable, half_m: float = 512.0) -> void:
     _walk_height = walk_height
+    _half_m = half_m
 
 func surface(position: Vector3) -> Dictionary:
-    if absf(position.x) > HALF - MAP_MARGIN or absf(position.z) > HALF - MAP_MARGIN:
+    if absf(position.x) > _half_m - MAP_MARGIN or absf(position.z) > _half_m - MAP_MARGIN:
         return {"walkable": false, "surface": "boundary", "reason": "map_boundary"}
     var on_bridge := (
         position.x >= BRIDGE_MIN_X and position.x <= BRIDGE_MAX_X

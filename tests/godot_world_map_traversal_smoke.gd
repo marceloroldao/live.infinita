@@ -32,6 +32,14 @@ func run() -> void:
         quit(1)
         return
     var walk := Callable(stage._features, "walk_height")
+    check(stage._layout.world_size_m() == 2048, "Expanded world must be 2048m")
+    check(stage._layout.grid_size == 32, "Expanded world must use 32x32 sectors")
+    check(stage._layout.cell(0.0) == 16, "World origin must map to center sector")
+    var expanded_surface: Dictionary = stage._local_motion._traversability.surface(Vector3(700.0, 0.0, 0.0))
+    check(bool(expanded_surface.get("walkable", false)), "Old 512m boundary must no longer block")
+    var new_boundary: Dictionary = stage._local_motion._traversability.surface(Vector3(1023.5, 0.0, 0.0))
+    check(not bool(new_boundary.get("walkable", true)), "New 2048m boundary must block")
+
     var water := Vector3(21.0, float(walk.call(21.0, 0.0)), 0.0)
     set_feet(stage, water)
     await physics_frame
@@ -66,6 +74,22 @@ func run() -> void:
     )
     check(not bool(result.get("allowed", true)), "House collider must block candidate")
     check(str(result.get("reason", "")) == "static_obstacle", "House block reason")
+
+    var distant_pois := [
+        {"cell":[17,6], "node":"WaterfallSheet", "label":"waterfall"},
+        {"cell":[20,5], "node":"WatchtowerBase", "label":"watchtower"},
+        {"cell":[25,12], "node":"StandingStone_0", "label":"stone circle"},
+        {"cell":[27,20], "node":"CaveSideA", "label":"cave"},
+        {"cell":[22,24], "node":"MeadowMast", "label":"meadow"},
+        {"cell":[5,10], "node":"RuinsWallA", "label":"ruins"},
+    ]
+    for poi in distant_pois:
+        var poi_position: Vector3 = stage._waypoint(poi["cell"])
+        set_feet(stage, poi_position)
+        await process_frame
+        await physics_frame
+        check(stage._tiles.size() <= 9, "Distant POI must preserve 3x3 streaming cap: " + poi["label"])
+        check(stage.find_child(poi["node"], true, false) != null, "Distant POI must materialize: " + poi["label"])
 
     stage._on_world_slice(
         {"x": 640.0, "y": 360.0}, "clearing", [], [],
