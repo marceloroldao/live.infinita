@@ -9,7 +9,7 @@
   "scale_m_per_world_unit": 0.35,
   "anchors": {
     "shelter": {"world_center": [930.0, 390.0], "map_cell": [2, 7]},
-    "clearing": {"world_center": [640.0, 360.0], "map_cell": [7, 7]},
-    "deep_forest": {"world_center": [350.0, 340.0], "map_cell": [5, 7]}
+    "clearing": {"world_center": [640.0, 360.0], "map_cell": [5, 7]},
+    "deep_forest": {"world_center": [350.0, 340.0], "map_cell": [5, 4]}
   }
 }

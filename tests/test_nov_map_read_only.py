@@ -51,6 +51,33 @@ class NovMapReadOnlyTests(unittest.TestCase):
             self.assertNotIn(forbidden, client)
         self.assertNotIn("nov_map_follow", (SCENE / "main.tscn").read_text())
 
+    def test_server_low_spec_profile_uses_bounded_multimesh_proxies(self):
+        preview = (SCENE / "world_map_preview.gd").read_text()
+        proxy = (SCENE / "world_map_proxy_foliage.gd").read_text()
+        self.assertIn('if str(argument) == "--server-low-spec":', preview)
+        self.assertIn("LOW_SPEC_DECOR_PER_TILE := 1", preview)
+        self.assertIn("MAX_LOW_SPEC_PROXIES := 45", preview)
+        self.assertIn('DETAIL_LAYER_NAME := "DetailedDecor"', preview)
+        self.assertIn("return LOW_SPEC_DECOR_PER_TILE if cell == _focus_cell else 0", preview)
+        self.assertIn("func _refresh_focus_detail(", preview)
+        self.assertIn("_proxy_foliage.add_to_tile(", preview)
+        self.assertIn("MultiMesh.new()", proxy)
+        self.assertIn("MultiMeshInstance3D.new()", proxy)
+        self.assertIn("MAX_PROXIES_PER_TILE := 5", proxy)
+        self.assertIn("SHADING_MODE_UNSHADED", proxy)
+        for forbidden in ("WebSocket", "HTTPClient", "FileAccess", "DirAccess",
+                          "submit_intent", "post_world", "set_world"):
+            self.assertNotIn(forbidden, proxy)
+
+    def test_benchmark_is_explicit_and_bounded(self):
+        preview = (SCENE / "world_map_preview.gd").read_text()
+        self.assertIn('--benchmark-seconds=', preview)
+        self.assertIn('--benchmark-fps=', preview)
+        self.assertIn('clampf(raw_seconds.to_float(), 0.0, 60.0)', preview)
+        self.assertIn('clampi(raw_fps.to_int(), 1, 60)', preview)
+        self.assertIn('WORLD_MAP_BENCHMARK_RESULT', preview)
+        self.assertIn('Engine.max_fps = _benchmark_target_fps', preview)
+
     def test_real_smoke_cases_present(self):
         projection = (ROOT / "tests/godot_nov_map_projection_smoke.gd").read_text()
         follower = (ROOT / "tests/godot_nov_map_follow_smoke.gd").read_text()

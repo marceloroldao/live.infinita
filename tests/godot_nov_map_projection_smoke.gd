@@ -57,12 +57,12 @@ func run() -> void:
     altered["world"]["sequence"] = 16
     altered["world"]["interest"]["current_region_id"] = "deep_forest"
     altered["delivery"]["observer"] = {"x": 350.0, "y": 340.0}
-    check(projection.project(altered).get("position") == Vector2(-160.0, -32.0), "deep_forest_anchor")
+    check(projection.project(altered).get("position") == Vector2(-160.0, -224.0), "deep_forest_anchor")
     altered = packet.duplicate(true)
     altered["world"]["sequence"] = 17
     altered["world"]["interest"]["current_region_id"] = "clearing"
     altered["delivery"]["observer"] = {"x": 640.0, "y": 360.0}
-    check(projection.project(altered).get("position") == Vector2(-32.0, -32.0), "clearing_anchor")
+    check(projection.project(altered).get("position") == Vector2(-160.0, -32.0), "clearing_anchor")
     altered = packet.duplicate(true)
     altered["world"]["sequence"] = 18
     var through_json: Dictionary = JSON.parse_string(JSON.stringify(altered))
