@@ -34,7 +34,7 @@ publicar. Grava `build.json` com SHA completo e
 privado irmão de `/var/www/live-infinita-godot`, sem editar
 o site público aos poucos.
 
-A troca salva a versão anterior sob
+A troca usa duas renomeações no mesmo filesystem; pode haver um breve intervalo de 404 entre elas, mas nenhuma atualização parcial do pacote. Salva a versão anterior sob
 `/var/www/.live-infinita-godot.backup.*/site` (backup root-only,
 **não servido pelo nginx**) e move a nova árvore para o caminho
 público no mesmo filesystem. O script verifica, pela rota nginx
@@ -49,7 +49,7 @@ rota pública por `mv` e restaura a anterior. Em rollback bloqueado,
 guarda ambas no diretório privado para investigação, sem apagá-las.
 
 Marcadores finais esperados: `FOREST001_WEB_IMPORT_OK`,
-`FOREST001_WEB_EXPORT_OK`, `FOREST001_WEB_ATOMIC_SWAP_OK`,
+`FOREST001_WEB_EXPORT_OK`, `FOREST001_WEB_RENAME_SWAP_OK`,
 `FOREST001_WEB_PUBLISHED`, `FOREST001_NOV_PREVIEW_PRESERVED`,
 `FOREST001_NO_SERVICE_RESTART` e `FOREST001_WEB_BACKUP_PATH`.
 Falhas retornam status não zero e nunca são tratadas como sucesso.
