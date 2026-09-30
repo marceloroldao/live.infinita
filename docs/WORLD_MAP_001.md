@@ -9,17 +9,20 @@ interesse; a cena `world_map_preview.tscn` gera relevos e decorações
 determinísticas com o catálogo Quaternius CC0 já incluído no projeto.
 
 O roteiro visual passa por abrigo, bosque antigo, travessia do rio,
-aldeia e mirante. A aldeia e o rio são inicialmente zonas coloridas,
-não construções ou simulação hidráulica. O marcador do Nov é apenas
-um guia da câmera; não é a entidade autoritativa.
+aldeia e mirante. O corte cênico adiciona leito rebaixado com água,
+ponte de madeira, trilhas conectando o percurso, cabanas modulares
+na aldeia e marcos nos pontos de interesse. A água não é uma simulação
+hidráulica e os objetos ainda não têm colisão ou ações. O marcador
+do Nov é apenas um guia da câmera; não é a entidade autoritativa.
+As regiões são uma proposta visual, não regiões persistidas no runtime.
 
 ## Custos e limites
 
-A prévia materializa até 3×3 setores, 9 malhas simples e no máximo
-54 instâncias decorativas. Descarta setores fora do raio, usa apenas
-modelos do catálogo local e iluminação sem sombras. O resto do
-território não possui nós ativos. CPU/FPS precisam ser medidos
-antes da ligação à captura nativa.
+A prévia materializa até 3×3 setores, 9 malhas de relevo e até
+54 instâncias decorativas do catálogo. Trilha, água, ponte, cabanas
+e marcos são geometria adicional somente nos setores ativos. O restante
+não possui nós ativos. A renderização não usa sombras. CPU/FPS precisam
+ser medidos antes da ligação à captura nativa.
 
 A dimensão do mundo não altera os tetos existentes do Spatial
 Resolver (HOT 96 / WARM 192 entidades), mas estes são limites de
@@ -41,9 +44,11 @@ godot --headless --editor --quit --path /tmp/COPIA_ISOLADA
 godot --headless --path /tmp/COPIA_ISOLADA res://world_map_preview.tscn --quit-after 3
 ```
 
-O marcador esperado é `WORLD_MAP_PREVIEW_READY`, com 9 setores e
-limite de 54 decorações. O import no checkout usado pelo renderer nativo
-não é permitido. Nenhum deploy está incluído neste corte.
+O marcador esperado é `WORLD_MAP_PREVIEW_READY`, com até 9 setores e
+limite de 54 decorações do catálogo. Os casos `--preview-cell=8,7` e
+`--preview-cell=11,9` verificam rio/ponte e aldeia sem mover a live.
+O import no checkout usado pelo renderer nativo não é permitido.
+Nenhum deploy está incluído neste corte.
 
 ## Evolução
 

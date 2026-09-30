@@ -49,6 +49,22 @@ class WorldMapTests(unittest.TestCase):
             self.assertNotIn(forbidden, script)
         self.assertLess(len(script), 12500)
 
+    def test_visual_water_bridge_houses_and_route_are_bounded(self):
+        features = (SCENE / "world_map_features.gd").read_text(encoding="utf-8")
+        preview = SCRIPT.read_text(encoding="utf-8")
+        manifest = json.loads(MAP.read_text(encoding="utf-8"))
+        for token in ("func _water(", "func _bridge(", "func _house(",
+                      "func _path(", "func _landmark(", "MAX_HOUSES_PER_TILE := 1"):
+            self.assertIn(token, features)
+        self.assertIn("Features.new()", preview)
+        self.assertEqual(preview.count("_features.add_to_tile("), 1)
+        self.assertIn("func _walk_height(", preview)
+        self.assertIn('WORLD_MAP_TILE_READY', preview)
+        self.assertEqual(manifest["route"][3:5], [[8, 7], [9, 7]])
+        for forbidden in ("WebSocket", "HTTPClient", "FileAccess", "DirAccess",
+                          "submit_intent", "post_world", "set_world"):
+            self.assertNotIn(forbidden, features)
+
     def test_preserves_cold_world_contract(self):
         text = (ROOT / "docs/PERSISTENT_REGIONS_LONG_TRAVEL_001.md").read_text()
         self.assertIn("HOT <= 96", text)
