@@ -35,7 +35,8 @@ class _FakeRegions:
     def __init__(self) -> None:
         self.rows = {
             "clearing": SimpleNamespace(id="clearing", center=(640.0, 360.0), radius=150.0, neighbors=("shelter",)),
-            "shelter": SimpleNamespace(id="shelter", center=(930.0, 390.0), radius=120.0, neighbors=("clearing",)),
+            "shelter": SimpleNamespace(id="shelter", center=(930.0, 390.0), radius=120.0, neighbors=("clearing", "ruins")),
+            "ruins": SimpleNamespace(id="ruins", center=(1813.0, 1440.0), radius=180.0, neighbors=("shelter",)),
         }
 
     def get(self, region_id: str):
@@ -98,6 +99,29 @@ class LiveAutonomyAudienceAITests(unittest.TestCase):
             result = wander.evaluate_tick(16)
             self.assertEqual(result[0]["status"], "scheduled")
             self.assertEqual(scheduler.scheduled[0]["priority"], 25)
+
+    def test_idle_wander_avoids_immediate_topology_backtrack(self) -> None:
+        scheduler = _FakeScheduler()
+        scheduler.planner.store.entities["nov"] = {
+            "id": "nov",
+            "region_id": "shelter",
+            "position": {"x": 930, "y": 390},
+            "properties": {
+                "navigation": {
+                    "previous_region_id": "clearing",
+                    "arrived_region_id": "shelter",
+                }
+            },
+        }
+        wander = NpcIdleWander(scheduler, npc_ids=["nov"], interval_ticks=8, priority=25)
+        rows = wander.evaluate_tick(24)
+        self.assertEqual(rows[0]["region_id"], "ruins")
+        intent = scheduler.scheduled[0]["intent"]
+        self.assertEqual(intent["region_id"], "ruins")
+        self.assertEqual(intent["navigation_context"], {
+            "previous_region_id": "shelter",
+            "arrived_region_id": "ruins",
+        })
 
     def test_ai_router_maps_natural_walk_request_to_closed_action(self) -> None:
         router = AIRouter(

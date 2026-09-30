@@ -37,6 +37,40 @@ class AgentIntentProtocolTest(unittest.TestCase):
             "region_id": "r1",
         })
 
+    def test_move_to_position_can_atomically_persist_navigation_context(self) -> None:
+        resolved = self.resolver.resolve({
+            "intent": "move_to_position",
+            "actor_entity_id": "nov",
+            "position": {"x": 100, "y": 50},
+            "region_id": "r1",
+            "navigation_context": {
+                "previous_region_id": "r0",
+                "arrived_region_id": "r1",
+            },
+        })
+        self.assertEqual([op["op"] for op in resolved.operations], ["move", "set", "set"])
+        self.assertEqual(resolved.operations[1]["path"], ["properties", "navigation", "previous_region_id"])
+        self.assertEqual(resolved.operations[2]["path"], ["properties", "navigation", "arrived_region_id"])
+        decision = self.gate.decide(resolved.operations, MutationPrincipal(
+            source="npc_idle",
+            actor_id="nov",
+            authority="entity_agent",
+            subject_entity_id="nov",
+        ))
+        self.assertTrue(decision.accepted)
+
+        with self.assertRaises(AgentIntentError):
+            self.resolver.resolve({
+                "intent": "move_to_position",
+                "actor_entity_id": "nov",
+                "position": {"x": 100, "y": 50},
+                "region_id": "r1",
+                "navigation_context": {
+                    "previous_region_id": "r0",
+                    "arrived_region_id": "r2",
+                },
+            })
+
     def test_entity_agent_can_move_only_itself(self) -> None:
         resolved = self.resolver.resolve({
             "intent": "move_to_entity",

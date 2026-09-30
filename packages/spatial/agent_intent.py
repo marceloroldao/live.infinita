@@ -104,10 +104,27 @@ class AgentIntentResolver:
             region_id = str(intent.get("region_id") or actor.get("region_id") or "").strip()
             if not region_id:
                 raise AgentIntentError("region_id is required")
+            operations: list[dict[str, Any]] = [
+                {"op": "move", "entity_id": actor_id, "position": position, "region_id": region_id}
+            ]
+            navigation = intent.get("navigation_context")
+            if navigation is not None:
+                if not isinstance(navigation, dict):
+                    raise AgentIntentError("navigation_context must be an object")
+                previous = self._required(navigation.get("previous_region_id"), "navigation_context.previous_region_id")
+                arrived = self._required(navigation.get("arrived_region_id"), "navigation_context.arrived_region_id")
+                if arrived != region_id:
+                    raise AgentIntentError("navigation_context.arrived_region_id must match region_id")
+                if previous == arrived:
+                    raise AgentIntentError("navigation_context regions must differ")
+                operations.extend((
+                    {"op": "set", "entity_id": actor_id, "path": ["properties", "navigation", "previous_region_id"], "value": previous},
+                    {"op": "set", "entity_id": actor_id, "path": ["properties", "navigation", "arrived_region_id"], "value": arrived},
+                ))
             return ResolvedIntent(
                 intent_type,
                 actor_id,
-                ({"op": "move", "entity_id": actor_id, "position": position, "region_id": region_id},),
+                tuple(operations),
                 f"move {actor_id} to explicit position",
             )
 

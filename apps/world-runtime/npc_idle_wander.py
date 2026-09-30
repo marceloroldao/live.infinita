@@ -44,6 +44,14 @@ class NpcIdleWander:
                 return True
         return False
 
+    @staticmethod
+    def _previous_region(entity: dict[str, Any], current_id: str) -> str:
+        properties = entity.get("properties") if isinstance(entity.get("properties"), dict) else {}
+        navigation = properties.get("navigation") if isinstance(properties.get("navigation"), dict) else {}
+        arrived = str(navigation.get("arrived_region_id") or "").strip()
+        previous = str(navigation.get("previous_region_id") or "").strip()
+        return previous if arrived == current_id else ""
+
     def _select_region(self, entity: dict[str, Any], bucket: int):
         regions = self.plans.planner.regions
         current_id = str(entity.get("region_id") or "").strip()
@@ -52,11 +60,16 @@ class NpcIdleWander:
             return None
 
         # Mostly roam inside the current region. Every fourth idle decision may
-        # cross one topology edge, which keeps Nov exploring without allowing
-        # idle motion to outrank a real need or explicit audience request.
+        # cross one topology edge. When the last idle arrival is still relevant,
+        # avoid immediately returning through the same edge so deterministic
+        # exploration cannot collapse into a two-region ping-pong.
         neighbors = [region_id for region_id in sorted(current.neighbors) if regions.get(region_id) is not None]
         if neighbors and bucket % 4 == 3:
-            return regions.get(neighbors[(bucket // 4) % len(neighbors)])
+            previous = self._previous_region(entity, current_id)
+            choices = [region_id for region_id in neighbors if region_id != previous]
+            if not choices:
+                choices = neighbors
+            return regions.get(choices[(bucket // 4) % len(choices)])
         return current
 
     @staticmethod
@@ -104,6 +117,12 @@ class NpcIdleWander:
                 "region_id": region.id,
                 "idle_wander": True,
             }
+            current_id = str(entity.get("region_id") or "").strip()
+            if region.id != current_id:
+                intent["navigation_context"] = {
+                    "previous_region_id": current_id,
+                    "arrived_region_id": region.id,
+                }
             principal = {
                 "source": "npc_idle",
                 "actor_id": npc_id,
