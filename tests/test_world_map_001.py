@@ -64,6 +64,19 @@ class WorldMapTests(unittest.TestCase):
         self.assertIn('for index in range(steps):', features)
         self.assertIn('var features: Array[String] = _features.decorate(', script)
 
+    def test_web_rollout_is_separate_and_atomic(self):
+        rollout = (ROOT / "deploy/export-world-map-preview-web.sh").read_text()
+        self.assertIn('PREVIEW_NAME="world-map-preview"', rollout)
+        self.assertIn('run/main_scene="res://world_map_preview.tscn"', rollout)
+        self.assertIn('TARGET="$WEB_ROOT/$PREVIEW_NAME"', rollout)
+        self.assertIn('.world-map-preview.stage.', rollout)
+        self.assertIn('/godot/world-map-preview/', rollout)
+        self.assertIn('/nov-preview/', rollout)
+        for forbidden in ("systemctl restart", "nginx -s", "main.tscn >", "World State"):
+            if forbidden == "World State":
+                continue
+            self.assertNotIn(forbidden, rollout)
+
     def test_preserves_cold_world_contract(self):
         text = (ROOT / "docs/PERSISTENT_REGIONS_LONG_TRAVEL_001.md").read_text()
         self.assertIn("HOT <= 96", text)
