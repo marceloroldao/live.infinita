@@ -23,6 +23,7 @@ class RendererConfigError(ValueError):
 class HeadlessRendererConfig:
     project_dir: str = "/opt/live.infinita/apps/renderer-godot"
     godot_bin: str = "/opt/live-infinita-godot/engine/Godot_v4.7.2-stable_linux.x86_64"
+    scene: str = ""
     display: str = ":99"
     width: int = 720
     height: int = 1280
@@ -39,6 +40,7 @@ class HeadlessRendererConfig:
         return cls(
             project_dir=os.getenv("LIVE_INFINITA_RENDER_PROJECT", "/opt/live.infinita/apps/renderer-godot").strip(),
             godot_bin=os.getenv("LIVE_INFINITA_GODOT_BIN", "/opt/live-infinita-godot/engine/Godot_v4.7.2-stable_linux.x86_64").strip(),
+            scene=os.getenv("LIVE_INFINITA_RENDER_SCENE", "").strip(),
             display=os.getenv("LIVE_INFINITA_RENDER_DISPLAY", ":99").strip(),
             width=int(os.getenv("LIVE_INFINITA_RENDER_WIDTH", "720")),
             height=int(os.getenv("LIVE_INFINITA_RENDER_HEIGHT", "1280")),
@@ -56,6 +58,13 @@ class HeadlessRendererConfig:
             raise RendererConfigError("diretório do projeto Godot ausente")
         if not self.godot_bin:
             raise RendererConfigError("binário Godot ausente")
+        if self.scene:
+            if (
+                not self.scene.startswith("res://")
+                or not self.scene.endswith(".tscn")
+                or ".." in self.scene
+            ):
+                raise RendererConfigError("cena Godot inválida")
         if not self.display.startswith(":"):
             raise RendererConfigError("display X11 inválido")
         if self.width < 320 or self.height < 240:
@@ -75,7 +84,18 @@ class HeadlessRendererConfig:
 
     def godot_command(self) -> list[str]:
         self.validate()
-        return [self.godot_bin, "--path", self.project_dir, "--display-driver", "x11", "--resolution", f"{self.width}x{self.height}"]
+        command = [
+            self.godot_bin,
+            "--path",
+            self.project_dir,
+            "--display-driver",
+            "x11",
+            "--resolution",
+            f"{self.width}x{self.height}",
+        ]
+        if self.scene:
+            command.append(self.scene)
+        return command
 
     def capture_command(self, ffmpeg_bin: str = "ffmpeg") -> list[str]:
         self.validate()
@@ -166,6 +186,7 @@ class HeadlessRenderer:
             "capture_fps": self.config.fps,
             "governor_enabled": True,
             "cpu_pressure_avg10_pct": pressure,
+            "scene": self.config.scene or "project-default",
         }
         try:
             self._status_file.parent.mkdir(parents=True, exist_ok=True)
@@ -260,6 +281,10 @@ def main(argv: list[str] | None = None) -> int:
     if ffmpeg_bin is None: missing.append("ffmpeg")
     if not Path(config.godot_bin).is_file(): missing.append("Godot")
     if not Path(config.project_dir, "project.godot").is_file(): missing.append("renderer project")
+    if config.scene:
+        scene_relative = config.scene.removeprefix("res://")
+        if not Path(config.project_dir, scene_relative).is_file():
+            missing.append("renderer scene")
     if missing:
         print(f"[renderer] dependências ausentes: {', '.join(missing)}", file=sys.stderr)
         return 2

@@ -11,6 +11,7 @@ const TILE_M := 64.0
 const MAX_ACTIVE_TILES := 9
 const MAX_ACTIVE_DECOR := 54
 const LIVE_STALE_MS := 10000
+const FPS_GOVERNOR_POLL_MS := 5000
 var _map: Dictionary = {}
 var _catalog: RefCounted
 var _layout: RefCounted
@@ -40,7 +41,10 @@ var _local_block_reason := ""
 var _local_explore_enabled := false
 var _last_live_position := Vector3.ZERO
 var _has_live_position := false
+var _render_control_path := ""
+var _render_control_next_poll_ms := 0
 func _ready() -> void:
+    _configure_native_fps_governor()
     var data = JSON.parse_string(FileAccess.get_file_as_string(MAP_PATH))
     if typeof(data) != TYPE_DICTIONARY or str(data.get("schema", "")) != "live-infinita-visual-world-map/v1":
         push_error("MAP_BAD_MANIFEST")
@@ -72,6 +76,31 @@ func _ready() -> void:
     _sync_tiles()
     _update_caption()
     print("WORLD_MAP_PREVIEW_READY grid=%dx%d m=%d tiles=%d decor=%d" % [_layout.grid_size, _layout.grid_size, _layout.world_size_m(), _tiles.size(), MAX_ACTIVE_DECOR])
+
+func _configure_native_fps_governor() -> void:
+    if OS.has_feature("web"):
+        return
+    _render_control_path = OS.get_environment("LIVE_INFINITA_RENDER_CONTROL_FILE")
+    if _render_control_path.is_empty():
+        return
+    _poll_native_fps_governor()
+
+func _poll_native_fps_governor() -> void:
+    if _render_control_path.is_empty():
+        return
+    var now_ms := Time.get_ticks_msec()
+    if now_ms < _render_control_next_poll_ms:
+        return
+    _render_control_next_poll_ms = now_ms + FPS_GOVERNOR_POLL_MS
+    if not FileAccess.file_exists(_render_control_path):
+        return
+    var text_value := FileAccess.get_file_as_string(_render_control_path).strip_edges()
+    if not text_value.is_valid_int():
+        return
+    var target_fps := clampi(text_value.to_int(), 8, 60)
+    if Engine.max_fps != target_fps:
+        Engine.max_fps = target_fps
+
 func _build_stage() -> void:
     var light := DirectionalLight3D.new()
     light.rotation_degrees = Vector3(-53, 27, 0)
@@ -286,6 +315,7 @@ func _update_caption() -> void:
     else:
         _hud.update_local(_tiles.size(), MAX_ACTIVE_DECOR, cx, cz, _biome(cx, cz), _local_surface, _local_block_reason, _local_explore_enabled)
 func _process(delta: float) -> void:
+    _poll_native_fps_governor()
     if _route.size() < 2:
         return
     if _live_authoritative and not _local_explore_enabled:

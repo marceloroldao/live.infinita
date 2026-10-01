@@ -32,6 +32,15 @@ class HeadlessRendererConfigTest(unittest.TestCase):
         self.assertEqual((cfg.width, cfg.height), (720, 1280))
         self.assertIn(cfg.project_dir, command)
 
+    def test_explicit_scene_is_appended_without_changing_default(self):
+        default = HeadlessRendererConfig().godot_command()
+        self.assertNotIn("res://world_map_preview.tscn", default)
+        cfg = HeadlessRendererConfig(scene="res://world_map_preview.tscn")
+        command = cfg.godot_command()
+        self.assertEqual(command[-1], "res://world_map_preview.tscn")
+        with self.assertRaises(RendererConfigError):
+            HeadlessRendererConfig(scene="../bad.tscn").validate()
+
     def test_capture_is_video_only_local_udp_mpegts(self):
         cfg = HeadlessRendererConfig()
         command = cfg.capture_command("ffmpeg")
@@ -108,18 +117,24 @@ class HeadlessRendererConfigTest(unittest.TestCase):
             self.assertEqual(status["capture_fps"], 15)
             self.assertEqual(status["cpu_pressure_avg10_pct"], 60.5)
             self.assertTrue(status["governor_enabled"])
+            self.assertEqual(status["scene"], "project-default")
             self.assertEqual(set(status), {
                 "updated_at_unix", "godot_fps", "capture_fps",
-                "governor_enabled", "cpu_pressure_avg10_pct"})
+                "governor_enabled", "cpu_pressure_avg10_pct", "scene"})
             renderer.stop()
 
     def test_native_godot_polls_control_but_browser_export_is_unchanged(self):
         scene = (ROOT / "apps" / "renderer-godot" / "main.gd").read_text(encoding="utf-8")
+        preview = (ROOT / "apps" / "renderer-godot" / "world_map_preview.gd").read_text(encoding="utf-8")
         unit = (ROOT / "deploy" / "live-infinita-renderer.service").read_text(encoding="utf-8")
         self.assertIn('if OS.has_feature("web"):', scene)
         self.assertIn('Engine.max_fps = target_fps', scene)
+        self.assertIn('if OS.has_feature("web"):', preview)
+        self.assertIn('OS.get_environment("LIVE_INFINITA_RENDER_CONTROL_FILE")', preview)
+        self.assertIn('Engine.max_fps = target_fps', preview)
         self.assertIn('Environment=LIVE_INFINITA_RENDER_CPU_GOVERNOR=1', unit)
         self.assertIn('Environment=LIVE_INFINITA_RENDER_FPS=15', unit)
+        self.assertIn('Environment=LIVE_INFINITA_RENDER_SCENE=res://world_map_preview.tscn', unit)
         self.assertIn('Nice=5', unit)
 
 
