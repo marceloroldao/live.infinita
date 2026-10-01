@@ -67,16 +67,19 @@ class SpatialMemorySync008STests(unittest.TestCase):
             delta_path=self.delta, world_path=self.world,
             checkpoint_path=self.checkpoint, send=send,
         )
-        self.assertEqual(result["emitted"], 2)
-        self.assertEqual(result["stored"], 2)
-        self.assertEqual(len(sent), 2)
+        self.assertEqual(result["emitted"], 1)
+        self.assertEqual(result["stored"], 1)
+        self.assertEqual(result["segments"], 2)
+        self.assertEqual(len(sent), 1)
         first = sent[0]
         self.assertEqual(first["event"]["trail"], [
             module._cell_id({"x": 100.0, "y": 200.0}),
             module._cell_id({"x": 108.0, "y": 204.0}),
+            module._cell_id({"x": 140.0, "y": 240.0}),
         ])
         self.assertEqual(first["provenance"]["from_position"], {"x": 100.0, "y": 200.0})
-        self.assertEqual(first["provenance"]["to_position"], {"x": 108.0, "y": 204.0})
+        self.assertEqual(first["provenance"]["to_position"], {"x": 140.0, "y": 240.0})
+        self.assertEqual(first["provenance"]["segment_count"], 2)
         self.assertEqual(first["provenance"]["authority"], "observed-world-delta")
         self.assertFalse(first["provenance"]["world_write_authority"])
 
@@ -89,7 +92,7 @@ class SpatialMemorySync008STests(unittest.TestCase):
             checkpoint_path=self.checkpoint, send=send,
         )
         self.assertEqual(again["emitted"], 0)
-        self.assertEqual(len(sent), 2)
+        self.assertEqual(len(sent), 1)
 
     def test_checkpoint_detects_rewritten_source_tail(self) -> None:
         self._write_rows([

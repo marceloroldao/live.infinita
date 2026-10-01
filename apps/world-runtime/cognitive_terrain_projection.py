@@ -275,31 +275,74 @@ def _validated_spatial_rows(index_path: Path, db_path: Path, world_id: str) -> l
             event = envelope.get("event")
             if not isinstance(provenance, dict) or not isinstance(event, dict):
                 raise CognitiveTerrainError("spatial_payload_invalid")
-            if provenance.get("hierarchy_id") != f"live:spatial:{world_id}:nov":
+            hierarchy_id = str(provenance.get("hierarchy_id") or "")
+            legacy_hierarchy = f"live:spatial:{world_id}:nov"
+            trajectory_hierarchy = f"live:spatial:{world_id}:nov:trajectory-v2"
+            if hierarchy_id not in {legacy_hierarchy, trajectory_hierarchy}:
                 continue
+            source_kind = str(provenance.get("source_kind") or "")
+            source_id = str(event.get("source_id") or "")
+            trail = event.get("trail")
             if (
                 provenance.get("world_id") != world_id
                 or provenance.get("entity_id") != "nov"
-                or provenance.get("source_kind") != "confirmed_world_delta_move"
+                or source_kind not in {"confirmed_world_delta_move", "confirmed_world_delta_trajectory"}
                 or provenance.get("authority") != "observed-world-delta"
                 or provenance.get("world_write_authority") is not False
-                or event.get("source_id") != f"live.infinita:{world_id}:nov:movement"
                 or type(event.get("sequence")) is not int
                 or event.get("sequence") != provenance.get("world_sequence")
-                or not isinstance(event.get("trail"), list)
-                or len(event["trail"]) != 2
+                or not isinstance(trail, list)
+                or len(trail) < 2
             ):
                 raise CognitiveTerrainError("spatial_provenance_mismatch")
-            rows.append({
-                "sequence": int(event["sequence"]),
-                "trail": (int(event["trail"][0]), int(event["trail"][1])),
-                "from_position": _position_pair(provenance.get("from_position"), "spatial_from"),
-                "to_position": _position_pair(provenance.get("to_position"), "spatial_to"),
-                "from_region_id": str(provenance.get("from_region_id") or "") or None,
-                "to_region_id": str(provenance.get("to_region_id") or "") or None,
-            })
+
+            if source_kind == "confirmed_world_delta_move":
+                if hierarchy_id != legacy_hierarchy or source_id != f"live.infinita:{world_id}:nov:movement" or len(trail) != 2:
+                    raise CognitiveTerrainError("spatial_provenance_mismatch")
+                rows.append({
+                    "sequence": int(event["sequence"]),
+                    "trail": (int(trail[0]), int(trail[1])),
+                    "from_position": _position_pair(provenance.get("from_position"), "spatial_from"),
+                    "to_position": _position_pair(provenance.get("to_position"), "spatial_to"),
+                    "from_region_id": str(provenance.get("from_region_id") or "") or None,
+                    "to_region_id": str(provenance.get("to_region_id") or "") or None,
+                    "trajectory_v2": False,
+                })
+                continue
+
+            if hierarchy_id != trajectory_hierarchy or source_id != f"live.infinita:{world_id}:nov:trajectory-v2":
+                raise CognitiveTerrainError("spatial_provenance_mismatch")
+            positions = provenance.get("path_positions")
+            regions = provenance.get("path_region_ids")
+            sequences = provenance.get("path_sequences")
+            if (
+                not isinstance(positions, list)
+                or not isinstance(regions, list)
+                or not isinstance(sequences, list)
+                or len(positions) != len(trail)
+                or len(regions) != len(trail)
+                or len(sequences) != len(trail)
+                or len(trail) < 2
+            ):
+                raise CognitiveTerrainError("spatial_trajectory_shape")
+            clean_positions = [_position_pair(value, "spatial_path") for value in positions]
+            for index in range(len(trail) - 1):
+                sequence = int(sequences[index + 1])
+                if sequence < 0:
+                    raise CognitiveTerrainError("spatial_trajectory_sequence")
+                rows.append({
+                    "sequence": sequence,
+                    "trail": (int(trail[index]), int(trail[index + 1])),
+                    "from_position": clean_positions[index],
+                    "to_position": clean_positions[index + 1],
+                    "from_region_id": str(regions[index] or "") or None,
+                    "to_region_id": str(regions[index + 1] or "") or None,
+                    "trajectory_v2": True,
+                })
     finally:
         db.close()
+    if any(bool(row.get("trajectory_v2")) for row in rows):
+        rows = [row for row in rows if bool(row.get("trajectory_v2"))]
     rows.sort(key=lambda row: row["sequence"])
     return rows
 

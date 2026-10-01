@@ -31,7 +31,8 @@ HIERARCHY_PREFIX = "live:spatial:"
 RESOLUTION_M = 4.0
 MAX_LINE_BYTES = 262_144
 MAX_WINDOW_BYTES = 512 * 1024
-MAX_EVENTS_PER_RUN = 64
+MAX_EVENTS_PER_RUN = 2
+MOVES_PER_EVENT = 12
 HEX64 = re.compile(r"^[0-9a-f]{64}$")
 
 
@@ -114,6 +115,12 @@ def _read_checkpoint(path: Path) -> dict[str, Any] | None:
     pos = raw.get("last_position")
     if pos is not None:
         _position(pos)
+    event_id = raw.get("last_event_id")
+    if event_id is not None and (not isinstance(event_id, str) or not event_id):
+        raise SpatialMemorySyncError("checkpoint_event_id")
+    result_hash = raw.get("last_result_hash")
+    if result_hash is not None and (not isinstance(result_hash, str) or not HEX64.fullmatch(result_hash)):
+        raise SpatialMemorySyncError("checkpoint_result_hash")
     return raw
 def _write_checkpoint(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
@@ -237,6 +244,90 @@ def _structural_request(
     }
 
 
+def _trajectory_request(
+    *, world_id: str, previous: dict[str, Any], moves: list[dict[str, Any]],
+) -> dict[str, Any]:
+    if not moves:
+        raise SpatialMemorySyncError("trajectory_empty")
+    points = [previous] + moves
+    positions = [_position(item["position"]) for item in points]
+    regions = [str(item.get("region_id") or "").strip() or None for item in points]
+    sequences = [int(item.get("sequence") or 0) for item in points]
+    first = moves[0]
+    last = moves[-1]
+    byte_offset = int(first["_row_offset"])
+    byte_end = int(last["_row_end"])
+    if byte_end <= byte_offset:
+        raise SpatialMemorySyncError("trajectory_source_span")
+    trail = [_cell_id(position) for position in positions]
+    relations = [
+        _relation_id(regions[index], regions[index + 1])
+        for index in range(len(regions) - 1)
+    ]
+    signature_basis = {
+        "world_id": world_id,
+        "sequences": sequences,
+        "event_ids": [str(item.get("event_id") or "") for item in points],
+        "result_hashes": [str(item.get("result_hash") or "") for item in points],
+        "positions": positions,
+        "regions": regions,
+    }
+    event = {
+        "version": 1,
+        "source_id": f"live.infinita:{world_id}:nov:trajectory-v2",
+        "sequence": int(last["sequence"]),
+        "byte_offset": byte_offset,
+        "byte_length": byte_end - byte_offset,
+        "trail": trail,
+        "relation_ids": relations,
+        "signature": blake2b(_canonical(signature_basis), digest_size=8).hexdigest(),
+        "resolution": int(RESOLUTION_M),
+    }
+    return {
+        "event": event,
+        "provenance": {
+            "hierarchy_id": HIERARCHY_PREFIX + world_id + ":nov:trajectory-v2",
+            "source_kind": "confirmed_world_delta_trajectory",
+            "source_ledger": "deltas.jsonl",
+            "world_id": world_id,
+            "entity_id": "nov",
+            "authority": "observed-world-delta",
+            "world_write_authority": False,
+            "world_sequence_start": int(moves[0]["sequence"]),
+            "world_sequence": int(last["sequence"]),
+            "world_event_id": str(last["event_id"]),
+            "result_hash": str(last["result_hash"]),
+            "spatial_resolution_m": RESOLUTION_M,
+            "path_positions": positions,
+            "path_region_ids": regions,
+            "path_sequences": sequences,
+            "segment_count": len(moves),
+            "from_position": positions[0],
+            "to_position": positions[-1],
+            "from_region_id": regions[0],
+            "to_region_id": regions[-1],
+        },
+    }
+
+
+def _checkpoint_payload(
+    *, world_id: str, delta_path: Path, cursor: int, previous: dict[str, Any] | None,
+) -> dict[str, Any]:
+    return {
+        "schema": CHECKPOINT_SCHEMA,
+        "world_id": world_id,
+        "ledger_identity": _ledger_identity(delta_path),
+        "cursor": cursor,
+        "last_line_sha256": _line_digest_at_cursor(delta_path, cursor),
+        "last_sequence": None if previous is None else previous.get("sequence"),
+        "last_position": None if previous is None else previous.get("position"),
+        "last_region_id": None if previous is None else previous.get("region_id"),
+        "last_event_id": None if previous is None else previous.get("event_id"),
+        "last_result_hash": None if previous is None else previous.get("result_hash"),
+        "updated_at_unix": time.time(),
+    }
+
+
 def _post_local(payload: dict[str, Any]) -> dict[str, Any]:
     api_key = os.environ.get("MEMORIA_API_KEY", "")
     if len(api_key) < 32:
@@ -319,8 +410,10 @@ def sync_once(
     checkpoint_path: Path = CHECKPOINT_PATH,
     send: Callable[[dict[str, Any]], dict[str, Any]] = _post_local,
     max_events: int = MAX_EVENTS_PER_RUN,
+    moves_per_event: int = MOVES_PER_EVENT,
 ) -> dict[str, Any]:
     max_events = max(1, min(int(max_events), MAX_EVENTS_PER_RUN))
+    moves_per_event = max(1, min(int(moves_per_event), MOVES_PER_EVENT))
     world_id = _world_id(world_path)
     checkpoint = _read_checkpoint(checkpoint_path)
     _verify_checkpoint(checkpoint, delta_path, world_id)
@@ -332,16 +425,43 @@ def sync_once(
             "position": _position(checkpoint["last_position"]),
             "region_id": checkpoint.get("last_region_id"),
             "sequence": checkpoint.get("last_sequence"),
+            "event_id": checkpoint.get("last_event_id") or "checkpoint",
+            "result_hash": checkpoint.get("last_result_hash") or ("0" * 64),
         }
 
-    emitted = stored = duplicates = 0
-    candidate_cursor = cursor
+    emitted = stored = duplicates = segments = 0
+    safe_cursor = cursor
+    batch: list[dict[str, Any]] = []
+
+    def flush_batch() -> None:
+        nonlocal previous, emitted, stored, duplicates, segments, safe_cursor, batch
+        if previous is None or not batch:
+            return
+        payload = _trajectory_request(world_id=world_id, previous=previous, moves=batch)
+        response = send(payload)
+        _validate_ack(response, payload)
+        emitted += 1
+        stored += int(response["stored"])
+        duplicates += int(response["duplicate"])
+        segments += len(batch)
+        previous = batch[-1]
+        safe_cursor = int(previous["_row_end"])
+        _write_checkpoint(
+            checkpoint_path,
+            _checkpoint_payload(
+                world_id=world_id, delta_path=delta_path,
+                cursor=safe_cursor, previous=previous,
+            ),
+        )
+        batch = []
+
     with delta_path.open("rb") as fh:
         info = os.fstat(fh.fileno())
         if cursor > info.st_size:
             raise SpatialMemorySyncError("delta_ledger_truncated")
         fh.seek(cursor)
         data = fh.read(min(MAX_WINDOW_BYTES, info.st_size - cursor))
+
     consumed = 0
     for raw_line in data.splitlines(keepends=True):
         if not raw_line.endswith(b"\n"):
@@ -350,6 +470,7 @@ def sync_once(
             raise SpatialMemorySyncError("delta_line_exceeds_limit")
         row_offset = cursor + consumed
         consumed += len(raw_line)
+        row_end = cursor + consumed
         try:
             row = json.loads(raw_line)
         except (ValueError, UnicodeError) as exc:
@@ -357,54 +478,47 @@ def sync_once(
         if not isinstance(row, dict):
             raise SpatialMemorySyncError("delta_record_invalid")
         move = _move_from_delta(row)
-        candidate_cursor = cursor + consumed
         if move is None:
             continue
+        move["_row_offset"] = row_offset
+        move["_row_end"] = row_end
 
-        if previous is not None and move["sequence"] <= int(previous.get("sequence") or -1):
+        compare = batch[-1] if batch else previous
+        if compare is not None and move["sequence"] <= int(compare.get("sequence") or -1):
             raise SpatialMemorySyncError("delta_sequence_not_monotonic")
-        if previous is not None:
-            payload = _structural_request(
-                world_id=world_id,
-                sequence=move["sequence"],
-                byte_offset=row_offset,
-                byte_length=len(raw_line),
-                event_id=move["event_id"],
-                result_hash=move["result_hash"],
-                previous=previous,
-                current=move,
-            )
-            response = send(payload)
-            _validate_ack(response, payload)
-            emitted += 1
-            stored += int(response["stored"])
-            duplicates += int(response["duplicate"])
-        previous = move
-        if emitted >= max_events:
-            break
+        if previous is None:
+            previous = move
+            safe_cursor = row_end
+            continue
 
-    if candidate_cursor != cursor or checkpoint is None:
-        payload = {
-            "schema": CHECKPOINT_SCHEMA,
-            "world_id": world_id,
-            "ledger_identity": _ledger_identity(delta_path),
-            "cursor": candidate_cursor,
-            "last_line_sha256": _line_digest_at_cursor(delta_path, candidate_cursor),
-            "last_sequence": None if previous is None else previous.get("sequence"),
-            "last_position": None if previous is None else previous.get("position"),
-            "last_region_id": None if previous is None else previous.get("region_id"),
-            "updated_at_unix": time.time(),
-        }
-        _write_checkpoint(checkpoint_path, payload)
+        batch.append(move)
+        if len(batch) >= moves_per_event:
+            flush_batch()
+            if emitted >= max_events:
+                break
+
+    if batch and emitted < max_events:
+        flush_batch()
+
+    if emitted == 0 and previous is not None and safe_cursor != cursor:
+        _write_checkpoint(
+            checkpoint_path,
+            _checkpoint_payload(
+                world_id=world_id, delta_path=delta_path,
+                cursor=safe_cursor, previous=previous,
+            ),
+        )
 
     return {
         "status": "ok",
-        "mode": "memoria-structural-spatial",
+        "mode": "memoria-structural-spatial-trajectory-v2",
         "world_id": world_id,
-        "cursor": candidate_cursor,
+        "cursor": safe_cursor,
         "emitted": emitted,
+        "segments": segments,
         "stored": stored,
         "duplicates": duplicates,
+        "moves_per_event": moves_per_event,
         "world_mutated": False,
         "selection_authority": False,
     }
