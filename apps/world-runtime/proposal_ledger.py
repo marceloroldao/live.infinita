@@ -393,6 +393,139 @@ class ProposalLedger:
             self._view_offsets = None
         return record
 
+    def _append_transition_pair(
+        self,
+        first: dict[str, Any],
+        second: dict[str, Any],
+    ) -> dict[str, Any]:
+        proposal_id = str(first.get("proposal_id") or "").strip()
+        if not proposal_id or proposal_id != str(second.get("proposal_id") or "").strip():
+            raise ProposalLedgerError("transition pair requires one proposal_id")
+
+        payloads = [
+            (json.dumps(row, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
+            for row in (first, second)
+        ]
+        payload = b"".join(payloads)
+        before = self._signature()
+        cached = self._view_offsets is not None and self._view_signature == before
+        previous = (
+            self.get(proposal_id)
+            if cached and proposal_id in self._view_offsets
+            else None
+        )
+
+        fd = os.open(self.path, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o644)
+        try:
+            written = os.write(fd, payload)
+            if written != len(payload):
+                raise ProposalLedgerError(
+                    f"short proposal-ledger pair append: {written}/{len(payload)} bytes"
+                )
+            os.fsync(fd)
+        except BaseException:
+            self._view_offsets = None
+            raise
+        finally:
+            os.close(fd)
+
+        after = self._signature()
+        start = before[2] if before else 0
+        append_is_exact = (
+            after is not None
+            and after[2] == start + len(payload)
+            and (before is None or after[:2] == before[:2])
+        )
+        if append_is_exact:
+            offsets = (start, start + len(payloads[0]))
+            self._sidecar.note_append(
+                offset=offsets[0], row=first, source_signature=after
+            )
+            self._sidecar.note_append(
+                offset=offsets[1], row=second, source_signature=after
+            )
+
+        if cached and append_is_exact:
+            assert self._view_offsets is not None
+            old_key = str(previous.get("idempotency_key") or "") if previous else ""
+            key = str(second.get("idempotency_key") or "")
+            if previous is not None and old_key != key:
+                self._view_offsets = None
+            else:
+                if proposal_id not in self._view_offsets:
+                    self._view_order.append(proposal_id)
+                self._view_offsets[proposal_id] = start + len(payloads[0])
+                if key:
+                    self._view_idempotency.setdefault(key, proposal_id)
+                self._view_status[proposal_id] = str(second.get("status") or "")
+                origin = str(second.get("origin") or "").strip().lower()
+                source_id = str(second.get("source_proposal_id") or "").strip()
+                if origin and source_id:
+                    self._view_source[(origin, source_id)] = proposal_id
+                self._view_signature = after
+        else:
+            self._view_offsets = None
+        return second
+
+    def propose_approved(
+        self,
+        *,
+        origin: str,
+        proposer_id: str,
+        proposal_kind: str,
+        payload: dict[str, Any],
+        decided_by: str,
+        reason: str | None = None,
+        source_proposal_id: str | None = None,
+        metadata: dict[str, Any] | None = None,
+        idempotency_key: str | None = None,
+    ) -> dict[str, Any]:
+        origin = str(origin or "").strip().lower()
+        proposer_id = str(proposer_id or "").strip()
+        proposal_kind = str(proposal_kind or "").strip().lower()
+        decided_by = str(decided_by or "").strip()
+        if not origin or not proposer_id or not proposal_kind or not decided_by:
+            raise ProposalLedgerError(
+                "origin, proposer_id, proposal_kind and decided_by are required"
+            )
+        if not isinstance(payload, dict):
+            raise ProposalLedgerError("payload must be an object")
+
+        key = str(idempotency_key or "").strip() or None
+        if key:
+            existing = self.get_by_idempotency_key(key)
+            if existing is not None:
+                if existing.get("status") == "proposed":
+                    return self.approve(
+                        str(existing["proposal_id"]),
+                        decided_by=decided_by,
+                        reason=reason,
+                    )
+                return existing
+
+        now = time.time()
+        proposal_id = f"pr_{int(now * 1000)}_{uuid.uuid4().hex[:10]}"
+        first = {
+            "proposal_schema": "proposal_ledger_v1",
+            "proposal_id": proposal_id,
+            "source_proposal_id": str(source_proposal_id or "").strip() or None,
+            "origin": origin,
+            "proposer_id": proposer_id,
+            "proposal_kind": proposal_kind,
+            "status": "proposed",
+            "payload": deepcopy(payload),
+            "metadata": deepcopy(metadata or {}),
+            "idempotency_key": key,
+            "created_at_unix": now,
+            "updated_at_unix": now,
+        }
+        second = deepcopy(first)
+        second["status"] = "approved"
+        second["updated_at_unix"] = time.time()
+        second["decided_by"] = decided_by
+        second["decision_reason"] = str(reason or "")[:1000] or None
+        return self._append_transition_pair(first, second)
+
     def propose(
         self,
         *,

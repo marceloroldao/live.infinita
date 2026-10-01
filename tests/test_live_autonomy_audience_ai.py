@@ -88,6 +88,32 @@ class LiveAutonomyAudienceAITests(unittest.TestCase):
         self.assertEqual(rows[0]["status"], "need_active")
         self.assertEqual(scheduler.scheduled, [])
 
+    def test_same_region_idle_uses_ephemeral_guarded_path_when_available(self) -> None:
+        scheduler = _FakeScheduler()
+        calls = []
+        scheduler.execute_ephemeral_one_step = lambda **kwargs: (
+            calls.append(kwargs)
+            or {
+                "ok": True,
+                "status": "completed",
+                "mutation_decision_id": "md-idle",
+                "world_event_id": "evt-idle",
+            }
+        )
+        wander = NpcIdleWander(
+            scheduler,
+            npc_ids=["nov"],
+            interval_ticks=8,
+            priority=25,
+        )
+        rows = wander.evaluate_tick(8)
+        self.assertEqual(rows[0]["status"], "completed")
+        self.assertTrue(rows[0]["ephemeral"])
+        self.assertIsNone(rows[0]["plan_id"])
+        self.assertEqual(rows[0]["mutation_decision_id"], "md-idle")
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(scheduler.scheduled, [])
+
     def test_idle_wander_uses_indexed_actor_check_without_copying_active_plans(self) -> None:
         scheduler = _FakeScheduler()
         wander = NpcIdleWander(scheduler, npc_ids=["nov"], interval_ticks=8, priority=25)
@@ -113,6 +139,9 @@ class LiveAutonomyAudienceAITests(unittest.TestCase):
                 }
             },
         }
+        scheduler.execute_ephemeral_one_step = lambda **kwargs: self.fail(
+            "cross-region idle must remain persistent"
+        )
         wander = NpcIdleWander(scheduler, npc_ids=["nov"], interval_ticks=8, priority=25)
         rows = wander.evaluate_tick(24)
         self.assertEqual(rows[0]["region_id"], "ruins")

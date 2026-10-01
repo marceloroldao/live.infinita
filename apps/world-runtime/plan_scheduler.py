@@ -148,6 +148,91 @@ class PlanScheduler:
             ),
         )
 
+    def execute_ephemeral_one_step(
+        self,
+        *,
+        intent: dict[str, Any],
+        principal: MutationPrincipal | dict[str, Any],
+        logical_tick: int | None = None,
+        idempotency_key: str | None = None,
+        priority: int = 0,
+    ) -> dict[str, Any]:
+        # Narrow fail-closed path for regenerable one-step actions.
+        if isinstance(principal, MutationPrincipal):
+            principal_obj = principal
+            principal_dict = {
+                "source": principal.source,
+                "actor_id": principal.actor_id,
+                "authority": principal.authority,
+                "subject_entity_id": principal.subject_entity_id,
+            }
+        else:
+            principal_dict = dict(principal)
+            principal_obj = MutationPrincipal.from_dict(principal_dict)
+
+        plan = self._stage(
+            "plan.ephemeral.plan",
+            lambda: self.planner.plan(intent),
+        )
+        if len(plan.steps) != 1:
+            return {
+                "ok": False,
+                "status": "requires_persistent",
+                "reason": "ephemeral execution requires exactly one step",
+                "step_count": len(plan.steps),
+            }
+
+        step = self._stage(
+            "plan.ephemeral.revalidate",
+            lambda: self.planner.revalidate_step(plan, 0),
+        )
+        resolved = self._stage(
+            "plan.ephemeral.resolve",
+            lambda: self.resolver.resolve(step.intent),
+        )
+        narration = self._stage(
+            "plan.ephemeral.narration",
+            lambda: self._public_narration(plan, step),
+        )
+        context = {
+            "ephemeral": True,
+            "idempotency_key": str(idempotency_key or "").strip() or None,
+            "plan_priority": int(priority),
+            "logical_tick": int(logical_tick) if logical_tick is not None else None,
+            "intent_plan": {
+                "intent_type": plan.intent_type,
+                "step_index": 0,
+                "total_steps": 1,
+                "step_kind": step.kind,
+                "goal_region_id": plan.goal_region_id,
+                "region_path": list(plan.region_path),
+            },
+        }
+        result = self._stage(
+            "plan.ephemeral.guarded_commit",
+            lambda: self.guarded.commit(
+                list(resolved.operations),
+                principal=principal_obj,
+                context=context,
+                narration=narration,
+            ),
+        )
+        audit = result.get("audit") if isinstance(result, dict) else {}
+        event = result.get("event") if isinstance(result, dict) else {}
+        world = result.get("world") if isinstance(result, dict) else {}
+        return {
+            "ok": bool(result.get("ok")) if isinstance(result, dict) else False,
+            "status": "completed" if isinstance(result, dict) and result.get("ok") else "failed",
+            "mutation_decision_id": str((audit or {}).get("mutation_decision_id") or "").strip() or None,
+            "world_event_id": str((event or {}).get("event_id") or "").strip() or None,
+            "state_hash": str((world or {}).get("state_hash") or "").strip() or None,
+            "reason": (
+                str(((result or {}).get("decision") or {}).get("reason") or "").strip()
+                if isinstance(result, dict) else "ephemeral execution failed"
+            ),
+            "principal": principal_dict,
+        }
+
     def assess_resume(self, record: dict[str, Any]) -> dict[str, str]:
         try:
             plan = self._rehydrate_plan(dict(record.get("plan") or {}))

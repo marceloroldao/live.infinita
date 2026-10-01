@@ -129,12 +129,46 @@ class NpcIdleWander:
                 "authority": "entity_agent",
                 "subject_entity_id": npc_id,
             }
+            idem = f"npc-idle:{npc_id}:{bucket}"
+
+            # Same-region idle motion is a regenerable one-step action. Execute
+            # it directly through the guarded mutation path when supported, so
+            # disposable control-plane plans do not force three durable plan
+            # lifecycle appends (create/running/completed).
+            execute_ephemeral = getattr(
+                self.plans, "execute_ephemeral_one_step", None
+            )
+            if region.id == current_id and callable(execute_ephemeral):
+                execution = execute_ephemeral(
+                    intent=intent,
+                    principal=principal,
+                    logical_tick=tick,
+                    idempotency_key=idem,
+                    priority=self.priority,
+                )
+                if execution.get("status") != "requires_persistent":
+                    results.append({
+                        "npc_id": npc_id,
+                        "tick": tick,
+                        "status": execution.get("status"),
+                        "plan_id": None,
+                        "region_id": region.id,
+                        "position": position,
+                        "priority": self.priority,
+                        "ephemeral": True,
+                        "mutation_decision_id": execution.get(
+                            "mutation_decision_id"
+                        ),
+                        "world_event_id": execution.get("world_event_id"),
+                    })
+                    continue
+
             plan = self.plans.schedule(
                 intent=intent,
                 principal=principal,
                 proposer_id=f"npc-idle:{npc_id}",
                 proposal_id=None,
-                idempotency_key=f"npc-idle:{npc_id}:{bucket}",
+                idempotency_key=idem,
                 priority=self.priority,
             )
             results.append({
@@ -145,5 +179,6 @@ class NpcIdleWander:
                 "region_id": region.id,
                 "position": position,
                 "priority": self.priority,
+                "ephemeral": False,
             })
         return results

@@ -5,6 +5,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNTIME = ROOT / "apps" / "world-runtime"
@@ -102,6 +103,59 @@ class ProposalLedgerTest(unittest.TestCase):
         self.assertEqual(expired["status"], "expired")
         with self.assertRaises(ProposalLedgerError):
             self.ledger.reject(proposal["proposal_id"], decided_by="operator", reason="late")
+
+    def test_propose_approved_preserves_two_history_rows_with_one_fsync(self) -> None:
+        with patch.object(
+            ledger_module.os,
+            "fsync",
+            wraps=ledger_module.os.fsync,
+        ) as fsync:
+            approved = self.ledger.propose_approved(
+                origin="npc_need",
+                proposer_id="npc:nov",
+                proposal_kind="agent_intent",
+                payload={"intent": {"intent": "move_to_position"}},
+                metadata={"need": "energy"},
+                idempotency_key="need:nov:energy:1",
+                decided_by="need_policy:energy",
+                reason="deterministic threshold",
+            )
+        self.assertEqual(approved["status"], "approved")
+        self.assertEqual(fsync.call_count, 1)
+        history = self.ledger.history()
+        self.assertEqual(
+            [row["status"] for row in history],
+            ["proposed", "approved"],
+        )
+        self.assertEqual(
+            history[0]["proposal_id"],
+            history[1]["proposal_id"],
+        )
+        self.assertEqual(
+            self.ledger.current()[0]["status"],
+            "approved",
+        )
+
+    def test_propose_approved_idempotency_does_not_append_again(self) -> None:
+        first = self.ledger.propose_approved(
+            origin="npc_need",
+            proposer_id="npc:nov",
+            proposal_kind="agent_intent",
+            payload={"intent": {"intent": "move_to_position"}},
+            idempotency_key="need:nov:energy:2",
+            decided_by="need_policy:energy",
+        )
+        size = self.ledger.path.stat().st_size
+        second = self.ledger.propose_approved(
+            origin="npc_need",
+            proposer_id="npc:nov",
+            proposal_kind="agent_intent",
+            payload={"intent": {"intent": "move_to_position"}},
+            idempotency_key="need:nov:energy:2",
+            decided_by="need_policy:energy",
+        )
+        self.assertEqual(first["proposal_id"], second["proposal_id"])
+        self.assertEqual(size, self.ledger.path.stat().st_size)
 
 
 if __name__ == "__main__":

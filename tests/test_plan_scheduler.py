@@ -132,6 +132,48 @@ class PlanSchedulerTest(unittest.TestCase):
         self.assertEqual(a["plan_id"], b["plan_id"])
         self.assertEqual(len(self.ledger.current()), 1)
 
+    def test_ephemeral_one_step_commits_world_without_plan_ledger_row(self) -> None:
+        result = self.scheduler.execute_ephemeral_one_step(
+            intent={
+                "intent": "move_to_position",
+                "actor_entity_id": "nov",
+                "position": {"x": 25, "y": 10},
+                "region_id": "r0",
+                "idle_wander": True,
+            },
+            principal=self.principal,
+            logical_tick=8,
+            idempotency_key="idle:nov:2",
+            priority=25,
+        )
+        self.assertTrue(result["ok"])
+        self.assertEqual(result["status"], "completed")
+        self.assertEqual(self.ledger.current(), [])
+        self.assertEqual(
+            self.store.get_entity("nov")["position"],
+            {"x": 25.0, "y": 10.0},
+        )
+        self.assertTrue(result["world_event_id"])
+        self.assertTrue(result["mutation_decision_id"])
+
+    def test_ephemeral_multi_step_fails_closed_without_mutation(self) -> None:
+        result = self.scheduler.execute_ephemeral_one_step(
+            intent={
+                "intent": "move_to_entity",
+                "actor_entity_id": "nov",
+                "target_entity_id": "bridge",
+            },
+            principal=self.principal,
+            logical_tick=8,
+            idempotency_key="idle:nov:cross",
+            priority=25,
+        )
+        self.assertFalse(result["ok"])
+        self.assertEqual(result["status"], "requires_persistent")
+        self.assertGreater(result["step_count"], 1)
+        self.assertEqual(self.ledger.current(), [])
+        self.assertEqual(self.store.get_entity("nov")["region_id"], "r0")
+
     def test_stage_observer_decomposes_schedule_and_tick(self) -> None:
         observed: list[tuple[str, int]] = []
         self.scheduler.stage_observer = lambda name, elapsed: observed.append(
