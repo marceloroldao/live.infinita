@@ -223,6 +223,30 @@ class NpcGoalReorderingSchedulerTest(unittest.TestCase):
             self.assertEqual(len(scheduler.history()), 1)
 
 
+    def test_production_scheduler_emits_need_stage_spans_without_changing_decision(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            scheduler, proposals, plans, executor = self.make_scheduler(
+                Path(tmpdir), scheduler_type=NpcAuditedReorderingNeedScheduler,
+            )
+            observed = []
+            scheduler.stage_observer = lambda name, elapsed: observed.append(
+                (name, elapsed)
+            )
+            row = scheduler.evaluate_tick(1)[0]
+            self.assertEqual(row["original_need"], "curiosity")
+            self.assertEqual(row["need"], "safety")
+            names = [name for name, _ in observed]
+            self.assertIn("need.evaluate.entity", names)
+            self.assertIn("need.evaluate.need_values", names)
+            self.assertIn("need.evaluate.context", names)
+            self.assertIn("need.evaluate.prepare_need", names)
+            self.assertIn("need.evaluate.proposal_propose", names)
+            self.assertIn("need.evaluate.proposal_approve", names)
+            self.assertIn("need.evaluate.strategy_start", names)
+            self.assertIn("need.evaluate.audit_append", names)
+            self.assertEqual(len(proposals.rows), 1)
+            self.assertEqual(len(executor.calls), 1)
+
     def test_audited_reconsideration_uses_latest_scheduled_index(self):
         from unittest.mock import patch
         with tempfile.TemporaryDirectory() as tmpdir:

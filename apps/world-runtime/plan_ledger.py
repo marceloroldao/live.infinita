@@ -7,7 +7,7 @@ import time
 import uuid
 from copy import deepcopy
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 from plan_ledger_sidecar import PlanLedgerSidecar, PlanLedgerSidecarError
 
@@ -30,7 +30,13 @@ class PlanLedger:
         "cancelled": frozenset(),
     }
 
-    def __init__(self, path: Path) -> None:
+    def __init__(
+        self,
+        path: Path,
+        *,
+        stage_observer: Callable[[str, int], None] | None = None,
+        monotonic_ns: Callable[[], int] = time.perf_counter_ns,
+    ) -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         # Only nonterminal rows stay hot. Terminal rows use cold byte offsets.
@@ -44,6 +50,23 @@ class PlanLedger:
         self._view_need_candidates: dict[str, int] = {}
         self._view_signature: tuple[int, int, int, int] | None = None
         self._sidecar = PlanLedgerSidecar(self.path)
+        self.stage_observer = stage_observer
+        self.monotonic_ns = monotonic_ns
+
+    def _stage(self, name: str, fn: Callable[[], Any]) -> Any:
+        if self.stage_observer is None:
+            return fn()
+        started = self.monotonic_ns()
+        try:
+            return fn()
+        finally:
+            try:
+                self.stage_observer(
+                    name,
+                    max(0, self.monotonic_ns() - started),
+                )
+            except Exception:
+                pass
 
     @staticmethod
     def _eligible_need_candidate(row: dict[str, Any]) -> bool:
@@ -357,10 +380,16 @@ class PlanLedger:
         cached = self._view_by_id is not None and self._view_signature == before
         fd = os.open(self.path, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o644)
         try:
-            written = os.write(fd, payload)
+            written = self._stage(
+                "plan.ledger.append.write",
+                lambda: os.write(fd, payload),
+            )
             if written != len(payload):
                 raise PlanLedgerError(f"short plan-ledger append: {written}/{len(payload)} bytes")
-            os.fsync(fd)
+            self._stage(
+                "plan.ledger.append.fsync",
+                lambda: os.fsync(fd),
+            )
         except BaseException:
             self._view_by_id = None
             raise
@@ -373,10 +402,13 @@ class PlanLedger:
         if after is not None and after[2] == expected_size and (
             before is None or after[:2] == before[:2]
         ):
-            self._sidecar.note_append(
-                offset=offset,
-                row=row,
-                source_signature=after,
+            self._stage(
+                "plan.ledger.append.sidecar",
+                lambda: self._sidecar.note_append(
+                    offset=offset,
+                    row=row,
+                    source_signature=after,
+                ),
             )
         if cached and after is not None and after[2] == expected_size and (
             before is None or after[:2] == before[:2]
