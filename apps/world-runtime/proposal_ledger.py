@@ -7,7 +7,7 @@ import time
 import uuid
 from copy import deepcopy
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 from proposal_ledger_sidecar import ProposalLedgerSidecar, ProposalLedgerSidecarError
 
@@ -37,7 +37,13 @@ class ProposalLedger:
         "expired": frozenset(),
     }
 
-    def __init__(self, path: Path) -> None:
+    def __init__(
+        self,
+        path: Path,
+        *,
+        stage_observer: Callable[[str, int], None] | None = None,
+        monotonic_ns: Callable[[], int] = time.perf_counter_ns,
+    ) -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self._view_offsets: dict[str, int] | None = None
@@ -47,6 +53,23 @@ class ProposalLedger:
         self._view_status: dict[str, str] = {}
         self._view_signature: tuple[int, int, int, int] | None = None
         self._sidecar = ProposalLedgerSidecar(self.path)
+        self.stage_observer = stage_observer
+        self.monotonic_ns = monotonic_ns
+
+    def _stage(self, name: str, fn: Callable[[], Any]) -> Any:
+        if self.stage_observer is None:
+            return fn()
+        started = self.monotonic_ns()
+        try:
+            return fn()
+        finally:
+            try:
+                self.stage_observer(
+                    name,
+                    max(0, self.monotonic_ns() - started),
+                )
+            except Exception:
+                pass
 
     def _signature(self) -> tuple[int, int, int, int] | None:
         try:
@@ -337,12 +360,18 @@ class ProposalLedger:
 
         fd = os.open(self.path, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o644)
         try:
-            written = os.write(fd, payload)
+            written = self._stage(
+                "proposal.ledger.append.write",
+                lambda: os.write(fd, payload),
+            )
             if written != len(payload):
                 raise ProposalLedgerError(
                     f"short proposal-ledger append: {written}/{len(payload)} bytes"
                 )
-            os.fsync(fd)
+            self._stage(
+                "proposal.ledger.append.fsync",
+                lambda: os.fsync(fd),
+            )
         except BaseException:
             self._view_offsets = None
             raise
@@ -358,10 +387,13 @@ class ProposalLedger:
             and (before is None or after[:2] == before[:2])
         )
         if append_is_exact:
-            self._sidecar.note_append(
-                offset=offset,
-                row=record,
-                source_signature=after,
+            self._stage(
+                "proposal.ledger.append.sidecar",
+                lambda: self._sidecar.note_append(
+                    offset=offset,
+                    row=record,
+                    source_signature=after,
+                ),
             )
 
         if cached and append_is_exact:
@@ -417,12 +449,18 @@ class ProposalLedger:
 
         fd = os.open(self.path, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o644)
         try:
-            written = os.write(fd, payload)
+            written = self._stage(
+                "proposal.ledger.pair.write",
+                lambda: os.write(fd, payload),
+            )
             if written != len(payload):
                 raise ProposalLedgerError(
                     f"short proposal-ledger pair append: {written}/{len(payload)} bytes"
                 )
-            os.fsync(fd)
+            self._stage(
+                "proposal.ledger.pair.fsync",
+                lambda: os.fsync(fd),
+            )
         except BaseException:
             self._view_offsets = None
             raise
@@ -438,11 +476,16 @@ class ProposalLedger:
         )
         if append_is_exact:
             offsets = (start, start + len(payloads[0]))
-            self._sidecar.note_append(
-                offset=offsets[0], row=first, source_signature=after
-            )
-            self._sidecar.note_append(
-                offset=offsets[1], row=second, source_signature=after
+            def update_sidecar_pair() -> None:
+                self._sidecar.note_append(
+                    offset=offsets[0], row=first, source_signature=after
+                )
+                self._sidecar.note_append(
+                    offset=offsets[1], row=second, source_signature=after
+                )
+            self._stage(
+                "proposal.ledger.pair.sidecar",
+                update_sidecar_pair,
             )
 
         if cached and append_is_exact:
