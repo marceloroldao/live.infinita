@@ -87,7 +87,7 @@ systemctl start live-infinita-memoria-local.service
 
 health=/tmp/live-008x-memoria-health.json
 rm -f "$health"
-for _ in $(seq 1 40); do
+for _ in $(seq 1 90); do
   if curl -fsS --max-time 3 http://127.0.0.1:8788/api/v1/storage/health > "$health"; then
     break
   fi
@@ -136,17 +136,29 @@ assert p.get("spatial_recurrence_grid_m") == 64.0
 PY
 
 echo "== 008x: reativando runtime =="
-systemctl enable --now "$SPATIAL_TIMER"
 systemctl restart live-infinita.service
 
 runtime_health=/tmp/live-008x-runtime-health.json
-curl -fsS --max-time 12 http://127.0.0.1:8080/api/health > "$runtime_health"
+rm -f "$runtime_health"
+for _ in $(seq 1 30); do
+  if curl -fsS --max-time 3 http://127.0.0.1:8080/api/health > "$runtime_health"; then
+    break
+  fi
+  sleep 1
+done
+[[ -s "$runtime_health" ]] || {
+  systemctl status live-infinita.service --no-pager -n 80 || true
+  journalctl -u live-infinita.service -n 120 --no-pager || true
+  fail "runtime não abriu 8080"
+}
 python3 - "$runtime_health" <<'PY'
 import json, sys
 d=json.load(open(sys.argv[1], encoding="utf-8"))
 assert d.get("ok") is True, d
 print("LIVE_RUNTIME_HEALTH_OK")
 PY
+
+systemctl enable --now "$SPATIAL_TIMER"
 
 systemctl is-active --quiet live-infinita-memoria-local.service
 systemctl is-active --quiet live-infinita.service
