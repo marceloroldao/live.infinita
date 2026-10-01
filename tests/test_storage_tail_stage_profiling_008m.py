@@ -194,7 +194,7 @@ class StorageTailStageProfiling008MTests(unittest.TestCase):
 
     def test_rollout_only_restarts_single_writer(self) -> None:
         script = (
-            ROOT / "deploy" / "apply-storage-tail-profiling-008m.sh"
+            ROOT / "deploy" / "apply-storage-tail-stage-profiling-008m.sh"
         ).read_text(encoding="utf-8")
         self.assertIn('systemctl stop "$SERVICE"', script)
         self.assertIn("current_tick >= baseline_tick + 2", script)

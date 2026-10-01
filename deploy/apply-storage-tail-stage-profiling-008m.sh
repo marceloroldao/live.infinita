@@ -139,7 +139,7 @@ for name in npc_need_dynamics.py conditional_event_scheduler.py tick_driver_main
 done
 
 echo "[008m] tick retomado: $baseline_tick -> $current_tick"
-echo "[008m] novos spans: need.dynamics.save.* e conditional.evaluate.*"
+echo "[008m] novos spans: need.dynamics.* + conditional.evaluate.* + conditional.condition.load_world"
 
 trap - ERR
 rm -rf -- "$BACKUP"
