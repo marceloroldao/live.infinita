@@ -58,6 +58,30 @@ class PlanLedgerCrashSafetyTests(unittest.TestCase):
         self.assertTrue(path.read_bytes().endswith(b"\n"))
         self.assertEqual(ledger.history(), [row])
 
+    def test_append_stage_observer_measures_write_fsync_and_sidecar(self) -> None:
+        path = self.root / "plans.jsonl"
+        observed = []
+        ledger = PlanLedger(
+            path,
+            stage_observer=lambda name, elapsed: observed.append((name, elapsed)),
+        )
+        row = {"plan_id": "p1", "status": "planned", "text": "ação"}
+        self.assertEqual(ledger._append(row), row)
+        names = [name for name, _ in observed]
+        self.assertIn("plan.ledger.append.write", names)
+        self.assertIn("plan.ledger.append.fsync", names)
+        self.assertTrue(all(elapsed >= 0 for _, elapsed in observed))
+
+    def test_append_observer_failure_never_weakens_durable_append(self) -> None:
+        path = self.root / "plans.jsonl"
+        ledger = PlanLedger(
+            path,
+            stage_observer=lambda *_: (_ for _ in ()).throw(RuntimeError("observer")),
+        )
+        row = {"plan_id": "p1", "status": "planned"}
+        self.assertEqual(ledger._append(row), row)
+        self.assertEqual(ledger.history(), [row])
+
 
 if __name__ == "__main__":
     unittest.main()

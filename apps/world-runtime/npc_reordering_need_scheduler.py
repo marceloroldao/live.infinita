@@ -102,10 +102,16 @@ class NpcReorderingNeedScheduler(NpcNeedScheduler):
         tick = int(tick)
         results: list[dict[str, Any]] = []
         for npc_id in self.npc_ids:
-            entity = self._entity(npc_id)
+            entity = self._stage(
+                "need.evaluate.entity",
+                lambda: self._entity(npc_id),
+            )
             if entity is None:
                 continue
-            values = self._need_values(entity)
+            values = self._stage(
+                "need.evaluate.need_values",
+                lambda: self._need_values(entity),
+            )
             candidates = [
                 (name, value, self.DEFAULT_PRIORITIES[name], value * self.DEFAULT_PRIORITIES[name])
                 for name, value in values.items()
@@ -115,14 +121,20 @@ class NpcReorderingNeedScheduler(NpcNeedScheduler):
                 continue
             candidates.sort(key=lambda item: (-item[3], -item[2], item[0]))
             highest_urgent_need = candidates[0][0]
-            context = self._context_for(entity, tick=tick)
+            context = self._stage(
+                "need.evaluate.context",
+                lambda: self._context_for(entity, tick=tick),
+            )
             skipped_unresolved: list[dict[str, Any]] = []
             chosen: tuple[str, float, int, float, dict[str, Any]] | None = None
             for candidate_rank, (candidate_need, candidate_severity, candidate_priority, candidate_utility) in enumerate(candidates):
                 # Preserve active/cooldown semantics even after skipping a missing
                 # target: never open a competing goal just because a previous
                 # urgent need could not resolve its configured destination.
-                ongoing = self._ongoing_goal(npc_id, candidate_need)
+                ongoing = self._stage(
+                    "need.evaluate.ongoing_goal",
+                    lambda: self._ongoing_goal(npc_id, candidate_need),
+                )
                 if ongoing is not None:
                     results.append({
                         "npc_id": npc_id, "need": candidate_need,
@@ -135,7 +147,10 @@ class NpcReorderingNeedScheduler(NpcNeedScheduler):
                         "skipped_unresolved_needs": deepcopy(skipped_unresolved),
                     })
                     break
-                last_tick = self._last_tick(npc_id, candidate_need)
+                last_tick = self._stage(
+                    "need.evaluate.cooldown_lookup",
+                    lambda: self._last_tick(npc_id, candidate_need),
+                )
                 if last_tick is not None and tick - last_tick < self.cooldown_ticks:
                     results.append({
                         "npc_id": npc_id, "need": candidate_need,
@@ -147,15 +162,18 @@ class NpcReorderingNeedScheduler(NpcNeedScheduler):
                     })
                     break
 
-                prepared = self._prepare_need(
-                    entity=entity,
-                    need=candidate_need,
-                    severity=candidate_severity,
-                    priority=candidate_priority,
-                    utility=candidate_utility,
-                    values=values,
-                    context=context,
-                    tick=tick,
+                prepared = self._stage(
+                    "need.evaluate.prepare_need",
+                    lambda: self._prepare_need(
+                        entity=entity,
+                        need=candidate_need,
+                        severity=candidate_severity,
+                        priority=candidate_priority,
+                        utility=candidate_utility,
+                        values=values,
+                        context=context,
+                        tick=tick,
+                    ),
                 )
                 if prepared["intent"] is not None:
                     chosen = (
@@ -195,7 +213,10 @@ class NpcReorderingNeedScheduler(NpcNeedScheduler):
                     "strategy_execution_id": None,
                     "created_at_unix": time.time(),
                 }
-                self._append(row)
+                self._stage(
+                    "need.evaluate.audit_append",
+                    lambda: self._append(row),
+                )
                 results.append(row)
                 skipped_unresolved.append(missing)
             if chosen is None:
@@ -282,42 +303,48 @@ class NpcReorderingNeedScheduler(NpcNeedScheduler):
                 if horizon_reordered
                 else f"npc-need:{npc_id}:{need}:{bucket}"
             )
-            proposal = self.proposals.propose(
-                origin="npc_need",
-                proposer_id=f"npc:{npc_id}",
-                proposal_kind="agent_intent",
-                payload={"intent": deepcopy(goal_intent)},
-                metadata={
-                    "need": need,
-                    "original_need": original_need,
-                    "horizon_reordered": horizon_reordered,
-                    "reorder_source_sequence": deepcopy(reorder_source_sequence),
-                    "viability_selection_schema": "npc_need_viability_v1",
-                    "highest_urgent_need": highest_urgent_need,
-                    "skipped_unresolved_needs": deepcopy(skipped_unresolved),
-                    "severity": severity,
-                    "utility": utility,
-                    "tick": tick,
-                    "plan_priority": priority,
-                    "selected_target_entity_id": selected_target_id,
-                    "target_evidence_source": target_evidence_source,
-                    "learning_context": deepcopy(context),
-                    "target_ranking": deepcopy(target_ranking),
-                    "strategy_id": strategy_id,
-                    "strategy": deepcopy(strategy),
-                    "strategy_ranking": deepcopy(strategy_ranking),
-                    "strategy_plan": deepcopy(composite_plan),
-                },
-                idempotency_key=idem,
+            proposal = self._stage(
+                "need.evaluate.proposal_propose",
+                lambda: self.proposals.propose(
+                    origin="npc_need",
+                    proposer_id=f"npc:{npc_id}",
+                    proposal_kind="agent_intent",
+                    payload={"intent": deepcopy(goal_intent)},
+                    metadata={
+                        "need": need,
+                        "original_need": original_need,
+                        "horizon_reordered": horizon_reordered,
+                        "reorder_source_sequence": deepcopy(reorder_source_sequence),
+                        "viability_selection_schema": "npc_need_viability_v1",
+                        "highest_urgent_need": highest_urgent_need,
+                        "skipped_unresolved_needs": deepcopy(skipped_unresolved),
+                        "severity": severity,
+                        "utility": utility,
+                        "tick": tick,
+                        "plan_priority": priority,
+                        "selected_target_entity_id": selected_target_id,
+                        "target_evidence_source": target_evidence_source,
+                        "learning_context": deepcopy(context),
+                        "target_ranking": deepcopy(target_ranking),
+                        "strategy_id": strategy_id,
+                        "strategy": deepcopy(strategy),
+                        "strategy_ranking": deepcopy(strategy_ranking),
+                        "strategy_plan": deepcopy(composite_plan),
+                    },
+                    idempotency_key=idem,
+                ),
             )
             if proposal.get("status") == "proposed":
                 reason = f"deterministic need threshold reached: {severity:.3f}; utility={utility:.3f}; strategy={strategy_id}"
                 if horizon_reordered:
                     reason += f"; horizon reordered {original_need}->{need}"
-                proposal = self.proposals.approve(
-                    str(proposal["proposal_id"]),
-                    decided_by=f"need_policy:{need}",
-                    reason=reason,
+                proposal = self._stage(
+                    "need.evaluate.proposal_approve",
+                    lambda: self.proposals.approve(
+                        str(proposal["proposal_id"]),
+                        decided_by=f"need_policy:{need}",
+                        reason=reason,
+                    ),
                 )
 
             principal = {
@@ -331,23 +358,29 @@ class NpcReorderingNeedScheduler(NpcNeedScheduler):
             if composite_plan is not None:
                 start_fn = getattr(self.strategy_executor, "start", None)
                 if callable(start_fn):
-                    execution = start_fn(
-                        deepcopy(composite_plan),
-                        principal=principal,
-                        proposer_id=f"npc:{npc_id}",
-                        proposal_id=str(proposal["proposal_id"]),
-                        priority=priority,
-                        idempotency_key=f"npc-need-strategy:{proposal['proposal_id']}",
+                    execution = self._stage(
+                        "need.evaluate.strategy_start",
+                        lambda: start_fn(
+                            deepcopy(composite_plan),
+                            principal=principal,
+                            proposer_id=f"npc:{npc_id}",
+                            proposal_id=str(proposal["proposal_id"]),
+                            priority=priority,
+                            idempotency_key=f"npc-need-strategy:{proposal['proposal_id']}",
+                        ),
                     )
                     strategy_execution_id = execution.get("strategy_execution_id")
             if strategy_execution_id is None:
-                plan = self.plans.schedule(
-                    intent=deepcopy(intent),
-                    principal=principal,
-                    proposer_id=f"npc:{npc_id}",
-                    proposal_id=str(proposal["proposal_id"]),
-                    idempotency_key=f"npc-need-plan:{proposal['proposal_id']}",
-                    priority=priority,
+                plan = self._stage(
+                    "need.evaluate.plan_schedule",
+                    lambda: self.plans.schedule(
+                        intent=deepcopy(intent),
+                        principal=principal,
+                        proposer_id=f"npc:{npc_id}",
+                        proposal_id=str(proposal["proposal_id"]),
+                        idempotency_key=f"npc-need-plan:{proposal['proposal_id']}",
+                        priority=priority,
+                    ),
                 )
                 plan_id = plan.get("plan_id")
 
@@ -379,6 +412,9 @@ class NpcReorderingNeedScheduler(NpcNeedScheduler):
                 "strategy_execution_id": strategy_execution_id,
                 "created_at_unix": time.time(),
             }
-            self._append(row)
+            self._stage(
+                "need.evaluate.audit_append",
+                lambda: self._append(row),
+            )
             results.append(row)
         return results
