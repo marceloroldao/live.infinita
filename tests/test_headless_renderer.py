@@ -50,7 +50,27 @@ class HeadlessRendererConfigTest(unittest.TestCase):
         self.assertIn("libx264", command)
         self.assertIn("mpegts", command)
         self.assertIn("720x1280", command)
+        self.assertNotIn("-vf", command)
         self.assertIn("udp://127.0.0.1:5600", text)
+
+    def test_internal_render_scale_preserves_output_resolution(self):
+        cfg = HeadlessRendererConfig(
+            width=720,
+            height=1280,
+            internal_width=540,
+            internal_height=960,
+        )
+        self.assertIn("540x960x24", cfg.xvfb_command("Xvfb"))
+        self.assertIn("540x960", cfg.godot_command())
+        command = cfg.capture_command("ffmpeg")
+        self.assertIn("540x960", command)
+        self.assertIn("-vf", command)
+        self.assertIn("scale=720:1280:flags=fast_bilinear", command)
+        with self.assertRaises(RendererConfigError):
+            HeadlessRendererConfig(
+                internal_width=540,
+                internal_height=1000,
+            ).validate()
 
     def test_xvfb_does_not_listen_on_tcp(self):
         cfg = HeadlessRendererConfig()
@@ -115,11 +135,16 @@ class HeadlessRendererConfigTest(unittest.TestCase):
             status = json.loads(renderer._status_file.read_text())
             self.assertEqual(status["godot_fps"], 12)
             self.assertEqual(status["capture_fps"], 15)
+            self.assertEqual(status["render_width"], 720)
+            self.assertEqual(status["render_height"], 1280)
+            self.assertEqual(status["output_width"], 720)
+            self.assertEqual(status["output_height"], 1280)
             self.assertEqual(status["cpu_pressure_avg10_pct"], 60.5)
             self.assertTrue(status["governor_enabled"])
             self.assertEqual(status["scene"], "project-default")
             self.assertEqual(set(status), {
                 "updated_at_unix", "godot_fps", "capture_fps",
+                "render_width", "render_height", "output_width", "output_height",
                 "governor_enabled", "cpu_pressure_avg10_pct", "scene"})
             renderer.stop()
 
@@ -134,6 +159,8 @@ class HeadlessRendererConfigTest(unittest.TestCase):
         self.assertIn('Engine.max_fps = target_fps', preview)
         self.assertIn('Environment=LIVE_INFINITA_RENDER_CPU_GOVERNOR=1', unit)
         self.assertIn('Environment=LIVE_INFINITA_RENDER_FPS=15', unit)
+        self.assertIn('Environment=LIVE_INFINITA_RENDER_INTERNAL_WIDTH=540', unit)
+        self.assertIn('Environment=LIVE_INFINITA_RENDER_INTERNAL_HEIGHT=960', unit)
         self.assertIn('Environment=LIVE_INFINITA_RENDER_GODOT_FPS=15', unit)
         self.assertIn('Environment=LIVE_INFINITA_RENDER_GODOT_MIN_FPS=8', unit)
         self.assertIn('Environment=LIVE_INFINITA_RENDER_SCENE=res://world_map_preview.tscn', unit)

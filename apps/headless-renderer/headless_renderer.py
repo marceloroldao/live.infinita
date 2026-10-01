@@ -27,6 +27,8 @@ class HeadlessRendererConfig:
     display: str = ":99"
     width: int = 720
     height: int = 1280
+    internal_width: int = 0
+    internal_height: int = 0
     fps: int = 30
     godot_fps: int = 20
     minimum_godot_fps: int = 12
@@ -44,6 +46,8 @@ class HeadlessRendererConfig:
             display=os.getenv("LIVE_INFINITA_RENDER_DISPLAY", ":99").strip(),
             width=int(os.getenv("LIVE_INFINITA_RENDER_WIDTH", "720")),
             height=int(os.getenv("LIVE_INFINITA_RENDER_HEIGHT", "1280")),
+            internal_width=int(os.getenv("LIVE_INFINITA_RENDER_INTERNAL_WIDTH", "0")),
+            internal_height=int(os.getenv("LIVE_INFINITA_RENDER_INTERNAL_HEIGHT", "0")),
             fps=int(os.getenv("LIVE_INFINITA_RENDER_FPS", "30")),
             godot_fps=int(os.getenv("LIVE_INFINITA_RENDER_GODOT_FPS", "20")),
             minimum_godot_fps=int(os.getenv("LIVE_INFINITA_RENDER_GODOT_MIN_FPS", "12")),
@@ -52,6 +56,14 @@ class HeadlessRendererConfig:
             video_bitrate_kbps=int(os.getenv("LIVE_INFINITA_RENDER_BITRATE_KBPS", "6000")),
             startup_seconds=float(os.getenv("LIVE_INFINITA_RENDER_STARTUP_SECONDS", "2")),
         )
+
+    @property
+    def render_width(self) -> int:
+        return self.internal_width if self.internal_width > 0 else self.width
+
+    @property
+    def render_height(self) -> int:
+        return self.internal_height if self.internal_height > 0 else self.height
 
     def validate(self) -> None:
         if not self.project_dir:
@@ -68,7 +80,13 @@ class HeadlessRendererConfig:
         if not self.display.startswith(":"):
             raise RendererConfigError("display X11 inválido")
         if self.width < 320 or self.height < 240:
-            raise RendererConfigError("resolução inválida")
+            raise RendererConfigError("resolução de saída inválida")
+        if self.render_width < 320 or self.render_height < 240:
+            raise RendererConfigError("resolução interna inválida")
+        if self.render_width * self.height != self.render_height * self.width:
+            raise RendererConfigError("resolução interna deve preservar a proporção da saída")
+        if self.render_width > self.width or self.render_height > self.height:
+            raise RendererConfigError("resolução interna não pode exceder a saída")
         if not 1 <= self.fps <= 60:
             raise RendererConfigError("FPS deve ficar entre 1 e 60")
         if not 8 <= self.minimum_godot_fps <= self.godot_fps <= 60:
@@ -80,7 +98,7 @@ class HeadlessRendererConfig:
 
     def xvfb_command(self, xvfb_bin: str = "Xvfb") -> list[str]:
         self.validate()
-        return [xvfb_bin, self.display, "-screen", "0", f"{self.width}x{self.height}x24", "-ac", "-nolisten", "tcp", "+extension", "GLX", "+render"]
+        return [xvfb_bin, self.display, "-screen", "0", f"{self.render_width}x{self.render_height}x24", "-ac", "-nolisten", "tcp", "+extension", "GLX", "+render"]
 
     def godot_command(self) -> list[str]:
         self.validate()
@@ -91,7 +109,7 @@ class HeadlessRendererConfig:
             "--display-driver",
             "x11",
             "--resolution",
-            f"{self.width}x{self.height}",
+            f"{self.render_width}x{self.render_height}",
         ]
         if self.scene:
             command.append(self.scene)
@@ -100,13 +118,21 @@ class HeadlessRendererConfig:
     def capture_command(self, ffmpeg_bin: str = "ffmpeg") -> list[str]:
         self.validate()
         gop = self.fps * 2
-        return [
+        command = [
             ffmpeg_bin, "-hide_banner", "-loglevel", "warning", "-f", "x11grab", "-draw_mouse", "0",
-            "-framerate", str(self.fps), "-video_size", f"{self.width}x{self.height}", "-i", f"{self.display}.0+0,0", "-an",
+            "-framerate", str(self.fps), "-video_size", f"{self.render_width}x{self.render_height}", "-i", f"{self.display}.0+0,0", "-an",
+        ]
+        if (self.render_width, self.render_height) != (self.width, self.height):
+            command.extend([
+                "-vf",
+                f"scale={self.width}:{self.height}:flags=fast_bilinear",
+            ])
+        command.extend([
             "-c:v", "libx264", "-preset", "ultrafast", "-tune", "zerolatency", "-b:v", f"{self.video_bitrate_kbps}k",
             "-maxrate", f"{self.video_bitrate_kbps}k", "-bufsize", f"{self.video_bitrate_kbps}k", "-g", str(gop),
             "-keyint_min", str(gop), "-pix_fmt", "yuv420p", "-f", "mpegts", self.video_output,
-        ]
+        ])
+        return command
 
 
 class CpuPressureGovernor:
@@ -184,6 +210,10 @@ class HeadlessRenderer:
             "updated_at_unix": time.time(),
             "godot_fps": self._fps_governor.current_fps,
             "capture_fps": self.config.fps,
+            "render_width": self.config.render_width,
+            "render_height": self.config.render_height,
+            "output_width": self.config.width,
+            "output_height": self.config.height,
             "governor_enabled": True,
             "cpu_pressure_avg10_pct": pressure,
             "scene": self.config.scene or "project-default",
