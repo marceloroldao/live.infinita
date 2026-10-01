@@ -169,7 +169,9 @@ func _decoration(parent: Node3D, cx: int, cz: int, index: int, biome: String) ->
     var kind := "tree" if index < 3 and biome != "village" else ("rock" if index % 2 == 0 else "plant")
     var influence := float(profile.get("influence", 0.0))
     var role := str(profile.get("role", "memory_field"))
-    if influence >= 0.35 and biome != "village":
+    if role == "trail_edge" and influence >= 0.15 and biome != "village":
+        kind = "rock" if index % 4 == 0 else "plant"
+    elif influence >= 0.35 and biome != "village":
         if role == "uplift":
             kind = "rock" if index % 3 == 0 else "tree"
         elif role == "basin":

@@ -308,6 +308,72 @@ func surface_at(x: float, z: float) -> Dictionary:
             return {"walkable": false, "surface": "water", "reason": "cognitive_lake"}
     return {"walkable": true, "surface": "terrain", "reason": ""}
 
+func _trail_decor_profile(point: Vector2) -> Dictionary:
+    var best_edge_influence := 0.0
+    for trail in _spatial_trails:
+        if typeof(trail) != TYPE_DICTIONARY:
+            continue
+        if not bool(trail.get("trail_candidate", false)):
+            continue
+        var intensity := clampf(float(trail.get("trail_strength", 0.0)), 0.0, 1.0)
+        if intensity < 0.18:
+            continue
+        var a: Vector2 = trail["a"]
+        var b: Vector2 = trail["b"]
+        var distance := a.distance_to(b)
+        if distance < 0.5:
+            continue
+        var count := maxi(2, int(trail.get("count", 0)))
+        var segments := clampi(int(ceil(distance / 12.0)), 1, 16)
+        var trail_distance := 1.0e20
+        for index in range(segments):
+            var t0 := float(index) / float(segments)
+            var t1 := float(index + 1) / float(segments)
+            var p0 := _natural_trail_point(a, b, t0, count, intensity)
+            var p1 := _natural_trail_point(a, b, t1, count, intensity)
+            trail_distance = minf(trail_distance, _segment_distance(point, p0, p1))
+
+        var width := clampf(float(trail.get("trail_width", 0.7)), 0.4, 3.0)
+        var recurrence := clampf(float(count - 2) / 10.0, 0.0, 1.0)
+        var core_radius := clampf(
+            0.65 + width * (0.70 + 0.35 * intensity) + 0.35 * recurrence,
+            0.9,
+            4.0
+        )
+        var edge_radius := clampf(
+            core_radius + 1.8 + 1.2 * intensity,
+            core_radius + 1.0,
+            7.0
+        )
+        if trail_distance <= core_radius:
+            return {
+                "allow_decor": false,
+                "role": "trail_corridor",
+                "mass": 0.0,
+                "influence": 1.0,
+                "trail_distance_m": trail_distance,
+                "trail_clearance_m": core_radius,
+            }
+        if trail_distance < edge_radius:
+            var edge_influence := 1.0 - (
+                (trail_distance - core_radius) / maxf(0.001, edge_radius - core_radius)
+            )
+            best_edge_influence = maxf(best_edge_influence, edge_influence)
+
+    if best_edge_influence > 0.0:
+        return {
+            "allow_decor": true,
+            "role": "trail_edge",
+            "mass": 0.0,
+            "influence": clampf(best_edge_influence, 0.0, 1.0),
+        }
+    return {
+        "allow_decor": true,
+        "role": "memory_field",
+        "mass": 0.0,
+        "influence": 0.0,
+    }
+
 func decor_profile_at(x: float, z: float) -> Dictionary:
     var surface := surface_at(x, z)
     if not bool(surface.get("walkable", true)):
@@ -319,6 +385,10 @@ func decor_profile_at(x: float, z: float) -> Dictionary:
         }
 
     var point := Vector2(x, z)
+    var trail_profile := _trail_decor_profile(point)
+    if not bool(trail_profile.get("allow_decor", true)):
+        return trail_profile
+
     var best_role := "memory_field"
     var best_mass := 0.0
     var best_influence := 0.0
@@ -335,6 +405,9 @@ func decor_profile_at(x: float, z: float) -> Dictionary:
             best_influence = influence
             best_mass = mass
             best_role = str(anchor.get("role", "memory_field"))
+
+    if str(trail_profile.get("role", "")) == "trail_edge":
+        return trail_profile
     return {
         "allow_decor": true,
         "role": best_role,
