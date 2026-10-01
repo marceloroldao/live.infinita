@@ -8,7 +8,7 @@ import time
 import uuid
 from copy import deepcopy
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 from mutation_gate_service import GuardedMutationService
 from packages.spatial import MutationPrincipal
@@ -42,14 +42,30 @@ class ConditionalEventScheduler:
         path: Path,
         guarded_mutations: GuardedMutationService,
         plan_dispatcher: Any | None = None,
+        stage_observer: Callable[[str, int], None] | None = None,
+        monotonic_ns: Callable[[], int] = time.perf_counter_ns,
     ) -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.guarded = guarded_mutations
         self.plan_dispatcher = plan_dispatcher
+        self.stage_observer = stage_observer
+        self.monotonic_ns = monotonic_ns
         self._view_by_id: dict[str, dict[str, Any]] | None = None
         self._view_order: list[str] = []
         self._view_signature: tuple[int, int, int, int] | None = None
+
+    def _stage(self, name: str, fn: Callable[[], Any]) -> Any:
+        if self.stage_observer is None:
+            return fn()
+        started = self.monotonic_ns()
+        try:
+            return fn()
+        finally:
+            try:
+                self.stage_observer(name, max(0, self.monotonic_ns() - started))
+            except Exception:
+                pass
 
     def _signature(self) -> tuple[int, int, int, int] | None:
         try:
@@ -436,7 +452,10 @@ class ConditionalEventScheduler:
             path = condition.get("path")
             if not isinstance(path, list) or not path:
                 raise ConditionalEventError("world_equals requires path")
-            world = self.guarded.engine.load_world()
+            world = self._stage(
+                "conditional.condition.load_world",
+                self.guarded.engine.load_world,
+            )
             return self._nested(world, path) == condition.get("value")
 
         if kind == "entity_property_equals":
@@ -503,14 +522,20 @@ class ConditionalEventScheduler:
     def evaluate_tick(self, tick: int) -> list[dict[str, Any]]:
         tick = int(tick)
         results: list[dict[str, Any]] = []
-        active = sorted(
-            [row for row in self.current() if row.get("status") == "active"],
-            key=lambda row: str(row.get("conditional_event_id") or ""),
+        active = self._stage(
+            "conditional.evaluate.current",
+            lambda: sorted(
+                [row for row in self.current() if row.get("status") == "active"],
+                key=lambda row: str(row.get("conditional_event_id") or ""),
+            ),
         )
         for row in active:
             updated = deepcopy(row)
             try:
-                raw_value = self.evaluate_condition(dict(row.get("condition") or {}))
+                raw_value = self._stage(
+                    "conditional.evaluate.condition",
+                    lambda: self.evaluate_condition(dict(row.get("condition") or {})),
+                )
                 value, true_since = self._sustained_value(row, raw_value, tick)
             except Exception as exc:
                 updated["status"] = "failed"
@@ -537,7 +562,9 @@ class ConditionalEventScheduler:
                 conditional_id = str(row.get("conditional_event_id") or "")
                 if row.get("effect_kind") == "plan_intent":
                     try:
-                        dispatch = self.plan_dispatcher.dispatch(
+                        dispatch = self._stage(
+                            "conditional.evaluate.plan_dispatch",
+                            lambda: self.plan_dispatcher.dispatch(
                             conditional_event_id=conditional_id,
                             tick=tick,
                             fire_index=int(row.get("fire_count", 0)) + 1,
@@ -548,6 +575,7 @@ class ConditionalEventScheduler:
                                 "true_since_tick": true_since,
                                 **deepcopy(row.get("metadata") or {}),
                             },
+                            ),
                         )
                         proposal = dispatch.get("proposal") or {}
                         plan = dispatch.get("plan") or {}
@@ -562,7 +590,9 @@ class ConditionalEventScheduler:
                         updated["status"] = "failed"
                         updated["last_error"] = str(exc)[:1000]
                 else:
-                    result = self.guarded.commit(
+                    result = self._stage(
+                        "conditional.evaluate.guarded_commit",
+                        lambda: self.guarded.commit(
                         list(row.get("operations") or []),
                         principal=dict(row.get("principal") or {}),
                         context={
@@ -573,6 +603,7 @@ class ConditionalEventScheduler:
                             "conditional_metadata": deepcopy(row.get("metadata") or {}),
                         },
                         narration=str(row.get("narration") or f"conditional world event {conditional_id}"),
+                        ),
                     )
                     audit = result.get("audit") or {}
                     updated["last_mutation_decision_id"] = str(audit.get("mutation_decision_id") or "").strip() or None
@@ -607,11 +638,17 @@ class ConditionalEventScheduler:
             durable_changed = any(updated.get(key) != row.get(key) for key in durable_fields)
             if durable_changed:
                 updated["updated_at_unix"] = time.time()
-                self._append(updated)
+                self._stage(
+                    "conditional.evaluate.append",
+                    lambda: self._append(updated),
+                )
             else:
                 # The logical tick is useful to in-process diagnostics but is not
                 # a state transition. Persisting it every 500 ms previously grew
                 # this two-condition ledger by hundreds of MB per day.
-                self._cache_only(updated)
+                self._stage(
+                    "conditional.evaluate.cache_only",
+                    lambda: self._cache_only(updated),
+                )
             results.append(updated)
         return results
