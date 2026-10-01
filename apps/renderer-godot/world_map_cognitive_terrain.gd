@@ -169,6 +169,40 @@ func surface_at(x: float, z: float) -> Dictionary:
             return {"walkable": false, "surface": "water", "reason": "cognitive_lake"}
     return {"walkable": true, "surface": "terrain", "reason": ""}
 
+func decor_profile_at(x: float, z: float) -> Dictionary:
+    var surface := surface_at(x, z)
+    if not bool(surface.get("walkable", true)):
+        return {
+            "allow_decor": false,
+            "role": "lake",
+            "mass": 0.0,
+            "influence": 1.0,
+        }
+
+    var point := Vector2(x, z)
+    var best_role := "memory_field"
+    var best_mass := 0.0
+    var best_influence := 0.0
+    for anchor in _anchors:
+        if typeof(anchor) != TYPE_DICTIONARY:
+            continue
+        var pos: Vector2 = anchor["position"]
+        var radius := maxf(1.0, float(anchor.get("radius", 120.0)))
+        var d2 := point.distance_squared_to(pos)
+        var falloff := exp(-0.5 * d2 / (radius * radius))
+        var mass := clampf(float(anchor.get("mass", 0.0)), 0.0, 1.0)
+        var influence := falloff * (0.45 + 0.55 * mass)
+        if influence > best_influence:
+            best_influence = influence
+            best_mass = mass
+            best_role = str(anchor.get("role", "memory_field"))
+    return {
+        "allow_decor": true,
+        "role": best_role,
+        "mass": best_mass,
+        "influence": clampf(best_influence, 0.0, 1.0),
+    }
+
 func _segment_distance(point: Vector2, a: Vector2, b: Vector2) -> float:
     var axis := b - a
     var length_sq := axis.length_squared()

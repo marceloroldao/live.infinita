@@ -158,7 +158,23 @@ func _terrain(cx: int, cz: int, biome: String) -> MeshInstance3D:
 func _decoration(parent: Node3D, cx: int, cz: int, index: int, biome: String) -> void:
     if biome == "river":
         return
+    var a := float(cx * 79 + cz * 131 + index * 47)
+    var origin: Vector2 = _layout.tile_origin(cx, cz)
+    var x := origin.x + 6.0 + fposmod(sin(a) * 9843.0, 52.0)
+    var z := origin.y + 6.0 + fposmod(sin(a * 1.37) * 5347.0, 52.0)
+    var profile: Dictionary = _cognitive_terrain.decor_profile_at(x, z)
+    if not bool(profile.get("allow_decor", true)):
+        return
+
     var kind := "tree" if index < 3 and biome != "village" else ("rock" if index % 2 == 0 else "plant")
+    var influence := float(profile.get("influence", 0.0))
+    var role := str(profile.get("role", "memory_field"))
+    if influence >= 0.35 and biome != "village":
+        if role == "uplift":
+            kind = "rock" if index % 3 == 0 else "tree"
+        elif role == "basin":
+            kind = "rock" if index % 3 == 0 else "plant"
+
     var chosen: Dictionary = _catalog.call("pick", kind, (cx * 7 + cz * 11 + index) % 3)
     var path := str(chosen.get("path", ""))
     if path.is_empty() or not ResourceLoader.exists(path):
@@ -172,10 +188,6 @@ func _decoration(parent: Node3D, cx: int, cz: int, index: int, biome: String) ->
     if not model is Node3D:
         model.queue_free()
         return
-    var a := float(cx * 79 + cz * 131 + index * 47)
-    var origin: Vector2 = _layout.tile_origin(cx, cz)
-    var x := origin.x + 6.0 + fposmod(sin(a) * 9843.0, 52.0)
-    var z := origin.y + 6.0 + fposmod(sin(a * 1.37) * 5347.0, 52.0)
     var n: Node3D = model
     n.position = Vector3(x, _height(x, z), z)
     n.scale = Vector3.ONE * (0.75 if kind == "tree" else 0.90)
