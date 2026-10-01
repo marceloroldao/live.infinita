@@ -16,7 +16,10 @@ class CognitiveMassifs008ACTests(unittest.TestCase):
         self.assertIn("func _rebuild_massifs(height_sampler: Callable) -> void:", source)
         self.assertIn('peak.name = "MemoryMassif_%s_%s"', source)
         self.assertIn("mesh.radial_segments = 9", source)
-        self.assertNotIn("StaticBody3D.new()", source[source.index("func _massif_material"):source.index("func _trail_material")])
+        self.assertNotIn(
+            "StaticBody3D.new()",
+            source[source.index("func _massif_material"):source.index("func _trail_batch_material")],
+        )
 
     def test_massif_does_not_amplify_height_delta(self) -> None:
         source = TERRAIN.read_text(encoding="utf-8")
@@ -27,7 +30,11 @@ class CognitiveMassifs008ACTests(unittest.TestCase):
 
     def test_runtime_log_exposes_massif_count(self) -> None:
         preview = PREVIEW.read_text(encoding="utf-8")
-        self.assertIn("WORLD_MAP_MEMORY_TERRAIN projection=%s lakes=%d trails=%d massifs=%d", preview)
+        self.assertIn(
+            "WORLD_MAP_MEMORY_TERRAIN projection=%s lakes=%d trails=%d trail_batches=%d massifs=%d",
+            preview,
+        )
+        self.assertIn("_cognitive_terrain.trail_batch_count()", preview)
         self.assertIn("_cognitive_terrain.massif_count()", preview)
 
 

@@ -24,6 +24,7 @@ var _ridges: Array = []
 var _spatial_trails: Array = []
 var _lake_count := 0
 var _trail_count := 0
+var _trail_batch_count := 0
 var _massif_count := 0
 
 func _init(host: Node3D) -> void:
@@ -41,6 +42,9 @@ func lake_count() -> int:
 func trail_count() -> int:
     return _trail_count
 
+func trail_batch_count() -> int:
+    return _trail_batch_count
+
 func massif_count() -> int:
     return _massif_count
 
@@ -51,6 +55,7 @@ func _clear_visuals() -> void:
         child.queue_free()
     _lake_count = 0
     _trail_count = 0
+    _trail_batch_count = 0
     _massif_count = 0
 
 func clear() -> bool:
@@ -295,13 +300,20 @@ func _rebuild_massifs(height_sampler: Callable) -> void:
         )
         _massif_count += 1
 
-func _trail_material(intensity: float) -> StandardMaterial3D:
-    var color := Color("#8b6f47")
-    color.a = clampf(0.18 + 0.62 * intensity, 0.18, 0.80)
-    var material := _material(color)
-    material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+func _trail_batch_material() -> StandardMaterial3D:
+    var material := StandardMaterial3D.new()
+    material.albedo_color = Color.WHITE
+    material.vertex_color_use_as_albedo = true
+    material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+    material.cull_mode = BaseMaterial3D.CULL_DISABLED
     material.roughness = 1.0
+    material.metallic = 0.0
     return material
+
+func _trail_vertex_color(intensity: float) -> Color:
+    var weak := Color("#a18a67")
+    var strong := Color("#725437")
+    return weak.lerp(strong, clampf(intensity, 0.0, 1.0))
 
 func _trail_orientation_sign(a: Vector2, b: Vector2) -> float:
     if a.x < b.x:
@@ -342,8 +354,16 @@ func _natural_trail_point(
     var offset := amplitude * envelope * (bend + meander)
     return a.lerp(b, clamped_t) + normal * offset
 
+func _trail_height(point: Vector2, height_sampler: Callable) -> float:
+    var y := height_delta(point.x, point.y)
+    if height_sampler.is_valid():
+        y = float(height_sampler.call(point.x, point.y))
+    return y + 0.08
+
 func _rebuild_trails(height_sampler: Callable) -> void:
     var built_segments := 0
+    var surface := SurfaceTool.new()
+    surface.begin(Mesh.PRIMITIVE_TRIANGLES)
     var trail_source: Array = _spatial_trails if not _spatial_trails.is_empty() else _ridges
     for ridge in trail_source:
         if built_segments >= MAX_TRAIL_SEGMENTS:
@@ -363,6 +383,8 @@ func _rebuild_trails(height_sampler: Callable) -> void:
         var count := maxi(2, int(ridge.get("count", 0)))
         var segments := clampi(int(ceil(distance / 12.0)), 1, 16)
         var width := clampf(float(ridge.get("trail_width", 0.7)), 0.4, 3.0)
+        var color := _trail_vertex_color(intensity)
+        var built_for_trail := 0
         for index in range(segments):
             if built_segments >= MAX_TRAIL_SEGMENTS:
                 break
@@ -370,25 +392,39 @@ func _rebuild_trails(height_sampler: Callable) -> void:
             var t1 := float(index + 1) / float(segments)
             var p0 := _natural_trail_point(a, b, t0, count, intensity)
             var p1 := _natural_trail_point(a, b, t1, count, intensity)
-            var center := (p0 + p1) * 0.5
             var axis := p1 - p0
             var length := axis.length()
             if length < 0.05:
                 continue
-            var y := height_delta(center.x, center.y)
-            if height_sampler.is_valid():
-                y = float(height_sampler.call(center.x, center.y))
-            var mesh := BoxMesh.new()
-            mesh.size = Vector3(length, 0.06, width)
-            var trail := MeshInstance3D.new()
-            trail.name = "MemoryTrail_%d_%d" % [_trail_count, index]
-            trail.mesh = mesh
-            trail.position = Vector3(center.x, y + 0.08, center.y)
-            trail.rotation.y = -atan2(axis.y, axis.x)
-            trail.material_override = _trail_material(intensity)
-            _root.add_child(trail)
+            var normal := Vector2(-axis.y, axis.x) / length * (width * 0.5)
+            var p0l := p0 + normal
+            var p0r := p0 - normal
+            var p1l := p1 + normal
+            var p1r := p1 - normal
+            var vertices: Array[Vector3] = [
+                Vector3(p0l.x, _trail_height(p0l, height_sampler), p0l.y),
+                Vector3(p0r.x, _trail_height(p0r, height_sampler), p0r.y),
+                Vector3(p1l.x, _trail_height(p1l, height_sampler), p1l.y),
+                Vector3(p1l.x, _trail_height(p1l, height_sampler), p1l.y),
+                Vector3(p0r.x, _trail_height(p0r, height_sampler), p0r.y),
+                Vector3(p1r.x, _trail_height(p1r, height_sampler), p1r.y),
+            ]
+            for vertex in vertices:
+                surface.set_color(color)
+                surface.add_vertex(vertex)
             built_segments += 1
-        _trail_count += 1
+            built_for_trail += 1
+        if built_for_trail > 0:
+            _trail_count += 1
+
+    if built_segments == 0:
+        return
+    var trail_batch := MeshInstance3D.new()
+    trail_batch.name = "MemoryTrailBatch"
+    trail_batch.mesh = surface.commit()
+    trail_batch.material_override = _trail_batch_material()
+    _root.add_child(trail_batch)
+    _trail_batch_count = 1
 
 func surface_at(x: float, z: float) -> Dictionary:
     var point := Vector2(x, z)
