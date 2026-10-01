@@ -134,6 +134,8 @@ class HeadlessRendererConfigTest(unittest.TestCase):
         self.assertIn('Engine.max_fps = target_fps', preview)
         self.assertIn('Environment=LIVE_INFINITA_RENDER_CPU_GOVERNOR=1', unit)
         self.assertIn('Environment=LIVE_INFINITA_RENDER_FPS=15', unit)
+        self.assertIn('Environment=LIVE_INFINITA_RENDER_GODOT_FPS=15', unit)
+        self.assertIn('Environment=LIVE_INFINITA_RENDER_GODOT_MIN_FPS=8', unit)
         self.assertIn('Environment=LIVE_INFINITA_RENDER_SCENE=res://world_map_preview.tscn', unit)
         self.assertIn('Nice=5', unit)
 
