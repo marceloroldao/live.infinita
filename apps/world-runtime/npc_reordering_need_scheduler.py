@@ -303,49 +303,67 @@ class NpcReorderingNeedScheduler(NpcNeedScheduler):
                 if horizon_reordered
                 else f"npc-need:{npc_id}:{need}:{bucket}"
             )
-            proposal = self._stage(
-                "need.evaluate.proposal_propose",
-                lambda: self.proposals.propose(
-                    origin="npc_need",
-                    proposer_id=f"npc:{npc_id}",
-                    proposal_kind="agent_intent",
-                    payload={"intent": deepcopy(goal_intent)},
-                    metadata={
-                        "need": need,
-                        "original_need": original_need,
-                        "horizon_reordered": horizon_reordered,
-                        "reorder_source_sequence": deepcopy(reorder_source_sequence),
-                        "viability_selection_schema": "npc_need_viability_v1",
-                        "highest_urgent_need": highest_urgent_need,
-                        "skipped_unresolved_needs": deepcopy(skipped_unresolved),
-                        "severity": severity,
-                        "utility": utility,
-                        "tick": tick,
-                        "plan_priority": priority,
-                        "selected_target_entity_id": selected_target_id,
-                        "target_evidence_source": target_evidence_source,
-                        "learning_context": deepcopy(context),
-                        "target_ranking": deepcopy(target_ranking),
-                        "strategy_id": strategy_id,
-                        "strategy": deepcopy(strategy),
-                        "strategy_ranking": deepcopy(strategy_ranking),
-                        "strategy_plan": deepcopy(composite_plan),
-                    },
-                    idempotency_key=idem,
-                ),
-            )
-            if proposal.get("status") == "proposed":
-                reason = f"deterministic need threshold reached: {severity:.3f}; utility={utility:.3f}; strategy={strategy_id}"
-                if horizon_reordered:
-                    reason += f"; horizon reordered {original_need}->{need}"
+            proposal_metadata = {
+                "need": need,
+                "original_need": original_need,
+                "horizon_reordered": horizon_reordered,
+                "reorder_source_sequence": deepcopy(reorder_source_sequence),
+                "viability_selection_schema": "npc_need_viability_v1",
+                "highest_urgent_need": highest_urgent_need,
+                "skipped_unresolved_needs": deepcopy(skipped_unresolved),
+                "severity": severity,
+                "utility": utility,
+                "tick": tick,
+                "plan_priority": priority,
+                "selected_target_entity_id": selected_target_id,
+                "target_evidence_source": target_evidence_source,
+                "learning_context": deepcopy(context),
+                "target_ranking": deepcopy(target_ranking),
+                "strategy_id": strategy_id,
+                "strategy": deepcopy(strategy),
+                "strategy_ranking": deepcopy(strategy_ranking),
+                "strategy_plan": deepcopy(composite_plan),
+            }
+            reason = f"deterministic need threshold reached: {severity:.3f}; utility={utility:.3f}; strategy={strategy_id}"
+            if horizon_reordered:
+                reason += f"; horizon reordered {original_need}->{need}"
+
+            propose_approved = getattr(self.proposals, "propose_approved", None)
+            if callable(propose_approved):
                 proposal = self._stage(
-                    "need.evaluate.proposal_approve",
-                    lambda: self.proposals.approve(
-                        str(proposal["proposal_id"]),
+                    "need.evaluate.proposal_propose_approved",
+                    lambda: propose_approved(
+                        origin="npc_need",
+                        proposer_id=f"npc:{npc_id}",
+                        proposal_kind="agent_intent",
+                        payload={"intent": deepcopy(goal_intent)},
+                        metadata=proposal_metadata,
+                        idempotency_key=idem,
                         decided_by=f"need_policy:{need}",
                         reason=reason,
                     ),
                 )
+            else:
+                proposal = self._stage(
+                    "need.evaluate.proposal_propose",
+                    lambda: self.proposals.propose(
+                        origin="npc_need",
+                        proposer_id=f"npc:{npc_id}",
+                        proposal_kind="agent_intent",
+                        payload={"intent": deepcopy(goal_intent)},
+                        metadata=proposal_metadata,
+                        idempotency_key=idem,
+                    ),
+                )
+                if proposal.get("status") == "proposed":
+                    proposal = self._stage(
+                        "need.evaluate.proposal_approve",
+                        lambda: self.proposals.approve(
+                            str(proposal["proposal_id"]),
+                            decided_by=f"need_policy:{need}",
+                            reason=reason,
+                        ),
+                    )
 
             principal = {
                 "source": "npc_need",
