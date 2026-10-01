@@ -9,7 +9,10 @@ const CognitiveTerrain = preload("res://world_map_cognitive_terrain.gd")
 const MAP_PATH := "res://world_map_001.json"
 const TILE_M := 64.0
 const MAX_ACTIVE_TILES := 9
-const MAX_ACTIVE_DECOR := 54
+const CENTER_DECOR_INDICES := [0, 1, 2, 3, 4, 5]
+const EDGE_DECOR_INDICES := [0, 2, 4]
+const CORNER_DECOR_INDICES := [1]
+const MAX_ACTIVE_DECOR := 22
 const LIVE_STALE_MS := 10000
 const FPS_GOVERNOR_POLL_MS := 5000
 var _map: Dictionary = {}
@@ -230,6 +233,18 @@ func _rebuild_active_tiles() -> void:
         stale.queue_free()
     _sync_tiles()
 
+func _decor_indices_for_tile(x: int, z: int, center_x: int, center_z: int) -> Array:
+    var dx := absi(x - center_x)
+    var dz := absi(z - center_z)
+    var source: Array = CENTER_DECOR_INDICES
+    if dx > 0 or dz > 0:
+        source = EDGE_DECOR_INDICES if dx + dz == 1 else CORNER_DECOR_INDICES
+    var bounded: Array = []
+    for index in source:
+        if int(index) < _layout.decorations_per_tile:
+            bounded.append(int(index))
+    return bounded
+
 func _sync_tiles() -> void:
     var cx := _cell(_position.x)
     var cz := _cell(_position.z)
@@ -246,9 +261,12 @@ func _sync_tiles() -> void:
             var biome := _biome(x, z)
             tile.add_child(_terrain(x, z, biome))
             var features: Array[String] = _features.decorate(tile, x, z, biome, _map.get("landmarks", []), _route)
-            print("WORLD_MAP_TILE_READY cell=%s biome=%s features=%s" % [id, biome, ",".join(features)])
-            for i in range(_layout.decorations_per_tile):
-                _decoration(tile, x, z, i, biome)
+            var decor_indices := _decor_indices_for_tile(x, z, cx, cz)
+            print("WORLD_MAP_TILE_READY cell=%s biome=%s features=%s decor=%d" % [
+                id, biome, ",".join(features), decor_indices.size()
+            ])
+            for i in decor_indices:
+                _decoration(tile, x, z, int(i), biome)
             _tiles[id] = tile
     for id in _tiles.keys().duplicate():
         if not wanted.has(id):
