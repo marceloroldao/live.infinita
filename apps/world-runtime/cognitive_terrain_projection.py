@@ -38,6 +38,7 @@ MAX_REGIONS = 32
 MAX_TRANSITIONS = 48
 MAX_SPATIAL_RECORDS = 4096
 MAX_SPATIAL_TRAILS = 128
+SPATIAL_RECURRENCE_GRID_M = 64.0
 MAX_SPATIAL_INDEX_WINDOW_BYTES = 8 * 1024 * 1024
 MAX_OUTPUT_BYTES = 128 * 1024
 WATERLIKE_BIOMES = frozenset({"river", "waterfall"})
@@ -482,14 +483,22 @@ def build_projection(
         })
 
     spatial_records = list(spatial_records or [])
-    spatial_counts: Counter[tuple[int, int]] = Counter()
-    spatial_last: dict[tuple[int, int], int] = {}
-    spatial_sample: dict[tuple[int, int], dict[str, Any]] = {}
+    spatial_counts: Counter[tuple[tuple[int, int], tuple[int, int]]] = Counter()
+    spatial_last: dict[tuple[tuple[int, int], tuple[int, int]], int] = {}
+    spatial_sample: dict[tuple[tuple[int, int], tuple[int, int]], dict[str, Any]] = {}
+
+    def recurrence_cell(position: dict[str, Any]) -> tuple[int, int]:
+        return (
+            int(round(float(position["x"]) / SPATIAL_RECURRENCE_GRID_M)),
+            int(round(float(position["y"]) / SPATIAL_RECURRENCE_GRID_M)),
+        )
+
     for row in spatial_records:
-        trail = row.get("trail")
-        if not isinstance(trail, (tuple, list)) or len(trail) != 2:
+        from_position = row.get("from_position")
+        to_position = row.get("to_position")
+        if not isinstance(from_position, dict) or not isinstance(to_position, dict):
             continue
-        pair = tuple(sorted((int(trail[0]), int(trail[1]))))
+        pair = tuple(sorted((recurrence_cell(from_position), recurrence_cell(to_position))))
         sequence = int(row.get("sequence", 0))
         spatial_counts[pair] += 1
         if sequence >= spatial_last.get(pair, -1):
@@ -554,6 +563,7 @@ def build_projection(
             "max_spatial_trails": MAX_SPATIAL_TRAILS,
             "episode_window_limit": MAX_RECORDS,
             "spatial_window_limit": MAX_SPATIAL_RECORDS,
+            "spatial_recurrence_grid_m": SPATIAL_RECURRENCE_GRID_M,
             "height_cap_m": 18.0,
             "basin_cap_m": -12.0,
         },

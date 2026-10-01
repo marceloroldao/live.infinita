@@ -98,29 +98,39 @@ class SpatialTrajectoryBatching008TTests(unittest.TestCase):
                 raise sync.SpatialMemorySyncError("synthetic_failure")
             return self.ack(payload)
 
-        with self.assertRaisesRegex(sync.SpatialMemorySyncError, "synthetic_failure"):
-            sync.sync_once(
-                delta_path=self.delta,
-                world_path=self.world,
-                checkpoint_path=self.checkpoint,
-                send=send,
-                max_events=4,
-                moves_per_event=3,
-            )
+        original_max = sync.MAX_EVENTS_PER_RUN
+        sync.MAX_EVENTS_PER_RUN = 4
+        try:
+            with self.assertRaisesRegex(sync.SpatialMemorySyncError, "synthetic_failure"):
+                sync.sync_once(
+                    delta_path=self.delta,
+                    world_path=self.world,
+                    checkpoint_path=self.checkpoint,
+                    send=send,
+                    max_events=4,
+                    moves_per_event=3,
+                )
+        finally:
+            sync.MAX_EVENTS_PER_RUN = original_max
 
         checkpoint = json.loads(self.checkpoint.read_text(encoding="utf-8"))
         self.assertEqual(checkpoint["last_sequence"], 4)
         self.assertEqual(checkpoint["last_position"], {"x": 4.0, "y": 8.0})
 
         sent = []
-        result = sync.sync_once(
-            delta_path=self.delta,
-            world_path=self.world,
-            checkpoint_path=self.checkpoint,
-            send=lambda payload: (sent.append(payload) or self.ack(payload)),
-            max_events=4,
-            moves_per_event=3,
-        )
+        original_max = sync.MAX_EVENTS_PER_RUN
+        sync.MAX_EVENTS_PER_RUN = 4
+        try:
+            result = sync.sync_once(
+                delta_path=self.delta,
+                world_path=self.world,
+                checkpoint_path=self.checkpoint,
+                send=lambda payload: (sent.append(payload) or self.ack(payload)),
+                max_events=4,
+                moves_per_event=3,
+            )
+        finally:
+            sync.MAX_EVENTS_PER_RUN = original_max
         self.assertGreaterEqual(result["segments"], 1)
         self.assertTrue(sent)
         self.assertEqual(sent[0]["provenance"]["path_sequences"][0], 4)

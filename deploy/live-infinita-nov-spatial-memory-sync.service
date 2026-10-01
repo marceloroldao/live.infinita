@@ -13,7 +13,7 @@ WorkingDirectory=/opt/live.infinita
 Environment="PYTHONUNBUFFERED=1"
 Environment="PYTHONPATH=/opt/live.infinita:/opt/live.infinita/apps/world-runtime"
 EnvironmentFile=/etc/live-infinita/memoria-local.env
-ExecStart=/opt/live.infinita/.venv/bin/python /opt/live.infinita/apps/world-runtime/nov_spatial_memory_sync.py --max-events 2
+ExecStart=/opt/live.infinita/.venv/bin/python /opt/live.infinita/apps/world-runtime/nov_spatial_memory_sync.py --max-events 1
 TimeoutStartSec=100
 UMask=0077
 Nice=15
