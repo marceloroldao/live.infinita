@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import json
 import os
+import time
 from copy import deepcopy
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 
 class NpcNeedDynamics:
@@ -31,6 +32,8 @@ class NpcNeedDynamics:
         world_provider: Any | None = None,
         rates: dict[str, float] | None = None,
         outcome_journal_path: Path | None = None,
+        stage_observer: Callable[[str, int], None] | None = None,
+        monotonic_ns: Callable[[], int] = time.perf_counter_ns,
     ) -> None:
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -44,6 +47,8 @@ class NpcNeedDynamics:
             sorted({str(v).strip() for v in npc_ids if str(v).strip()})
         )
         self.world_provider = world_provider
+        self.stage_observer = stage_observer
+        self.monotonic_ns = monotonic_ns
         self.rates = dict(self.DEFAULT_RATES)
         for key, value in dict(rates or {}).items():
             if key in self.rates:
@@ -67,6 +72,21 @@ class NpcNeedDynamics:
             self._migrate_legacy_outcomes(legacy_outcomes)
         else:
             self._recover_outcome_tail()
+
+    def _stage(self, name: str, fn: Callable[[], Any]) -> Any:
+        if self.stage_observer is None:
+            return fn()
+        started = self.monotonic_ns()
+        try:
+            return fn()
+        finally:
+            try:
+                self.stage_observer(
+                    name,
+                    max(0, self.monotonic_ns() - started),
+                )
+            except Exception:
+                pass
 
     @staticmethod
     def _clamp(value: float) -> float:
@@ -103,16 +123,20 @@ class NpcNeedDynamics:
             ),
         }
         tmp = self.path.with_suffix(self.path.suffix + ".tmp")
-        with tmp.open("w", encoding="utf-8") as fh:
-            json.dump(
-                payload,
-                fh,
-                ensure_ascii=False,
-                sort_keys=True,
-                separators=(",", ":"),
-            )
-            fh.write("\n")
-        tmp.replace(self.path)
+
+        def write_tmp() -> None:
+            with tmp.open("w", encoding="utf-8") as fh:
+                json.dump(
+                    payload,
+                    fh,
+                    ensure_ascii=False,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                )
+                fh.write("\n")
+
+        self._stage("need.dynamics.save.write_tmp", write_tmp)
+        self._stage("need.dynamics.save.replace", lambda: tmp.replace(self.path))
 
     def _read_outcome_journal(self) -> list[dict[str, Any]]:
         if not self.outcome_journal_path.exists():
@@ -266,12 +290,18 @@ class NpcNeedDynamics:
             0o644,
         )
         try:
-            written = os.write(fd, payload)
+            written = self._stage(
+                "need.dynamics.outcome.write",
+                lambda: os.write(fd, payload),
+            )
             if written != len(payload):
                 raise OSError(
                     f"short NPC need outcome append: {written}/{len(payload)}"
                 )
-            os.fsync(fd)
+            self._stage(
+                "need.dynamics.outcome.fsync",
+                lambda: os.fsync(fd),
+            )
         finally:
             os.close(fd)
         self._outcome_rows.append(deepcopy(result))
@@ -501,5 +531,5 @@ class NpcNeedDynamics:
             })
 
         self._state["last_tick"] = tick
-        self._save()
+        self._stage("need.dynamics.advance.save", self._save)
         return results

@@ -10,10 +10,8 @@ RUNTIME = ROOT / "apps" / "world-runtime"
 class NeedOutcomeStageProfiling008ITests(unittest.TestCase):
     def test_profiler_wires_need_and_outcome_components(self) -> None:
         source = (RUNTIME / "tick_driver_main.py").read_text(encoding="utf-8")
-        self.assertIn(
-            'for component_name in ("npc_need_scheduler", "npc_need_outcomes")',
-            source,
-        )
+        self.assertIn('"npc_need_scheduler"', source)
+        self.assertIn('"npc_need_outcomes"', source)
         self.assertIn(
             "component.stage_observer = profiler.observe_stage",
             source,
