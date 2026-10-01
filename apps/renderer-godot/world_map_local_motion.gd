@@ -61,6 +61,16 @@ func advance(
 
     var policy: Dictionary = _traversability.validate_step(current, candidate, space_state)
     policy["manual"] = manual
+    if not bool(policy.get("allowed", false)) and auto_route and not manual:
+        var direct_reason := str(policy.get("reason", "blocked"))
+        var step_distance := SPEED_MPS * delta
+        var detour: Dictionary = _traversability.find_detour(
+            current, route_target, step_distance, space_state
+        )
+        if bool(detour.get("allowed", false)):
+            policy = detour
+            policy["manual"] = false
+            policy["direct_block_reason"] = direct_reason
     if not bool(policy.get("allowed", false)):
         policy["reached"] = false
         body.velocity = Vector3.ZERO

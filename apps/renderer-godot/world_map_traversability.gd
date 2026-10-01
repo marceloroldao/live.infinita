@@ -41,6 +41,43 @@ func surface(position: Vector3) -> Dictionary:
 func ground_position(x: float, z: float) -> Vector3:
     return Vector3(x, float(_walk_height.call(x, z)), z)
 
+func find_detour(
+    current: Vector3,
+    route_target: Vector3,
+    step_distance: float,
+    space_state: PhysicsDirectSpaceState3D = null
+) -> Dictionary:
+    var origin := Vector2(current.x, current.z)
+    var goal := Vector2(route_target.x, route_target.z)
+    var desired := goal - origin
+    if desired.length_squared() < 0.0001:
+        return {"allowed": false, "position": current, "reason": "no_detour_target"}
+    desired = desired.normalized()
+
+    # Ordered symmetric probes make the local choice deterministic while still
+    # allowing the explorer to bend around water, steep terrain, or obstacles.
+    var probe_angles := [35.0, -35.0, 70.0, -70.0, 105.0, -105.0, 140.0, -140.0]
+    var best: Dictionary = {}
+    var best_score := INF
+    for angle in probe_angles:
+        var direction := desired.rotated(deg_to_rad(float(angle)))
+        var flat := origin + direction * step_distance
+        var candidate := Vector3(flat.x, current.y, flat.y)
+        var policy := validate_step(current, candidate, space_state)
+        if not bool(policy.get("allowed", false)):
+            continue
+        var resolved: Vector3 = policy.get("position", current)
+        var remaining := Vector2(resolved.x, resolved.z).distance_to(goal)
+        var score := remaining + absf(float(angle)) * 0.002
+        if score < best_score:
+            best_score = score
+            best = policy.duplicate(true)
+            best["detour"] = true
+            best["detour_angle_deg"] = float(angle)
+    if best.is_empty():
+        return {"allowed": false, "position": current, "reason": "detour_unavailable"}
+    return best
+
 func validate_step(current: Vector3, candidate: Vector3, space_state: PhysicsDirectSpaceState3D = null) -> Dictionary:
     var target := ground_position(candidate.x, candidate.z)
     var classification := surface(target)
