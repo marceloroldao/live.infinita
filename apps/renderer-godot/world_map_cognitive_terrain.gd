@@ -11,6 +11,10 @@ const MAX_BASIN_M := -12.0
 const MAX_TRAIL_SEGMENTS := 192
 const MAX_TRAIL_MEANDER_M := 4.5
 const TRAIL_MEANDER_DISTANCE_RATIO := 0.055
+const MAX_MASSIFS := 6
+const MAX_MASSIF_HEIGHT_M := 68.0
+const MASSIF_MIN_BIAS_M := 6.0
+const MASSIF_MIN_MASS := 0.55
 
 var _host: Node3D
 var _root: Node3D
@@ -20,6 +24,7 @@ var _ridges: Array = []
 var _spatial_trails: Array = []
 var _lake_count := 0
 var _trail_count := 0
+var _massif_count := 0
 
 func _init(host: Node3D) -> void:
     _host = host
@@ -36,6 +41,9 @@ func lake_count() -> int:
 func trail_count() -> int:
     return _trail_count
 
+func massif_count() -> int:
+    return _massif_count
+
 func _clear_visuals() -> void:
     if _root == null:
         return
@@ -43,6 +51,7 @@ func _clear_visuals() -> void:
         child.queue_free()
     _lake_count = 0
     _trail_count = 0
+    _massif_count = 0
 
 func clear() -> bool:
     var changed := not _projection_id.is_empty() or not _anchors.is_empty() or not _ridges.is_empty() or not _spatial_trails.is_empty()
@@ -167,6 +176,7 @@ func update(projection: Dictionary, flat_projector: Callable, height_sampler: Ca
     _ridges = next_ridges
     _spatial_trails = next_spatial_trails
     _rebuild_lakes()
+    _rebuild_massifs(height_sampler)
     _rebuild_trails(height_sampler)
     return true
 
@@ -199,6 +209,91 @@ func _rebuild_lakes() -> void:
         lake.material_override = _material(Color("#4d9db4"))
         _root.add_child(lake)
         _lake_count += 1
+
+func _massif_material(mass: float, secondary: bool = false) -> StandardMaterial3D:
+    var low := Color("#5f665d")
+    var high := Color("#899083")
+    var color := low.lerp(high, clampf(mass, 0.0, 1.0))
+    if secondary:
+        color = color.darkened(0.08)
+    var material := _material(color)
+    material.roughness = 1.0
+    material.metallic = 0.0
+    return material
+
+func _add_massif_peak(
+    region_id: String,
+    suffix: String,
+    center: Vector2,
+    radius: float,
+    height: float,
+    mass: float,
+    height_sampler: Callable,
+    secondary: bool = false,
+) -> void:
+    var ground_y := 0.0
+    if height_sampler.is_valid():
+        ground_y = float(height_sampler.call(center.x, center.y))
+    var mesh := CylinderMesh.new()
+    mesh.top_radius = maxf(1.2, radius * 0.07)
+    mesh.bottom_radius = radius
+    mesh.height = height
+    mesh.radial_segments = 9
+    mesh.rings = 2
+    var peak := MeshInstance3D.new()
+    peak.name = "MemoryMassif_%s_%s" % [region_id, suffix]
+    peak.mesh = mesh
+    peak.position = Vector3(center.x, ground_y + height * 0.5 - 0.15, center.y)
+    peak.rotation.y = sin(center.x * 0.021 + center.y * 0.017) * 0.38
+    peak.material_override = _massif_material(mass, secondary)
+    _root.add_child(peak)
+
+func _rebuild_massifs(height_sampler: Callable) -> void:
+    for anchor in _anchors:
+        if _massif_count >= MAX_MASSIFS:
+            break
+        if typeof(anchor) != TYPE_DICTIONARY or bool(anchor.get("lake", false)):
+            continue
+        var bias := float(anchor.get("bias", 0.0))
+        var mass := clampf(float(anchor.get("mass", 0.0)), 0.0, 1.0)
+        if bias < MASSIF_MIN_BIAS_M or mass < MASSIF_MIN_MASS:
+            continue
+        var pos: Vector2 = anchor["position"]
+        var influence_radius := float(anchor.get("radius", 120.0))
+        var base_radius := clampf(influence_radius * 0.30, 24.0, 62.0)
+        var peak_height := clampf(
+            bias * 2.2 + mass * 24.0,
+            20.0,
+            MAX_MASSIF_HEIGHT_M
+        )
+        var seed := sin(pos.x * 0.019 + pos.y * 0.023 + mass * 2.7)
+        var angle := seed * PI
+        var axis := Vector2(cos(angle), sin(angle))
+        var ortho := Vector2(-axis.y, axis.x)
+        var region_id := str(anchor.get("region_id", "unknown"))
+        _add_massif_peak(
+            region_id, "Primary", pos,
+            base_radius, peak_height, mass, height_sampler, false
+        )
+        _add_massif_peak(
+            region_id, "SecondaryA",
+            pos + axis * base_radius * 0.34,
+            base_radius * 0.56,
+            peak_height * (0.62 + 0.06 * mass),
+            mass,
+            height_sampler,
+            true
+        )
+        _add_massif_peak(
+            region_id, "SecondaryB",
+            pos - axis * base_radius * 0.20 + ortho * base_radius * 0.28,
+            base_radius * 0.44,
+            peak_height * (0.46 + 0.08 * mass),
+            mass,
+            height_sampler,
+            true
+        )
+        _massif_count += 1
 
 func _trail_material(intensity: float) -> StandardMaterial3D:
     var color := Color("#8b6f47")

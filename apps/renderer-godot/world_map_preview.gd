@@ -279,9 +279,9 @@ func _on_world_slice(observer: Dictionary, current_region_id: String, hot_entiti
     _live_region_count = _live_visual.update_regions(region_descriptors, current_region_id)
     if terrain_changed:
         _rebuild_active_tiles()
-        print("WORLD_MAP_MEMORY_TERRAIN projection=%s lakes=%d trails=%d" % [
+        print("WORLD_MAP_MEMORY_TERRAIN projection=%s lakes=%d trails=%d massifs=%d" % [
             _cognitive_terrain.projection_id(), _cognitive_terrain.lake_count(),
-            _cognitive_terrain.trail_count()
+            _cognitive_terrain.trail_count(), _cognitive_terrain.massif_count()
         ])
     if not _local_explore_enabled:
         if not terrain_changed and old_cell != Vector2i(_cell(_position.x), _cell(_position.z)):
