@@ -231,7 +231,7 @@ func _on_world_slice(observer: Dictionary, current_region_id: String, hot_entiti
     var first_bind := not _live_authoritative
     var old_cell := Vector2i(_cell(_position.x), _cell(_position.z))
     var terrain_changed: bool = bool(_cognitive_terrain.update(
-        cognitive_terrain, Callable(_live_visual, "project_flat")
+        cognitive_terrain, Callable(_live_visual, "project_flat"), Callable(self, "_height")
     ))
     var projected: Vector3 = _live_visual.project_position(observer)
     _last_live_position = projected
@@ -248,8 +248,9 @@ func _on_world_slice(observer: Dictionary, current_region_id: String, hot_entiti
     _live_region_count = _live_visual.update_regions(region_descriptors, current_region_id)
     if terrain_changed:
         _rebuild_active_tiles()
-        print("WORLD_MAP_MEMORY_TERRAIN projection=%s lakes=%d" % [
-            _cognitive_terrain.projection_id(), _cognitive_terrain.lake_count()
+        print("WORLD_MAP_MEMORY_TERRAIN projection=%s lakes=%d trails=%d" % [
+            _cognitive_terrain.projection_id(), _cognitive_terrain.lake_count(),
+            _cognitive_terrain.trail_count()
         ])
     if not _local_explore_enabled:
         if not terrain_changed and old_cell != Vector2i(_cell(_position.x), _cell(_position.z)):

@@ -207,6 +207,7 @@ def build_projection(
     last_tick: dict[str, int] = {}
     needs: dict[str, set[str]] = defaultdict(set)
     transitions: Counter[tuple[str, str]] = Counter()
+    transition_last_tick: dict[tuple[str, str], int] = {}
 
     ordered = sorted(
         records,
@@ -224,7 +225,9 @@ def build_projection(
         if isinstance(need, str) and need:
             needs[region].add(need)
         if previous_region is not None and previous_region != region:
-            transitions[(previous_region, region)] += 1
+            edge = (previous_region, region)
+            transitions[edge] += 1
+            transition_last_tick[edge] = tick
         previous_region = region
 
     ticks = [int(row["logical_tick"]) for row in ordered]
@@ -307,11 +310,19 @@ def build_projection(
         if source not in known or target not in known:
             continue
         strength = sqrt(float(count) / float(max_transition))
+        edge_last_tick = transition_last_tick.get((source, target), min_tick)
+        edge_recency = exp(-float(max_tick - edge_last_tick) / tau)
+        trail_strength = _clamp(strength * edge_recency, 0.0, 1.0)
         transition_rows.append({
             "from_region_id": source,
             "to_region_id": target,
             "count": count,
+            "last_logical_tick": edge_last_tick,
             "strength": round(strength, 6),
+            "recency_strength": round(edge_recency, 6),
+            "trail_strength": round(trail_strength, 6),
+            "trail_candidate": count >= 2 and trail_strength >= 0.18,
+            "trail_width_m": round(0.7 + 1.8 * trail_strength, 3),
             "ridge_height_m": round(1.0 + 3.5 * strength, 4),
             "ridge_width_m": round(28.0 + 42.0 * strength, 3),
         })

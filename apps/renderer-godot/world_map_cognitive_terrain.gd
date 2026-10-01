@@ -7,6 +7,7 @@ const MAX_REGIONS := 32
 const MAX_TRANSITIONS := 48
 const MAX_UPLIFT_M := 22.0
 const MAX_BASIN_M := -12.0
+const MAX_TRAIL_SEGMENTS := 192
 
 var _host: Node3D
 var _root: Node3D
@@ -14,6 +15,7 @@ var _projection_id := ""
 var _anchors: Array = []
 var _ridges: Array = []
 var _lake_count := 0
+var _trail_count := 0
 
 func _init(host: Node3D) -> void:
     _host = host
@@ -27,12 +29,16 @@ func projection_id() -> String:
 func lake_count() -> int:
     return _lake_count
 
+func trail_count() -> int:
+    return _trail_count
+
 func _clear_visuals() -> void:
     if _root == null:
         return
     for child in _root.get_children():
         child.queue_free()
     _lake_count = 0
+    _trail_count = 0
 
 func clear() -> bool:
     var changed := not _projection_id.is_empty() or not _anchors.is_empty() or not _ridges.is_empty()
@@ -51,7 +57,7 @@ func _valid_policy(projection: Dictionary) -> bool:
         and policy.get("selection_authority", true) == false
     )
 
-func update(projection: Dictionary, flat_projector: Callable) -> bool:
+func update(projection: Dictionary, flat_projector: Callable, height_sampler: Callable = Callable()) -> bool:
     if (
         str(projection.get("schema", "")) != SCHEMA
         or not _valid_policy(projection)
@@ -118,12 +124,17 @@ func update(projection: Dictionary, flat_projector: Callable) -> bool:
             "height": clampf(float(row.get("ridge_height_m", 1.0)), 0.0, 5.0),
             "width": clampf(float(row.get("ridge_width_m", 40.0)), 16.0, 96.0),
             "strength": clampf(float(row.get("strength", 0.0)), 0.0, 1.0),
+            "count": maxi(0, int(row.get("count", 0))),
+            "trail_strength": clampf(float(row.get("trail_strength", 0.0)), 0.0, 1.0),
+            "trail_candidate": bool(row.get("trail_candidate", false)),
+            "trail_width": clampf(float(row.get("trail_width_m", 0.7)), 0.4, 3.0),
         })
 
     _projection_id = next_id
     _anchors = next_anchors
     _ridges = next_ridges
     _rebuild_lakes()
+    _rebuild_trails(height_sampler)
     return true
 
 func _material(color: Color) -> StandardMaterial3D:
@@ -155,6 +166,60 @@ func _rebuild_lakes() -> void:
         lake.material_override = _material(Color("#4d9db4"))
         _root.add_child(lake)
         _lake_count += 1
+
+func _trail_material(intensity: float) -> StandardMaterial3D:
+    var color := Color("#8b6f47")
+    color.a = clampf(0.18 + 0.62 * intensity, 0.18, 0.80)
+    var material := _material(color)
+    material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+    material.roughness = 1.0
+    return material
+
+func _rebuild_trails(height_sampler: Callable) -> void:
+    var built_segments := 0
+    for ridge in _ridges:
+        if built_segments >= MAX_TRAIL_SEGMENTS:
+            break
+        if typeof(ridge) != TYPE_DICTIONARY:
+            continue
+        if not bool(ridge.get("trail_candidate", false)) or int(ridge.get("count", 0)) < 2:
+            continue
+        var intensity := clampf(float(ridge.get("trail_strength", 0.0)), 0.0, 1.0)
+        if intensity < 0.18:
+            continue
+        var a: Vector2 = ridge["a"]
+        var b: Vector2 = ridge["b"]
+        var distance := a.distance_to(b)
+        if distance < 0.5:
+            continue
+        var segments := clampi(int(ceil(distance / 12.0)), 1, 16)
+        var width := clampf(float(ridge.get("trail_width", 0.7)), 0.4, 3.0)
+        for index in range(segments):
+            if built_segments >= MAX_TRAIL_SEGMENTS:
+                break
+            var t0 := float(index) / float(segments)
+            var t1 := float(index + 1) / float(segments)
+            var p0 := a.lerp(b, t0)
+            var p1 := a.lerp(b, t1)
+            var center := (p0 + p1) * 0.5
+            var axis := p1 - p0
+            var length := axis.length()
+            if length < 0.05:
+                continue
+            var y := height_delta(center.x, center.y)
+            if height_sampler.is_valid():
+                y = float(height_sampler.call(center.x, center.y))
+            var mesh := BoxMesh.new()
+            mesh.size = Vector3(length, 0.06, width)
+            var trail := MeshInstance3D.new()
+            trail.name = "MemoryTrail_%d_%d" % [_trail_count, index]
+            trail.mesh = mesh
+            trail.position = Vector3(center.x, y + 0.08, center.y)
+            trail.rotation.y = -atan2(axis.y, axis.x)
+            trail.material_override = _trail_material(intensity)
+            _root.add_child(trail)
+            built_segments += 1
+        _trail_count += 1
 
 func surface_at(x: float, z: float) -> Dictionary:
     var point := Vector2(x, z)
