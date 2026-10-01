@@ -2,10 +2,10 @@
 Description=Live Infinita — bounded structural association consolidation timer
 
 [Timer]
-OnBootSec=3min
-OnUnitInactiveSec=2min
-RandomizedDelaySec=15s
-AccuracySec=15s
+OnBootSec=2min
+OnUnitInactiveSec=1min
+RandomizedDelaySec=10s
+AccuracySec=10s
 Persistent=false
 Unit=live-infinita-structural-association-consolidator.service
 

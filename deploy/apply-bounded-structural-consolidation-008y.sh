@@ -3,7 +3,7 @@ set -Eeuo pipefail
 
 REPO=/home/etbra/live.infinita
 MEM_REPO=/home/etbra/_memoria_local_probe
-MEM_SHA=8470ef2b58784a07eadf48c3aa83edfe58a893e3
+MEM_SHA=dfd87c995b50c49b45a9d5dd4c43cce456983d4f
 CORE=/opt/live-infinita-memoria-core/$MEM_SHA
 MEM_UNIT=/etc/systemd/system/live-infinita-memoria-local.service
 MEM_ENV=/etc/live-infinita/memoria-local.env
@@ -59,6 +59,7 @@ rm -rf "$CORE"
 mv "$CORE.tmp" "$CORE"
 
 grep -q 'max_observations' "$CORE/src/memoria_resolutiva/structural_association_runtime.py" || fail "runtime sem limite"
+grep -q 'COMPACT_POINTER_FORMAT' "$CORE/src/memoria_resolutiva/structural_association_runtime.py" || fail "runtime sem checkpoint compacto"
 grep -q 'max_observations' "$CORE/src/memoria_resolutiva/product_structural.py" || fail "endpoint sem limite"
 
 echo "== 008y: unit/env Memoria.ia =="
@@ -124,8 +125,16 @@ d=json.load(open(sys.argv[1], encoding="utf-8"))
 print(int(d.get("structural_association_pending") or 0))
 PY
 )"
+checkpoint_format="$(python3 - "$after" <<'PY'
+import json, sys
+d=json.load(open(sys.argv[1], encoding="utf-8"))
+print(d.get("structural_association_checkpoint_format") or "")
+PY
+)"
 echo "008Y_PENDING_AFTER=$after_pending"
+echo "008Y_CHECKPOINT_FORMAT=$checkpoint_format"
 (( after_pending <= before_pending )) || fail "backlog aumentou durante validação isolada"
+[[ "$checkpoint_format" == "memoria.ia-structural-association-pointer-v2" ]]   || fail "checkpoint compacto não foi ativado"
 
 echo "== 008y: timers =="
 systemctl enable --now "$CONSOLIDATOR_TIMER"
