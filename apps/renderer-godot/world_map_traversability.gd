@@ -14,10 +14,12 @@ const MAX_COLLISION_HITS := 8
 
 var _walk_height: Callable
 var _half_m := 512.0
+var _dynamic_surface: Callable
 
-func _init(walk_height: Callable, half_m: float = 512.0) -> void:
+func _init(walk_height: Callable, half_m: float = 512.0, dynamic_surface: Callable = Callable()) -> void:
     _walk_height = walk_height
     _half_m = half_m
+    _dynamic_surface = dynamic_surface
 
 func surface(position: Vector3) -> Dictionary:
     if absf(position.x) > _half_m - MAP_MARGIN or absf(position.z) > _half_m - MAP_MARGIN:
@@ -30,6 +32,10 @@ func surface(position: Vector3) -> Dictionary:
         return {"walkable": true, "surface": "bridge", "reason": ""}
     if absf(position.x - RIVER_X) <= RIVER_HALF_WIDTH:
         return {"walkable": false, "surface": "water", "reason": "river_without_bridge"}
+    if _dynamic_surface.is_valid():
+        var dynamic = _dynamic_surface.call(position.x, position.z)
+        if typeof(dynamic) == TYPE_DICTIONARY and not bool(dynamic.get("walkable", true)):
+            return dynamic
     return {"walkable": true, "surface": "terrain", "reason": ""}
 
 func ground_position(x: float, z: float) -> Vector3:

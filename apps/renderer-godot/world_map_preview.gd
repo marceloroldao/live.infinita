@@ -58,7 +58,7 @@ func _ready() -> void:
     _features = Features.new(Callable(self, "_height"), _layout.half_m)
     _live_visual = LiveVisual.new(self, _features, _map)
     _cognitive_terrain = CognitiveTerrain.new(self)
-    _local_motion = LocalMotion.new(Callable(_features, "walk_height"), _layout.half_m)
+    _local_motion = LocalMotion.new(Callable(_features, "walk_height"), _layout.half_m, Callable(_cognitive_terrain, "surface_at"))
     _position = _waypoint(_route[0])
     for argument in OS.get_cmdline_user_args():
         if str(argument).begins_with("--preview-cell="):

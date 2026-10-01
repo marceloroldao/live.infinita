@@ -6,8 +6,8 @@ const BODY_CENTER_Y := 0.9
 
 var _traversability: RefCounted
 
-func _init(walk_height: Callable, half_m: float = 512.0) -> void:
-    _traversability = Traversability.new(walk_height, half_m)
+func _init(walk_height: Callable, half_m: float = 512.0, dynamic_surface: Callable = Callable()) -> void:
+    _traversability = Traversability.new(walk_height, half_m, dynamic_surface)
 
 func create_body(parent: Node3D, material: Material) -> CharacterBody3D:
     var body := CharacterBody3D.new()
