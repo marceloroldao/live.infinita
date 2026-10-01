@@ -5,6 +5,7 @@ extends RefCounted
 const SCHEMA := "live-infinita-cognitive-terrain/v1"
 const MAX_REGIONS := 32
 const MAX_TRANSITIONS := 48
+const MAX_SPATIAL_TRAILS := 128
 const MAX_UPLIFT_M := 22.0
 const MAX_BASIN_M := -12.0
 const MAX_TRAIL_SEGMENTS := 192
@@ -14,6 +15,7 @@ var _root: Node3D
 var _projection_id := ""
 var _anchors: Array = []
 var _ridges: Array = []
+var _spatial_trails: Array = []
 var _lake_count := 0
 var _trail_count := 0
 
@@ -41,10 +43,11 @@ func _clear_visuals() -> void:
     _trail_count = 0
 
 func clear() -> bool:
-    var changed := not _projection_id.is_empty() or not _anchors.is_empty() or not _ridges.is_empty()
+    var changed := not _projection_id.is_empty() or not _anchors.is_empty() or not _ridges.is_empty() or not _spatial_trails.is_empty()
     _projection_id = ""
     _anchors.clear()
     _ridges.clear()
+    _spatial_trails.clear()
     _clear_visuals()
     return changed
 
@@ -73,11 +76,14 @@ func update(projection: Dictionary, flat_projector: Callable, height_sampler: Ca
 
     var rows = projection.get("regions", [])
     var transitions = projection.get("transitions", [])
+    var spatial_trails = projection.get("spatial_trails", [])
     if (
         typeof(rows) != TYPE_ARRAY
         or rows.size() > MAX_REGIONS
         or typeof(transitions) != TYPE_ARRAY
         or transitions.size() > MAX_TRANSITIONS
+        or typeof(spatial_trails) != TYPE_ARRAY
+        or spatial_trails.size() > MAX_SPATIAL_TRAILS
     ):
         return clear()
 
@@ -130,9 +136,34 @@ func update(projection: Dictionary, flat_projector: Callable, height_sampler: Ca
             "trail_width": clampf(float(row.get("trail_width_m", 0.7)), 0.4, 3.0),
         })
 
+    var next_spatial_trails: Array = []
+    for item in spatial_trails:
+        if typeof(item) != TYPE_DICTIONARY:
+            continue
+        var row: Dictionary = item
+        if not bool(row.get("trail_candidate", false)):
+            continue
+        var from_position = row.get("from_position", {})
+        var to_position = row.get("to_position", {})
+        if typeof(from_position) != TYPE_DICTIONARY or typeof(to_position) != TYPE_DICTIONARY:
+            continue
+        var a_value = flat_projector.call(from_position)
+        var b_value = flat_projector.call(to_position)
+        if typeof(a_value) != TYPE_VECTOR2 or typeof(b_value) != TYPE_VECTOR2:
+            continue
+        next_spatial_trails.append({
+            "a": a_value,
+            "b": b_value,
+            "count": maxi(0, int(row.get("count", 0))),
+            "trail_strength": clampf(float(row.get("trail_strength", 0.0)), 0.0, 1.0),
+            "trail_candidate": true,
+            "trail_width": clampf(float(row.get("trail_width_m", 0.7)), 0.4, 3.0),
+        })
+
     _projection_id = next_id
     _anchors = next_anchors
     _ridges = next_ridges
+    _spatial_trails = next_spatial_trails
     _rebuild_lakes()
     _rebuild_trails(height_sampler)
     return true
@@ -177,7 +208,8 @@ func _trail_material(intensity: float) -> StandardMaterial3D:
 
 func _rebuild_trails(height_sampler: Callable) -> void:
     var built_segments := 0
-    for ridge in _ridges:
+    var trail_source: Array = _spatial_trails if not _spatial_trails.is_empty() else _ridges
+    for ridge in trail_source:
         if built_segments >= MAX_TRAIL_SEGMENTS:
             break
         if typeof(ridge) != TYPE_DICTIONARY:

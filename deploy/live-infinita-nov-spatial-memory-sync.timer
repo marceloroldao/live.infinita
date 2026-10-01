@@ -1,0 +1,13 @@
+[Unit]
+Description=Live Infinita — refresh Nov spatial memory
+
+[Timer]
+OnBootSec=2min
+OnUnitInactiveSec=1min
+RandomizedDelaySec=10s
+AccuracySec=10s
+Persistent=false
+Unit=live-infinita-nov-spatial-memory-sync.service
+
+[Install]
+WantedBy=timers.target

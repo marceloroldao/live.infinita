@@ -15,7 +15,7 @@ from collections import Counter, defaultdict
 from copy import deepcopy
 from hashlib import sha256
 import json
-from math import exp, sqrt
+from math import exp, sqrt, isfinite
 import os
 from pathlib import Path
 import sqlite3
@@ -27,6 +27,8 @@ DEFAULT_DB = Path("/var/lib/live-infinita/memoria-local/external-episodes-increm
 DEFAULT_CHECKPOINT = Path("/var/lib/live-infinita/memoria-local/nov-ingest.checkpoint.json")
 DEFAULT_WORLD = Path("/var/lib/live-infinita/autonomous-world/world.json")
 DEFAULT_OUTPUT = Path("/var/lib/live-infinita/cognitive-terrain/projection.json")
+DEFAULT_SPATIAL_INDEX = Path("/var/lib/live-infinita/memoria-local/structural-observations/index.jsonl")
+DEFAULT_SPATIAL_DB = Path("/var/lib/live-infinita/memoria-local/structural-observations/persistence/memoria.sqlite3")
 
 MAX_WORLD_BYTES = 2 * 1024 * 1024
 MAX_CHECKPOINT_BYTES = 16 * 1024
@@ -34,6 +36,9 @@ MAX_DB_BYTES = 256 * 1024 * 1024
 MAX_RECORDS = 8192
 MAX_REGIONS = 32
 MAX_TRANSITIONS = 48
+MAX_SPATIAL_RECORDS = 4096
+MAX_SPATIAL_TRAILS = 128
+MAX_SPATIAL_INDEX_WINDOW_BYTES = 8 * 1024 * 1024
 MAX_OUTPUT_BYTES = 128 * 1024
 WATERLIKE_BIOMES = frozenset({"river", "waterfall"})
 BASIN_BIOME_PRIORITY = {"meadow": 0, "forest": 1, "hills": 2, "moor": 3}
@@ -193,6 +198,112 @@ def _validated_rows(db_path: Path, checkpoint: dict[str, Any], world_id: str) ->
     return out, total
 
 
+def _recent_index_lines(path: Path, *, limit: int) -> list[bytes]:
+    if path.is_symlink():
+        raise CognitiveTerrainError("spatial_index_symlink")
+    try:
+        size = path.stat().st_size
+    except (FileNotFoundError, PermissionError):
+        # Spatial memory is an optional enhancement. Environments that cannot
+        # read its owner-only store retain the verified regional-memory fallback.
+        return []
+    if not path.is_file() or size <= 0:
+        return []
+    start = max(0, size - MAX_SPATIAL_INDEX_WINDOW_BYTES)
+    with path.open("rb") as fh:
+        fh.seek(start)
+        data = fh.read(size - start)
+    if not data.endswith(b"\n"):
+        raise CognitiveTerrainError("spatial_index_torn_tail")
+    if start:
+        cut = data.find(b"\n")
+        data = b"" if cut < 0 else data[cut + 1:]
+    return data.splitlines()[-max(1, int(limit)):]
+
+
+def _position_pair(value: Any, label: str) -> dict[str, float]:
+    if not isinstance(value, dict):
+        raise CognitiveTerrainError(label + "_invalid")
+    try:
+        x, y = float(value["x"]), float(value["y"])
+    except (KeyError, TypeError, ValueError, OverflowError) as exc:
+        raise CognitiveTerrainError(label + "_invalid") from exc
+    if not isfinite(x) or not isfinite(y) or abs(x) > 10_000_000 or abs(y) > 10_000_000:
+        raise CognitiveTerrainError(label + "_invalid")
+    return {"x": x, "y": y}
+
+
+def _validated_spatial_rows(index_path: Path, db_path: Path, world_id: str) -> list[dict[str, Any]]:
+    lines = _recent_index_lines(index_path, limit=MAX_SPATIAL_RECORDS)
+    if not lines:
+        return []
+    if db_path.is_symlink() or not db_path.is_file():
+        raise CognitiveTerrainError("spatial_store_unavailable")
+    uri = db_path.resolve().as_uri() + "?mode=ro"
+    db = sqlite3.connect(uri, uri=True)
+    rows: list[dict[str, Any]] = []
+    try:
+        db.execute("PRAGMA query_only=ON")
+        for raw in lines:
+            try:
+                index_row = json.loads(raw)
+            except (ValueError, UnicodeError) as exc:
+                raise CognitiveTerrainError("spatial_index_invalid") from exc
+            if not isinstance(index_row, dict) or index_row.get("format") != "memoria.ia-structural-observation-index-v1":
+                raise CognitiveTerrainError("spatial_index_invalid")
+            observation_id = str(index_row.get("observation_id") or "")
+            receipt = index_row.get("receipt")
+            if not observation_id or not isinstance(receipt, dict) or receipt.get("backend") != "sqlite":
+                raise CognitiveTerrainError("spatial_receipt_invalid")
+            state_id = str(receipt.get("state_id") or "")
+            digest = str(receipt.get("sha256") or "")
+            if not state_id.startswith("structural-observation:") or len(digest) != 64:
+                raise CognitiveTerrainError("spatial_receipt_invalid")
+            stored = db.execute("SELECT payload FROM memories WHERE memory_id=?", (state_id,)).fetchone()
+            if stored is None:
+                raise CognitiveTerrainError("spatial_payload_missing")
+            payload = bytes(stored[0])
+            if sha256(payload).hexdigest() != digest:
+                raise CognitiveTerrainError("spatial_payload_digest")
+            try:
+                envelope = json.loads(payload)
+            except (ValueError, UnicodeError) as exc:
+                raise CognitiveTerrainError("spatial_payload_invalid") from exc
+            if not isinstance(envelope, dict) or envelope.get("format") != "memoria.ia-structural-observation-v1" or envelope.get("observation_id") != observation_id:
+                raise CognitiveTerrainError("spatial_payload_invalid")
+            provenance = envelope.get("provenance")
+            event = envelope.get("event")
+            if not isinstance(provenance, dict) or not isinstance(event, dict):
+                raise CognitiveTerrainError("spatial_payload_invalid")
+            if provenance.get("hierarchy_id") != f"live:spatial:{world_id}:nov":
+                continue
+            if (
+                provenance.get("world_id") != world_id
+                or provenance.get("entity_id") != "nov"
+                or provenance.get("source_kind") != "confirmed_world_delta_move"
+                or provenance.get("authority") != "observed-world-delta"
+                or provenance.get("world_write_authority") is not False
+                or event.get("source_id") != f"live.infinita:{world_id}:nov:movement"
+                or type(event.get("sequence")) is not int
+                or event.get("sequence") != provenance.get("world_sequence")
+                or not isinstance(event.get("trail"), list)
+                or len(event["trail"]) != 2
+            ):
+                raise CognitiveTerrainError("spatial_provenance_mismatch")
+            rows.append({
+                "sequence": int(event["sequence"]),
+                "trail": (int(event["trail"][0]), int(event["trail"][1])),
+                "from_position": _position_pair(provenance.get("from_position"), "spatial_from"),
+                "to_position": _position_pair(provenance.get("to_position"), "spatial_to"),
+                "from_region_id": str(provenance.get("from_region_id") or "") or None,
+                "to_region_id": str(provenance.get("to_region_id") or "") or None,
+            })
+    finally:
+        db.close()
+    rows.sort(key=lambda row: row["sequence"])
+    return rows
+
+
 def _clamp(value: float, low: float, high: float) -> float:
     return max(low, min(high, value))
 
@@ -200,7 +311,7 @@ def _clamp(value: float, low: float, high: float) -> float:
 def build_projection(
     *, world_id: str, known_regions: list[dict[str, Any]],
     records: list[dict[str, Any]], source_snapshot_records: int,
-    checkpoint_cursor: int,
+    checkpoint_cursor: int, spatial_records: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     known = {row["region_id"]: row for row in known_regions}
     counts: Counter[str] = Counter()
@@ -327,6 +438,47 @@ def build_projection(
             "ridge_width_m": round(28.0 + 42.0 * strength, 3),
         })
 
+    spatial_records = list(spatial_records or [])
+    spatial_counts: Counter[tuple[int, int]] = Counter()
+    spatial_last: dict[tuple[int, int], int] = {}
+    spatial_sample: dict[tuple[int, int], dict[str, Any]] = {}
+    for row in spatial_records:
+        trail = row.get("trail")
+        if not isinstance(trail, (tuple, list)) or len(trail) != 2:
+            continue
+        pair = tuple(sorted((int(trail[0]), int(trail[1]))))
+        sequence = int(row.get("sequence", 0))
+        spatial_counts[pair] += 1
+        if sequence >= spatial_last.get(pair, -1):
+            spatial_last[pair] = sequence
+            spatial_sample[pair] = row
+
+    spatial_trails: list[dict[str, Any]] = []
+    if spatial_counts:
+        max_spatial_count = max(spatial_counts.values())
+        max_spatial_sequence = max(spatial_last.values())
+        min_spatial_sequence = min(spatial_last.values())
+        spatial_span = max(1, max_spatial_sequence - min_spatial_sequence)
+        spatial_tau = max(64.0, float(spatial_span) * 0.20)
+        for pair, count in spatial_counts.most_common(MAX_SPATIAL_TRAILS):
+            sample = spatial_sample[pair]
+            recurrence = sqrt(float(count) / float(max_spatial_count))
+            recency = exp(-float(max_spatial_sequence - spatial_last[pair]) / spatial_tau)
+            strength = _clamp(recurrence * recency, 0.0, 1.0)
+            spatial_trails.append({
+                "from_position": sample["from_position"],
+                "to_position": sample["to_position"],
+                "from_region_id": sample.get("from_region_id"),
+                "to_region_id": sample.get("to_region_id"),
+                "count": count,
+                "last_world_sequence": spatial_last[pair],
+                "recurrence_strength": round(recurrence, 6),
+                "recency_strength": round(recency, 6),
+                "trail_strength": round(strength, 6),
+                "trail_candidate": count >= 2 and strength >= 0.18,
+                "trail_width_m": round(0.6 + 1.8 * strength, 3),
+            })
+
     basis = {
         "world_id": world_id,
         "checkpoint_cursor": checkpoint_cursor,
@@ -335,6 +487,7 @@ def build_projection(
         "latest_logical_tick": max_tick,
         "regions": regions,
         "transitions": transition_rows,
+        "spatial_trails": spatial_trails,
     }
     projection_id = "ctp_" + sha256(_canonical(basis)).hexdigest()[:24]
     return {
@@ -347,6 +500,7 @@ def build_projection(
             "nov_observations": len(records),
             "checkpoint_cursor": checkpoint_cursor,
             "latest_logical_tick": max_tick,
+            "spatial_observations": len(spatial_records),
         },
         "policy": {
             "visual_only": True,
@@ -354,12 +508,15 @@ def build_projection(
             "selection_authority": False,
             "max_regions": MAX_REGIONS,
             "max_transitions": MAX_TRANSITIONS,
+            "max_spatial_trails": MAX_SPATIAL_TRAILS,
             "episode_window_limit": MAX_RECORDS,
+            "spatial_window_limit": MAX_SPATIAL_RECORDS,
             "height_cap_m": 18.0,
             "basin_cap_m": -12.0,
         },
         "regions": regions,
         "transitions": transition_rows,
+        "spatial_trails": spatial_trails,
     }
 
 
@@ -391,16 +548,20 @@ def _atomic_write(path: Path, payload: dict[str, Any]) -> None:
 def project_once(
     *, db_path: Path = DEFAULT_DB, checkpoint_path: Path = DEFAULT_CHECKPOINT,
     world_path: Path = DEFAULT_WORLD, output_path: Path = DEFAULT_OUTPUT,
+    spatial_index_path: Path = DEFAULT_SPATIAL_INDEX,
+    spatial_db_path: Path = DEFAULT_SPATIAL_DB,
 ) -> dict[str, Any]:
     world_id, regions = _world_regions(world_path)
     checkpoint = _checkpoint(checkpoint_path, world_id)
     records, source_snapshot_records = _validated_rows(db_path, checkpoint, world_id)
+    spatial_records = _validated_spatial_rows(spatial_index_path, spatial_db_path, world_id)
     projection = build_projection(
         world_id=world_id,
         known_regions=regions,
         records=records,
         source_snapshot_records=source_snapshot_records,
         checkpoint_cursor=int(checkpoint["cursor"]),
+        spatial_records=spatial_records,
     )
     _atomic_write(output_path, projection)
     return {
@@ -410,6 +571,8 @@ def project_once(
         "regions": len(projection["regions"]),
         "transitions": len(projection["transitions"]),
         "nov_observations": len(records),
+        "spatial_observations": len(spatial_records),
+        "spatial_trails": len(projection.get("spatial_trails", [])),
         "world_mutated": False,
         "selection_authority": False,
     }
@@ -428,6 +591,7 @@ class CognitiveTerrainProjectionReader:
         policy = value.get("policy")
         regions = value.get("regions")
         transitions = value.get("transitions")
+        spatial_trails = value.get("spatial_trails", [])
         if (
             value.get("schema") != SCHEMA
             or value.get("world_id") != world_id
@@ -440,6 +604,8 @@ class CognitiveTerrainProjectionReader:
             or len(regions) > MAX_REGIONS
             or not isinstance(transitions, list)
             or len(transitions) > MAX_TRANSITIONS
+            or not isinstance(spatial_trails, list)
+            or len(spatial_trails) > MAX_SPATIAL_TRAILS
         ):
             raise CognitiveTerrainError("projection_contract")
 
