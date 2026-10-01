@@ -9,6 +9,7 @@ const CognitiveTerrain = preload("res://world_map_cognitive_terrain.gd")
 const MAP_PATH := "res://world_map_001.json"
 const TILE_M := 64.0
 const MAX_ACTIVE_TILES := 9
+const MAX_CACHED_TILES := 24
 const CENTER_DECOR_INDICES := [0, 1, 2, 3, 4, 5]
 const EDGE_DECOR_INDICES := [0, 2, 4]
 const CORNER_DECOR_INDICES := [1]
@@ -20,6 +21,11 @@ var _catalog: RefCounted
 var _layout: RefCounted
 var _features: RefCounted
 var _tiles: Dictionary = {}
+var _tile_cache: Dictionary = {}
+var _tile_cache_order: Array[String] = []
+var _tile_cache_root: Node3D
+var _tile_cache_hits := 0
+var _tile_cache_misses := 0
 var _resource_cache: Dictionary = {}
 var _walker: CharacterBody3D
 var _camera: Camera3D
@@ -66,6 +72,10 @@ func _ready() -> void:
     _live_visual = LiveVisual.new(self, _features, _map)
     _cognitive_terrain = CognitiveTerrain.new(self)
     _local_motion = LocalMotion.new(Callable(_features, "walk_height"), _layout.half_m, Callable(_cognitive_terrain, "surface_at"))
+    _tile_cache_root = Node3D.new()
+    _tile_cache_root.name = "TileCache"
+    _tile_cache_root.visible = false
+    add_child(_tile_cache_root)
     _position = _waypoint(_route[0])
     for argument in OS.get_cmdline_user_args():
         if str(argument).begins_with("--preview-cell="):
@@ -226,7 +236,67 @@ func _decoration(parent: Node3D, cx: int, cz: int, index: int, biome: String) ->
     n.position = Vector3(x, _height(x, z), z)
     n.scale = Vector3.ONE * (0.75 if kind == "tree" else 0.90)
     parent.add_child(n)
+func _prune_tile_cache() -> void:
+    while _tile_cache_order.size() > MAX_CACHED_TILES:
+        var stale_id: String = str(_tile_cache_order.pop_front())
+        if not _tile_cache.has(stale_id):
+            continue
+        var stale: Node3D = _tile_cache[stale_id]
+        _tile_cache.erase(stale_id)
+        if is_instance_valid(stale):
+            stale.queue_free()
+
+func _cache_tile(id: String, tile: Node3D) -> void:
+    if _tile_cache_root == null or not is_instance_valid(tile):
+        if is_instance_valid(tile):
+            tile.queue_free()
+        return
+    if _tile_cache.has(id):
+        var existing: Node3D = _tile_cache[id]
+        if is_instance_valid(existing):
+            existing.queue_free()
+        _tile_cache.erase(id)
+        _tile_cache_order.erase(id)
+    if tile.get_parent() != null:
+        tile.get_parent().remove_child(tile)
+    tile.visible = false
+    _tile_cache_root.add_child(tile)
+    _tile_cache[id] = tile
+    _tile_cache_order.append(id)
+    _prune_tile_cache()
+
+func _take_cached_tile(id: String) -> Node3D:
+    if not _tile_cache.has(id):
+        _tile_cache_misses += 1
+        return null
+    var tile: Node3D = _tile_cache[id]
+    _tile_cache.erase(id)
+    _tile_cache_order.erase(id)
+    if not is_instance_valid(tile):
+        _tile_cache_misses += 1
+        return null
+    if tile.get_parent() != null:
+        tile.get_parent().remove_child(tile)
+    add_child(tile)
+    tile.visible = true
+    _tile_cache_hits += 1
+    if _tile_cache_hits % 16 == 0:
+        print("WORLD_MAP_TILE_CACHE hits=%d misses=%d cached=%d" % [
+            _tile_cache_hits, _tile_cache_misses, _tile_cache.size()
+        ])
+    return tile
+
+func _clear_tile_cache() -> void:
+    for tile in _tile_cache.values():
+        if is_instance_valid(tile):
+            tile.queue_free()
+    _tile_cache.clear()
+    _tile_cache_order.clear()
+    _tile_cache_hits = 0
+    _tile_cache_misses = 0
+
 func _rebuild_active_tiles() -> void:
+    _clear_tile_cache()
     for id in _tiles.keys().duplicate():
         var stale: Node3D = _tiles[id]
         _tiles.erase(id)
@@ -255,6 +325,10 @@ func _sync_tiles() -> void:
             wanted[id] = true
             if _tiles.has(id):
                 continue
+            var cached_tile := _take_cached_tile(id)
+            if cached_tile != null:
+                _tiles[id] = cached_tile
+                continue
             var tile := Node3D.new()
             tile.name = "Tile_%d_%d" % [x, z]
             add_child(tile)
@@ -272,7 +346,7 @@ func _sync_tiles() -> void:
         if not wanted.has(id):
             var stale: Node3D = _tiles[id]
             _tiles.erase(id)
-            stale.queue_free()
+            _cache_tile(id, stale)
     assert(_tiles.size() <= MAX_ACTIVE_TILES)
 func _on_world_slice(observer: Dictionary, current_region_id: String, hot_entities: Array, warm_entities: Array, region_descriptors: Array, sequence: int, cognitive_terrain: Dictionary) -> void:
     if observer.is_empty():
