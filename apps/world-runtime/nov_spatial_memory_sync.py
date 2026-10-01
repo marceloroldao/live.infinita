@@ -24,7 +24,7 @@ MEMORY_ROOT = Path("/var/lib/live-infinita/memoria-local")
 DELTA_PATH = ROOT / "deltas.jsonl"
 WORLD_PATH = ROOT / "world.json"
 CHECKPOINT_PATH = MEMORY_ROOT / "nov-spatial-ingest.checkpoint.json"
-ENDPOINT = "http://127.0.0.1:8788/api/v1/structural/observations"
+ENDPOINT = "http://127.0.0.1:8788/api/v1/structural/observations?defer_associations=true"
 
 CHECKPOINT_SCHEMA = "live-infinita-nov-spatial-checkpoint/v1"
 HIERARCHY_PREFIX = "live:spatial:"
@@ -358,6 +358,7 @@ def _validate_ack(response: dict[str, Any], payload: dict[str, Any]) -> None:
         response.get("observation_id") != expected
         or not isinstance(response.get("stored"), bool)
         or not isinstance(response.get("duplicate"), bool)
+        or response.get("association_sync_deferred") is not True
         or response.get("semantic_projection") is not False
         or response.get("backend") not in {"sqlite", "bdr"}
     ):

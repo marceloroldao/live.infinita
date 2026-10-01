@@ -58,7 +58,8 @@ class SpatialMemorySync008STests(unittest.TestCase):
                 "stored": True,
                 "duplicate": False,
                 "observation_id": module._observation_id(payload["event"]),
-                "association_sync_observations": 1,
+                "association_sync_observations": 0,
+                "association_sync_deferred": True,
                 "semantic_projection": False,
                 "backend": "sqlite",
             }
@@ -104,6 +105,7 @@ class SpatialMemorySync008STests(unittest.TestCase):
             return {
                 "stored": True, "duplicate": False,
                 "observation_id": module._observation_id(payload["event"]),
+                "association_sync_deferred": True,
                 "semantic_projection": False, "backend": "sqlite",
             }
         module.sync_once(

@@ -54,6 +54,7 @@ class SpatialTrajectoryBatching008TTests(unittest.TestCase):
             "stored": True,
             "duplicate": False,
             "observation_id": sync._observation_id(payload["event"]),
+            "association_sync_deferred": True,
             "semantic_projection": False,
             "backend": "sqlite",
         }
