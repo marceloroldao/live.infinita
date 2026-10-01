@@ -111,9 +111,14 @@ PY
 
 echo "== 008x: one-shot espacial diferido =="
 systemctl reset-failed "$SPATIAL_UNIT" || true
-systemctl start "$SPATIAL_UNIT"
-journalctl -u "$SPATIAL_UNIT" -n 80 --no-pager | tail -40
-journalctl -u "$SPATIAL_UNIT" -n 80 --no-pager | grep -q 'NOV_SPATIAL_MEMORY_SYNC_OK'   || fail "sync espacial não confirmou sucesso"
+if ! systemctl start "$SPATIAL_UNIT"; then
+  journalctl -u "$SPATIAL_UNIT" -n 80 --no-pager || true
+  fail "sync espacial falhou"
+fi
+spatial_result="$(systemctl show "$SPATIAL_UNIT" -p Result --value)"
+spatial_exec_status="$(systemctl show "$SPATIAL_UNIT" -p ExecMainStatus --value)"
+journalctl -u "$SPATIAL_UNIT" -n 40 --no-pager || true
+[[ "$spatial_result" == "success" && "$spatial_exec_status" == "0" ]]   || fail "sync espacial terminou sem sucesso: result=$spatial_result status=$spatial_exec_status"
 
 echo "== 008x: projeção cognitiva =="
 systemctl start live-infinita-cognitive-terrain.service
