@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import json
+import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 
 @dataclass(frozen=True)
@@ -25,11 +26,20 @@ class SimulationClockState:
 class SimulationClock:
     """Persistent logical clock independent from wall time and renderer FPS."""
 
-    def __init__(self, path: Path, *, tick_duration_ms: int = 500) -> None:
+    def __init__(
+        self,
+        path: Path,
+        *,
+        tick_duration_ms: int = 500,
+        stage_observer: Callable[[str, int], None] | None = None,
+        monotonic_ns: Callable[[], int] = time.perf_counter_ns,
+    ) -> None:
         if tick_duration_ms <= 0:
             raise ValueError("tick_duration_ms must be positive")
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
+        self.stage_observer = stage_observer
+        self.monotonic_ns = monotonic_ns
         if self.path.exists():
             state = self._load()
             if int(state.get("tick_duration_ms", 0)) <= 0:
@@ -37,13 +47,50 @@ class SimulationClock:
         else:
             self._save(SimulationClockState(0, tick_duration_ms, False).as_dict())
 
+    def _stage(self, name: str, fn: Callable[[], Any]) -> Any:
+        if self.stage_observer is None:
+            return fn()
+        started = self.monotonic_ns()
+        try:
+            return fn()
+        finally:
+            try:
+                self.stage_observer(
+                    name,
+                    max(0, self.monotonic_ns() - started),
+                )
+            except Exception:
+                pass
+
     def _load(self) -> dict[str, Any]:
-        return json.loads(self.path.read_text(encoding="utf-8"))
+        raw = self._stage(
+            "clock.storage.read",
+            lambda: self.path.read_text(encoding="utf-8"),
+        )
+        return self._stage(
+            "clock.storage.parse",
+            lambda: json.loads(raw),
+        )
 
     def _save(self, value: dict[str, Any]) -> None:
         tmp = self.path.with_suffix(self.path.suffix + ".tmp")
-        tmp.write_text(json.dumps(value, ensure_ascii=False, sort_keys=True, indent=2) + "\n", encoding="utf-8")
-        tmp.replace(self.path)
+        payload = self._stage(
+            "clock.storage.serialize",
+            lambda: json.dumps(
+                value,
+                ensure_ascii=False,
+                sort_keys=True,
+                indent=2,
+            ) + "\n",
+        )
+        self._stage(
+            "clock.storage.write_tmp",
+            lambda: tmp.write_text(payload, encoding="utf-8"),
+        )
+        self._stage(
+            "clock.storage.replace",
+            lambda: tmp.replace(self.path),
+        )
 
     def state(self) -> SimulationClockState:
         raw = self._load()

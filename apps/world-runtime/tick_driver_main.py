@@ -65,6 +65,15 @@ def build_driver(world_tick_runner, data_dir: Path, owner_id: str | None = None)
             ledger = getattr(scheduler, "ledger", None)
             if ledger is not None and hasattr(ledger, "stage_observer"):
                 ledger.stage_observer = profiler.observe_stage
+            proposal_ledger = getattr(scheduler, "proposal_ledger", None)
+            if (
+                proposal_ledger is not None
+                and hasattr(proposal_ledger, "stage_observer")
+            ):
+                proposal_ledger.stage_observer = profiler.observe_stage
+        clock = getattr(authoritative, "clock", None)
+        if clock is not None and hasattr(clock, "stage_observer"):
+            clock.stage_observer = profiler.observe_stage
         for component_name in ("npc_need_scheduler", "npc_need_outcomes"):
             component = getattr(authoritative, component_name, None)
             if component is not None and hasattr(component, "stage_observer"):
