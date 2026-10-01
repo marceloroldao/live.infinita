@@ -9,6 +9,8 @@ const MAX_SPATIAL_TRAILS := 128
 const MAX_UPLIFT_M := 22.0
 const MAX_BASIN_M := -12.0
 const MAX_TRAIL_SEGMENTS := 192
+const MAX_TRAIL_MEANDER_M := 4.5
+const TRAIL_MEANDER_DISTANCE_RATIO := 0.055
 
 var _host: Node3D
 var _root: Node3D
@@ -206,6 +208,45 @@ func _trail_material(intensity: float) -> StandardMaterial3D:
     material.roughness = 1.0
     return material
 
+func _trail_orientation_sign(a: Vector2, b: Vector2) -> float:
+    if a.x < b.x:
+        return 1.0
+    if a.x > b.x:
+        return -1.0
+    return 1.0 if a.y <= b.y else -1.0
+
+func _trail_seed(a: Vector2, b: Vector2) -> float:
+    # Symmetric in the endpoints so a→b and b→a render the same geometry.
+    return sin((a.x + b.x) * 0.013 + (a.y + b.y) * 0.017)
+
+func _natural_trail_point(
+    a: Vector2,
+    b: Vector2,
+    t: float,
+    count: int,
+    intensity: float,
+) -> Vector2:
+    var clamped_t := clampf(t, 0.0, 1.0)
+    var axis := b - a
+    var distance := axis.length()
+    if distance < 0.001:
+        return a
+    var normal := Vector2(-axis.y, axis.x) / distance
+    var recurrence := clampf(float(maxi(count, 2) - 2) / 10.0, 0.0, 1.0)
+    var strength := clampf(intensity, 0.0, 1.0)
+    var amplitude := minf(MAX_TRAIL_MEANDER_M, distance * TRAIL_MEANDER_DISTANCE_RATIO)
+    # Repeated, strong routes gradually straighten without ever changing endpoints.
+    amplitude *= lerpf(1.0, 0.58, recurrence)
+    amplitude *= lerpf(1.0, 0.72, strength)
+    var envelope := sin(PI * clamped_t)
+    var s_curve := sin(TAU * clamped_t)
+    var seed := _trail_seed(a, b)
+    var orientation := _trail_orientation_sign(a, b)
+    var bend := orientation * (0.58 + 0.18 * seed)
+    var meander := (0.24 + 0.08 * absf(seed)) * s_curve
+    var offset := amplitude * envelope * (bend + meander)
+    return a.lerp(b, clamped_t) + normal * offset
+
 func _rebuild_trails(height_sampler: Callable) -> void:
     var built_segments := 0
     var trail_source: Array = _spatial_trails if not _spatial_trails.is_empty() else _ridges
@@ -224,6 +265,7 @@ func _rebuild_trails(height_sampler: Callable) -> void:
         var distance := a.distance_to(b)
         if distance < 0.5:
             continue
+        var count := maxi(2, int(ridge.get("count", 0)))
         var segments := clampi(int(ceil(distance / 12.0)), 1, 16)
         var width := clampf(float(ridge.get("trail_width", 0.7)), 0.4, 3.0)
         for index in range(segments):
@@ -231,8 +273,8 @@ func _rebuild_trails(height_sampler: Callable) -> void:
                 break
             var t0 := float(index) / float(segments)
             var t1 := float(index + 1) / float(segments)
-            var p0 := a.lerp(b, t0)
-            var p1 := a.lerp(b, t1)
+            var p0 := _natural_trail_point(a, b, t0, count, intensity)
+            var p1 := _natural_trail_point(a, b, t1, count, intensity)
             var center := (p0 + p1) * 0.5
             var axis := p1 - p0
             var length := axis.length()
