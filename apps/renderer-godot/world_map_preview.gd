@@ -280,7 +280,7 @@ func _take_cached_tile(id: String) -> Node3D:
     add_child(tile)
     tile.visible = true
     _tile_cache_hits += 1
-    if _tile_cache_hits % 16 == 0:
+    if _tile_cache_hits == 1 or _tile_cache_hits % 16 == 0:
         print("WORLD_MAP_TILE_CACHE hits=%d misses=%d cached=%d" % [
             _tile_cache_hits, _tile_cache_misses, _tile_cache.size()
         ])
