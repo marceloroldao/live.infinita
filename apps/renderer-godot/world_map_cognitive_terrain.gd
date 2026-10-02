@@ -12,7 +12,7 @@ const MAX_TRAIL_SEGMENTS := 192
 const MAX_TRAIL_MEANDER_M := 4.5
 const TRAIL_MEANDER_DISTANCE_RATIO := 0.055
 const MAX_MASSIFS := 6
-const MAX_MASSIF_HEIGHT_M := 68.0
+const MAX_MASSIF_HEIGHT_M := 92.0
 const MASSIF_MIN_BIAS_M := 6.0
 const MASSIF_MIN_MASS := 0.55
 
@@ -266,10 +266,10 @@ func _rebuild_massifs(height_sampler: Callable) -> void:
             continue
         var pos: Vector2 = anchor["position"]
         var influence_radius := float(anchor.get("radius", 120.0))
-        var base_radius := clampf(influence_radius * 0.30, 24.0, 62.0)
+        var base_radius := clampf(influence_radius * 0.40, 32.0, 90.0)
         var peak_height := clampf(
-            bias * 2.2 + mass * 24.0,
-            20.0,
+            bias * 2.8 + mass * 32.0,
+            28.0,
             MAX_MASSIF_HEIGHT_M
         )
         var seed := sin(pos.x * 0.019 + pos.y * 0.023 + mass * 2.7)

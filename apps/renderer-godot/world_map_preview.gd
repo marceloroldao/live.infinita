@@ -20,6 +20,7 @@ const TREE_VISIBILITY_RANGE_M := 145.0
 const ROCK_VISIBILITY_RANGE_M := 110.0
 const PLANT_VISIBILITY_RANGE_M := 82.0
 const DECOR_VISIBILITY_MARGIN_M := 12.0
+const CAMERA_FAR_M := 440.0
 var _map: Dictionary = {}
 var _catalog: RefCounted
 var _layout: RefCounted
@@ -137,7 +138,7 @@ func _build_stage() -> void:
     _live_visual.build()
     _camera = Camera3D.new()
     _camera.current = true
-    _camera.far = 280.0
+    _camera.far = CAMERA_FAR_M
     add_child(_camera)
     _hud = Hud.new()
     add_child(_hud)

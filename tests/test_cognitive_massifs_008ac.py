@@ -10,7 +10,7 @@ class CognitiveMassifs008ACTests(unittest.TestCase):
     def test_massifs_are_bounded_visual_meshes(self) -> None:
         source = TERRAIN.read_text(encoding="utf-8")
         self.assertIn("const MAX_MASSIFS := 6", source)
-        self.assertIn("const MAX_MASSIF_HEIGHT_M := 68.0", source)
+        self.assertIn("const MAX_MASSIF_HEIGHT_M := 92.0", source)
         self.assertIn("const MASSIF_MIN_BIAS_M := 6.0", source)
         self.assertIn("const MASSIF_MIN_MASS := 0.55", source)
         self.assertIn("func _rebuild_massifs(height_sampler: Callable) -> void:", source)
