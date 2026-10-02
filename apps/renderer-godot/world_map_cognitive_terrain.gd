@@ -266,7 +266,7 @@ func _rebuild_massifs(height_sampler: Callable) -> void:
             continue
         var pos: Vector2 = anchor["position"]
         var influence_radius := float(anchor.get("radius", 120.0))
-        var base_radius := clampf(influence_radius * 0.30, 24.0, 62.0)
+        var base_radius := clampf(influence_radius * 0.20, 20.0, 38.0)
         var peak_height := clampf(
             bias * 2.2 + mass * 24.0,
             20.0,
