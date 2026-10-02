@@ -7,8 +7,8 @@ const UNDERGROWTH_BUDGET := 320
 const INNER_M := 4.5
 const OUTER_M := 58.0
 const HALF_ANGLE_RAD := 1.30
-const REBUILD_DISTANCE_M := 7.0
-const REBUILD_DOT := 0.965
+const REBUILD_DISTANCE_M := 10.0
+const REBUILD_DOT := 0.94
 
 var _batch_factory: Callable
 var _height_sampler: Callable
@@ -23,6 +23,10 @@ var _environment_by_region: Dictionary = {}
 var _environment_state_id := ""
 var _last_origin := Vector3(999999.0, 0.0, 999999.0)
 var _last_forward := Vector3.ZERO
+var _last_region_id := ""
+var _last_logged_tree_count := -1
+var _last_logged_undergrowth_count := -1
+var _last_logged_region := ""
 
 func _init(
     batch_factory: Callable,
@@ -161,11 +165,15 @@ func rebuild(
     if not force and not _rebuild_needed(position, forward):
         return
 
+    if not region_id.is_empty():
+        _last_region_id = region_id
+    var effective_region_id := region_id if not region_id.is_empty() else _last_region_id
+
     var normalized := forward.normalized()
     if normalized.length_squared() < 0.001:
         normalized = Vector3(0.0, 0.0, -1.0)
     var heading := atan2(normalized.x, normalized.z)
-    var factors := vegetation_factors(region_id)
+    var factors := vegetation_factors(effective_region_id)
     var tree_target := clampi(
         int(round(float(TREE_BUDGET) * factors.x)),
         0,
@@ -239,11 +247,19 @@ func rebuild(
     _undergrowth.multimesh.visible_instance_count = undergrowth_placed
     _last_origin = position
     _last_forward = normalized
-    print(
-        "WORLD_MAP_PERCEPTUAL_VEGETATION region=%s trees=%d undergrowth=%d env=%s" % [
-            region_id, tree_placed, undergrowth_placed, _environment_state_id
-        ]
-    )
+    if (
+        tree_placed != _last_logged_tree_count
+        or undergrowth_placed != _last_logged_undergrowth_count
+        or effective_region_id != _last_logged_region
+    ):
+        print(
+            "WORLD_MAP_PERCEPTUAL_VEGETATION region=%s trees=%d undergrowth=%d env=%s" % [
+                effective_region_id, tree_placed, undergrowth_placed, _environment_state_id
+            ]
+        )
+        _last_logged_tree_count = tree_placed
+        _last_logged_undergrowth_count = undergrowth_placed
+        _last_logged_region = effective_region_id
 
 func tree_visible_count() -> int:
     return 0 if _trunks == null else _trunks.multimesh.visible_instance_count

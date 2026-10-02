@@ -64,17 +64,78 @@ func _find_player(root: Node) -> AnimationPlayer:
             pending.append(child)
     return null
 
-func _placeholder() -> void:
-    var mesh := MeshInstance3D.new()
-    var primitive := CapsuleMesh.new()
-    primitive.radius = 0.35
-    primitive.height = 1.6
-    mesh.mesh = primitive
-    mesh.position.y = 0.8
+func _part_material(color: Color) -> StandardMaterial3D:
     var material := StandardMaterial3D.new()
-    material.albedo_color = Color(0.45, 0.54, 0.62)
-    mesh.material_override = material
-    add_child(mesh)
+    material.albedo_color = color
+    material.roughness = 1.0
+    material.metallic = 0.0
+    material.shading_mode = BaseMaterial3D.SHADING_MODE_PER_VERTEX
+    return material
+
+func _part(name: String, mesh: Mesh, position: Vector3, color: Color) -> MeshInstance3D:
+    var part := MeshInstance3D.new()
+    part.name = name
+    part.mesh = mesh
+    part.position = position
+    part.material_override = _part_material(color)
+    add_child(part)
+    return part
+
+func _placeholder() -> void:
+    # Presentation-only primitive humanoid. Replaced automatically when the
+    # verified Quaternius body catalog is installed.
+    var skin := Color("#b98b68")
+    var hide := Color("#5a3b26")
+    var cloth := Color("#3f4a35")
+
+    var torso_mesh := BoxMesh.new()
+    torso_mesh.size = Vector3(0.62, 0.78, 0.30)
+    _part("Torso", torso_mesh, Vector3(0.0, 0.24, 0.0), hide)
+
+    var head_mesh := SphereMesh.new()
+    head_mesh.radius = 0.22
+    head_mesh.height = 0.44
+    head_mesh.radial_segments = 8
+    head_mesh.rings = 4
+    _part("Head", head_mesh, Vector3(0.0, 0.88, 0.0), skin)
+
+    var hip_mesh := BoxMesh.new()
+    hip_mesh.size = Vector3(0.54, 0.28, 0.32)
+    _part("PrimitiveWrap", hip_mesh, Vector3(0.0, -0.18, 0.0), cloth)
+
+    for side in [-1.0, 1.0]:
+        var arm_mesh := CapsuleMesh.new()
+        arm_mesh.radius = 0.09
+        arm_mesh.height = 0.68
+        arm_mesh.radial_segments = 6
+        arm_mesh.rings = 2
+        var arm := _part(
+            "ArmL" if side < 0.0 else "ArmR",
+            arm_mesh,
+            Vector3(side * 0.39, 0.25, 0.0),
+            skin
+        )
+        arm.rotation.z = side * 0.10
+
+        var leg_mesh := CapsuleMesh.new()
+        leg_mesh.radius = 0.11
+        leg_mesh.height = 0.78
+        leg_mesh.radial_segments = 6
+        leg_mesh.rings = 2
+        _part(
+            "LegL" if side < 0.0 else "LegR",
+            leg_mesh,
+            Vector3(side * 0.17, -0.62, 0.0),
+            hide
+        )
+
+    var hair_mesh := SphereMesh.new()
+    hair_mesh.radius = 0.225
+    hair_mesh.height = 0.30
+    hair_mesh.radial_segments = 8
+    hair_mesh.rings = 3
+    var hair := _part("Hair", hair_mesh, Vector3(0.0, 1.00, 0.03), Color("#2b211a"))
+    hair.scale = Vector3(1.02, 0.70, 1.02)
 
 func apply_visual_intent(action: String, heading_radians: float = 0.0) -> void:
     # Called from the approved world presentation stream; never derives facts.

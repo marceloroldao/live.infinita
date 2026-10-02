@@ -25,7 +25,8 @@ const CAMERA_FAR_M := 440.0
 const CAMERA_FOV_DEG := 64.0
 const CAMERA_BACK_M := 6.4
 const CAMERA_HEIGHT_M := 3.0
-const CAMERA_LOOK_HEIGHT_M := 1.25
+const CAMERA_LOOK_HEIGHT_M := 1.35
+const CAMERA_LOOK_AHEAD_M := 11.0
 const CAMERA_MIN_GROUND_CLEARANCE_M := 1.9
 const CAMERA_HEADING_MIN_STEP_M := 0.35
 const CAMERA_HEADING_BLEND := 0.34
@@ -703,7 +704,11 @@ func _follow_camera(snap_body: bool = true) -> void:
         _camera.look_at(_position + Vector3(0, 1.0, 0))
         return
     var forward := _camera_forward.normalized()
-    var target := _position + Vector3(0, CAMERA_LOOK_HEIGHT_M, 0)
+    var target := (
+        _position
+        + forward * CAMERA_LOOK_AHEAD_M
+        + Vector3(0, CAMERA_LOOK_HEIGHT_M, 0)
+    )
     var camera_position := (
         _position
         - forward * CAMERA_BACK_M

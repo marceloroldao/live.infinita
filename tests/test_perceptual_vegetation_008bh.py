@@ -60,6 +60,15 @@ class PerceptualVegetation008BHTests(unittest.TestCase):
         self.assertNotIn("func _environmental_vegetation_factors", preview)
         self.assertLess(len(preview), 36000)
 
+    def test_last_valid_environmental_region_survives_feed_gap(self) -> None:
+        source = MODULE.read_text(encoding="utf-8")
+        self.assertIn('var _last_region_id := ""', source)
+        self.assertIn('if not region_id.is_empty():', source)
+        self.assertIn('_last_region_id = region_id', source)
+        self.assertIn('effective_region_id := region_id if not region_id.is_empty() else _last_region_id', source)
+        self.assertIn('const REBUILD_DISTANCE_M := 10.0', source)
+        self.assertIn('const REBUILD_DOT := 0.94', source)
+
     def test_camera_is_tighter_than_008bg(self) -> None:
         source = PREVIEW.read_text(encoding="utf-8")
         self.assertIn("const CAMERA_FOV_DEG := 64.0", source)

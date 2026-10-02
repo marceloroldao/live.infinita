@@ -1,6 +1,7 @@
 extends RefCounted
 
 const Traversability = preload("res://world_map_traversability.gd")
+const NovCharacterVisual = preload("res://nov_character_visual.gd")
 const SPEED_MPS := 13.0
 const BODY_CENTER_Y := 0.9
 
@@ -9,7 +10,7 @@ var _traversability: RefCounted
 func _init(walk_height: Callable, half_m: float = 512.0, dynamic_surface: Callable = Callable()) -> void:
     _traversability = Traversability.new(walk_height, half_m, dynamic_surface)
 
-func create_body(parent: Node3D, material: Material) -> CharacterBody3D:
+func create_body(parent: Node3D, _material: Material) -> CharacterBody3D:
     var body := CharacterBody3D.new()
     body.name = "LocalExplorerBody"
     body.collision_layer = 0
@@ -17,13 +18,8 @@ func create_body(parent: Node3D, material: Material) -> CharacterBody3D:
     body.safe_margin = 0.04
     parent.add_child(body)
 
-    var visual := MeshInstance3D.new()
-    visual.name = "NovVisualMarker"
-    var capsule_mesh := CapsuleMesh.new()
-    capsule_mesh.radius = 0.48
-    capsule_mesh.height = 1.8
-    visual.mesh = capsule_mesh
-    visual.material_override = material
+    var visual := NovCharacterVisual.new()
+    visual.name = "NovVisual"
     body.add_child(visual)
 
     var shape := CapsuleShape3D.new()

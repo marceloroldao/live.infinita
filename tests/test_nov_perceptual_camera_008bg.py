@@ -12,7 +12,8 @@ class NovPerceptualCamera008BGTests(unittest.TestCase):
             "const CAMERA_FOV_DEG := 64.0",
             "const CAMERA_BACK_M := 6.4",
             "const CAMERA_HEIGHT_M := 3.0",
-            "const CAMERA_LOOK_HEIGHT_M := 1.25",
+            "const CAMERA_LOOK_HEIGHT_M := 1.35",
+            "const CAMERA_LOOK_AHEAD_M := 11.0",
             "const CAMERA_MIN_GROUND_CLEARANCE_M := 1.9",
             "const PERCEPTUAL_CAMERA_ENABLED := true",
         ):
