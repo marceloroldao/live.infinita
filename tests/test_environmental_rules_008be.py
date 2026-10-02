@@ -83,6 +83,12 @@ class EnvironmentalRules008BETests(unittest.TestCase):
         self.assertFalse(peak["trees_allowed"])
         self.assertIn(peak["ecological_zone"], {"alpine_rock", "snowfield"})
 
+    def test_mid_elevation_forest_classifies_as_forest_when_suitable(self) -> None:
+        state = derive_environmental_state(world(), projection())
+        regions = region_environment_map(state)
+        self.assertEqual(regions["forest"]["ecological_zone"], "forest")
+        self.assertTrue(regions["forest"]["trees_allowed"])
+
     def test_basin_is_wetter_than_mid_elevation_forest(self) -> None:
         state = derive_environmental_state(world(), projection())
         regions = region_environment_map(state)

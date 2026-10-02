@@ -3,6 +3,7 @@ extends RefCounted
 # No networking, filesystem access, intents, or World State writes.
 
 const SCHEMA := "live-infinita-cognitive-terrain/v1"
+const ENVIRONMENT_SCHEMA := "live-infinita-environmental-state/v1"
 const MAX_REGIONS := 32
 const MAX_TRANSITIONS := 48
 const MAX_SPATIAL_TRAILS := 128
@@ -20,6 +21,8 @@ const MASSIF_MIN_CAMERA_DISTANCE_M := 140.0
 var _host: Node3D
 var _root: Node3D
 var _projection_id := ""
+var _environment_state_id := ""
+var _environment_by_region: Dictionary = {}
 var _anchors: Array = []
 var _ridges: Array = []
 var _spatial_trails: Array = []
@@ -27,6 +30,7 @@ var _lake_count := 0
 var _trail_count := 0
 var _trail_batch_count := 0
 var _massif_count := 0
+var _snow_cap_count := 0
 
 func _init(host: Node3D) -> void:
     _host = host
@@ -36,6 +40,9 @@ func _init(host: Node3D) -> void:
 
 func projection_id() -> String:
     return _projection_id
+
+func environment_state_id() -> String:
+    return _environment_state_id
 
 func lake_count() -> int:
     return _lake_count
@@ -49,6 +56,9 @@ func trail_batch_count() -> int:
 func massif_count() -> int:
     return _massif_count
 
+func snow_cap_count() -> int:
+    return _snow_cap_count
+
 func _clear_visuals() -> void:
     if _root == null:
         return
@@ -58,10 +68,13 @@ func _clear_visuals() -> void:
     _trail_count = 0
     _trail_batch_count = 0
     _massif_count = 0
+    _snow_cap_count = 0
 
 func clear() -> bool:
     var changed := not _projection_id.is_empty() or not _anchors.is_empty() or not _ridges.is_empty() or not _spatial_trails.is_empty()
     _projection_id = ""
+    _environment_state_id = ""
+    _environment_by_region.clear()
     _anchors.clear()
     _ridges.clear()
     _spatial_trails.clear()
@@ -77,7 +90,42 @@ func _valid_policy(projection: Dictionary) -> bool:
         and policy.get("selection_authority", true) == false
     )
 
-func update(projection: Dictionary, flat_projector: Callable, height_sampler: Callable = Callable()) -> bool:
+func _valid_environment(state: Dictionary) -> bool:
+    if state.is_empty():
+        return true
+    if str(state.get("schema", "")) != ENVIRONMENT_SCHEMA:
+        return false
+    var policy = state.get("policy", {})
+    return (
+        typeof(policy) == TYPE_DICTIONARY
+        and policy.get("world_write_authority", true) == false
+        and policy.get("memory_is_authority", true) == false
+        and policy.get("selection_authority", true) == false
+    )
+
+func _environment_map(state: Dictionary) -> Dictionary:
+    var result: Dictionary = {}
+    if state.is_empty() or not _valid_environment(state):
+        return result
+    var rows = state.get("regions", [])
+    if typeof(rows) != TYPE_ARRAY or rows.size() > MAX_REGIONS:
+        return result
+    for item in rows:
+        if typeof(item) != TYPE_DICTIONARY:
+            continue
+        var row: Dictionary = item
+        var region_id := str(row.get("region_id", ""))
+        if region_id.is_empty():
+            continue
+        result[region_id] = row.duplicate(true)
+    return result
+
+func update(
+    projection: Dictionary,
+    flat_projector: Callable,
+    height_sampler: Callable = Callable(),
+    environmental_state: Dictionary = {},
+) -> bool:
     if (
         str(projection.get("schema", "")) != SCHEMA
         or not _valid_policy(projection)
@@ -88,7 +136,14 @@ func update(projection: Dictionary, flat_projector: Callable, height_sampler: Ca
     var next_id := str(projection.get("projection_id", ""))
     if next_id.is_empty():
         return clear()
-    if next_id == _projection_id:
+
+    var next_environment_id := ""
+    var next_environment_by_region: Dictionary = {}
+    if not environmental_state.is_empty() and _valid_environment(environmental_state):
+        next_environment_id = str(environmental_state.get("state_id", ""))
+        next_environment_by_region = _environment_map(environmental_state)
+
+    if next_id == _projection_id and next_environment_id == _environment_state_id:
         return false
 
     var rows = projection.get("regions", [])
@@ -178,6 +233,8 @@ func update(projection: Dictionary, flat_projector: Callable, height_sampler: Ca
         })
 
     _projection_id = next_id
+    _environment_state_id = next_environment_id
+    _environment_by_region = next_environment_by_region
     _anchors = next_anchors
     _ridges = next_ridges
     _spatial_trails = next_spatial_trails
@@ -217,12 +274,35 @@ func _rebuild_lakes() -> void:
         _root.add_child(lake)
         _lake_count += 1
 
-func _massif_material(mass: float, secondary: bool = false) -> StandardMaterial3D:
-    var low := Color("#5f665d")
-    var high := Color("#899083")
-    var color := low.lerp(high, clampf(mass, 0.0, 1.0))
+func _massif_environment(region_id: String) -> Dictionary:
+    var value = _environment_by_region.get(region_id, {})
+    return value if typeof(value) == TYPE_DICTIONARY else {}
+
+func _massif_material(
+    region_id: String,
+    mass: float,
+    secondary: bool = false,
+) -> StandardMaterial3D:
+    var environment := _massif_environment(region_id)
+    var rock_exposure := clampf(float(environment.get("rock_exposure", 0.0)), 0.0, 1.0)
+    var snow_cover := clampf(float(environment.get("snow_cover", 0.0)), 0.0, 1.0)
+    var vegetation := clampf(float(environment.get("vegetation_density", 0.45)), 0.0, 1.0)
+
+    var vegetated_low := Color("#59654f")
+    var vegetated_high := Color("#78806d")
+    var color := vegetated_low.lerp(vegetated_high, clampf(0.35 * mass + 0.65 * vegetation, 0.0, 1.0))
+    color = color.lerp(Color("#777a76"), rock_exposure)
+    color = color.lerp(Color("#d8dcda"), snow_cover * 0.18)
     if secondary:
         color = color.darkened(0.08)
+    var material := _material(color)
+    material.roughness = 1.0
+    material.metallic = 0.0
+    return material
+
+func _snow_material(snow_cover: float) -> StandardMaterial3D:
+    var amount := clampf(snow_cover, 0.0, 1.0)
+    var color := Color("#dfe5e4").lerp(Color("#f4f7f6"), amount)
     var material := _material(color)
     material.roughness = 1.0
     material.metallic = 0.0
@@ -255,8 +335,37 @@ func _add_massif_peak(
     peak.visibility_range_begin = MASSIF_MIN_CAMERA_DISTANCE_M
     peak.visibility_range_begin_margin = 12.0
     peak.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
-    peak.material_override = _massif_material(mass, secondary)
+    peak.material_override = _massif_material(region_id, mass, secondary)
     _root.add_child(peak)
+
+    var environment := _massif_environment(region_id)
+    var snow_cover := clampf(float(environment.get("snow_cover", 0.0)), 0.0, 1.0)
+    if not secondary and snow_cover >= 0.12:
+        var cap_fraction := clampf(0.09 + snow_cover * 0.38, 0.10, 0.30)
+        var cap_height := height * cap_fraction
+        var top_radius := maxf(1.2, radius * 0.07)
+        var cap_bottom_radius := lerpf(top_radius, radius, cap_fraction)
+        var cap_mesh := CylinderMesh.new()
+        cap_mesh.top_radius = top_radius
+        cap_mesh.bottom_radius = cap_bottom_radius
+        cap_mesh.height = cap_height
+        cap_mesh.radial_segments = 9
+        cap_mesh.rings = 1
+        var cap := MeshInstance3D.new()
+        cap.name = "MemorySnowCap_%s_%s" % [region_id, suffix]
+        cap.mesh = cap_mesh
+        cap.position = Vector3(
+            center.x,
+            ground_y + height - cap_height * 0.5 - 0.15,
+            center.y
+        )
+        cap.rotation.y = peak.rotation.y
+        cap.visibility_range_begin = MASSIF_MIN_CAMERA_DISTANCE_M
+        cap.visibility_range_begin_margin = 12.0
+        cap.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
+        cap.material_override = _snow_material(snow_cover)
+        _root.add_child(cap)
+        _snow_cap_count += 1
 
 func _rebuild_massifs(height_sampler: Callable) -> void:
     for anchor in _anchors:

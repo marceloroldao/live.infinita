@@ -596,13 +596,16 @@ func _sync_tiles() -> void:
             _tiles.erase(id)
             _cache_tile(id, stale)
     assert(_tiles.size() <= MAX_ACTIVE_TILES)
-func _on_world_slice(observer: Dictionary, current_region_id: String, hot_entities: Array, warm_entities: Array, region_descriptors: Array, sequence: int, cognitive_terrain: Dictionary) -> void:
+func _on_world_slice(observer: Dictionary, current_region_id: String, hot_entities: Array, warm_entities: Array, region_descriptors: Array, sequence: int, cognitive_terrain: Dictionary, environmental_state: Dictionary = {}) -> void:
     if observer.is_empty():
         return
     var first_bind := not _live_authoritative
     var old_cell := Vector2i(_cell(_position.x), _cell(_position.z))
     var terrain_changed: bool = bool(_cognitive_terrain.update(
-        cognitive_terrain, Callable(_live_visual, "project_flat"), Callable(self, "_height")
+        cognitive_terrain,
+        Callable(_live_visual, "project_flat"),
+        Callable(self, "_height"),
+        environmental_state
     ))
     var projected: Vector3 = _live_visual.project_position(observer)
     _last_live_position = projected
@@ -622,10 +625,11 @@ func _on_world_slice(observer: Dictionary, current_region_id: String, hot_entiti
         _rebuild_distant_vegetation()
         _rebuild_midground_vegetation()
         _rebuild_active_tiles()
-        print("WORLD_MAP_MEMORY_TERRAIN projection=%s lakes=%d trails=%d trail_batches=%d massifs=%d" % [
-            _cognitive_terrain.projection_id(), _cognitive_terrain.lake_count(),
-            _cognitive_terrain.trail_count(), _cognitive_terrain.trail_batch_count(),
-            _cognitive_terrain.massif_count()
+        print("WORLD_MAP_MEMORY_TERRAIN projection=%s environment=%s lakes=%d trails=%d trail_batches=%d massifs=%d snow_caps=%d" % [
+            _cognitive_terrain.projection_id(), _cognitive_terrain.environment_state_id(),
+            _cognitive_terrain.lake_count(), _cognitive_terrain.trail_count(),
+            _cognitive_terrain.trail_batch_count(), _cognitive_terrain.massif_count(),
+            _cognitive_terrain.snow_cap_count()
         ])
     if not _local_explore_enabled:
         if not terrain_changed and old_cell != Vector2i(_cell(_position.x), _cell(_position.z)):

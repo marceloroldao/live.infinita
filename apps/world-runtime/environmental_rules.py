@@ -158,7 +158,7 @@ def _ecological_zone(
         return "alpine_meadow" if vegetation_density >= 0.18 else "alpine_rock"
     if water_influence >= 0.7 and soil_moisture >= 0.78:
         return "wetland"
-    if tree_suitability >= 0.62:
+    if tree_suitability >= 0.48 and vegetation_density >= 0.48:
         return "forest"
     if vegetation_density >= 0.48:
         return "meadow"
