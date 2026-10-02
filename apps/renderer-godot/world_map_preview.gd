@@ -16,6 +16,10 @@ const CORNER_DECOR_INDICES := [1]
 const MAX_ACTIVE_DECOR := 22
 const LIVE_STALE_MS := 10000
 const FPS_GOVERNOR_POLL_MS := 5000
+const TREE_VISIBILITY_RANGE_M := 145.0
+const ROCK_VISIBILITY_RANGE_M := 110.0
+const PLANT_VISIBILITY_RANGE_M := 82.0
+const DECOR_VISIBILITY_MARGIN_M := 12.0
 var _map: Dictionary = {}
 var _catalog: RefCounted
 var _layout: RefCounted
@@ -52,6 +56,7 @@ var _last_live_position := Vector3.ZERO
 var _has_live_position := false
 var _render_control_path := ""
 var _render_control_next_poll_ms := 0
+var _decor_culling_announced := false
 func _ready() -> void:
     _configure_native_fps_governor()
     var data = JSON.parse_string(FileAccess.get_file_as_string(MAP_PATH))
@@ -197,6 +202,27 @@ func _terrain(cx: int, cz: int, biome: String) -> MeshInstance3D:
     ground.mesh = st.commit()
     ground.material_override = _material(_terrain_color(biome))
     return ground
+func _decor_visibility_range(kind: String) -> float:
+    match kind:
+        "tree":
+            return TREE_VISIBILITY_RANGE_M
+        "rock":
+            return ROCK_VISIBILITY_RANGE_M
+        _:
+            return PLANT_VISIBILITY_RANGE_M
+
+func _apply_decor_culling(node: Node, range_end: float) -> int:
+    var applied := 0
+    if node is GeometryInstance3D:
+        var geometry := node as GeometryInstance3D
+        geometry.visibility_range_end = range_end
+        geometry.visibility_range_end_margin = DECOR_VISIBILITY_MARGIN_M
+        geometry.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
+        applied += 1
+    for child in node.get_children():
+        applied += _apply_decor_culling(child, range_end)
+    return applied
+
 func _decoration(parent: Node3D, cx: int, cz: int, index: int, biome: String) -> void:
     if biome == "river":
         return
@@ -235,6 +261,16 @@ func _decoration(parent: Node3D, cx: int, cz: int, index: int, biome: String) ->
     var n: Node3D = model
     n.position = Vector3(x, _height(x, z), z)
     n.scale = Vector3.ONE * (0.75 if kind == "tree" else 0.90)
+    var cull_range := _decor_visibility_range(kind)
+    var culled_geometries := _apply_decor_culling(n, cull_range)
+    if culled_geometries > 0:
+        n.set_meta("live_infinita_decor_cull_range_m", cull_range)
+        if not _decor_culling_announced:
+            _decor_culling_announced = true
+            print("WORLD_MAP_DECOR_CULL tree=%.0f rock=%.0f plant=%.0f margin=%.0f" % [
+                TREE_VISIBILITY_RANGE_M, ROCK_VISIBILITY_RANGE_M,
+                PLANT_VISIBILITY_RANGE_M, DECOR_VISIBILITY_MARGIN_M
+            ])
     parent.add_child(n)
 func _prune_tile_cache() -> void:
     while _tile_cache_order.size() > MAX_CACHED_TILES:
