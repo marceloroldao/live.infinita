@@ -57,7 +57,6 @@ var _has_live_position := false
 var _render_control_path := ""
 var _render_control_next_poll_ms := 0
 var _decor_culling_announced := false
-var _cpu_material_profile_announced := false
 func _ready() -> void:
     _configure_native_fps_governor()
     var data = JSON.parse_string(FileAccess.get_file_as_string(MAP_PATH))
@@ -225,28 +224,14 @@ func _apply_decor_culling(node: Node, range_end: float) -> int:
         applied += _apply_decor_culling(child, range_end)
     return applied
 
-func _llvmpipe_material_profile_enabled() -> bool:
-    return "llvmpipe" in RenderingServer.get_video_adapter_name().to_lower()
-
-func _tune_cpu_material(material: BaseMaterial3D) -> void:
-    material.shading_mode = BaseMaterial3D.SHADING_MODE_PER_VERTEX
-    if not _llvmpipe_material_profile_enabled():
-        return
-    material.normal_enabled = false
-    material.heightmap_enabled = false
-    material.clearcoat_enabled = false
-    material.rim_enabled = false
-    if not _cpu_material_profile_announced:
-        _cpu_material_profile_announced = true
-        print("WORLD_MAP_CPU_MATERIAL_PROFILE adapter=%s normal_maps=off" % RenderingServer.get_video_adapter_name())
-
 func _apply_cpu_vertex_shading(node: Node) -> int:
     var applied := 0
     if node is MeshInstance3D:
         var mesh_instance := node as MeshInstance3D
         var override_material := mesh_instance.material_override
         if override_material is BaseMaterial3D:
-            _tune_cpu_material(override_material as BaseMaterial3D)
+            var base_override := override_material as BaseMaterial3D
+            base_override.shading_mode = BaseMaterial3D.SHADING_MODE_PER_VERTEX
             applied += 1
         elif mesh_instance.mesh != null:
             for surface_index in range(mesh_instance.mesh.get_surface_count()):
@@ -254,7 +239,8 @@ func _apply_cpu_vertex_shading(node: Node) -> int:
                 if material == null:
                     material = mesh_instance.mesh.surface_get_material(surface_index)
                 if material is BaseMaterial3D:
-                    _tune_cpu_material(material as BaseMaterial3D)
+                    var base_material := material as BaseMaterial3D
+                    base_material.shading_mode = BaseMaterial3D.SHADING_MODE_PER_VERTEX
                     applied += 1
     for child in node.get_children():
         applied += _apply_cpu_vertex_shading(child)
