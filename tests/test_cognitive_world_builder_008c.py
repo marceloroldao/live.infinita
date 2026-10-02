@@ -90,6 +90,7 @@ class CognitiveWorldBuilder008CTests(unittest.TestCase):
         *,
         world_write_authority: bool = False,
         malicious_center: bool = False,
+        shelter_bias: float = 18.0,
     ) -> None:
         shelter_center = {"x": 999999.0, "y": -999999.0} if malicious_center else {"x": 100.0, "y": 100.0}
         self.projection.write_text(json.dumps({
@@ -121,7 +122,7 @@ class CognitiveWorldBuilder008CTests(unittest.TestCase):
                     "visits": 90,
                     "cognitive_mass": 0.99,
                     "terrain_role": "uplift",
-                    "elevation_bias_m": 18.0,
+                    "elevation_bias_m": shelter_bias,
                     "influence_radius_m": 180.0,
                     "lake_candidate": False,
                 },
@@ -155,17 +156,21 @@ class CognitiveWorldBuilder008CTests(unittest.TestCase):
         self.assertEqual(self.builder.evaluate_tick(239), [])
         self.assertEqual(self.store.entities_total(), 1)
 
-    def test_uplift_creates_one_stable_tree_via_world_agent_gate(self) -> None:
+    def test_high_uplift_creates_rock_via_environment_and_world_agent_gate(self) -> None:
         result = self.builder.evaluate_tick(240)
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0]["status"], "created")
+        self.assertEqual(result[0]["environmental_basis"], "rock_exposure")
+        self.assertEqual(result[0]["environmental_zone"], "alpine_rock")
         entity_id = result[0]["entity_id"]
         entity = self.store.get_entity(entity_id)
         self.assertIsNotNone(entity)
-        self.assertEqual(entity["type"], "tree")
+        self.assertEqual(entity["type"], "rock")
         self.assertEqual(entity["region_id"], "shelter")
         origin = entity["properties"]["builder_origin"]
         self.assertEqual(origin["agent_id"], AGENT_ID)
+        self.assertEqual(origin["environmental_basis"], "rock_exposure")
+        self.assertGreater(origin["environmental_score"], 0.6)
         self.assertFalse(origin["memory_is_authority"])
         self.assertTrue(origin["world_write_via_mutation_gate"])
         self.assertTrue(self.engine.verify_replay()["ok"])
@@ -175,23 +180,41 @@ class CognitiveWorldBuilder008CTests(unittest.TestCase):
         deltas = self.engine.read_jsonl(self.engine.deltas_file)
         self.assertEqual(deltas[-1]["operations"][0]["op"], "create")
 
-    def test_repeated_ticks_fill_stable_slots_without_duplicates(self) -> None:
+    def test_moderate_uplift_can_still_create_tree_when_environment_allows(self) -> None:
+        self._write_projection(shelter_bias=2.0)
+        builder = CognitiveWorldBuilderAgent(
+            self.store,
+            self.guarded,
+            self.engine.load_world,
+            projection_file=self.projection,
+            interval_ticks=240,
+        )
+        result = builder.evaluate_tick(240)[0]
+        self.assertEqual(result["status"], "created")
+        self.assertEqual(result["entity_type"], "tree")
+        self.assertEqual(result["environmental_basis"], "tree_suitability")
+        entity = self.store.get_entity(result["entity_id"])
+        self.assertEqual(entity["type"], "tree")
+
+
+    def test_repeated_ticks_fill_environmental_slots_without_duplicates(self) -> None:
         first = self.builder.evaluate_tick(240)[0]
         second = self.builder.evaluate_tick(480)[0]
         third = self.builder.evaluate_tick(720)[0]
-        fourth = self.builder.evaluate_tick(960)[0]
+        stable = self.builder.evaluate_tick(960)[0]
         self.assertEqual(first["status"], "created")
         self.assertEqual(second["status"], "created")
         self.assertEqual(third["status"], "created")
-        self.assertEqual(fourth["status"], "created")
-        ids = {first["entity_id"], second["entity_id"], third["entity_id"], fourth["entity_id"]}
-        self.assertEqual(len(ids), 4)
-        self.assertEqual(self.store.entities_total(), 5)
-
-        stable = self.builder.evaluate_tick(1200)
-        self.assertEqual(stable[0]["status"], "stable")
-        self.assertEqual(self.store.entities_total(), 5)
+        self.assertEqual(first["entity_type"], "rock")
+        self.assertEqual(second["entity_type"], "rock")
+        self.assertEqual(third["entity_type"], "rest_point")
+        ids = {first["entity_id"], second["entity_id"], third["entity_id"]}
+        self.assertEqual(len(ids), 3)
+        self.assertEqual(self.store.entities_total(), 4)
+        self.assertEqual(stable["status"], "stable")
+        self.assertEqual(self.store.entities_total(), 4)
         self.assertTrue(self.engine.verify_replay()["ok"])
+
 
     def test_projection_coordinates_never_choose_canonical_position(self) -> None:
         self._write_projection(malicious_center=True)
@@ -219,16 +242,17 @@ class CognitiveWorldBuilder008CTests(unittest.TestCase):
         self.assertEqual(self.store.entities_total(), 1)
         self.assertEqual(self.engine.load_world()["state_hash"], before_hash)
 
-    def test_basin_produces_rest_point_only_after_higher_priority_growth(self) -> None:
+    def test_basin_produces_rest_point_after_higher_priority_rock_growth(self) -> None:
         self.builder.evaluate_tick(240)
         self.builder.evaluate_tick(480)
-        self.builder.evaluate_tick(720)
-        row = self.builder.evaluate_tick(960)[0]
+        row = self.builder.evaluate_tick(720)[0]
         self.assertEqual(row["role"], "basin")
         self.assertEqual(row["entity_type"], "rest_point")
+        self.assertEqual(row["environmental_basis"], "water_influence")
         entity = self.store.get_entity(row["entity_id"])
         self.assertEqual(entity["region_id"], "meadow")
         self.assertEqual(entity["properties"]["label"], "Marco de descanso")
+
 
     def test_source_contract_keeps_builder_disabled_by_default(self) -> None:
         source = (RUNTIME / "autonomous_runtime.py").read_text(encoding="utf-8")

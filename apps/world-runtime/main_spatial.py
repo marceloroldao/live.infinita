@@ -13,6 +13,7 @@ from starlette.routing import WebSocketRoute
 import main as core
 from cold_engine import ColdAuthoritativeWorldEngine
 from cognitive_terrain_projection import CognitiveTerrainError, CognitiveTerrainProjectionReader
+from environmental_rules import EnvironmentalRulesError, derive_environmental_state
 from mutation_gate_service import GuardedMutationService
 from packages.spatial import FileRegionColdStore, MutationPrincipal
 from proposal_ledger_runtime import install_runtime_proposal_ledger
@@ -397,6 +398,12 @@ def _client_world_payload(message: dict[str, Any], view: dict[str, Any]) -> dict
         delivery = payload.get("delivery")
         if isinstance(delivery, dict):
             delivery["cognitive_terrain"] = projection
+            try:
+                delivery["environmental_state"] = derive_environmental_state(
+                    message["world"], projection
+                )
+            except EnvironmentalRulesError:
+                pass
     return payload
 
 

@@ -75,7 +75,9 @@ class WorldMapTests(unittest.TestCase):
         for forbidden in ("WebSocket", "HTTPClient", "FileAccess.open(",
                           "DirAccess", "set_world", "submit_intent", "post_world"):
             self.assertNotIn(forbidden, script)
-        self.assertLess(len(script), 22000)
+        # Visual batching + cognitive/environmental layers expanded the preview;
+        # keep a hard ceiling so future growth is still explicit and reviewed.
+        self.assertLess(len(script), 36000)
 
     def test_real_visual_features_are_bounded_and_read_only(self):
         features = (SCENE / "world_map_features.gd").read_text(encoding="utf-8")

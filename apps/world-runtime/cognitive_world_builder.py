@@ -17,10 +17,12 @@ import re
 from typing import Any, Callable
 
 from cognitive_terrain_projection import CognitiveTerrainError, CognitiveTerrainProjectionReader
+from environmental_rules import EnvironmentalRulesError, derive_environmental_state, region_environment_map
 from mutation_gate_service import GuardedMutationService
 from packages.spatial import FileRegionColdStore, MutationPrincipal
 
 TREE_BIOMES = frozenset({"forest", "clearing", "hills", "meadow"})
+ROCK_BIOMES = frozenset({"forest", "clearing", "hills", "meadow", "moor", "highlands", "rocky"})
 REST_BIOMES = frozenset({"forest", "clearing", "hills", "meadow", "moor"})
 AGENT_ID = "cognitive-world-builder-v1"
 MAX_CANDIDATES = 32
@@ -36,6 +38,9 @@ class BuildCandidate:
     role: str
     slot: int
     cognitive_mass: float
+    environmental_zone: str
+    environmental_basis: str
+    environmental_score: float
     priority: tuple[Any, ...]
 
 
@@ -110,6 +115,7 @@ class CognitiveWorldBuilderAgent:
         cls,
         projection: dict[str, Any],
         regions: dict[str, dict[str, Any]],
+        environmental_regions: dict[str, dict[str, Any]],
     ) -> list[BuildCandidate]:
         result: list[BuildCandidate] = []
         rows = projection.get("regions")
@@ -121,27 +127,60 @@ class CognitiveWorldBuilderAgent:
                 continue
             region_id = str(raw.get("region_id") or "").strip()
             region = regions.get(region_id)
-            if region is None:
+            environment = environmental_regions.get(region_id)
+            if region is None or environment is None:
                 continue
             biome = str(region.get("biome") or "unknown")
             role = str(raw.get("terrain_role") or "memory_field")
             try:
                 mass = max(0.0, min(1.0, float(raw.get("cognitive_mass", 0.0))))
+                tree_suitability = max(
+                    0.0, min(1.0, float(environment.get("tree_suitability", 0.0)))
+                )
+                rock_exposure = max(
+                    0.0, min(1.0, float(environment.get("rock_exposure", 0.0)))
+                )
+                water_influence = max(
+                    0.0, min(1.0, float(environment.get("water_influence", 0.0)))
+                )
             except (TypeError, ValueError):
                 continue
+            zone = str(environment.get("ecological_zone") or "unknown")
+            trees_allowed = bool(environment.get("trees_allowed", False))
 
-            if role == "uplift" and biome in TREE_BIOMES:
-                for slot in range(2):
-                    result.append(BuildCandidate(
-                        entity_id=cls._stable_id(region_id, "tree", "uplift", slot),
-                        entity_type="tree",
-                        region_id=region_id,
-                        role="uplift",
-                        slot=slot,
-                        cognitive_mass=mass,
-                        priority=(0, -mass, region_id, slot),
-                    ))
-            elif mass >= 0.75 and biome in TREE_BIOMES:
+            if role == "uplift":
+                if (
+                    biome in ROCK_BIOMES
+                    and (rock_exposure >= 0.58 or zone in {"alpine_rock", "snowfield"})
+                ):
+                    for slot in range(2):
+                        result.append(BuildCandidate(
+                            entity_id=cls._stable_id(region_id, "rock", "uplift", slot),
+                            entity_type="rock",
+                            region_id=region_id,
+                            role="uplift",
+                            slot=slot,
+                            cognitive_mass=mass,
+                            environmental_zone=zone,
+                            environmental_basis="rock_exposure",
+                            environmental_score=rock_exposure,
+                            priority=(0, -rock_exposure, -mass, region_id, slot),
+                        ))
+                elif trees_allowed and biome in TREE_BIOMES:
+                    for slot in range(2):
+                        result.append(BuildCandidate(
+                            entity_id=cls._stable_id(region_id, "tree", "uplift", slot),
+                            entity_type="tree",
+                            region_id=region_id,
+                            role="uplift",
+                            slot=slot,
+                            cognitive_mass=mass,
+                            environmental_zone=zone,
+                            environmental_basis="tree_suitability",
+                            environmental_score=tree_suitability,
+                            priority=(1, -tree_suitability, -mass, region_id, slot),
+                        ))
+            elif mass >= 0.75 and trees_allowed and biome in TREE_BIOMES:
                 result.append(BuildCandidate(
                     entity_id=cls._stable_id(region_id, "tree", "recurrence", 0),
                     entity_type="tree",
@@ -149,10 +188,13 @@ class CognitiveWorldBuilderAgent:
                     role="recurrence",
                     slot=0,
                     cognitive_mass=mass,
-                    priority=(1, -mass, region_id, 0),
+                    environmental_zone=zone,
+                    environmental_basis="tree_suitability",
+                    environmental_score=tree_suitability,
+                    priority=(2, -tree_suitability, -mass, region_id, 0),
                 ))
 
-            if role == "basin" and biome in REST_BIOMES:
+            if role == "basin" and biome in REST_BIOMES and water_influence >= 0.5:
                 result.append(BuildCandidate(
                     entity_id=cls._stable_id(region_id, "rest_point", "basin", 0),
                     entity_type="rest_point",
@@ -160,7 +202,10 @@ class CognitiveWorldBuilderAgent:
                     role="basin",
                     slot=0,
                     cognitive_mass=mass,
-                    priority=(2, mass, region_id, 0),
+                    environmental_zone=zone,
+                    environmental_basis="water_influence",
+                    environmental_score=water_influence,
+                    priority=(3, -water_influence, mass, region_id, 0),
                 ))
 
         result.sort(key=lambda candidate: candidate.priority)
@@ -170,10 +215,11 @@ class CognitiveWorldBuilderAgent:
         count = 0
         for region_id in regions:
             for slot in range(2):
-                if self.store.entity_region(
-                    self._stable_id(region_id, "tree", "uplift", slot)
-                ) is not None:
-                    count += 1
+                for entity_type in ("tree", "rock"):
+                    if self.store.entity_region(
+                        self._stable_id(region_id, entity_type, "uplift", slot)
+                    ) is not None:
+                        count += 1
             for entity_type, role in (("tree", "recurrence"), ("rest_point", "basin")):
                 if self.store.entity_region(
                     self._stable_id(region_id, entity_type, role, 0)
@@ -210,6 +256,8 @@ class CognitiveWorldBuilderAgent:
     def _label(candidate: BuildCandidate) -> str:
         if candidate.entity_type == "tree":
             return "Árvore emergente"
+        if candidate.entity_type == "rock":
+            return "Afloramento rochoso"
         if candidate.entity_type == "rest_point":
             return "Marco de descanso"
         return "Elemento emergente"
@@ -240,6 +288,9 @@ class CognitiveWorldBuilderAgent:
                     "slot": candidate.slot,
                     "projection_id_at_creation": projection_id,
                     "logical_tick": int(logical_tick),
+                    "environmental_zone": candidate.environmental_zone,
+                    "environmental_basis": candidate.environmental_basis,
+                    "environmental_score": round(candidate.environmental_score, 6),
                     "memory_is_authority": False,
                     "world_write_via_mutation_gate": True,
                 },
@@ -269,6 +320,16 @@ class CognitiveWorldBuilderAgent:
         if projection is None:
             return [{"tick": logical_tick, "status": "projection_unavailable"}]
 
+        try:
+            environmental_state = derive_environmental_state(world, projection)
+            environmental_regions = region_environment_map(environmental_state)
+        except EnvironmentalRulesError as exc:
+            return [{
+                "tick": logical_tick,
+                "status": "environment_rejected",
+                "error_type": type(exc).__name__,
+            }]
+
         regions = self._region_map(world)
         if self._builder_entity_count(regions) >= MAX_BUILDER_ENTITIES:
             return [{
@@ -276,12 +337,13 @@ class CognitiveWorldBuilderAgent:
                 "status": "capacity_reached",
                 "capacity": MAX_BUILDER_ENTITIES,
             }]
-        candidates = self._candidate_specs(projection, regions)
+        candidates = self._candidate_specs(projection, regions, environmental_regions)
         if not candidates:
             return [{"tick": logical_tick, "status": "no_candidates"}]
 
         created: list[dict[str, Any]] = []
         projection_id = str(projection.get("projection_id") or "")
+        environmental_state_id = str(environmental_state.get("state_id") or "")
         for candidate in candidates:
             if self.store.get_entity(candidate.entity_id) is not None:
                 continue
@@ -306,6 +368,10 @@ class CognitiveWorldBuilderAgent:
                         "candidate_id": candidate.entity_id,
                         "region_id": candidate.region_id,
                         "role": candidate.role,
+                        "environmental_state_id": environmental_state_id,
+                        "environmental_zone": candidate.environmental_zone,
+                        "environmental_basis": candidate.environmental_basis,
+                        "environmental_score": round(candidate.environmental_score, 6),
                         "memory_is_authority": False,
                     }
                 },
@@ -329,6 +395,10 @@ class CognitiveWorldBuilderAgent:
                 "region_id": candidate.region_id,
                 "role": candidate.role,
                 "projection_id": projection_id,
+                "environmental_state_id": environmental_state_id,
+                "environmental_zone": candidate.environmental_zone,
+                "environmental_basis": candidate.environmental_basis,
+                "environmental_score": round(candidate.environmental_score, 6),
                 "world_event_id": (result.get("event") or {}).get("event_id"),
                 "mutation_decision_id": (result.get("audit") or {}).get("decision_id")
                 if isinstance(result.get("audit"), dict) else None,
@@ -342,5 +412,6 @@ class CognitiveWorldBuilderAgent:
             "tick": logical_tick,
             "status": "stable",
             "projection_id": projection_id,
+            "environmental_state_id": environmental_state_id,
             "candidates": len(candidates),
         }]
