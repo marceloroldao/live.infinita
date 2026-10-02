@@ -25,6 +25,7 @@ done
 grep -q 'MAX_REGION_LABELS := 4' "$SRC_VISUAL" || fail "limite de labels ausente"
 grep -q '"RegionRings"' "$SRC_VISUAL" || fail "batch de anéis ausente"
 grep -q 'WORLD_MAP_REGION_VISUAL' "$SRC_VISUAL" || fail "telemetria regional ausente"
+grep -q '_region_root.remove_child(child)' "$SRC_VISUAL" || fail "detach imediato do overlay ausente"
 
 install -d -m 0700 "$BACKUP"
 cp -a "$DST_VISUAL" "$BACKUP/world_map_live_visual.gd"
@@ -51,6 +52,7 @@ echo "== 008ai: install visual =="
 install -o liveinfinita -g liveinfinita -m 0664 "$SRC_VISUAL" "$DST_VISUAL"
 grep -q 'MAX_REGION_LABELS := 4' "$DST_VISUAL" || fail "visual instalado sem limite"
 grep -q '"RegionRings"' "$DST_VISUAL" || fail "visual instalado sem batch"
+grep -q '_region_root.remove_child(child)' "$DST_VISUAL" || fail "visual instalado sem detach imediato"
 
 echo "== 008ai: deployed smoke =="
 GODOT_SILENCE_ROOT_WARNING=1 "$ENGINE" --headless --path "$PROJECT" --script "$SMOKE"
@@ -86,6 +88,15 @@ fi
 
 region_line="$(grep -F 'WORLD_MAP_REGION_VISUAL' "$journal_probe" | tail -1)"
 echo "008AI_REGION=$region_line"
+rings="$(printf '%s\n' "$region_line" | sed -n 's/.*rings=\([0-9][0-9]*\).*/\1/p')"
+surfaces="$(printf '%s\n' "$region_line" | sed -n 's/.*surfaces=\([0-9][0-9]*\).*/\1/p')"
+labels="$(printf '%s\n' "$region_line" | sed -n 's/.*labels=\([0-9][0-9]*\).*/\1/p')"
+[[ "$rings" =~ ^[0-9]+$ ]] || fail "rings inválido"
+[[ "$surfaces" =~ ^[0-9]+$ ]] || fail "surfaces inválido"
+[[ "$labels" =~ ^[0-9]+$ ]] || fail "labels inválido"
+(( rings <= 16 )) || fail "rings excedeu limite"
+(( surfaces <= 2 )) || fail "surfaces excedeu limite"
+(( labels <= 4 )) || fail "labels excedeu limite"
 
 verified_mtime="$(stat -c %Y "$STATUS")"
 sleep 10
