@@ -13,6 +13,7 @@ var _hot_markers: MultiMeshInstance3D
 var _warm_markers: MultiMeshInstance3D
 var _region_root: Node3D
 var _region_signature := ""
+var _diagnostic_overlays_enabled := true
 var _half_m := 512.0
 
 func _init(host: Node3D, features: RefCounted, map_data: Dictionary) -> void:
@@ -27,6 +28,13 @@ func build() -> void:
     _region_root = Node3D.new()
     _region_root.name = "PersistentRegions"
     _host.add_child(_region_root)
+
+func set_diagnostic_overlays(enabled: bool) -> void:
+    if _diagnostic_overlays_enabled == enabled:
+        return
+    _diagnostic_overlays_enabled = enabled
+    _region_signature = ""
+    _clear_region_nodes()
 
 func _material(color: Color) -> StandardMaterial3D:
     var material := StandardMaterial3D.new()
@@ -291,6 +299,10 @@ func _build_region_labels(regions: Array, current_region_id: String) -> int:
     return labels
 
 func update_regions(regions: Array, current_region_id: String) -> int:
+    if not _diagnostic_overlays_enabled:
+        if _region_root != null and _region_root.get_child_count() > 0:
+            _clear_region_nodes()
+        return mini(regions.size(), MAX_LOCAL_REGIONS)
     var signature := _region_signature_for(regions, current_region_id)
     if signature == _region_signature:
         return mini(regions.size(), MAX_LOCAL_REGIONS)

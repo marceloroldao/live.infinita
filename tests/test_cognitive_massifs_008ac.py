@@ -34,9 +34,10 @@ class CognitiveMassifs008ACTests(unittest.TestCase):
     def test_runtime_log_exposes_massif_count(self) -> None:
         preview = PREVIEW.read_text(encoding="utf-8")
         self.assertIn(
-            "WORLD_MAP_MEMORY_TERRAIN projection=%s lakes=%d trails=%d trail_batches=%d massifs=%d",
+            "WORLD_MAP_MEMORY_TERRAIN projection=%s environment=%s",
             preview,
         )
+        self.assertIn("massifs=%d snow_caps=%d", preview)
         self.assertIn("_cognitive_terrain.trail_batch_count()", preview)
         self.assertIn("_cognitive_terrain.massif_count()", preview)
 

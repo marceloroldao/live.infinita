@@ -21,6 +21,15 @@ const ROCK_VISIBILITY_RANGE_M := 110.0
 const PLANT_VISIBILITY_RANGE_M := 82.0
 const DECOR_VISIBILITY_MARGIN_M := 12.0
 const CAMERA_FAR_M := 440.0
+const CAMERA_FOV_DEG := 68.0
+const CAMERA_BACK_M := 9.0
+const CAMERA_HEIGHT_M := 4.6
+const CAMERA_LOOK_HEIGHT_M := 1.25
+const CAMERA_MIN_GROUND_CLEARANCE_M := 2.4
+const CAMERA_HEADING_MIN_STEP_M := 0.35
+const CAMERA_HEADING_BLEND := 0.34
+const PERCEPTUAL_CAMERA_ENABLED := true
+const SHOW_DIAGNOSTIC_WORLD_OVERLAYS := false
 const HORIZON_GROUND_MARGIN_M := 256.0
 const HORIZON_GRID := 24
 const HORIZON_GROUND_OFFSET_M := 7.0
@@ -44,6 +53,7 @@ var _tile_cache_misses := 0
 var _resource_cache: Dictionary = {}
 var _walker: CharacterBody3D
 var _camera: Camera3D
+var _camera_forward := Vector3(0.0, 0.0, -1.0)
 var _horizon_ground: MeshInstance3D
 var _distant_trunks: MultiMeshInstance3D
 var _distant_canopies: MultiMeshInstance3D
@@ -156,9 +166,11 @@ func _build_stage() -> void:
     _build_midground_vegetation()
     _walker = _local_motion.create_body(self, _material(Color("#eeb74b")))
     _live_visual.build()
+    _live_visual.set_diagnostic_overlays(SHOW_DIAGNOSTIC_WORLD_OVERLAYS)
     _camera = Camera3D.new()
     _camera.current = true
     _camera.far = CAMERA_FAR_M
+    _camera.fov = CAMERA_FOV_DEG
     add_child(_camera)
     _hud = Hud.new()
     add_child(_hud)
@@ -608,6 +620,8 @@ func _on_world_slice(observer: Dictionary, current_region_id: String, hot_entiti
         environmental_state
     ))
     var projected: Vector3 = _live_visual.project_position(observer)
+    if _has_live_position:
+        _update_camera_heading(_last_live_position, projected)
     _last_live_position = projected
     _has_live_position = true
     if not _local_explore_enabled:
@@ -651,11 +665,43 @@ func _on_local_mode(enabled: bool) -> void:
     elif enabled:
         _local_motion.snap_body(_walker, _position)
     _update_caption()
+func _update_camera_heading(previous: Vector3, current: Vector3) -> void:
+    var flat_delta := Vector2(current.x - previous.x, current.z - previous.z)
+    if flat_delta.length() < CAMERA_HEADING_MIN_STEP_M:
+        return
+    var desired := Vector3(flat_delta.x, 0.0, flat_delta.y).normalized()
+    if _camera_forward.length_squared() < 0.001:
+        _camera_forward = desired
+    else:
+        _camera_forward = _camera_forward.lerp(desired, CAMERA_HEADING_BLEND).normalized()
+
+func _orient_nov_visual() -> void:
+    if _walker == null or _camera_forward.length_squared() < 0.001:
+        return
+    _walker.rotation.y = atan2(_camera_forward.x, _camera_forward.z)
+
 func _follow_camera(snap_body: bool = true) -> void:
     if snap_body:
         _local_motion.snap_body(_walker, _position)
-    _camera.position = _position + Vector3(26, 32, 39)
-    _camera.look_at(_position + Vector3(0, 1.0, 0))
+    _orient_nov_visual()
+    if not PERCEPTUAL_CAMERA_ENABLED:
+        _camera.position = _position + Vector3(26, 32, 39)
+        _camera.look_at(_position + Vector3(0, 1.0, 0))
+        return
+    var forward := _camera_forward.normalized()
+    var target := _position + Vector3(0, CAMERA_LOOK_HEIGHT_M, 0)
+    var camera_position := (
+        _position
+        - forward * CAMERA_BACK_M
+        + Vector3(0, CAMERA_HEIGHT_M, 0)
+    )
+    var camera_ground := _height(camera_position.x, camera_position.z)
+    camera_position.y = maxf(
+        camera_position.y,
+        camera_ground + CAMERA_MIN_GROUND_CLEARANCE_M
+    )
+    _camera.position = camera_position
+    _camera.look_at(target)
 func _update_caption() -> void:
     var cx := _cell(_position.x)
     var cz := _cell(_position.z)
@@ -686,7 +732,9 @@ func _process(delta: float) -> void:
         _position, input, target, delta, _walker, get_world_3d().direct_space_state,
         not _local_explore_enabled
     )
+    var previous_position := _position
     _position = movement.get("position", _position)
+    _update_camera_heading(previous_position, _position)
     _local_surface = str(movement.get("surface", "terrain"))
     _local_block_reason = str(movement.get("reason", ""))
     if bool(movement.get("reached", false)):
