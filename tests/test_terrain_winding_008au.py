@@ -26,7 +26,7 @@ class TerrainWinding008AUTests(unittest.TestCase):
     def test_normals_are_height_gradient_driven(self) -> None:
         source = PREVIEW.read_text(encoding="utf-8")
         self.assertIn("const TERRAIN_NORMAL_SAMPLE_M := 4.0", source)
-        self.assertIn("func _terrain_normal(x: float, z: float) -> Vector3:", source)
+        self.assertIn("func _terrain_normal(x: float, z: float, horizon: bool = false) -> Vector3:", source)
         self.assertIn("st.set_normal(_terrain_normal(x, z))", source)
         terrain_section = source[source.index("func _horizon_vertex"):source.index("func _decor_visibility_range")]
         self.assertNotIn("generate_normals()", terrain_section)

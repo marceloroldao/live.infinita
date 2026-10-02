@@ -22,8 +22,11 @@ const PLANT_VISIBILITY_RANGE_M := 82.0
 const DECOR_VISIBILITY_MARGIN_M := 12.0
 const CAMERA_FAR_M := 440.0
 const HORIZON_GROUND_MARGIN_M := 256.0
-const HORIZON_GRID := 24
+const HORIZON_GRID := 32
 const HORIZON_GROUND_OFFSET_M := 7.0
+const HORIZON_COGNITIVE_GAIN := 2.2
+const HORIZON_COGNITIVE_MIN_M := -26.0
+const HORIZON_COGNITIVE_MAX_M := 48.0
 const TERRAIN_NORMAL_SAMPLE_M := 4.0
 var _map: Dictionary = {}
 var _catalog: RefCounted
@@ -166,16 +169,41 @@ func _horizon_color(height_m: float) -> Color:
     var blend := clampf((height_m + 4.0) / 28.0, 0.0, 1.0)
     return low.lerp(high, blend)
 
-func _terrain_normal(x: float, z: float) -> Vector3:
+func _natural_height(x: float, z: float) -> float:
+    var rise := 4.0 if x > 175.0 and z < -70.0 else 1.0
+    return (sin(x * 0.012) * 1.8 + cos(z * 0.016) * 1.6 + sin((x + z) * 0.021) * 0.9) * rise
+
+func _cognitive_height(x: float, z: float) -> float:
+    if _cognitive_terrain == null:
+        return 0.0
+    return float(_cognitive_terrain.call("height_delta", x, z))
+
+func _shape_river_bank(x: float, shaped: float) -> float:
+    var bank_mix := clampf((absf(x - 32.0) - 10.0) / 20.0, 0.0, 1.0)
+    return lerpf(minf(shaped, -2.3), shaped, bank_mix)
+
+func _horizon_height(x: float, z: float) -> float:
+    var amplified_cognitive := clampf(
+        _cognitive_height(x, z) * HORIZON_COGNITIVE_GAIN,
+        HORIZON_COGNITIVE_MIN_M,
+        HORIZON_COGNITIVE_MAX_M
+    )
+    return _shape_river_bank(x, _natural_height(x, z) + amplified_cognitive)
+
+func _terrain_normal(x: float, z: float, horizon: bool = false) -> Vector3:
     var d := TERRAIN_NORMAL_SAMPLE_M
-    var dx := (_height(x + d, z) - _height(x - d, z)) / (2.0 * d)
-    var dz := (_height(x, z + d) - _height(x, z - d)) / (2.0 * d)
+    var hx0 := _horizon_height(x - d, z) if horizon else _height(x - d, z)
+    var hx1 := _horizon_height(x + d, z) if horizon else _height(x + d, z)
+    var hz0 := _horizon_height(x, z - d) if horizon else _height(x, z - d)
+    var hz1 := _horizon_height(x, z + d) if horizon else _height(x, z + d)
+    var dx := (hx1 - hx0) / (2.0 * d)
+    var dz := (hz1 - hz0) / (2.0 * d)
     return Vector3(-dx, 1.0, -dz).normalized()
 
 func _horizon_vertex(st: SurfaceTool, x: float, z: float) -> void:
-    var y := _height(x, z) - HORIZON_GROUND_OFFSET_M
+    var y := _horizon_height(x, z) - HORIZON_GROUND_OFFSET_M
     st.set_color(_horizon_color(y))
-    st.set_normal(_terrain_normal(x, z))
+    st.set_normal(_terrain_normal(x, z, true))
     st.add_vertex(Vector3(x, y, z))
 
 func _rebuild_horizon_ground() -> void:
@@ -202,14 +230,7 @@ func _rebuild_horizon_ground() -> void:
     _horizon_ground.material_override = material
 
 func _height(x: float, z: float) -> float:
-    var rise := 4.0 if x > 175.0 and z < -70.0 else 1.0
-    var natural := (sin(x * 0.012) * 1.8 + cos(z * 0.016) * 1.6 + sin((x + z) * 0.021) * 0.9) * rise
-    var cognitive := 0.0
-    if _cognitive_terrain != null:
-        cognitive = float(_cognitive_terrain.call("height_delta", x, z))
-    var shaped := natural + cognitive
-    var bank_mix := clampf((absf(x - 32.0) - 10.0) / 20.0, 0.0, 1.0)
-    return lerpf(minf(shaped, -2.3), shaped, bank_mix)
+    return _shape_river_bank(x, _natural_height(x, z) + _cognitive_height(x, z))
 func _waypoint(cell: Array) -> Vector3:
     var flat: Vector2 = _layout.cell_center(cell)
     return Vector3(flat.x, float(_features.call("walk_height", flat.x, flat.y)), flat.y)

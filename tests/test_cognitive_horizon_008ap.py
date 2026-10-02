@@ -11,12 +11,21 @@ class CognitiveHorizon008APTests(unittest.TestCase):
         self.assertIn("const CAMERA_FAR_M := 440.0", source)
         self.assertIn("const HORIZON_GROUND_MARGIN_M := 256.0", source)
         self.assertIn("const HORIZON_GROUND_OFFSET_M := 7.0", source)
+        self.assertIn("const HORIZON_COGNITIVE_GAIN := 2.2", source)
+        self.assertIn("func _horizon_height(x: float, z: float) -> float:", source)
+        self.assertIn("_cognitive_height(x, z) * HORIZON_COGNITIVE_GAIN", source)
         self.assertIn('horizon_ground.name = "WorldHorizonGround"', source)
-        self.assertIn("const HORIZON_GRID := 24", source)
+        self.assertIn("const HORIZON_GRID := 32", source)
         self.assertIn("func _rebuild_horizon_ground() -> void:", source)
         self.assertIn("material.vertex_color_use_as_albedo = true", source)
         self.assertIn("_camera.far = CAMERA_FAR_M", source)
         self.assertEqual(source.count("WorldHorizonGround"), 1)
+
+    def test_local_height_keeps_unamplified_cognitive_field(self) -> None:
+        source = PREVIEW.read_text(encoding="utf-8")
+        section = source[source.index("func _height(x: float, z: float)"):source.index("func _waypoint")]
+        self.assertIn("_natural_height(x, z) + _cognitive_height(x, z)", section)
+        self.assertNotIn("HORIZON_COGNITIVE_GAIN", section)
 
     def test_massif_footprint_keeps_camera_outside_near_anchor(self) -> None:
         terrain = (ROOT / "apps" / "renderer-godot" / "world_map_cognitive_terrain.gd").read_text(encoding="utf-8")
