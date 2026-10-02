@@ -33,6 +33,7 @@ class HeadlessRendererConfig:
     godot_fps: int = 20
     minimum_godot_fps: int = 12
     cpu_governor_enabled: bool = False
+    native_bus_resolution: bool = False
     video_output: str = "udp://127.0.0.1:5600?pkt_size=1316"
     video_bitrate_kbps: int = 6000
     startup_seconds: float = 2.0
@@ -52,6 +53,7 @@ class HeadlessRendererConfig:
             godot_fps=int(os.getenv("LIVE_INFINITA_RENDER_GODOT_FPS", "20")),
             minimum_godot_fps=int(os.getenv("LIVE_INFINITA_RENDER_GODOT_MIN_FPS", "12")),
             cpu_governor_enabled=os.getenv("LIVE_INFINITA_RENDER_CPU_GOVERNOR", "0").strip().lower() in {"1", "true", "yes", "on"},
+            native_bus_resolution=os.getenv("LIVE_INFINITA_RENDER_NATIVE_BUS", "0").strip().lower() in {"1", "true", "yes", "on"},
             video_output=os.getenv("LIVE_INFINITA_VIDEO_BUS", "udp://127.0.0.1:5600?pkt_size=1316").strip(),
             video_bitrate_kbps=int(os.getenv("LIVE_INFINITA_RENDER_BITRATE_KBPS", "6000")),
             startup_seconds=float(os.getenv("LIVE_INFINITA_RENDER_STARTUP_SECONDS", "2")),
@@ -115,6 +117,14 @@ class HeadlessRendererConfig:
             command.append(self.scene)
         return command
 
+    @property
+    def bus_width(self) -> int:
+        return self.render_width if self.native_bus_resolution else self.width
+
+    @property
+    def bus_height(self) -> int:
+        return self.render_height if self.native_bus_resolution else self.height
+
     def capture_command(self, ffmpeg_bin: str = "ffmpeg") -> list[str]:
         self.validate()
         gop = self.fps * 2
@@ -122,7 +132,10 @@ class HeadlessRendererConfig:
             ffmpeg_bin, "-hide_banner", "-loglevel", "warning", "-f", "x11grab", "-draw_mouse", "0",
             "-framerate", str(self.fps), "-video_size", f"{self.render_width}x{self.render_height}", "-i", f"{self.display}.0+0,0", "-an",
         ]
-        if (self.render_width, self.render_height) != (self.width, self.height):
+        if (
+            not self.native_bus_resolution
+            and (self.render_width, self.render_height) != (self.width, self.height)
+        ):
             command.extend([
                 "-vf",
                 f"scale={self.width}:{self.height}:flags=fast_bilinear",
@@ -214,6 +227,9 @@ class HeadlessRenderer:
             "render_height": self.config.render_height,
             "output_width": self.config.width,
             "output_height": self.config.height,
+            "bus_width": self.config.bus_width,
+            "bus_height": self.config.bus_height,
+            "native_bus_resolution": self.config.native_bus_resolution,
             "governor_enabled": True,
             "cpu_pressure_avg10_pct": pressure,
             "scene": self.config.scene or "project-default",

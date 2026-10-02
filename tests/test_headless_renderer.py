@@ -72,6 +72,19 @@ class HeadlessRendererConfigTest(unittest.TestCase):
                 internal_height=1000,
             ).validate()
 
+    def test_native_video_bus_skips_early_upscale(self):
+        cfg = HeadlessRendererConfig(
+            width=720,
+            height=1280,
+            internal_width=432,
+            internal_height=768,
+            native_bus_resolution=True,
+        )
+        command = cfg.capture_command("ffmpeg")
+        self.assertIn("432x768", command)
+        self.assertNotIn("-vf", command)
+        self.assertEqual((cfg.bus_width, cfg.bus_height), (432, 768))
+
     def test_xvfb_does_not_listen_on_tcp(self):
         cfg = HeadlessRendererConfig()
         command = cfg.xvfb_command("Xvfb")
@@ -139,12 +152,16 @@ class HeadlessRendererConfigTest(unittest.TestCase):
             self.assertEqual(status["render_height"], 1280)
             self.assertEqual(status["output_width"], 720)
             self.assertEqual(status["output_height"], 1280)
+            self.assertEqual(status["bus_width"], 720)
+            self.assertEqual(status["bus_height"], 1280)
+            self.assertFalse(status["native_bus_resolution"])
             self.assertEqual(status["cpu_pressure_avg10_pct"], 60.5)
             self.assertTrue(status["governor_enabled"])
             self.assertEqual(status["scene"], "project-default")
             self.assertEqual(set(status), {
                 "updated_at_unix", "godot_fps", "capture_fps",
                 "render_width", "render_height", "output_width", "output_height",
+                "bus_width", "bus_height", "native_bus_resolution",
                 "governor_enabled", "cpu_pressure_avg10_pct", "scene"})
             renderer.stop()
 
@@ -158,6 +175,7 @@ class HeadlessRendererConfigTest(unittest.TestCase):
         self.assertIn('OS.get_environment("LIVE_INFINITA_RENDER_CONTROL_FILE")', preview)
         self.assertIn('Engine.max_fps = target_fps', preview)
         self.assertIn('Environment=LIVE_INFINITA_RENDER_CPU_GOVERNOR=1', unit)
+        self.assertIn('Environment=LIVE_INFINITA_RENDER_NATIVE_BUS=1', unit)
         self.assertIn('Environment=LIVE_INFINITA_RENDER_FPS=15', unit)
         self.assertIn('Environment=LIVE_INFINITA_RENDER_INTERNAL_WIDTH=432', unit)
         self.assertIn('Environment=LIVE_INFINITA_RENDER_INTERNAL_HEIGHT=768', unit)
