@@ -51,8 +51,8 @@ func build(position: Vector3, forward: Vector3) -> void:
 
     var canopy_mesh := CylinderMesh.new()
     canopy_mesh.top_radius = 0.28
-    canopy_mesh.bottom_radius = 2.5
-    canopy_mesh.height = 6.2
+    canopy_mesh.bottom_radius = 2.25
+    canopy_mesh.height = 6.6
     canopy_mesh.radial_segments = 5
     canopy_mesh.rings = 1
 
@@ -205,13 +205,24 @@ func rebuild(
             continue
         var y := float(_height_sampler.call(x, z))
         var scale_noise := 0.5 + 0.5 * sin(seed * 0.00023 + float(i) * 2.47)
-        var scale := 0.78 + 0.48 * scale_noise
-        var basis := Basis(Vector3.UP, phase * 0.41).scaled(Vector3(scale, scale, scale))
+        var width_noise := 0.5 + 0.5 * sin(seed * 0.00037 + float(i) * 1.37)
+        var height_scale := 0.86 + 0.58 * scale_noise
+        var trunk_width := 0.72 + 0.30 * width_noise
+        var canopy_width := 0.72 + 0.48 * width_noise
+        var yaw := phase * 0.41 + width_noise * 0.7
+        var trunk_basis := Basis(Vector3.UP, yaw).scaled(
+            Vector3(trunk_width, height_scale, trunk_width)
+        )
+        var canopy_basis := Basis(Vector3.UP, yaw + 0.15).scaled(
+            Vector3(canopy_width, height_scale, canopy_width)
+        )
         _trunks.multimesh.set_instance_transform(
-            tree_placed, Transform3D(basis, Vector3(x, y + 2.2 * scale, z))
+            tree_placed,
+            Transform3D(trunk_basis, Vector3(x, y + 2.2 * height_scale, z))
         )
         _canopies.multimesh.set_instance_transform(
-            tree_placed, Transform3D(basis, Vector3(x, y + 5.5 * scale, z))
+            tree_placed,
+            Transform3D(canopy_basis, Vector3(x, y + 5.5 * height_scale, z))
         )
         tree_placed += 1
 

@@ -27,11 +27,13 @@ const CAMERA_BACK_M := 6.4
 const CAMERA_HEIGHT_M := 3.0
 const CAMERA_LOOK_HEIGHT_M := 1.35
 const CAMERA_LOOK_AHEAD_M := 11.0
+const CAMERA_SHOULDER_M := 0.95
 const CAMERA_MIN_GROUND_CLEARANCE_M := 1.9
 const CAMERA_HEADING_MIN_STEP_M := 0.35
 const CAMERA_HEADING_BLEND := 0.34
 const PERCEPTUAL_CAMERA_ENABLED := true
 const SHOW_DIAGNOSTIC_WORLD_OVERLAYS := false
+const SHOW_TECHNICAL_STATUS := false
 const HORIZON_GROUND_MARGIN_M := 256.0
 const HORIZON_GRID := 24
 const HORIZON_GROUND_OFFSET_M := 7.0
@@ -187,6 +189,7 @@ func _build_stage() -> void:
     add_child(_hud)
     _hud.local_mode_changed.connect(_on_local_mode)
     _hud.configure(_layout.world_size_m())
+    _hud.set_technical_status_visible(SHOW_TECHNICAL_STATUS)
     _follow_camera()
 func _material(color: Color) -> StandardMaterial3D:
     var result := StandardMaterial3D.new()
@@ -709,9 +712,11 @@ func _follow_camera(snap_body: bool = true) -> void:
         + forward * CAMERA_LOOK_AHEAD_M
         + Vector3(0, CAMERA_LOOK_HEIGHT_M, 0)
     )
+    var right := Vector3(-forward.z, 0.0, forward.x).normalized()
     var camera_position := (
         _position
         - forward * CAMERA_BACK_M
+        + right * CAMERA_SHOULDER_M
         + Vector3(0, CAMERA_HEIGHT_M, 0)
     )
     var camera_ground := _height(camera_position.x, camera_position.z)

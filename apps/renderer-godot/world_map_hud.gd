@@ -74,6 +74,10 @@ func _apply_mode(enabled: bool, notify: bool) -> void:
 func configure(world_size_m: int) -> void:
     _world_size_m = world_size_m
 
+func set_technical_status_visible(visible: bool) -> void:
+    if _status != null:
+        _status.visible = visible
+
 func set_status(text: String) -> void:
     _status.text = text
 

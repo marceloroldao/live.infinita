@@ -88,8 +88,12 @@ func _placeholder() -> void:
     var hide := Color("#5a3b26")
     var cloth := Color("#3f4a35")
 
-    var torso_mesh := BoxMesh.new()
-    torso_mesh.size = Vector3(0.62, 0.78, 0.30)
+    var torso_mesh := CylinderMesh.new()
+    torso_mesh.top_radius = 0.27
+    torso_mesh.bottom_radius = 0.36
+    torso_mesh.height = 0.78
+    torso_mesh.radial_segments = 6
+    torso_mesh.rings = 1
     _part("Torso", torso_mesh, Vector3(0.0, 0.24, 0.0), hide)
 
     var head_mesh := SphereMesh.new()
@@ -99,8 +103,12 @@ func _placeholder() -> void:
     head_mesh.rings = 4
     _part("Head", head_mesh, Vector3(0.0, 0.88, 0.0), skin)
 
-    var hip_mesh := BoxMesh.new()
-    hip_mesh.size = Vector3(0.54, 0.28, 0.32)
+    var hip_mesh := CylinderMesh.new()
+    hip_mesh.top_radius = 0.31
+    hip_mesh.bottom_radius = 0.34
+    hip_mesh.height = 0.28
+    hip_mesh.radial_segments = 6
+    hip_mesh.rings = 1
     _part("PrimitiveWrap", hip_mesh, Vector3(0.0, -0.18, 0.0), cloth)
 
     for side in [-1.0, 1.0]:
