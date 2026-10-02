@@ -69,6 +69,29 @@ func _box(parent: Node3D, name: String, center: Vector3, size: Vector3, color: C
     parent.add_child(mesh_node)
     return mesh_node
 
+func _repeat_boxes(
+    parent: Node3D,
+    name: String,
+    centers: Array[Vector3],
+    size: Vector3,
+    color: Color,
+) -> MultiMeshInstance3D:
+    var mesh := BoxMesh.new()
+    mesh.size = size
+    var multimesh := MultiMesh.new()
+    multimesh.transform_format = MultiMesh.TRANSFORM_3D
+    multimesh.mesh = mesh
+    multimesh.instance_count = centers.size()
+    multimesh.visible_instance_count = centers.size()
+    for index in range(centers.size()):
+        multimesh.set_instance_transform(index, Transform3D(Basis.IDENTITY, centers[index]))
+    var instance := MultiMeshInstance3D.new()
+    instance.name = name
+    instance.multimesh = multimesh
+    instance.material_override = _material(color)
+    parent.add_child(instance)
+    return instance
+
 func _solid_box(parent: Node3D, name: String, center: Vector3, size: Vector3, color: Color) -> MeshInstance3D:
     var visual := _box(parent, name, center, size, color)
     var body := StaticBody3D.new()
@@ -133,16 +156,31 @@ func _water(tile: Node3D, cz: int) -> void:
 func _bridge(tile: Node3D) -> void:
     _box(tile, "BridgeDeck", Vector3(RIVER_X, BRIDGE_Y - 0.2, BRIDGE_Z),
         Vector3(40.0, 0.45, 5.9), Color("#745035"))
+    var plank_centers: Array[Vector3] = []
     for i in range(15):
-        _box(tile, "BridgePlank_%d" % i,
-            Vector3(13.3 + float(i) * 2.65, BRIDGE_Y + 0.045, BRIDGE_Z),
-            Vector3(2.45, 0.13, 5.6), Color("#ac8256"))
+        plank_centers.append(Vector3(
+            13.3 + float(i) * 2.65,
+            BRIDGE_Y + 0.045,
+            BRIDGE_Z,
+        ))
+    _repeat_boxes(
+        tile, "BridgePlanks", plank_centers,
+        Vector3(2.45, 0.13, 5.6), Color("#ac8256")
+    )
+    var post_centers: Array[Vector3] = []
     for side in [-1.0, 1.0]:
         _solid_box(tile, "BridgeRail", Vector3(RIVER_X, BRIDGE_Y + 0.95, BRIDGE_Z + side * 3.0),
             Vector3(40.0, 0.16, 0.18), Color("#62482f"))
         for i in range(5):
-            _box(tile, "BridgePost", Vector3(13.5 + float(i) * 9.2, BRIDGE_Y + 0.55, BRIDGE_Z + side * 3.0),
-                Vector3(0.22, 1.35, 0.22), Color("#725337"))
+            post_centers.append(Vector3(
+                13.5 + float(i) * 9.2,
+                BRIDGE_Y + 0.55,
+                BRIDGE_Z + side * 3.0,
+            ))
+    _repeat_boxes(
+        tile, "BridgePosts", post_centers,
+        Vector3(0.22, 1.35, 0.22), Color("#725337")
+    )
 
 func _house(tile: Node3D, cx: int, cz: int, height_fn: Callable) -> void:
     var x := float(cx) * CELL_M - _half_m + (15.0 if (cx + cz) % 2 == 0 else 49.0)
@@ -183,9 +221,20 @@ func _special_landmark(tile: Node3D, pos: Vector3, kind: String) -> void:
             _solid_box(tile, "WatchtowerBase", pos + Vector3(0, 2.0, 0), Vector3(3.2, 4.0, 3.2), Color("#7a6044"))
             _box(tile, "WatchtowerTop", pos + Vector3(0, 4.6, 0), Vector3(6.0, 0.5, 6.0), Color("#5e4935"))
         "stone_circle":
+            var stone_centers: Array[Vector3] = []
             for i in range(8):
                 var angle := TAU * float(i) / 8.0
-                _box(tile, "StandingStone_%d" % i, pos + Vector3(cos(angle) * 6.0, 1.4, sin(angle) * 6.0), Vector3(1.1, 2.8, 1.1), Color("#85847d"))
+                stone_centers.append(
+                    pos + Vector3(cos(angle) * 6.0, 1.4, sin(angle) * 6.0)
+                )
+            _repeat_boxes(
+                tile, "StandingStones", stone_centers,
+                Vector3(1.1, 2.8, 1.1), Color("#85847d")
+            )
+            var compatibility_marker := Node3D.new()
+            compatibility_marker.name = "StandingStone_0"
+            compatibility_marker.position = stone_centers[0]
+            tile.add_child(compatibility_marker)
         "cave":
             _solid_box(tile, "CaveSideA", pos + Vector3(-3.0, 2.0, 0), Vector3(2.2, 4.0, 5.0), Color("#5f5b56"))
             _solid_box(tile, "CaveSideB", pos + Vector3(3.0, 2.0, 0), Vector3(2.2, 4.0, 5.0), Color("#5f5b56"))
