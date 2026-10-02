@@ -10,9 +10,15 @@ class TerrainWinding008AUTests(unittest.TestCase):
         source = PREVIEW.read_text(encoding="utf-8")
         macro = """_horizon_vertex(st, x, z)
             _horizon_vertex(st, x + step, z)
+            _horizon_vertex(st, x, z + step)
+            _horizon_vertex(st, x + step, z)
+            _horizon_vertex(st, x + step, z + step)
             _horizon_vertex(st, x, z + step)"""
         local = """_vertex(st, x, z)
             _vertex(st, x + step, z)
+            _vertex(st, x, z + step)
+            _vertex(st, x + step, z)
+            _vertex(st, x + step, z + step)
             _vertex(st, x, z + step)"""
         self.assertIn(macro, source)
         self.assertIn(local, source)
