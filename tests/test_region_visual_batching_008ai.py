@@ -28,6 +28,12 @@ class RegionVisualBatching008AITests(unittest.TestCase):
         self.assertIn("return selected.size()", section)
         self.assertIn("WORLD_MAP_REGION_VISUAL", section)
 
+    def test_old_overlay_is_detached_before_rebuild(self) -> None:
+        source = VISUAL.read_text(encoding="utf-8")
+        clear = source[source.index("func _clear_region_nodes"):source.index("func _region_material")]
+        self.assertIn("_region_root.remove_child(child)", clear)
+        self.assertIn("child.queue_free()", clear)
+
 
 if __name__ == "__main__":
     unittest.main()
