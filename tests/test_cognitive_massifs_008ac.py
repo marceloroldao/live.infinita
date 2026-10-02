@@ -16,6 +16,8 @@ class CognitiveMassifs008ACTests(unittest.TestCase):
         self.assertIn("func _rebuild_massifs(height_sampler: Callable) -> void:", source)
         self.assertIn('peak.name = "MemoryMassif_%s_%s"', source)
         self.assertIn("mesh.radial_segments = 9", source)
+        self.assertIn("const MASSIF_MIN_CAMERA_DISTANCE_M := 92.0", source)
+        self.assertIn("peak.visibility_range_begin = MASSIF_MIN_CAMERA_DISTANCE_M", source)
         self.assertNotIn(
             "StaticBody3D.new()",
             source[source.index("func _massif_material"):source.index("func _trail_batch_material")],

@@ -15,6 +15,7 @@ const MAX_MASSIFS := 6
 const MAX_MASSIF_HEIGHT_M := 68.0
 const MASSIF_MIN_BIAS_M := 6.0
 const MASSIF_MIN_MASS := 0.55
+const MASSIF_MIN_CAMERA_DISTANCE_M := 92.0
 
 var _host: Node3D
 var _root: Node3D
@@ -251,6 +252,9 @@ func _add_massif_peak(
     peak.mesh = mesh
     peak.position = Vector3(center.x, ground_y + height * 0.5 - 0.15, center.y)
     peak.rotation.y = sin(center.x * 0.021 + center.y * 0.017) * 0.38
+    peak.visibility_range_begin = MASSIF_MIN_CAMERA_DISTANCE_M
+    peak.visibility_range_begin_margin = 12.0
+    peak.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
     peak.material_override = _massif_material(mass, secondary)
     _root.add_child(peak)
 
