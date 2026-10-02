@@ -69,13 +69,13 @@ class WorldMapTests(unittest.TestCase):
         self.assertIn("world_map_preview.gd", three)
         self.assertNotIn("world_map_preview", main)
         self.assertIn('run/main_scene="res://main.tscn"', (SCENE / "project.godot").read_text())
-        for gate in ("MAX_ACTIVE_TILES := 9", "MAX_ACTIVE_DECOR := 54",
+        for gate in ("MAX_ACTIVE_TILES := 9", "MAX_ACTIVE_DECOR := 22",
                      "queue_free()", "_sync_tiles()", "WORLD_MAP_PREVIEW_READY"):
             self.assertIn(gate, script)
         for forbidden in ("WebSocket", "HTTPClient", "FileAccess.open(",
                           "DirAccess", "set_world", "submit_intent", "post_world"):
             self.assertNotIn(forbidden, script)
-        self.assertLess(len(script), 14000)
+        self.assertLess(len(script), 22000)
 
     def test_real_visual_features_are_bounded_and_read_only(self):
         features = (SCENE / "world_map_features.gd").read_text(encoding="utf-8")

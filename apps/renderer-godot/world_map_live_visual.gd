@@ -3,6 +3,7 @@ extends RefCounted
 const MAX_HOT_MARKERS := 96
 const MAX_WARM_MARKERS := 192
 const MAX_LOCAL_REGIONS := 16
+const MAX_REGION_LABELS := 4
 const REGION_RING_SEGMENTS := 48
 
 var _host: Node3D
@@ -151,43 +152,142 @@ func _clear_region_nodes() -> void:
     if _region_root == null:
         return
     for child in _region_root.get_children():
+        _region_root.remove_child(child)
         child.queue_free()
 
-func _region_ring(region: Dictionary, current_region_id: String) -> void:
+func _region_material(color: Color) -> StandardMaterial3D:
+    var material := _material(color)
+    material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+    return material
+
+func _append_region_ring(mesh: ImmediateMesh, region: Dictionary) -> bool:
     var center_data = region.get("center", {})
     if typeof(center_data) != TYPE_DICTIONARY:
-        return
+        return false
     var radius := maxf(1.0, float(region.get("radius", 1.0)) * _projection_scale())
+    var center := project_position(center_data)
+    for index in range(REGION_RING_SEGMENTS):
+        var angle_a := TAU * float(index) / float(REGION_RING_SEGMENTS)
+        var angle_b := TAU * float(index + 1) / float(REGION_RING_SEGMENTS)
+        var ax := center.x + cos(angle_a) * radius
+        var az := center.z + sin(angle_a) * radius
+        var bx := center.x + cos(angle_b) * radius
+        var bz := center.z + sin(angle_b) * radius
+        var ay := float(_features.call("walk_height", ax, az)) + 0.16
+        var by := float(_features.call("walk_height", bx, bz)) + 0.16
+        mesh.surface_add_vertex(Vector3(ax, ay, az))
+        mesh.surface_add_vertex(Vector3(bx, by, bz))
+    return true
+
+func _build_region_rings(regions: Array, current_region_id: String) -> int:
+    var mesh := ImmediateMesh.new()
+    var surfaces := 0
+    var normal_regions: Array = []
+    var current_regions: Array = []
+    for region in regions:
+        if str(region.get("id", "")) == current_region_id:
+            current_regions.append(region)
+        else:
+            normal_regions.append(region)
+
+    if not normal_regions.is_empty():
+        mesh.surface_begin(
+            Mesh.PRIMITIVE_LINES,
+            _region_material(Color("#88b7a0"))
+        )
+        for region in normal_regions:
+            _append_region_ring(mesh, region)
+        mesh.surface_end()
+        surfaces += 1
+
+    if not current_regions.is_empty():
+        mesh.surface_begin(
+            Mesh.PRIMITIVE_LINES,
+            _region_material(Color("#f4d35e"))
+        )
+        for region in current_regions:
+            _append_region_ring(mesh, region)
+        mesh.surface_end()
+        surfaces += 1
+
+    if surfaces > 0:
+        var ring_batch := MeshInstance3D.new()
+        ring_batch.name = "RegionRings"
+        ring_batch.mesh = mesh
+        _region_root.add_child(ring_batch)
+    return surfaces
+
+func _region_label(region: Dictionary, current_region_id: String) -> Label3D:
+    var center_data = region.get("center", {})
+    if typeof(center_data) != TYPE_DICTIONARY:
+        return null
     var center := project_position(center_data)
     var current := str(region.get("id", "")) == current_region_id
     var color := Color("#f4d35e") if current else Color("#88b7a0")
-    var mesh := ImmediateMesh.new()
-    var material := _material(color)
-    material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-    mesh.surface_begin(Mesh.PRIMITIVE_LINE_STRIP, material)
-    for index in range(REGION_RING_SEGMENTS + 1):
-        var angle := TAU * float(index) / float(REGION_RING_SEGMENTS)
-        var x := center.x + cos(angle) * radius
-        var z := center.z + sin(angle) * radius
-        var y := float(_features.call("walk_height", x, z)) + 0.16
-        mesh.surface_add_vertex(Vector3(x, y, z))
-    mesh.surface_end()
-    var ring := MeshInstance3D.new()
-    ring.name = "RegionRing_" + str(region.get("id", "unknown"))
-    ring.mesh = mesh
-    _region_root.add_child(ring)
     var label := Label3D.new()
     var metadata = region.get("metadata", {})
     var title := str(region.get("id", "region"))
     if typeof(metadata) == TYPE_DICTIONARY:
         title = str(metadata.get("label", title))
+    label.name = "RegionLabel_" + str(region.get("id", "unknown"))
     label.text = title
     label.position = center + Vector3(0, 2.4, 0)
     label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
     label.font_size = 24 if current else 18
     label.pixel_size = 0.012
     label.modulate = color
-    _region_root.add_child(label)
+    return label
+
+func _build_region_labels(regions: Array, current_region_id: String) -> int:
+    var current_position := Vector2.ZERO
+    var has_current := false
+    for region in regions:
+        if str(region.get("id", "")) != current_region_id:
+            continue
+        var center_data = region.get("center", {})
+        if typeof(center_data) != TYPE_DICTIONARY:
+            continue
+        var center := project_position(center_data)
+        current_position = Vector2(center.x, center.z)
+        has_current = true
+        break
+
+    var ranked: Array = []
+    for region in regions:
+        var center_data = region.get("center", {})
+        if typeof(center_data) != TYPE_DICTIONARY:
+            continue
+        var center := project_position(center_data)
+        var is_current := str(region.get("id", "")) == current_region_id
+        var distance := 0.0
+        if has_current and not is_current:
+            distance = Vector2(center.x, center.z).distance_to(current_position)
+        ranked.append({
+            "region": region,
+            "current": is_current,
+            "distance": distance,
+        })
+
+    ranked.sort_custom(func(a, b):
+        if bool(a.get("current", false)) != bool(b.get("current", false)):
+            return bool(a.get("current", false))
+        var da := float(a.get("distance", 0.0))
+        var db := float(b.get("distance", 0.0))
+        if not is_equal_approx(da, db):
+            return da < db
+        return str(a["region"].get("id", "")) < str(b["region"].get("id", ""))
+    )
+
+    var labels := 0
+    for item in ranked:
+        if labels >= MAX_REGION_LABELS:
+            break
+        var label := _region_label(item["region"], current_region_id)
+        if label == null:
+            continue
+        _region_root.add_child(label)
+        labels += 1
+    return labels
 
 func update_regions(regions: Array, current_region_id: String) -> int:
     var signature := _region_signature_for(regions, current_region_id)
@@ -195,14 +295,20 @@ func update_regions(regions: Array, current_region_id: String) -> int:
         return mini(regions.size(), MAX_LOCAL_REGIONS)
     _region_signature = signature
     _clear_region_nodes()
-    var count := 0
+
     var sorted_regions := regions.duplicate(true)
     sorted_regions.sort_custom(func(a, b): return str(a.get("id", "")) < str(b.get("id", "")))
+    var selected: Array = []
     for region in sorted_regions:
         if typeof(region) != TYPE_DICTIONARY:
             continue
-        _region_ring(region, current_region_id)
-        count += 1
-        if count >= MAX_LOCAL_REGIONS:
+        selected.append(region)
+        if selected.size() >= MAX_LOCAL_REGIONS:
             break
-    return count
+
+    var surfaces := _build_region_rings(selected, current_region_id)
+    var labels := _build_region_labels(selected, current_region_id)
+    print("WORLD_MAP_REGION_VISUAL rings=%d surfaces=%d labels=%d" % [
+        selected.size(), surfaces, labels
+    ])
+    return selected.size()
