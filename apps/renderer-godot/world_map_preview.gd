@@ -6,6 +6,7 @@ const LocalMotion = preload("res://world_map_local_motion.gd")
 const Hud = preload("res://world_map_hud.gd")
 const Layout = preload("res://world_map_layout.gd")
 const CognitiveTerrain = preload("res://world_map_cognitive_terrain.gd")
+const PerceptualVegetation = preload("res://world_map_perceptual_vegetation.gd")
 const MAP_PATH := "res://world_map_001.json"
 const TILE_M := 64.0
 const MAX_ACTIVE_TILES := 9
@@ -21,11 +22,11 @@ const ROCK_VISIBILITY_RANGE_M := 110.0
 const PLANT_VISIBILITY_RANGE_M := 82.0
 const DECOR_VISIBILITY_MARGIN_M := 12.0
 const CAMERA_FAR_M := 440.0
-const CAMERA_FOV_DEG := 68.0
-const CAMERA_BACK_M := 9.0
-const CAMERA_HEIGHT_M := 4.6
+const CAMERA_FOV_DEG := 64.0
+const CAMERA_BACK_M := 6.4
+const CAMERA_HEIGHT_M := 3.0
 const CAMERA_LOOK_HEIGHT_M := 1.25
-const CAMERA_MIN_GROUND_CLEARANCE_M := 2.4
+const CAMERA_MIN_GROUND_CLEARANCE_M := 1.9
 const CAMERA_HEADING_MIN_STEP_M := 0.35
 const CAMERA_HEADING_BLEND := 0.34
 const PERCEPTUAL_CAMERA_ENABLED := true
@@ -58,6 +59,7 @@ var _horizon_ground: MeshInstance3D
 var _distant_trunks: MultiMeshInstance3D
 var _distant_canopies: MultiMeshInstance3D
 var _midground_vegetation: MultiMeshInstance3D
+var _perceptual_vegetation: RefCounted
 var _hud: CanvasLayer
 var _route: Array = []
 var _leg := 1
@@ -102,6 +104,13 @@ func _ready() -> void:
     _live_visual = LiveVisual.new(self, _features, _map)
     _cognitive_terrain = CognitiveTerrain.new(self)
     _local_motion = LocalMotion.new(Callable(_features, "walk_height"), _layout.half_m, Callable(_cognitive_terrain, "surface_at"))
+    _perceptual_vegetation = PerceptualVegetation.new(
+        Callable(self, "_new_vegetation_batch"),
+        Callable(self, "_height"),
+        Callable(self, "_midground_allowed"),
+        Callable(self, "_cell"),
+        _layout.half_m,
+    )
     _tile_cache_root = Node3D.new()
     _tile_cache_root.name = "TileCache"
     _tile_cache_root.visible = false
@@ -164,6 +173,7 @@ func _build_stage() -> void:
     add_child(_horizon_ground)
     _build_distant_vegetation()
     _build_midground_vegetation()
+    _perceptual_vegetation.build(_position, _camera_forward)
     _walker = _local_motion.create_body(self, _material(Color("#eeb74b")))
     _live_visual.build()
     _live_visual.set_diagnostic_overlays(SHOW_DIAGNOSTIC_WORLD_OVERLAYS)
@@ -613,6 +623,7 @@ func _on_world_slice(observer: Dictionary, current_region_id: String, hot_entiti
         return
     var first_bind := not _live_authoritative
     var old_cell := Vector2i(_cell(_position.x), _cell(_position.z))
+    var environment_changed := bool(_perceptual_vegetation.update_environment(environmental_state))
     var terrain_changed: bool = bool(_cognitive_terrain.update(
         cognitive_terrain,
         Callable(_live_visual, "project_flat"),
@@ -639,6 +650,8 @@ func _on_world_slice(observer: Dictionary, current_region_id: String, hot_entiti
         _rebuild_distant_vegetation()
         _rebuild_midground_vegetation()
         _rebuild_active_tiles()
+    if terrain_changed or environment_changed:
+        _perceptual_vegetation.rebuild(_position, _camera_forward, _live_region_id, true)
         print("WORLD_MAP_MEMORY_TERRAIN projection=%s environment=%s lakes=%d trails=%d trail_batches=%d massifs=%d snow_caps=%d" % [
             _cognitive_terrain.projection_id(), _cognitive_terrain.environment_state_id(),
             _cognitive_terrain.lake_count(), _cognitive_terrain.trail_count(),
@@ -650,6 +663,7 @@ func _on_world_slice(observer: Dictionary, current_region_id: String, hot_entiti
             _sync_tiles()
             _rebuild_distant_vegetation()
             _rebuild_midground_vegetation()
+        _perceptual_vegetation.rebuild(_position, _camera_forward, _live_region_id)
         _follow_camera()
     _update_caption()
     if first_bind:
@@ -743,6 +757,7 @@ func _process(delta: float) -> void:
         _sync_tiles()
         _rebuild_distant_vegetation()
         _rebuild_midground_vegetation()
+    _perceptual_vegetation.rebuild(_position, _camera_forward, _live_region_id)
     _follow_camera(false)
     _clock += delta
     if _clock > 0.3:

@@ -9,11 +9,11 @@ class NovPerceptualCamera008BGTests(unittest.TestCase):
     def test_camera_defaults_to_close_third_person(self) -> None:
         source = (GODOT / "world_map_preview.gd").read_text(encoding="utf-8")
         for expected in (
-            "const CAMERA_FOV_DEG := 68.0",
-            "const CAMERA_BACK_M := 9.0",
-            "const CAMERA_HEIGHT_M := 4.6",
+            "const CAMERA_FOV_DEG := 64.0",
+            "const CAMERA_BACK_M := 6.4",
+            "const CAMERA_HEIGHT_M := 3.0",
             "const CAMERA_LOOK_HEIGHT_M := 1.25",
-            "const CAMERA_MIN_GROUND_CLEARANCE_M := 2.4",
+            "const CAMERA_MIN_GROUND_CLEARANCE_M := 1.9",
             "const PERCEPTUAL_CAMERA_ENABLED := true",
         ):
             self.assertIn(expected, source)

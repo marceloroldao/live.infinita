@@ -30,11 +30,11 @@ func run() -> void:
             camera.position.x - position.x,
             camera.position.z - position.z
         ).length()
-        check(absf(horizontal - 9.0) < 0.2, "Camera must stay about 9 m behind NOV")
-        check(camera.position.y - position.y < 12.0, "Camera must no longer be aerial")
-        check(camera.position.y > stage._height(camera.position.x, camera.position.z) + 2.2,
+        check(absf(horizontal - 6.4) < 0.2, "Camera must stay about 6.4 m behind NOV")
+        check(camera.position.y - position.y < 7.0, "Camera must no longer be aerial")
+        check(camera.position.y > stage._height(camera.position.x, camera.position.z) + 1.7,
             "Camera must clear local terrain")
-        check(absf(camera.fov - 68.0) < 0.01, "Perceptual FOV must be 68 degrees")
+        check(absf(camera.fov - 64.0) < 0.01, "Perceptual FOV must be 64 degrees")
 
     check(stage._live_visual._diagnostic_overlays_enabled == false,
         "Perceptual preview must hide region overlays")
