@@ -23,7 +23,7 @@ const DECOR_VISIBILITY_MARGIN_M := 12.0
 const CAMERA_FAR_M := 440.0
 const HORIZON_GROUND_MARGIN_M := 256.0
 const HORIZON_GRID := 24
-const HORIZON_GROUND_OFFSET_M := 1.2
+const HORIZON_GROUND_OFFSET_M := 7.0
 var _map: Dictionary = {}
 var _catalog: RefCounted
 var _layout: RefCounted
