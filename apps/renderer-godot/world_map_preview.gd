@@ -24,6 +24,7 @@ const CAMERA_FAR_M := 440.0
 const HORIZON_GROUND_MARGIN_M := 256.0
 const HORIZON_GRID := 24
 const HORIZON_GROUND_OFFSET_M := 7.0
+const TERRAIN_NORMAL_SAMPLE_M := 4.0
 var _map: Dictionary = {}
 var _catalog: RefCounted
 var _layout: RefCounted
@@ -165,9 +166,16 @@ func _horizon_color(height_m: float) -> Color:
     var blend := clampf((height_m + 4.0) / 28.0, 0.0, 1.0)
     return low.lerp(high, blend)
 
+func _terrain_normal(x: float, z: float) -> Vector3:
+    var d := TERRAIN_NORMAL_SAMPLE_M
+    var dx := (_height(x + d, z) - _height(x - d, z)) / (2.0 * d)
+    var dz := (_height(x, z + d) - _height(x, z - d)) / (2.0 * d)
+    return Vector3(-dx, 1.0, -dz).normalized()
+
 func _horizon_vertex(st: SurfaceTool, x: float, z: float) -> void:
     var y := _height(x, z) - HORIZON_GROUND_OFFSET_M
     st.set_color(_horizon_color(y))
+    st.set_normal(_terrain_normal(x, z))
     st.add_vertex(Vector3(x, y, z))
 
 func _rebuild_horizon_ground() -> void:
@@ -188,7 +196,6 @@ func _rebuild_horizon_ground() -> void:
             _horizon_vertex(st, x + step, z)
             _horizon_vertex(st, x, z + step)
             _horizon_vertex(st, x + step, z + step)
-    st.generate_normals()
     _horizon_ground.mesh = st.commit()
     var material := _material(Color.WHITE)
     material.vertex_color_use_as_albedo = true
@@ -224,6 +231,7 @@ func _terrain_color(biome: String) -> Color:
         "ruins": return Color("#756d60")
         _: return Color("#52784e")
 func _vertex(st: SurfaceTool, x: float, z: float) -> void:
+    st.set_normal(_terrain_normal(x, z))
     st.add_vertex(Vector3(x, _height(x, z), z))
 func _terrain(cx: int, cz: int, biome: String) -> MeshInstance3D:
     var st := SurfaceTool.new()
@@ -242,7 +250,6 @@ func _terrain(cx: int, cz: int, biome: String) -> MeshInstance3D:
             _vertex(st, x + step, z)
             _vertex(st, x, z + step)
             _vertex(st, x + step, z + step)
-    st.generate_normals()
     var ground := MeshInstance3D.new()
     ground.mesh = st.commit()
     ground.material_override = _material(_terrain_color(biome))

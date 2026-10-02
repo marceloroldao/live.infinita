@@ -17,6 +17,14 @@ class TerrainWinding008AUTests(unittest.TestCase):
         self.assertIn(macro, source)
         self.assertIn(local, source)
 
+    def test_normals_are_height_gradient_driven(self) -> None:
+        source = PREVIEW.read_text(encoding="utf-8")
+        self.assertIn("const TERRAIN_NORMAL_SAMPLE_M := 4.0", source)
+        self.assertIn("func _terrain_normal(x: float, z: float) -> Vector3:", source)
+        self.assertIn("st.set_normal(_terrain_normal(x, z))", source)
+        terrain_section = source[source.index("func _horizon_vertex"):source.index("func _decor_visibility_range")]
+        self.assertNotIn("generate_normals()", terrain_section)
+
     def test_materials_keep_backface_culling_enabled(self) -> None:
         source = PREVIEW.read_text(encoding="utf-8")
         self.assertNotIn("CULL_DISABLED", source[source.index("func _material"):source.index("func _height")])
