@@ -25,6 +25,9 @@ const HORIZON_GROUND_MARGIN_M := 256.0
 const HORIZON_GRID := 24
 const HORIZON_GROUND_OFFSET_M := 7.0
 const TERRAIN_NORMAL_SAMPLE_M := 4.0
+const DISTANT_VEGETATION_COUNT := 72
+const DISTANT_VEGETATION_INNER_M := 110.0
+const DISTANT_VEGETATION_OUTER_M := 360.0
 var _map: Dictionary = {}
 var _catalog: RefCounted
 var _layout: RefCounted
@@ -39,6 +42,8 @@ var _resource_cache: Dictionary = {}
 var _walker: CharacterBody3D
 var _camera: Camera3D
 var _horizon_ground: MeshInstance3D
+var _distant_trunks: MultiMeshInstance3D
+var _distant_canopies: MultiMeshInstance3D
 var _hud: CanvasLayer
 var _route: Array = []
 var _leg := 1
@@ -143,6 +148,7 @@ func _build_stage() -> void:
     _horizon_ground.name = "WorldHorizonGround"
     _rebuild_horizon_ground()
     add_child(_horizon_ground)
+    _build_distant_vegetation()
     _walker = _local_motion.create_body(self, _material(Color("#eeb74b")))
     _live_visual.build()
     _camera = Camera3D.new()
@@ -200,6 +206,69 @@ func _rebuild_horizon_ground() -> void:
     var material := _material(Color.WHITE)
     material.vertex_color_use_as_albedo = true
     _horizon_ground.material_override = material
+
+func _distant_material(color: Color) -> StandardMaterial3D:
+    var material := StandardMaterial3D.new()
+    material.albedo_color = color
+    material.roughness = 1.0
+    material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+    return material
+
+func _new_distant_batch(name: String, mesh: Mesh, color: Color) -> MultiMeshInstance3D:
+    var multimesh := MultiMesh.new()
+    multimesh.transform_format = MultiMesh.TRANSFORM_3D
+    multimesh.mesh = mesh
+    multimesh.instance_count = DISTANT_VEGETATION_COUNT
+    multimesh.visible_instance_count = DISTANT_VEGETATION_COUNT
+    var instance := MultiMeshInstance3D.new()
+    instance.name = name
+    instance.multimesh = multimesh
+    instance.material_override = _distant_material(color)
+    add_child(instance)
+    return instance
+
+func _build_distant_vegetation() -> void:
+    var trunk_mesh := CylinderMesh.new()
+    trunk_mesh.top_radius = 0.26
+    trunk_mesh.bottom_radius = 0.38
+    trunk_mesh.height = 3.8
+    trunk_mesh.radial_segments = 5
+    trunk_mesh.rings = 1
+    var canopy_mesh := CylinderMesh.new()
+    canopy_mesh.top_radius = 0.35
+    canopy_mesh.bottom_radius = 2.45
+    canopy_mesh.height = 5.8
+    canopy_mesh.radial_segments = 5
+    canopy_mesh.rings = 1
+    _distant_trunks = _new_distant_batch("DistantTreeTrunks", trunk_mesh, Color("#6f5135"))
+    _distant_canopies = _new_distant_batch("DistantTreeCanopies", canopy_mesh, Color("#527d3f"))
+    _rebuild_distant_vegetation()
+
+func _rebuild_distant_vegetation() -> void:
+    if _distant_trunks == null or _distant_canopies == null:
+        return
+    var cx := _cell(_position.x)
+    var cz := _cell(_position.z)
+    var seed := float(cx * 92821 + cz * 68917)
+    for index in range(DISTANT_VEGETATION_COUNT):
+        var phase := float(index) * 2.39996323 + sin(seed * 0.00013) * 0.8
+        var ratio := sqrt((float(index) + 0.5) / float(DISTANT_VEGETATION_COUNT))
+        var radius := lerpf(DISTANT_VEGETATION_INNER_M, DISTANT_VEGETATION_OUTER_M, ratio)
+        radius += sin(seed * 0.00031 + float(index) * 1.73) * 13.0
+        var x := clampf(_position.x + cos(phase) * radius, -_layout.half_m + 12.0, _layout.half_m - 12.0)
+        var z := clampf(_position.z + sin(phase) * radius, -_layout.half_m + 12.0, _layout.half_m - 12.0)
+        if _biome(_cell(x), _cell(z)) == "river":
+            x = clampf(x + 24.0, -_layout.half_m + 12.0, _layout.half_m - 12.0)
+        var y := _height(x, z)
+        var scale := 0.72 + 0.30 * (0.5 + 0.5 * sin(seed * 0.00017 + float(index) * 2.11))
+        var yaw := phase * 0.37
+        var basis := Basis(Vector3.UP, yaw).scaled(Vector3(scale, scale, scale))
+        _distant_trunks.multimesh.set_instance_transform(
+            index, Transform3D(basis, Vector3(x, y + 1.9 * scale, z))
+        )
+        _distant_canopies.multimesh.set_instance_transform(
+            index, Transform3D(basis, Vector3(x, y + 5.2 * scale, z))
+        )
 
 func _height(x: float, z: float) -> float:
     var rise := 4.0 if x > 175.0 and z < -70.0 else 1.0
@@ -482,6 +551,7 @@ func _on_world_slice(observer: Dictionary, current_region_id: String, hot_entiti
     _live_region_count = _live_visual.update_regions(region_descriptors, current_region_id)
     if terrain_changed:
         _rebuild_horizon_ground()
+        _rebuild_distant_vegetation()
         _rebuild_active_tiles()
         print("WORLD_MAP_MEMORY_TERRAIN projection=%s lakes=%d trails=%d trail_batches=%d massifs=%d" % [
             _cognitive_terrain.projection_id(), _cognitive_terrain.lake_count(),
@@ -491,6 +561,7 @@ func _on_world_slice(observer: Dictionary, current_region_id: String, hot_entiti
     if not _local_explore_enabled:
         if not terrain_changed and old_cell != Vector2i(_cell(_position.x), _cell(_position.z)):
             _sync_tiles()
+            _rebuild_distant_vegetation()
         _follow_camera()
     _update_caption()
     if first_bind:
@@ -548,6 +619,7 @@ func _process(delta: float) -> void:
         _leg = (_leg + 1) % _route.size()
     if old_cell != Vector2i(_cell(_position.x), _cell(_position.z)):
         _sync_tiles()
+        _rebuild_distant_vegetation()
     _follow_camera(false)
     _clock += delta
     if _clock > 0.3:
