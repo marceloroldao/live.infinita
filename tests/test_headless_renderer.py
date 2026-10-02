@@ -57,18 +57,18 @@ class HeadlessRendererConfigTest(unittest.TestCase):
         cfg = HeadlessRendererConfig(
             width=720,
             height=1280,
-            internal_width=540,
-            internal_height=960,
+            internal_width=432,
+            internal_height=768,
         )
-        self.assertIn("540x960x24", cfg.xvfb_command("Xvfb"))
-        self.assertIn("540x960", cfg.godot_command())
+        self.assertIn("432x768x24", cfg.xvfb_command("Xvfb"))
+        self.assertIn("432x768", cfg.godot_command())
         command = cfg.capture_command("ffmpeg")
-        self.assertIn("540x960", command)
+        self.assertIn("432x768", command)
         self.assertIn("-vf", command)
         self.assertIn("scale=720:1280:flags=fast_bilinear", command)
         with self.assertRaises(RendererConfigError):
             HeadlessRendererConfig(
-                internal_width=540,
+                internal_width=432,
                 internal_height=1000,
             ).validate()
 
@@ -76,14 +76,14 @@ class HeadlessRendererConfigTest(unittest.TestCase):
         cfg = HeadlessRendererConfig(
             width=720,
             height=1280,
-            internal_width=540,
-            internal_height=960,
+            internal_width=432,
+            internal_height=768,
             native_bus_resolution=True,
         )
         command = cfg.capture_command("ffmpeg")
-        self.assertIn("540x960", command)
+        self.assertIn("432x768", command)
         self.assertNotIn("-vf", command)
-        self.assertEqual((cfg.bus_width, cfg.bus_height), (540, 960))
+        self.assertEqual((cfg.bus_width, cfg.bus_height), (432, 768))
 
     def test_xvfb_does_not_listen_on_tcp(self):
         cfg = HeadlessRendererConfig()
@@ -177,8 +177,8 @@ class HeadlessRendererConfigTest(unittest.TestCase):
         self.assertIn('Environment=LIVE_INFINITA_RENDER_CPU_GOVERNOR=1', unit)
         self.assertIn('Environment=LIVE_INFINITA_RENDER_NATIVE_BUS=1', unit)
         self.assertIn('Environment=LIVE_INFINITA_RENDER_FPS=15', unit)
-        self.assertIn('Environment=LIVE_INFINITA_RENDER_INTERNAL_WIDTH=540', unit)
-        self.assertIn('Environment=LIVE_INFINITA_RENDER_INTERNAL_HEIGHT=960', unit)
+        self.assertIn('Environment=LIVE_INFINITA_RENDER_INTERNAL_WIDTH=432', unit)
+        self.assertIn('Environment=LIVE_INFINITA_RENDER_INTERNAL_HEIGHT=768', unit)
         self.assertIn('Environment=LIVE_INFINITA_RENDER_GODOT_FPS=15', unit)
         self.assertIn('Environment=LIVE_INFINITA_RENDER_GODOT_MIN_FPS=8', unit)
         self.assertIn('Environment=LIVE_INFINITA_RENDER_SCENE=res://world_map_preview.tscn', unit)
