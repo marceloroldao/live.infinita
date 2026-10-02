@@ -56,6 +56,7 @@ func _material(color: Color) -> StandardMaterial3D:
     var material := StandardMaterial3D.new()
     material.albedo_color = color
     material.roughness = 1.0
+    material.shading_mode = BaseMaterial3D.SHADING_MODE_PER_VERTEX
     return material
 
 func _box(parent: Node3D, name: String, center: Vector3, size: Vector3, color: Color) -> MeshInstance3D:

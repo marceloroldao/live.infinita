@@ -32,6 +32,7 @@ func _material(color: Color) -> StandardMaterial3D:
     var material := StandardMaterial3D.new()
     material.albedo_color = color
     material.roughness = 1.0
+    material.shading_mode = BaseMaterial3D.SHADING_MODE_PER_VERTEX
     return material
 
 func _marker_batch(name: String, color: Color, radius: float) -> MultiMeshInstance3D:

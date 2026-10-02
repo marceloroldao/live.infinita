@@ -148,6 +148,7 @@ func _material(color: Color) -> StandardMaterial3D:
     var result := StandardMaterial3D.new()
     result.albedo_color = color
     result.roughness = 1.0
+    result.shading_mode = BaseMaterial3D.SHADING_MODE_PER_VERTEX
     return result
 func _height(x: float, z: float) -> float:
     var rise := 4.0 if x > 175.0 and z < -70.0 else 1.0
@@ -223,6 +224,28 @@ func _apply_decor_culling(node: Node, range_end: float) -> int:
         applied += _apply_decor_culling(child, range_end)
     return applied
 
+func _apply_cpu_vertex_shading(node: Node) -> int:
+    var applied := 0
+    if node is MeshInstance3D:
+        var mesh_instance := node as MeshInstance3D
+        var override_material := mesh_instance.material_override
+        if override_material is BaseMaterial3D:
+            var base_override := override_material as BaseMaterial3D
+            base_override.shading_mode = BaseMaterial3D.SHADING_MODE_PER_VERTEX
+            applied += 1
+        elif mesh_instance.mesh != null:
+            for surface_index in range(mesh_instance.mesh.get_surface_count()):
+                var material := mesh_instance.get_surface_override_material(surface_index)
+                if material == null:
+                    material = mesh_instance.mesh.surface_get_material(surface_index)
+                if material is BaseMaterial3D:
+                    var base_material := material as BaseMaterial3D
+                    base_material.shading_mode = BaseMaterial3D.SHADING_MODE_PER_VERTEX
+                    applied += 1
+    for child in node.get_children():
+        applied += _apply_cpu_vertex_shading(child)
+    return applied
+
 func _decoration(parent: Node3D, cx: int, cz: int, index: int, biome: String) -> void:
     if biome == "river":
         return
@@ -263,6 +286,7 @@ func _decoration(parent: Node3D, cx: int, cz: int, index: int, biome: String) ->
     n.scale = Vector3.ONE * (0.75 if kind == "tree" else 0.90)
     var cull_range := _decor_visibility_range(kind)
     var culled_geometries := _apply_decor_culling(n, cull_range)
+    _apply_cpu_vertex_shading(n)
     if culled_geometries > 0:
         n.set_meta("live_infinita_decor_cull_range_m", cull_range)
         if not _decor_culling_announced:

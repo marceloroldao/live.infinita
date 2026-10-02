@@ -190,6 +190,7 @@ func _material(color: Color) -> StandardMaterial3D:
     material.albedo_color = color
     material.roughness = 0.28
     material.metallic = 0.05
+    material.shading_mode = BaseMaterial3D.SHADING_MODE_PER_VERTEX
     return material
 
 func _rebuild_lakes() -> void:
