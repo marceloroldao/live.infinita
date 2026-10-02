@@ -183,8 +183,8 @@ func _rebuild_horizon_ground() -> void:
             var x := origin + float(x_index) * step
             var z := origin + float(z_index) * step
             _horizon_vertex(st, x, z)
-            _horizon_vertex(st, x, z + step)
             _horizon_vertex(st, x + step, z)
+            _horizon_vertex(st, x, z + step)
             _horizon_vertex(st, x + step, z)
             _horizon_vertex(st, x, z + step)
             _horizon_vertex(st, x + step, z + step)
@@ -237,8 +237,8 @@ func _terrain(cx: int, cz: int, biome: String) -> MeshInstance3D:
             var x := x0 + i * step
             var z := z0 + j * step
             _vertex(st, x, z)
-            _vertex(st, x, z + step)
             _vertex(st, x + step, z)
+            _vertex(st, x, z + step)
             _vertex(st, x + step, z)
             _vertex(st, x, z + step)
             _vertex(st, x + step, z + step)
