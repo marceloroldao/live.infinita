@@ -20,7 +20,7 @@ class CognitiveHorizon008APTests(unittest.TestCase):
 
     def test_massif_footprint_keeps_camera_outside_near_anchor(self) -> None:
         terrain = (ROOT / "apps" / "renderer-godot" / "world_map_cognitive_terrain.gd").read_text(encoding="utf-8")
-        self.assertIn("base_radius := clampf(influence_radius * 0.20, 20.0, 38.0)", terrain)
+        self.assertIn("base_radius := clampf(influence_radius * 0.26, 24.0, 48.0)", terrain)
 
     def test_horizon_does_not_expand_active_tile_budget(self) -> None:
         source = PREVIEW.read_text(encoding="utf-8")

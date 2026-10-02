@@ -10,14 +10,15 @@ class CognitiveMassifs008ACTests(unittest.TestCase):
     def test_massifs_are_bounded_visual_meshes(self) -> None:
         source = TERRAIN.read_text(encoding="utf-8")
         self.assertIn("const MAX_MASSIFS := 6", source)
-        self.assertIn("const MAX_MASSIF_HEIGHT_M := 68.0", source)
+        self.assertIn("const MAX_MASSIF_HEIGHT_M := 84.0", source)
         self.assertIn("const MASSIF_MIN_BIAS_M := 6.0", source)
         self.assertIn("const MASSIF_MIN_MASS := 0.55", source)
         self.assertIn("func _rebuild_massifs(height_sampler: Callable) -> void:", source)
         self.assertIn('peak.name = "MemoryMassif_%s_%s"', source)
         self.assertIn("mesh.radial_segments = 9", source)
-        self.assertIn("const MASSIF_MIN_CAMERA_DISTANCE_M := 92.0", source)
+        self.assertIn("const MASSIF_MIN_CAMERA_DISTANCE_M := 140.0", source)
         self.assertIn("peak.visibility_range_begin = MASSIF_MIN_CAMERA_DISTANCE_M", source)
+        self.assertIn("base_radius := clampf(influence_radius * 0.26, 24.0, 48.0)", source)
         self.assertNotIn(
             "StaticBody3D.new()",
             source[source.index("func _massif_material"):source.index("func _trail_batch_material")],
