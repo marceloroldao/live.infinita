@@ -28,6 +28,9 @@ const TERRAIN_NORMAL_SAMPLE_M := 4.0
 const DISTANT_VEGETATION_COUNT := 120
 const DISTANT_VEGETATION_INNER_M := 96.0
 const DISTANT_VEGETATION_OUTER_M := 390.0
+const MIDGROUND_VEGETATION_COUNT := 180
+const MIDGROUND_VEGETATION_INNER_M := 16.0
+const MIDGROUND_VEGETATION_OUTER_M := 94.0
 var _map: Dictionary = {}
 var _catalog: RefCounted
 var _layout: RefCounted
@@ -44,6 +47,7 @@ var _camera: Camera3D
 var _horizon_ground: MeshInstance3D
 var _distant_trunks: MultiMeshInstance3D
 var _distant_canopies: MultiMeshInstance3D
+var _midground_vegetation: MultiMeshInstance3D
 var _hud: CanvasLayer
 var _route: Array = []
 var _leg := 1
@@ -149,6 +153,7 @@ func _build_stage() -> void:
     _rebuild_horizon_ground()
     add_child(_horizon_ground)
     _build_distant_vegetation()
+    _build_midground_vegetation()
     _walker = _local_motion.create_body(self, _material(Color("#eeb74b")))
     _live_visual.build()
     _camera = Camera3D.new()
@@ -214,12 +219,17 @@ func _distant_material(color: Color) -> StandardMaterial3D:
     material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
     return material
 
-func _new_distant_batch(name: String, mesh: Mesh, color: Color) -> MultiMeshInstance3D:
+func _new_vegetation_batch(
+    name: String,
+    mesh: Mesh,
+    color: Color,
+    instance_budget: int,
+) -> MultiMeshInstance3D:
     var multimesh := MultiMesh.new()
     multimesh.transform_format = MultiMesh.TRANSFORM_3D
     multimesh.mesh = mesh
-    multimesh.instance_count = DISTANT_VEGETATION_COUNT
-    multimesh.visible_instance_count = DISTANT_VEGETATION_COUNT
+    multimesh.instance_count = instance_budget
+    multimesh.visible_instance_count = instance_budget
     var instance := MultiMeshInstance3D.new()
     instance.name = name
     instance.multimesh = multimesh
@@ -240,8 +250,12 @@ func _build_distant_vegetation() -> void:
     canopy_mesh.height = 6.8
     canopy_mesh.radial_segments = 5
     canopy_mesh.rings = 1
-    _distant_trunks = _new_distant_batch("DistantTreeTrunks", trunk_mesh, Color("#6f5135"))
-    _distant_canopies = _new_distant_batch("DistantTreeCanopies", canopy_mesh, Color("#527d3f"))
+    _distant_trunks = _new_vegetation_batch(
+        "DistantTreeTrunks", trunk_mesh, Color("#6f5135"), DISTANT_VEGETATION_COUNT
+    )
+    _distant_canopies = _new_vegetation_batch(
+        "DistantTreeCanopies", canopy_mesh, Color("#527d3f"), DISTANT_VEGETATION_COUNT
+    )
     _rebuild_distant_vegetation()
 
 func _rebuild_distant_vegetation() -> void:
@@ -270,6 +284,59 @@ func _rebuild_distant_vegetation() -> void:
         _distant_canopies.multimesh.set_instance_transform(
             index, Transform3D(basis, Vector3(x, y + 5.2 * scale, z))
         )
+
+func _build_midground_vegetation() -> void:
+    var mesh := CylinderMesh.new()
+    mesh.top_radius = 0.16
+    mesh.bottom_radius = 0.72
+    mesh.height = 1.35
+    mesh.radial_segments = 4
+    mesh.rings = 1
+    _midground_vegetation = _new_vegetation_batch(
+        "MidgroundVegetation", mesh, Color("#6d9b4d"), MIDGROUND_VEGETATION_COUNT
+    )
+    _rebuild_midground_vegetation()
+
+func _midground_allowed(x: float, z: float) -> bool:
+    if _biome(_cell(x), _cell(z)) == "river":
+        return false
+    if _cognitive_terrain != null:
+        var profile = _cognitive_terrain.call("decor_profile_at", x, z)
+        if typeof(profile) == TYPE_DICTIONARY and not bool(profile.get("allow_decor", true)):
+            return false
+    return true
+
+func _rebuild_midground_vegetation() -> void:
+    if _midground_vegetation == null:
+        return
+    var cx := _cell(_position.x)
+    var cz := _cell(_position.z)
+    var seed := float(cx * 77191 + cz * 44893)
+    var placed := 0
+    var attempts := 0
+    while placed < MIDGROUND_VEGETATION_COUNT and attempts < MIDGROUND_VEGETATION_COUNT * 4:
+        var index := attempts
+        attempts += 1
+        var phase := float(index) * 2.39996323 + sin(seed * 0.00021) * 1.1
+        var ratio := sqrt((float(index % MIDGROUND_VEGETATION_COUNT) + 0.5) / float(MIDGROUND_VEGETATION_COUNT))
+        var radius := lerpf(MIDGROUND_VEGETATION_INNER_M, MIDGROUND_VEGETATION_OUTER_M, ratio)
+        radius += sin(seed * 0.00037 + float(index) * 1.91) * 5.5
+        var x := clampf(_position.x + cos(phase) * radius, -_layout.half_m + 8.0, _layout.half_m - 8.0)
+        var z := clampf(_position.z + sin(phase) * radius, -_layout.half_m + 8.0, _layout.half_m - 8.0)
+        if not _midground_allowed(x, z):
+            continue
+        var y := _height(x, z)
+        var scale_noise := 0.5 + 0.5 * sin(seed * 0.00029 + float(index) * 2.37)
+        var scale := 0.55 + 0.65 * scale_noise
+        var basis := Basis(Vector3.UP, phase * 0.61).scaled(
+            Vector3(scale, scale * (0.82 + 0.28 * scale_noise), scale)
+        )
+        _midground_vegetation.multimesh.set_instance_transform(
+            placed, Transform3D(basis, Vector3(x, y + 0.67 * scale, z))
+        )
+        placed += 1
+
+    _midground_vegetation.multimesh.visible_instance_count = placed
 
 func _height(x: float, z: float) -> float:
     var rise := 4.0 if x > 175.0 and z < -70.0 else 1.0
@@ -553,6 +620,7 @@ func _on_world_slice(observer: Dictionary, current_region_id: String, hot_entiti
     if terrain_changed:
         _rebuild_horizon_ground()
         _rebuild_distant_vegetation()
+        _rebuild_midground_vegetation()
         _rebuild_active_tiles()
         print("WORLD_MAP_MEMORY_TERRAIN projection=%s lakes=%d trails=%d trail_batches=%d massifs=%d" % [
             _cognitive_terrain.projection_id(), _cognitive_terrain.lake_count(),
@@ -563,6 +631,7 @@ func _on_world_slice(observer: Dictionary, current_region_id: String, hot_entiti
         if not terrain_changed and old_cell != Vector2i(_cell(_position.x), _cell(_position.z)):
             _sync_tiles()
             _rebuild_distant_vegetation()
+            _rebuild_midground_vegetation()
         _follow_camera()
     _update_caption()
     if first_bind:
@@ -621,6 +690,7 @@ func _process(delta: float) -> void:
     if old_cell != Vector2i(_cell(_position.x), _cell(_position.z)):
         _sync_tiles()
         _rebuild_distant_vegetation()
+        _rebuild_midground_vegetation()
     _follow_camera(false)
     _clock += delta
     if _clock > 0.3:
