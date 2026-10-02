@@ -25,9 +25,9 @@ const HORIZON_GROUND_MARGIN_M := 256.0
 const HORIZON_GRID := 24
 const HORIZON_GROUND_OFFSET_M := 7.0
 const TERRAIN_NORMAL_SAMPLE_M := 4.0
-const DISTANT_VEGETATION_COUNT := 72
-const DISTANT_VEGETATION_INNER_M := 110.0
-const DISTANT_VEGETATION_OUTER_M := 360.0
+const DISTANT_VEGETATION_COUNT := 120
+const DISTANT_VEGETATION_INNER_M := 96.0
+const DISTANT_VEGETATION_OUTER_M := 390.0
 var _map: Dictionary = {}
 var _catalog: RefCounted
 var _layout: RefCounted
@@ -236,8 +236,8 @@ func _build_distant_vegetation() -> void:
     trunk_mesh.rings = 1
     var canopy_mesh := CylinderMesh.new()
     canopy_mesh.top_radius = 0.35
-    canopy_mesh.bottom_radius = 2.45
-    canopy_mesh.height = 5.8
+    canopy_mesh.bottom_radius = 2.9
+    canopy_mesh.height = 6.8
     canopy_mesh.radial_segments = 5
     canopy_mesh.rings = 1
     _distant_trunks = _new_distant_batch("DistantTreeTrunks", trunk_mesh, Color("#6f5135"))
@@ -260,7 +260,8 @@ func _rebuild_distant_vegetation() -> void:
         if _biome(_cell(x), _cell(z)) == "river":
             x = clampf(x + 24.0, -_layout.half_m + 12.0, _layout.half_m - 12.0)
         var y := _height(x, z)
-        var scale := 0.72 + 0.30 * (0.5 + 0.5 * sin(seed * 0.00017 + float(index) * 2.11))
+        var scale_noise := 0.5 + 0.5 * sin(seed * 0.00017 + float(index) * 2.11)
+        var scale := 0.82 + 0.26 * scale_noise + 0.28 * ratio
         var yaw := phase * 0.37
         var basis := Basis(Vector3.UP, yaw).scaled(Vector3(scale, scale, scale))
         _distant_trunks.multimesh.set_instance_transform(

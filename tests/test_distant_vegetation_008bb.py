@@ -8,9 +8,9 @@ PREVIEW = ROOT / "apps" / "renderer-godot" / "world_map_preview.gd"
 class DistantVegetation008BBTests(unittest.TestCase):
     def test_budget_is_bounded_and_batched(self) -> None:
         source = PREVIEW.read_text(encoding="utf-8")
-        self.assertIn("const DISTANT_VEGETATION_COUNT := 72", source)
-        self.assertIn("const DISTANT_VEGETATION_INNER_M := 110.0", source)
-        self.assertIn("const DISTANT_VEGETATION_OUTER_M := 360.0", source)
+        self.assertIn("const DISTANT_VEGETATION_COUNT := 120", source)
+        self.assertIn("const DISTANT_VEGETATION_INNER_M := 96.0", source)
+        self.assertIn("const DISTANT_VEGETATION_OUTER_M := 390.0", source)
         self.assertIn("MultiMeshInstance3D", source)
         self.assertIn('DistantTreeTrunks', source)
         self.assertIn('DistantTreeCanopies', source)
