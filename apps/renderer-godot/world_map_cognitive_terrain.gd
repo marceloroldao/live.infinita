@@ -540,6 +540,33 @@ func _rebuild_trails(height_sampler: Callable) -> void:
     _root.add_child(trail_batch)
     _trail_batch_count = 1
 
+func environment_at(x: float, z: float) -> Dictionary:
+    if _anchors.is_empty() or _environment_by_region.is_empty():
+        return {}
+    var point := Vector2(x, z)
+    var best_score := 0.0
+    var best: Dictionary = {}
+    for anchor in _anchors:
+        if typeof(anchor) != TYPE_DICTIONARY:
+            continue
+        var region_id := str(anchor.get("region_id", ""))
+        var environment = _environment_by_region.get(region_id, {})
+        if typeof(environment) != TYPE_DICTIONARY or environment.is_empty():
+            continue
+        var pos: Vector2 = anchor["position"]
+        var radius := maxf(1.0, float(anchor.get("radius", 120.0)))
+        var d2 := point.distance_squared_to(pos)
+        var falloff := exp(-0.5 * d2 / (radius * radius))
+        var mass := clampf(float(anchor.get("mass", 0.0)), 0.0, 1.0)
+        var score := falloff * (0.35 + 0.65 * mass)
+        if score > best_score:
+            best_score = score
+            best = Dictionary(environment).duplicate(true)
+    if best.is_empty():
+        return {}
+    best["cognitive_influence"] = clampf(best_score, 0.0, 1.0)
+    return best
+
 func surface_at(x: float, z: float) -> Dictionary:
     var point := Vector2(x, z)
     for anchor in _anchors:

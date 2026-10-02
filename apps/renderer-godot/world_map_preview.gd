@@ -7,6 +7,7 @@ const Hud = preload("res://world_map_hud.gd")
 const Layout = preload("res://world_map_layout.gd")
 const CognitiveTerrain = preload("res://world_map_cognitive_terrain.gd")
 const PerceptualVegetation = preload("res://world_map_perceptual_vegetation.gd")
+const EnvironmentalPalette = preload("res://world_map_environmental_palette.gd")
 const MAP_PATH := "res://world_map_001.json"
 const TILE_M := 64.0
 const MAX_ACTIVE_TILES := 9
@@ -63,6 +64,7 @@ var _distant_trunks: MultiMeshInstance3D
 var _distant_canopies: MultiMeshInstance3D
 var _midground_vegetation: MultiMeshInstance3D
 var _perceptual_vegetation: RefCounted
+var _environmental_palette: RefCounted
 var _hud: CanvasLayer
 var _route: Array = []
 var _leg := 1
@@ -114,6 +116,7 @@ func _ready() -> void:
         Callable(self, "_cell"),
         _layout.half_m,
     )
+    _environmental_palette = EnvironmentalPalette.new()
     _tile_cache_root = Node3D.new()
     _tile_cache_root.name = "TileCache"
     _tile_cache_root.visible = false
@@ -197,11 +200,20 @@ func _material(color: Color) -> StandardMaterial3D:
     result.roughness = 1.0
     result.shading_mode = BaseMaterial3D.SHADING_MODE_PER_VERTEX
     return result
-func _horizon_color(height_m: float) -> Color:
-    var low := Color("#4b6748")
-    var high := Color("#7c806d")
-    var blend := clampf((height_m + 4.0) / 28.0, 0.0, 1.0)
-    return low.lerp(high, blend)
+func _environment_at(x: float, z: float) -> Dictionary:
+    if _cognitive_terrain == null:
+        return {}
+    var value = _cognitive_terrain.call("environment_at", x, z)
+    return value if typeof(value) == TYPE_DICTIONARY else {}
+
+func _environmental_color(base: Color, x: float, z: float) -> Color:
+    if _environmental_palette == null:
+        return base
+    return _environmental_palette.terrain_color(base, _environment_at(x, z))
+
+func _horizon_color(x: float, z: float, height_m: float) -> Color:
+    var base: Color = _environmental_palette.horizon_base(height_m)
+    return _environmental_color(base, x, z)
 
 func _terrain_normal(x: float, z: float) -> Vector3:
     var d := TERRAIN_NORMAL_SAMPLE_M
@@ -211,7 +223,7 @@ func _terrain_normal(x: float, z: float) -> Vector3:
 
 func _horizon_vertex(st: SurfaceTool, x: float, z: float) -> void:
     var y := _height(x, z) - HORIZON_GROUND_OFFSET_M
-    st.set_color(_horizon_color(y))
+    st.set_color(_horizon_color(x, z, y))
     st.set_normal(_terrain_normal(x, z))
     st.add_vertex(Vector3(x, y, z))
 
@@ -415,7 +427,9 @@ func _terrain(cx: int, cz: int, biome: String) -> MeshInstance3D:
             _vertex(st, x, z + step)
     var ground := MeshInstance3D.new()
     ground.mesh = st.commit()
-    ground.material_override = _material(_terrain_color(biome))
+    var center := origin + Vector2(TILE_M * 0.5, TILE_M * 0.5)
+    var color := _environmental_color(_terrain_color(biome), center.x, center.y)
+    ground.material_override = _material(color)
     return ground
 func _decor_visibility_range(kind: String) -> float:
     match kind:
