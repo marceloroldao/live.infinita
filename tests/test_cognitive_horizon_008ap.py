@@ -10,8 +10,11 @@ class CognitiveHorizon008APTests(unittest.TestCase):
         source = PREVIEW.read_text(encoding="utf-8")
         self.assertIn("const CAMERA_FAR_M := 440.0", source)
         self.assertIn("const HORIZON_GROUND_MARGIN_M := 256.0", source)
+        self.assertIn("const HORIZON_GROUND_OFFSET_M := 1.2", source)
         self.assertIn('horizon_ground.name = "WorldHorizonGround"', source)
-        self.assertIn("var horizon_mesh := PlaneMesh.new()", source)
+        self.assertIn("const HORIZON_GRID := 24", source)
+        self.assertIn("func _rebuild_horizon_ground() -> void:", source)
+        self.assertIn("material.vertex_color_use_as_albedo = true", source)
         self.assertIn("_camera.far = CAMERA_FAR_M", source)
         self.assertEqual(source.count("WorldHorizonGround"), 1)
 

@@ -22,7 +22,8 @@ const PLANT_VISIBILITY_RANGE_M := 82.0
 const DECOR_VISIBILITY_MARGIN_M := 12.0
 const CAMERA_FAR_M := 440.0
 const HORIZON_GROUND_MARGIN_M := 256.0
-const HORIZON_GROUND_Y := -4.5
+const HORIZON_GRID := 24
+const HORIZON_GROUND_OFFSET_M := 1.2
 var _map: Dictionary = {}
 var _catalog: RefCounted
 var _layout: RefCounted
@@ -36,6 +37,7 @@ var _tile_cache_misses := 0
 var _resource_cache: Dictionary = {}
 var _walker: CharacterBody3D
 var _camera: Camera3D
+var _horizon_ground: MeshInstance3D
 var _hud: CanvasLayer
 var _route: Array = []
 var _leg := 1
@@ -136,15 +138,10 @@ func _build_stage() -> void:
     env.ambient_light_color = Color("#d6e2d4")
     atmosphere.environment = env
     add_child(atmosphere)
-    var horizon_mesh := PlaneMesh.new()
-    var horizon_size := float(_layout.world_size_m()) + HORIZON_GROUND_MARGIN_M
-    horizon_mesh.size = Vector2(horizon_size, horizon_size)
-    var horizon_ground := MeshInstance3D.new()
-    horizon_ground.name = "WorldHorizonGround"
-    horizon_ground.mesh = horizon_mesh
-    horizon_ground.position.y = HORIZON_GROUND_Y
-    horizon_ground.material_override = _material(Color("#4b6748"))
-    add_child(horizon_ground)
+    _horizon_ground = MeshInstance3D.new()
+    _horizon_ground.name = "WorldHorizonGround"
+    _rebuild_horizon_ground()
+    add_child(_horizon_ground)
     _walker = _local_motion.create_body(self, _material(Color("#eeb74b")))
     _live_visual.build()
     _camera = Camera3D.new()
@@ -162,6 +159,41 @@ func _material(color: Color) -> StandardMaterial3D:
     result.roughness = 1.0
     result.shading_mode = BaseMaterial3D.SHADING_MODE_PER_VERTEX
     return result
+func _horizon_color(height_m: float) -> Color:
+    var low := Color("#4b6748")
+    var high := Color("#7c806d")
+    var blend := clampf((height_m + 4.0) / 28.0, 0.0, 1.0)
+    return low.lerp(high, blend)
+
+func _horizon_vertex(st: SurfaceTool, x: float, z: float) -> void:
+    var y := _height(x, z) - HORIZON_GROUND_OFFSET_M
+    st.set_color(_horizon_color(y))
+    st.add_vertex(Vector3(x, y, z))
+
+func _rebuild_horizon_ground() -> void:
+    if _horizon_ground == null:
+        return
+    var size := float(_layout.world_size_m()) + HORIZON_GROUND_MARGIN_M
+    var origin := -size * 0.5
+    var step := size / float(HORIZON_GRID)
+    var st := SurfaceTool.new()
+    st.begin(Mesh.PRIMITIVE_TRIANGLES)
+    for z_index in range(HORIZON_GRID):
+        for x_index in range(HORIZON_GRID):
+            var x := origin + float(x_index) * step
+            var z := origin + float(z_index) * step
+            _horizon_vertex(st, x, z)
+            _horizon_vertex(st, x, z + step)
+            _horizon_vertex(st, x + step, z)
+            _horizon_vertex(st, x + step, z)
+            _horizon_vertex(st, x, z + step)
+            _horizon_vertex(st, x + step, z + step)
+    st.generate_normals()
+    _horizon_ground.mesh = st.commit()
+    var material := _material(Color.WHITE)
+    material.vertex_color_use_as_albedo = true
+    _horizon_ground.material_override = material
+
 func _height(x: float, z: float) -> float:
     var rise := 4.0 if x > 175.0 and z < -70.0 else 1.0
     var natural := (sin(x * 0.012) * 1.8 + cos(z * 0.016) * 1.6 + sin((x + z) * 0.021) * 0.9) * rise
@@ -442,6 +474,7 @@ func _on_world_slice(observer: Dictionary, current_region_id: String, hot_entiti
     _live_warm_count = int(counts.get("warm", 0))
     _live_region_count = _live_visual.update_regions(region_descriptors, current_region_id)
     if terrain_changed:
+        _rebuild_horizon_ground()
         _rebuild_active_tiles()
         print("WORLD_MAP_MEMORY_TERRAIN projection=%s lakes=%d trails=%d trail_batches=%d massifs=%d" % [
             _cognitive_terrain.projection_id(), _cognitive_terrain.lake_count(),
