@@ -20,6 +20,9 @@ const TREE_VISIBILITY_RANGE_M := 145.0
 const ROCK_VISIBILITY_RANGE_M := 110.0
 const PLANT_VISIBILITY_RANGE_M := 82.0
 const DECOR_VISIBILITY_MARGIN_M := 12.0
+const CAMERA_FAR_M := 620.0
+const HORIZON_GROUND_MARGIN_M := 256.0
+const HORIZON_GROUND_Y := -4.5
 var _map: Dictionary = {}
 var _catalog: RefCounted
 var _layout: RefCounted
@@ -133,11 +136,20 @@ func _build_stage() -> void:
     env.ambient_light_color = Color("#d6e2d4")
     atmosphere.environment = env
     add_child(atmosphere)
+    var horizon_mesh := PlaneMesh.new()
+    var horizon_size := float(_layout.world_size_m()) + HORIZON_GROUND_MARGIN_M
+    horizon_mesh.size = Vector2(horizon_size, horizon_size)
+    var horizon_ground := MeshInstance3D.new()
+    horizon_ground.name = "WorldHorizonGround"
+    horizon_ground.mesh = horizon_mesh
+    horizon_ground.position.y = HORIZON_GROUND_Y
+    horizon_ground.material_override = _material(Color("#4b6748"))
+    add_child(horizon_ground)
     _walker = _local_motion.create_body(self, _material(Color("#eeb74b")))
     _live_visual.build()
     _camera = Camera3D.new()
     _camera.current = true
-    _camera.far = 280.0
+    _camera.far = CAMERA_FAR_M
     add_child(_camera)
     _hud = Hud.new()
     add_child(_hud)
