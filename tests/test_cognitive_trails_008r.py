@@ -60,8 +60,10 @@ class CognitiveTrails008RTests(unittest.TestCase):
         self.assertIn("func _rebuild_trails(height_sampler: Callable) -> void:", source)
         self.assertIn('int(ridge.get("count", 0)) < 2', source)
         self.assertIn('intensity < 0.18', source)
-        self.assertIn("material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA", source)
-        self.assertIn("height_sampler.call(center.x, center.y)", source)
+        self.assertIn("material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED", source)
+        self.assertIn("material.vertex_color_use_as_albedo = true", source)
+        self.assertIn('trail_batch.name = "MemoryTrailBatch"', source)
+        self.assertIn("height_sampler.call(point.x, point.y)", source)
     def test_trails_remain_visual_side_channel_only(self) -> None:
         terrain = (ROOT / "apps" / "renderer-godot" / "world_map_cognitive_terrain.gd").read_text(encoding="utf-8")
         projection_source = MODULE_PATH.read_text(encoding="utf-8")

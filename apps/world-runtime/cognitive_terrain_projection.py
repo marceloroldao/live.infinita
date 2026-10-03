@@ -460,6 +460,11 @@ def build_projection(
             "lake_candidate": role == "basin" and elevation <= -6.0,
         })
 
+    elevation_by_region = {
+        row["region_id"]: float(row["elevation_bias_m"])
+        for row in regions
+    }
+
     transition_rows = []
     for (source, target), count in transitions.most_common(MAX_TRANSITIONS):
         if source not in known or target not in known:
@@ -468,6 +473,23 @@ def build_projection(
         edge_last_tick = transition_last_tick.get((source, target), min_tick)
         edge_recency = exp(-float(max_tick - edge_last_tick) / tau)
         trail_strength = _clamp(strength * edge_recency, 0.0, 1.0)
+        endpoint_mass = sqrt(max(0.0, masses[source]) * max(0.0, masses[target]))
+        elevation_support = 0.5 * (
+            max(0.0, elevation_by_region.get(source, 0.0))
+            + max(0.0, elevation_by_region.get(target, 0.0))
+        )
+        ridge_height = _clamp(
+            1.0
+            + 3.5 * strength
+            + 0.45 * elevation_support * endpoint_mass,
+            1.0,
+            14.0,
+        )
+        ridge_width = _clamp(
+            28.0 + 42.0 * strength + 18.0 * endpoint_mass,
+            28.0,
+            96.0,
+        )
         transition_rows.append({
             "from_region_id": source,
             "to_region_id": target,
@@ -478,8 +500,8 @@ def build_projection(
             "trail_strength": round(trail_strength, 6),
             "trail_candidate": count >= 2 and trail_strength >= 0.18,
             "trail_width_m": round(0.7 + 1.8 * trail_strength, 3),
-            "ridge_height_m": round(1.0 + 3.5 * strength, 4),
-            "ridge_width_m": round(28.0 + 42.0 * strength, 3),
+            "ridge_height_m": round(ridge_height, 4),
+            "ridge_width_m": round(ridge_width, 3),
         })
 
     spatial_records = list(spatial_records or [])
