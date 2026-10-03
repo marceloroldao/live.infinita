@@ -9,6 +9,10 @@ const MAX_COLLIDERS_PER_TILE := 3
 const MAX_PATH_STEPS_PER_SEGMENT := 384
 var _height_fn: Callable
 var _half_m := 512.0
+var _show_landmark_markers := true
+
+func set_landmark_markers_visible(visible: bool) -> void:
+    _show_landmark_markers = visible
 
 func _cell_for_world(value: float) -> int:
     return floori((value + _half_m) / CELL_M)
@@ -201,6 +205,8 @@ func _house(tile: Node3D, cx: int, cz: int, height_fn: Callable) -> void:
     _box(root, "Chimney", Vector3(2.1, 5.0, -1.25), Vector3(0.7, 1.45, 0.7), Color("#756356"))
 
 func _landmark(tile: Node3D, pos: Vector3, tint: Color, title: String) -> void:
+    if not _show_landmark_markers:
+        return
     _box(tile, "LandmarkBase", pos + Vector3(0, 0.5, 0),
         Vector3(1.9, 1.0, 1.9), Color("#655c4c"))
     _box(tile, "LandmarkBeacon", pos + Vector3(0, 2.1, 0),
@@ -246,7 +252,13 @@ func _special_landmark(tile: Node3D, pos: Vector3, kind: String) -> void:
             var blade := _box(tile, "MeadowBladeB", pos + Vector3(0, 5.6, 0.2), Vector3(7.0, 0.35, 0.35), Color("#d1c49e"))
             blade.rotation_degrees.z = 90.0
         "waterfall":
-            _box(tile, "WaterfallSheet", Vector3(RIVER_X + 10.0, pos.y + 4.0, pos.z), Vector3(1.0, 8.0, 8.0), Color("#5ab7d0"))
+            _solid_box(
+                tile,
+                "WaterfallSheet",
+                Vector3(RIVER_X + 10.0, pos.y + 4.0, pos.z),
+                Vector3(1.0, 8.0, 8.0),
+                Color("#5ab7d0")
+            )
 
 func _init(height_fn: Callable = Callable(), half_m: float = 512.0) -> void:
     _height_fn = height_fn

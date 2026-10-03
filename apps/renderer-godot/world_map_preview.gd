@@ -35,6 +35,8 @@ const CAMERA_HEADING_BLEND := 0.34
 const PERCEPTUAL_CAMERA_ENABLED := true
 const SHOW_DIAGNOSTIC_WORLD_OVERLAYS := false
 const SHOW_TECHNICAL_STATUS := false
+const SHOW_WORLD_LABELS := false
+const CAMERA_COLLISION_MARGIN_M := 0.55
 const HORIZON_GROUND_MARGIN_M := 256.0
 const HORIZON_GRID := 24
 const HORIZON_GROUND_OFFSET_M := 7.0
@@ -106,6 +108,7 @@ func _ready() -> void:
     _catalog = Catalog.new()
     _layout = Layout.new(_map)
     _features = Features.new(Callable(self, "_height"), _layout.half_m)
+    _features.set_landmark_markers_visible(SHOW_WORLD_LABELS)
     _live_visual = LiveVisual.new(self, _features, _map)
     _cognitive_terrain = CognitiveTerrain.new(self)
     _local_motion = LocalMotion.new(Callable(_features, "walk_height"), _layout.half_m, Callable(_cognitive_terrain, "surface_at"))
@@ -738,6 +741,25 @@ func _follow_camera(snap_body: bool = true) -> void:
         camera_position.y,
         camera_ground + CAMERA_MIN_GROUND_CLEARANCE_M
     )
+
+    var pivot := _position + Vector3(0.0, CAMERA_LOOK_HEIGHT_M, 0.0)
+    if is_inside_tree() and get_world_3d() != null:
+        var query := PhysicsRayQueryParameters3D.create(pivot, camera_position, 1)
+        query.collide_with_areas = false
+        query.hit_from_inside = true
+        var hit := get_world_3d().direct_space_state.intersect_ray(query)
+        if not hit.is_empty():
+            var hit_position: Vector3 = hit.get("position", camera_position)
+            var toward_pivot := (pivot - hit_position).normalized()
+            if toward_pivot.length_squared() < 0.001:
+                toward_pivot = forward
+            camera_position = hit_position + toward_pivot * CAMERA_COLLISION_MARGIN_M
+            var resolved_ground := _height(camera_position.x, camera_position.z)
+            camera_position.y = maxf(
+                camera_position.y,
+                resolved_ground + CAMERA_MIN_GROUND_CLEARANCE_M
+            )
+
     _camera.position = camera_position
     _camera.look_at(target)
 func _update_caption() -> void:
