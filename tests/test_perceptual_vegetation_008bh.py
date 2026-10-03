@@ -11,12 +11,12 @@ class PerceptualVegetation008BHTests(unittest.TestCase):
     def test_local_vegetation_is_bounded_and_batched(self) -> None:
         source = MODULE.read_text(encoding="utf-8")
         for expected in (
-            "const TREE_BUDGET := 72",
-            "const UNDERGROWTH_BUDGET := 320",
-            "const TREE_INNER_M := 27.0",
-            "const TREE_OUTER_M := 68.0",
-            "const UNDERGROWTH_INNER_M := 16.0",
-            "const UNDERGROWTH_OUTER_M := 52.0",
+            "const TREE_BUDGET := 44",
+            "const UNDERGROWTH_BUDGET := 220",
+            "const TREE_INNER_M := 50.0",
+            "const TREE_OUTER_M := 90.0",
+            "const UNDERGROWTH_INNER_M := 28.0",
+            "const UNDERGROWTH_OUTER_M := 64.0",
             '"PerceptualTreeTrunks"',
             '"PerceptualTreeCanopies"',
             '"PerceptualUndergrowth"',

@@ -67,6 +67,8 @@ func run() -> void:
     var alpine: Dictionary = hero._environment("alpine")
     check(hero._tree_asset(forest).ends_with("CommonTree_1.gltf"), "Temperate forest must choose common tree")
     check(hero._tree_asset(alpine).ends_with("Pine_1.gltf"), "Cold alpine climate must choose pine class")
+    check(hero._mid_tree_asset(forest).ends_with("CommonTree_5.gltf"), "Temperate midground must use lighter common tree")
+    check(hero._mid_tree_asset(alpine).ends_with("Pine_5.gltf"), "Cold midground must use lighter pine")
     check(hero._understory_asset(forest).ends_with("Bush_Common.gltf"), "Forest must choose bush understory")
     check(hero._understory_asset(alpine).ends_with("Bush_Common.gltf"), "Alpine rock does not force meadow grass")
 
@@ -78,9 +80,14 @@ func run() -> void:
 
     hero.rebuild(Vector3.ZERO, Vector3(0, 0, -1), "forest", true)
     var counts: Vector3i = hero.visible_counts()
+    var mid_count: int = hero.mid_tree_visible_count()
     check(counts.x <= 14 and counts.y <= 40 and counts.z <= 18, "Visible counts must stay bounded")
-    if not hero.vendor_ready():
+    check(mid_count <= 18, "Midground real-tree count must stay bounded")
+    if hero.vendor_ready():
+        check(mid_count > 0, "Temperate forest must materialize real midground trees")
+    else:
         check(counts == Vector3i.ZERO, "Missing import cache must make hero layer invisible")
+        check(mid_count == 0, "Missing import cache must hide midground real trees")
 
     root3d.queue_free()
     await process_frame

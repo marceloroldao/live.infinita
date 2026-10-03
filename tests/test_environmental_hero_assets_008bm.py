@@ -11,6 +11,7 @@ class EnvironmentalHeroAssets008BMTests(unittest.TestCase):
     def test_budgets_are_intentionally_small(self) -> None:
         source = MODULE.read_text(encoding="utf-8")
         self.assertIn("const TREE_BUDGET := 14", source)
+        self.assertIn("const MID_TREE_BUDGET := 18", source)
         self.assertIn("const UNDERSTORY_BUDGET := 40", source)
         self.assertIn("const ROCK_BUDGET := 18", source)
         self.assertIn("const OUTER_M := 31.0", source)
@@ -21,6 +22,8 @@ class EnvironmentalHeroAssets008BMTests(unittest.TestCase):
         for asset in (
             "CommonTree_1.gltf",
             "Pine_1.gltf",
+            "CommonTree_5.gltf",
+            "Pine_5.gltf",
             "Bush_Common.gltf",
             "Grass_Common_Tall.gltf",
             "Rock_Medium_1.gltf",

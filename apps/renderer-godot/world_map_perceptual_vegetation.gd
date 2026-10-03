@@ -2,12 +2,12 @@ extends RefCounted
 # 008BH: local environmental vegetation materialized only near NOV.
 # The persistent world remains authoritative elsewhere; this module is visual-only.
 
-const TREE_BUDGET := 72
-const UNDERGROWTH_BUDGET := 320
-const TREE_INNER_M := 27.0
-const TREE_OUTER_M := 68.0
-const UNDERGROWTH_INNER_M := 16.0
-const UNDERGROWTH_OUTER_M := 52.0
+const TREE_BUDGET := 44
+const UNDERGROWTH_BUDGET := 220
+const TREE_INNER_M := 50.0
+const TREE_OUTER_M := 90.0
+const UNDERGROWTH_INNER_M := 28.0
+const UNDERGROWTH_OUTER_M := 64.0
 const HALF_ANGLE_RAD := 1.30
 const REBUILD_DISTANCE_M := 10.0
 const REBUILD_DOT := 0.94

@@ -42,8 +42,8 @@ class ImmersivePresentation008BJTests(unittest.TestCase):
         self.assertIn("var canopy_basis :=", source)
         self.assertIn("Vector3(trunk_width, height_scale, trunk_width)", source)
         self.assertIn("Vector3(canopy_width, height_scale, canopy_width)", source)
-        self.assertIn("const TREE_BUDGET := 72", source)
-        self.assertIn("const UNDERGROWTH_BUDGET := 320", source)
+        self.assertIn("const TREE_BUDGET := 44", source)
+        self.assertIn("const UNDERGROWTH_BUDGET := 220", source)
 
 
 if __name__ == "__main__":

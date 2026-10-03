@@ -77,10 +77,10 @@ func run() -> void:
         min_under = minf(min_under, r)
         max_under = maxf(max_under, r)
 
-    check(min_tree >= 23.5, "Procedural trees must stay outside hero foreground")
-    check(max_tree <= 72.0, "Procedural trees must stay inside bounded background range")
-    check(min_under >= 13.5, "Procedural undergrowth must leave near-NOV foreground clear")
-    check(max_under <= 55.0, "Procedural undergrowth must stay bounded")
+    check(min_tree >= 46.0, "Procedural trees must stay beyond real midground LOD")
+    check(max_tree <= 94.0, "Procedural trees must stay inside bounded background range")
+    check(min_under >= 25.0, "Procedural undergrowth must leave real foreground clear")
+    check(max_under <= 67.0, "Procedural undergrowth must stay bounded")
 
     print(
         "Perceptual LOD smoke: min_tree=", min_tree,

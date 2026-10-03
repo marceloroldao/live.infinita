@@ -10,10 +10,10 @@ HERO = GODOT / "world_map_perceptual_assets.gd"
 class PerceptualLODSeparation008BOTests(unittest.TestCase):
     def test_procedural_layer_starts_beyond_hero_foreground(self) -> None:
         source = PROCEDURAL.read_text(encoding="utf-8")
-        self.assertIn("const TREE_INNER_M := 27.0", source)
-        self.assertIn("const TREE_OUTER_M := 68.0", source)
-        self.assertIn("const UNDERGROWTH_INNER_M := 16.0", source)
-        self.assertIn("const UNDERGROWTH_OUTER_M := 52.0", source)
+        self.assertIn("const TREE_INNER_M := 50.0", source)
+        self.assertIn("const TREE_OUTER_M := 90.0", source)
+        self.assertIn("const UNDERGROWTH_INNER_M := 28.0", source)
+        self.assertIn("const UNDERGROWTH_OUTER_M := 64.0", source)
         self.assertIn("lerpf(TREE_INNER_M, TREE_OUTER_M, radial_ratio)", source)
         self.assertIn("UNDERGROWTH_INNER_M, UNDERGROWTH_OUTER_M", source)
 
@@ -21,13 +21,15 @@ class PerceptualLODSeparation008BOTests(unittest.TestCase):
         hero = HERO.read_text(encoding="utf-8")
         procedural = PROCEDURAL.read_text(encoding="utf-8")
         self.assertIn("const OUTER_M := 31.0", hero)
-        self.assertIn("const TREE_INNER_M := 27.0", procedural)
-        self.assertIn("const UNDERGROWTH_INNER_M := 16.0", procedural)
+        self.assertIn("const MID_TREE_INNER_M := 30.0", hero)
+        self.assertIn("const MID_TREE_OUTER_M := 58.0", hero)
+        self.assertIn("const TREE_INNER_M := 50.0", procedural)
+        self.assertIn("const UNDERGROWTH_INNER_M := 28.0", procedural)
 
     def test_budgets_do_not_increase(self) -> None:
         source = PROCEDURAL.read_text(encoding="utf-8")
-        self.assertIn("const TREE_BUDGET := 72", source)
-        self.assertIn("const UNDERGROWTH_BUDGET := 320", source)
+        self.assertIn("const TREE_BUDGET := 44", source)
+        self.assertIn("const UNDERGROWTH_BUDGET := 220", source)
 
     def test_procedural_layer_remains_multimesh_only(self) -> None:
         source = PROCEDURAL.read_text(encoding="utf-8")
