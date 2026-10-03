@@ -13,6 +13,8 @@ const MAX_TRAIL_SEGMENTS := 192
 const MAX_TRAIL_MEANDER_M := 4.5
 const TRAIL_MEANDER_DISTANCE_RATIO := 0.055
 const MAX_MASSIFS := 6
+const LAKE_SURFACE_ABOVE_BASIN_M := 1.05
+const LAKE_FALLBACK_Y_M := -1.55
 const MAX_MASSIF_HEIGHT_M := 84.0
 const MASSIF_MIN_BIAS_M := 6.0
 const MASSIF_MIN_MASS := 0.55
@@ -238,7 +240,7 @@ func update(
     _anchors = next_anchors
     _ridges = next_ridges
     _spatial_trails = next_spatial_trails
-    _rebuild_lakes()
+    _rebuild_lakes(height_sampler)
     _rebuild_massifs(height_sampler)
     _rebuild_trails(height_sampler)
     return true
@@ -251,7 +253,7 @@ func _material(color: Color) -> StandardMaterial3D:
     material.shading_mode = BaseMaterial3D.SHADING_MODE_PER_VERTEX
     return material
 
-func _rebuild_lakes() -> void:
+func _rebuild_lakes(height_sampler: Callable = Callable()) -> void:
     _clear_visuals()
     for anchor in _anchors:
         if typeof(anchor) != TYPE_DICTIONARY or not bool(anchor.get("lake", false)):
@@ -269,7 +271,11 @@ func _rebuild_lakes() -> void:
         lake.name = "MemoryLake_" + str(anchor.get("region_id", "unknown"))
         lake.mesh = mesh
         var pos: Vector2 = anchor["position"]
-        lake.position = Vector3(pos.x, -1.55, pos.y)
+        var water_y := LAKE_FALLBACK_Y_M
+        if height_sampler.is_valid():
+            var basin_y := float(height_sampler.call(pos.x, pos.y))
+            water_y = basin_y + LAKE_SURFACE_ABOVE_BASIN_M
+        lake.position = Vector3(pos.x, water_y, pos.y)
         lake.material_override = _material(Color("#4d9db4"))
         _root.add_child(lake)
         _lake_count += 1
