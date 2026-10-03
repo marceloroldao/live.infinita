@@ -191,8 +191,11 @@ func _build_stage() -> void:
     add_child(_horizon_ground)
     _build_distant_vegetation()
     _build_midground_vegetation()
-    _perceptual_vegetation.build(_position, _camera_forward)
     _perceptual_assets.build()
+    _perceptual_vegetation.set_hero_nearfield_enabled(
+        _perceptual_assets.vendor_ready()
+    )
+    _perceptual_vegetation.build(_position, _camera_forward)
     _walker = _local_motion.create_body(self, _material(Color("#eeb74b")))
     _live_visual.build()
     _live_visual.set_diagnostic_overlays(SHOW_DIAGNOSTIC_WORLD_OVERLAYS)

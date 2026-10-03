@@ -27,6 +27,8 @@ var _last_region_id := ""
 var _last_logged_tree_count := -1
 var _last_logged_undergrowth_count := -1
 var _last_logged_region := ""
+var _tree_inner_m := INNER_M + 3.0
+var _undergrowth_inner_m := INNER_M
 
 func _init(
     batch_factory: Callable,
@@ -40,6 +42,17 @@ func _init(
     _allowed_sampler = allowed_sampler
     _cell_sampler = cell_sampler
     _half_m = half_m
+
+func set_hero_nearfield_enabled(enabled: bool) -> void:
+    if enabled:
+        _tree_inner_m = 25.0
+        _undergrowth_inner_m = 20.0
+    else:
+        _tree_inner_m = INNER_M + 3.0
+        _undergrowth_inner_m = INNER_M
+
+func hero_nearfield_enabled() -> bool:
+    return _tree_inner_m >= 24.0
 
 func build(position: Vector3, forward: Vector3) -> void:
     var trunk_mesh := CylinderMesh.new()
@@ -197,7 +210,7 @@ func rebuild(
         var angle_offset := lerpf(-HALF_ANGLE_RAD, HALF_ANGLE_RAD, u)
         var phase := heading + angle_offset
         var radial_ratio := sqrt(fposmod(float(i) * 0.754877666 + 0.31, 1.0))
-        var radius := lerpf(INNER_M + 3.0, OUTER_M, radial_ratio)
+        var radius := lerpf(_tree_inner_m, OUTER_M, radial_ratio)
         radius += sin(seed * 0.00017 + float(i) * 1.93) * 3.2
         var x := clampf(position.x + sin(phase) * radius, -_half_m + 8.0, _half_m - 8.0)
         var z := clampf(position.z + cos(phase) * radius, -_half_m + 8.0, _half_m - 8.0)
@@ -235,7 +248,7 @@ func rebuild(
         var angle_offset := lerpf(-HALF_ANGLE_RAD, HALF_ANGLE_RAD, u)
         var phase := heading + angle_offset
         var radial_ratio := sqrt(fposmod(float(i) * 0.438579021 + 0.11, 1.0))
-        var radius := lerpf(INNER_M, OUTER_M * 0.82, radial_ratio)
+        var radius := lerpf(_undergrowth_inner_m, OUTER_M * 0.82, radial_ratio)
         radius += sin(seed * 0.00031 + float(i) * 1.71) * 2.0
         var x := clampf(position.x + sin(phase) * radius, -_half_m + 5.0, _half_m - 5.0)
         var z := clampf(position.z + cos(phase) * radius, -_half_m + 5.0, _half_m - 5.0)

@@ -37,6 +37,10 @@ var _mesh_cache: Dictionary = {}
 var _current_tree_asset := ""
 var _current_understory_asset := ""
 var _vendor_ready := false
+var _last_logged_region := ""
+var _last_logged_counts := Vector3i(-1, -1, -1)
+var _last_logged_tree_asset := ""
+var _last_logged_understory_asset := ""
 
 func _init(
     root: Node3D,
@@ -350,16 +354,29 @@ func rebuild(
     _rock_batch.multimesh.visible_instance_count = rock_count
     _last_origin = position
     _last_forward = normalized
-    print(
-        "WORLD_MAP_HERO_NATURE region=%s trees=%d understory=%d rocks=%d tree_asset=%s under_asset=%s" % [
-            effective_region,
-            tree_count,
-            understory_count,
-            rock_count,
-            _current_tree_asset.get_file(),
-            _current_understory_asset.get_file(),
-        ]
-    )
+    var counts := Vector3i(tree_count, understory_count, rock_count)
+    var tree_name := _current_tree_asset.get_file()
+    var understory_name := _current_understory_asset.get_file()
+    if (
+        effective_region != _last_logged_region
+        or counts != _last_logged_counts
+        or tree_name != _last_logged_tree_asset
+        or understory_name != _last_logged_understory_asset
+    ):
+        print(
+            "WORLD_MAP_HERO_NATURE region=%s trees=%d understory=%d rocks=%d tree_asset=%s under_asset=%s" % [
+                effective_region,
+                tree_count,
+                understory_count,
+                rock_count,
+                tree_name,
+                understory_name,
+            ]
+        )
+        _last_logged_region = effective_region
+        _last_logged_counts = counts
+        _last_logged_tree_asset = tree_name
+        _last_logged_understory_asset = understory_name
 
 func visible_counts() -> Vector3i:
     return Vector3i(
