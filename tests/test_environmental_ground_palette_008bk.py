@@ -49,7 +49,8 @@ class EnvironmentalGroundPalette008BKTests(unittest.TestCase):
         )
         self.assertIn("_environmental_palette = EnvironmentalPalette.new()", source)
         self.assertIn('call("environment_at", x, z)', source)
-        self.assertIn("st.set_color(_horizon_color(x, z, y))", source)
+        self.assertIn("_environmental_palette.horizon_base(y)", source)
+        self.assertIn("st.set_color(_environmental_color(", source)
         self.assertIn("_environmental_color(_terrain_color(biome), center.x, center.y)", source)
         self.assertLess(len(source), 36000)
 

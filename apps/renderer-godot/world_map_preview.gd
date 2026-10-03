@@ -9,6 +9,7 @@ const CognitiveTerrain = preload("res://world_map_cognitive_terrain.gd")
 const PerceptualVegetation = preload("res://world_map_perceptual_vegetation.gd")
 const EnvironmentalPalette = preload("res://world_map_environmental_palette.gd")
 const PerceptualAssets = preload("res://world_map_perceptual_assets.gd")
+const DistantRelief = preload("res://world_map_distant_relief.gd")
 const MAP_PATH := "res://world_map_001.json"
 const TILE_M := 64.0
 const MAX_ACTIVE_TILES := 9
@@ -67,6 +68,7 @@ var _walker: CharacterBody3D
 var _camera: Camera3D
 var _camera_forward := Vector3(0.0, 0.0, -1.0)
 var _horizon_ground: MeshInstance3D
+var _distant_relief: RefCounted
 var _distant_trunks: MultiMeshInstance3D
 var _distant_canopies: MultiMeshInstance3D
 var _midground_vegetation: MultiMeshInstance3D
@@ -126,6 +128,7 @@ func _ready() -> void:
         _layout.half_m,
     )
     _environmental_palette = EnvironmentalPalette.new()
+    _distant_relief = DistantRelief.new()
     _perceptual_assets = PerceptualAssets.new(
         self,
         Callable(self, "_height"),
@@ -150,7 +153,6 @@ func _ready() -> void:
     _sync_tiles()
     _update_caption()
     print("WORLD_MAP_PREVIEW_READY grid=%dx%d m=%d tiles=%d decor=%d" % [_layout.grid_size, _layout.grid_size, _layout.world_size_m(), _tiles.size(), MAX_ACTIVE_DECOR])
-
 func _configure_native_fps_governor() -> void:
     if OS.has_feature("web"):
         return
@@ -158,7 +160,6 @@ func _configure_native_fps_governor() -> void:
     if _render_control_path.is_empty():
         return
     _poll_native_fps_governor()
-
 func _poll_native_fps_governor() -> void:
     if _render_control_path.is_empty():
         return
@@ -174,7 +175,6 @@ func _poll_native_fps_governor() -> void:
     var target_fps := clampi(text_value.to_int(), 8, 60)
     if Engine.max_fps != target_fps:
         Engine.max_fps = target_fps
-
 func _build_stage() -> void:
     var light := DirectionalLight3D.new()
     light.rotation_degrees = Vector3(-53, 27, 0)
@@ -229,40 +229,35 @@ func _environment_at(x: float, z: float) -> Dictionary:
         return {}
     var value = _cognitive_terrain.call("environment_at", x, z)
     return value if typeof(value) == TYPE_DICTIONARY else {}
-
 func _environmental_color(base: Color, x: float, z: float) -> Color:
     if _environmental_palette == null:
         return base
     return _environmental_palette.terrain_color(base, _environment_at(x, z))
-
-func _horizon_color(x: float, z: float, height_m: float) -> Color:
-    var base: Color = _environmental_palette.horizon_base(height_m)
-    return _environmental_color(base, x, z)
-
 func _terrain_normal(x: float, z: float) -> Vector3:
     var d := TERRAIN_NORMAL_SAMPLE_M
     var dx := (_height(x + d, z) - _height(x - d, z)) / (2.0 * d)
     var dz := (_height(x, z + d) - _height(x, z - d)) / (2.0 * d)
     return Vector3(-dx, 1.0, -dz).normalized()
-
 func _horizon_vertex(st: SurfaceTool, x: float, z: float) -> void:
-    var y := _height(x, z) - HORIZON_GROUND_OFFSET_M
-    st.set_color(_horizon_color(x, z, y))
+    var y:float=float(_distant_relief.visual_height(_height(x, z), x, z)) - HORIZON_GROUND_OFFSET_M
+    st.set_color(_environmental_color(
+        _environmental_palette.horizon_base(y), x, z
+    ))
     st.set_normal(_terrain_normal(x, z))
     st.add_vertex(Vector3(x, y, z))
-
 func _rebuild_horizon_ground() -> void:
     if _horizon_ground == null:
         return
-    var size := float(_layout.world_size_m()) + HORIZON_GROUND_MARGIN_M
-    var origin := -size * 0.5
-    var step := size / float(HORIZON_GRID)
+    _distant_relief.update_observer(_position, _height(_position.x, _position.z))
+    var size:=float(_layout.world_size_m()) + HORIZON_GROUND_MARGIN_M
+    var origin:=-size * 0.5
+    var step:=size / float(HORIZON_GRID)
     var st := SurfaceTool.new()
     st.begin(Mesh.PRIMITIVE_TRIANGLES)
     for z_index in range(HORIZON_GRID):
         for x_index in range(HORIZON_GRID):
-            var x := origin + float(x_index) * step
-            var z := origin + float(z_index) * step
+            var x:=origin+float(x_index)*step
+            var z:=origin+float(z_index)*step
             _horizon_vertex(st, x, z)
             _horizon_vertex(st, x + step, z)
             _horizon_vertex(st, x, z + step)
@@ -273,14 +268,12 @@ func _rebuild_horizon_ground() -> void:
     var material := _material(Color.WHITE)
     material.vertex_color_use_as_albedo = true
     _horizon_ground.material_override = material
-
 func _distant_material(color: Color) -> StandardMaterial3D:
     var material := StandardMaterial3D.new()
     material.albedo_color = color
     material.roughness = 1.0
     material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
     return material
-
 func _new_vegetation_batch(
     name: String,
     mesh: Mesh,
@@ -298,7 +291,6 @@ func _new_vegetation_batch(
     instance.material_override = _distant_material(color)
     add_child(instance)
     return instance
-
 func _build_distant_vegetation() -> void:
     var trunk_mesh := CylinderMesh.new()
     trunk_mesh.top_radius = 0.26
@@ -319,7 +311,6 @@ func _build_distant_vegetation() -> void:
         "DistantTreeCanopies", canopy_mesh, Color("#527d3f"), DISTANT_VEGETATION_COUNT
     )
     _rebuild_distant_vegetation()
-
 func _rebuild_distant_vegetation() -> void:
     if _distant_trunks == null or _distant_canopies == null:
         return
@@ -346,7 +337,6 @@ func _rebuild_distant_vegetation() -> void:
         _distant_canopies.multimesh.set_instance_transform(
             index, Transform3D(basis, Vector3(x, y + 5.2 * scale, z))
         )
-
 func _build_midground_vegetation() -> void:
     var mesh := CylinderMesh.new()
     mesh.top_radius = 0.16
@@ -358,7 +348,6 @@ func _build_midground_vegetation() -> void:
         "MidgroundVegetation", mesh, Color("#6d9b4d"), MIDGROUND_VEGETATION_COUNT
     )
     _rebuild_midground_vegetation()
-
 func _midground_allowed(x: float, z: float) -> bool:
     if _biome(_cell(x), _cell(z)) == "river":
         return false
@@ -367,7 +356,6 @@ func _midground_allowed(x: float, z: float) -> bool:
         if typeof(profile) == TYPE_DICTIONARY and not bool(profile.get("allow_decor", true)):
             return false
     return true
-
 func _rebuild_midground_vegetation() -> void:
     if _midground_vegetation == null:
         return
@@ -399,7 +387,6 @@ func _rebuild_midground_vegetation() -> void:
         placed += 1
 
     _midground_vegetation.multimesh.visible_instance_count = placed
-
 func _height(x: float, z: float) -> float:
     var rise := 4.0 if x > 175.0 and z < -70.0 else 1.0
     var natural := (sin(x * 0.012) * 1.8 + cos(z * 0.016) * 1.6 + sin((x + z) * 0.021) * 0.9) * rise
@@ -463,7 +450,6 @@ func _decor_visibility_range(kind: String) -> float:
             return ROCK_VISIBILITY_RANGE_M
         _:
             return PLANT_VISIBILITY_RANGE_M
-
 func _apply_decor_culling(node: Node, range_end: float) -> int:
     var applied := 0
     if node is GeometryInstance3D:
@@ -475,7 +461,6 @@ func _apply_decor_culling(node: Node, range_end: float) -> int:
     for child in node.get_children():
         applied += _apply_decor_culling(child, range_end)
     return applied
-
 func _apply_cpu_vertex_shading(node: Node) -> int:
     var applied := 0
     if node is MeshInstance3D:
@@ -497,7 +482,6 @@ func _apply_cpu_vertex_shading(node: Node) -> int:
     for child in node.get_children():
         applied += _apply_cpu_vertex_shading(child)
     return applied
-
 func _decoration(parent: Node3D, cx: int, cz: int, index: int, biome: String) -> void:
     if biome == "river":
         return
@@ -557,7 +541,6 @@ func _prune_tile_cache() -> void:
         _tile_cache.erase(stale_id)
         if is_instance_valid(stale):
             stale.queue_free()
-
 func _cache_tile(id: String, tile: Node3D) -> void:
     if _tile_cache_root == null or not is_instance_valid(tile):
         if is_instance_valid(tile):
@@ -576,7 +559,6 @@ func _cache_tile(id: String, tile: Node3D) -> void:
     _tile_cache[id] = tile
     _tile_cache_order.append(id)
     _prune_tile_cache()
-
 func _take_cached_tile(id: String) -> Node3D:
     if not _tile_cache.has(id):
         _tile_cache_misses += 1
@@ -597,7 +579,6 @@ func _take_cached_tile(id: String) -> Node3D:
             _tile_cache_hits, _tile_cache_misses, _tile_cache.size()
         ])
     return tile
-
 func _clear_tile_cache() -> void:
     for tile in _tile_cache.values():
         if is_instance_valid(tile):
@@ -606,7 +587,6 @@ func _clear_tile_cache() -> void:
     _tile_cache_order.clear()
     _tile_cache_hits = 0
     _tile_cache_misses = 0
-
 func _rebuild_active_tiles() -> void:
     _clear_tile_cache()
     for id in _tiles.keys().duplicate():
@@ -614,7 +594,6 @@ func _rebuild_active_tiles() -> void:
         _tiles.erase(id)
         stale.queue_free()
     _sync_tiles()
-
 func _decor_indices_for_tile(x: int, z: int, center_x: int, center_z: int) -> Array:
     var dx := absi(x - center_x)
     var dz := absi(z - center_z)
@@ -626,7 +605,6 @@ func _decor_indices_for_tile(x: int, z: int, center_x: int, center_z: int) -> Ar
         if int(index) < _layout.decorations_per_tile:
             bounded.append(int(index))
     return bounded
-
 func _sync_tiles() -> void:
     var cx := _cell(_position.x)
     var cz := _cell(_position.z)
@@ -710,6 +688,7 @@ func _on_world_slice(observer: Dictionary, current_region_id: String, hot_entiti
     if not _local_explore_enabled:
         if not terrain_changed and old_cell != Vector2i(_cell(_position.x), _cell(_position.z)):
             _sync_tiles()
+            _rebuild_horizon_ground()
             _rebuild_distant_vegetation()
             _rebuild_midground_vegetation()
         _perceptual_vegetation.rebuild(_position, _camera_forward, _live_region_id)
@@ -725,6 +704,9 @@ func _on_local_mode(enabled: bool) -> void:
         _position = _last_live_position
         if old_cell != Vector2i(_cell(_position.x), _cell(_position.z)):
             _sync_tiles()
+            _rebuild_horizon_ground()
+            _rebuild_distant_vegetation()
+            _rebuild_midground_vegetation()
         _follow_camera()
     elif enabled:
         _local_motion.snap_body(_walker, _position)
@@ -738,12 +720,10 @@ func _update_camera_heading(previous: Vector3, current: Vector3) -> void:
         _camera_forward = desired
     else:
         _camera_forward = _camera_forward.lerp(desired, CAMERA_HEADING_BLEND).normalized()
-
 func _orient_nov_visual() -> void:
     if _walker == null or _camera_forward.length_squared() < 0.001:
         return
     _walker.rotation.y = atan2(_camera_forward.x, _camera_forward.z)
-
 func _follow_camera(snap_body: bool = true) -> void:
     if snap_body:
         _local_motion.snap_body(_walker, _position)
@@ -830,6 +810,7 @@ func _process(delta: float) -> void:
         _leg = (_leg + 1) % _route.size()
     if old_cell != Vector2i(_cell(_position.x), _cell(_position.z)):
         _sync_tiles()
+        _rebuild_horizon_ground()
         _rebuild_distant_vegetation()
         _rebuild_midground_vegetation()
     _perceptual_vegetation.rebuild(_position, _camera_forward, _live_region_id)
