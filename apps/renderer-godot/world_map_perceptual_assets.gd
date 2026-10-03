@@ -17,6 +17,9 @@ const OUTER_M := 31.0
 const HALF_ANGLE_RAD := 1.22
 const REBUILD_DISTANCE_M := 9.0
 const REBUILD_DOT := 0.94
+const CORRIDOR_LENGTH_M := 28.0
+const CORRIDOR_TREE_ROCK_HALF_WIDTH_M := 3.8
+const CORRIDOR_UNDERSTORY_HALF_WIDTH_M := 1.9
 
 var _root: Node3D
 var _height_sampler: Callable
@@ -37,6 +40,7 @@ var _mesh_cache: Dictionary = {}
 var _current_tree_asset := ""
 var _current_understory_asset := ""
 var _vendor_ready := false
+var _last_logged_signature := ""
 
 func _init(
     root: Node3D,
@@ -258,6 +262,23 @@ func _candidate_position(
         clampf(position.z + cos(phase) * radius, -_half_m + 5.0, _half_m - 5.0),
     )
 
+func _inside_corridor(
+    position: Vector3,
+    forward: Vector3,
+    point: Vector2,
+    half_width_m: float,
+) -> bool:
+    var flat_forward := Vector2(forward.x, forward.z).normalized()
+    if flat_forward.length_squared() < 0.001:
+        flat_forward = Vector2(0.0, -1.0)
+    var right := Vector2(-flat_forward.y, flat_forward.x)
+    var delta := point - Vector2(position.x, position.z)
+    var longitudinal := delta.dot(flat_forward)
+    if longitudinal <= 0.0 or longitudinal > CORRIDOR_LENGTH_M:
+        return false
+    var lateral := absf(delta.dot(right))
+    return lateral < half_width_m
+
 func rebuild(
     position: Vector3,
     forward: Vector3,
@@ -301,6 +322,10 @@ func rebuild(
         attempts += 1
         if not bool(_allowed_sampler.call(p.x, p.y)):
             continue
+        if _inside_corridor(
+            position, normalized, p, CORRIDOR_TREE_ROCK_HALF_WIDTH_M
+        ):
+            continue
         var y := float(_height_sampler.call(p.x, p.y))
         var noise := 0.5 + 0.5 * sin(seed * 0.00023 + attempts * 2.17)
         var scale := 0.82 + 0.34 * noise
@@ -318,6 +343,10 @@ func rebuild(
         attempts += 1
         if not bool(_allowed_sampler.call(p.x, p.y)):
             continue
+        if _inside_corridor(
+            position, normalized, p, CORRIDOR_UNDERSTORY_HALF_WIDTH_M
+        ):
+            continue
         var y := float(_height_sampler.call(p.x, p.y))
         var noise := 0.5 + 0.5 * sin(seed * 0.00031 + attempts * 1.73)
         var scale := 0.55 + 0.42 * noise
@@ -334,9 +363,13 @@ func rebuild(
         attempts += 1
         if not bool(_allowed_sampler.call(p.x, p.y)):
             continue
+        if _inside_corridor(
+            position, normalized, p, CORRIDOR_TREE_ROCK_HALF_WIDTH_M
+        ):
+            continue
         var y := float(_height_sampler.call(p.x, p.y))
         var noise := 0.5 + 0.5 * sin(seed * 0.00041 + attempts * 2.43)
-        var scale := 0.55 + 0.65 * noise
+        var scale := 0.48 + 0.48 * noise
         var basis := Basis(Vector3.UP, noise * 5.3).scaled(
             Vector3(scale, 0.65 + 0.45 * scale, scale)
         )
@@ -350,16 +383,26 @@ func rebuild(
     _rock_batch.multimesh.visible_instance_count = rock_count
     _last_origin = position
     _last_forward = normalized
-    print(
-        "WORLD_MAP_HERO_NATURE region=%s trees=%d understory=%d rocks=%d tree_asset=%s under_asset=%s" % [
-            effective_region,
-            tree_count,
-            understory_count,
-            rock_count,
-            _current_tree_asset.get_file(),
-            _current_understory_asset.get_file(),
-        ]
-    )
+    var signature := "%s|%d|%d|%d|%s|%s" % [
+        effective_region,
+        tree_count,
+        understory_count,
+        rock_count,
+        _current_tree_asset.get_file(),
+        _current_understory_asset.get_file(),
+    ]
+    if signature != _last_logged_signature:
+        print(
+            "WORLD_MAP_HERO_NATURE region=%s trees=%d understory=%d rocks=%d tree_asset=%s under_asset=%s" % [
+                effective_region,
+                tree_count,
+                understory_count,
+                rock_count,
+                _current_tree_asset.get_file(),
+                _current_understory_asset.get_file(),
+            ]
+        )
+        _last_logged_signature = signature
 
 func visible_counts() -> Vector3i:
     return Vector3i(
