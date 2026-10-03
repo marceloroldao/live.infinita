@@ -38,6 +38,10 @@ const SHOW_DIAGNOSTIC_WORLD_OVERLAYS := false
 const SHOW_TECHNICAL_STATUS := false
 const SHOW_WORLD_LABELS := false
 const CAMERA_COLLISION_MARGIN_M := 0.55
+const ATMOSPHERIC_DEPTH_ENABLED := true
+const ATMOSPHERIC_FOG_DENSITY := 0.0026
+const ATMOSPHERIC_AERIAL_PERSPECTIVE := 0.32
+const ATMOSPHERIC_SKY_AFFECT := 0.48
 const HORIZON_GROUND_MARGIN_M := 256.0
 const HORIZON_GRID := 24
 const HORIZON_GROUND_OFFSET_M := 7.0
@@ -183,6 +187,13 @@ func _build_stage() -> void:
     env.background_color = Color("#90b9c4")
     env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
     env.ambient_light_color = Color("#d6e2d4")
+    if ATMOSPHERIC_DEPTH_ENABLED:
+        env.fog_enabled = true
+        env.fog_light_color = Color("#abc4c1")
+        env.fog_light_energy = 0.72
+        env.fog_density = ATMOSPHERIC_FOG_DENSITY
+        env.fog_aerial_perspective = ATMOSPHERIC_AERIAL_PERSPECTIVE
+        env.fog_sky_affect = ATMOSPHERIC_SKY_AFFECT
     atmosphere.environment = env
     add_child(atmosphere)
     _horizon_ground = MeshInstance3D.new()
