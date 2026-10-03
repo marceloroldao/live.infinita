@@ -8,6 +8,7 @@ const Layout = preload("res://world_map_layout.gd")
 const CognitiveTerrain = preload("res://world_map_cognitive_terrain.gd")
 const PerceptualVegetation = preload("res://world_map_perceptual_vegetation.gd")
 const EnvironmentalPalette = preload("res://world_map_environmental_palette.gd")
+const PerceptualAssets = preload("res://world_map_perceptual_assets.gd")
 const MAP_PATH := "res://world_map_001.json"
 const TILE_M := 64.0
 const MAX_ACTIVE_TILES := 9
@@ -67,6 +68,7 @@ var _distant_canopies: MultiMeshInstance3D
 var _midground_vegetation: MultiMeshInstance3D
 var _perceptual_vegetation: RefCounted
 var _environmental_palette: RefCounted
+var _perceptual_assets: RefCounted
 var _hud: CanvasLayer
 var _route: Array = []
 var _leg := 1
@@ -120,6 +122,13 @@ func _ready() -> void:
         _layout.half_m,
     )
     _environmental_palette = EnvironmentalPalette.new()
+    _perceptual_assets = PerceptualAssets.new(
+        self,
+        Callable(self, "_height"),
+        Callable(self, "_midground_allowed"),
+        Callable(self, "_cell"),
+        _layout.half_m,
+    )
     _tile_cache_root = Node3D.new()
     _tile_cache_root.name = "TileCache"
     _tile_cache_root.visible = false
@@ -183,6 +192,7 @@ func _build_stage() -> void:
     _build_distant_vegetation()
     _build_midground_vegetation()
     _perceptual_vegetation.build(_position, _camera_forward)
+    _perceptual_assets.build()
     _walker = _local_motion.create_body(self, _material(Color("#eeb74b")))
     _live_visual.build()
     _live_visual.set_diagnostic_overlays(SHOW_DIAGNOSTIC_WORLD_OVERLAYS)
@@ -644,7 +654,13 @@ func _on_world_slice(observer: Dictionary, current_region_id: String, hot_entiti
         return
     var first_bind := not _live_authoritative
     var old_cell := Vector2i(_cell(_position.x), _cell(_position.z))
-    var environment_changed := bool(_perceptual_vegetation.update_environment(environmental_state))
+    var perceptual_environment_changed := bool(
+        _perceptual_vegetation.update_environment(environmental_state)
+    )
+    var asset_environment_changed := bool(
+        _perceptual_assets.update_environment(environmental_state)
+    )
+    var environment_changed := perceptual_environment_changed or asset_environment_changed
     var terrain_changed: bool = bool(_cognitive_terrain.update(
         cognitive_terrain,
         Callable(_live_visual, "project_flat"),
@@ -673,6 +689,7 @@ func _on_world_slice(observer: Dictionary, current_region_id: String, hot_entiti
         _rebuild_active_tiles()
     if terrain_changed or environment_changed:
         _perceptual_vegetation.rebuild(_position, _camera_forward, _live_region_id, true)
+        _perceptual_assets.rebuild(_position, _camera_forward, _live_region_id, true)
         print("WORLD_MAP_MEMORY_TERRAIN projection=%s environment=%s lakes=%d trails=%d trail_batches=%d massifs=%d snow_caps=%d" % [
             _cognitive_terrain.projection_id(), _cognitive_terrain.environment_state_id(),
             _cognitive_terrain.lake_count(), _cognitive_terrain.trail_count(),
@@ -685,6 +702,7 @@ func _on_world_slice(observer: Dictionary, current_region_id: String, hot_entiti
             _rebuild_distant_vegetation()
             _rebuild_midground_vegetation()
         _perceptual_vegetation.rebuild(_position, _camera_forward, _live_region_id)
+        _perceptual_assets.rebuild(_position, _camera_forward, _live_region_id)
         _follow_camera()
     _update_caption()
     if first_bind:
@@ -804,6 +822,7 @@ func _process(delta: float) -> void:
         _rebuild_distant_vegetation()
         _rebuild_midground_vegetation()
     _perceptual_vegetation.rebuild(_position, _camera_forward, _live_region_id)
+    _perceptual_assets.rebuild(_position, _camera_forward, _live_region_id)
     _follow_camera(false)
     _clock += delta
     if _clock > 0.3:
