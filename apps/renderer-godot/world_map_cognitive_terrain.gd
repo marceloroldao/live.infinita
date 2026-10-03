@@ -201,7 +201,7 @@ func update(
         next_ridges.append({
             "a": source["position"],
             "b": target["position"],
-            "height": clampf(float(row.get("ridge_height_m", 1.0)), 0.0, 5.0),
+            "height": clampf(float(row.get("ridge_height_m", 1.0)), 0.0, 14.0),
             "width": clampf(float(row.get("ridge_width_m", 40.0)), 16.0, 96.0),
             "strength": clampf(float(row.get("strength", 0.0)), 0.0, 1.0),
             "count": maxi(0, int(row.get("count", 0))),
