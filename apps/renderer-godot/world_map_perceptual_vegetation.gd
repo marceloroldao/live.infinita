@@ -4,8 +4,10 @@ extends RefCounted
 
 const TREE_BUDGET := 72
 const UNDERGROWTH_BUDGET := 320
-const INNER_M := 4.5
-const OUTER_M := 58.0
+const TREE_INNER_M := 27.0
+const TREE_OUTER_M := 68.0
+const UNDERGROWTH_INNER_M := 16.0
+const UNDERGROWTH_OUTER_M := 52.0
 const HALF_ANGLE_RAD := 1.30
 const REBUILD_DISTANCE_M := 10.0
 const REBUILD_DOT := 0.94
@@ -154,6 +156,20 @@ func _rebuild_needed(position: Vector3, forward: Vector3) -> bool:
     var normalized := forward.normalized()
     return normalized.dot(_last_forward.normalized()) < REBUILD_DOT
 
+func _tree_radius(seed: float, index: int) -> float:
+    var radial_ratio := sqrt(fposmod(float(index) * 0.754877666 + 0.31, 1.0))
+    return (
+        lerpf(TREE_INNER_M, TREE_OUTER_M, radial_ratio)
+        + sin(seed * 0.00017 + float(index) * 1.93) * 3.2
+    )
+
+func _undergrowth_radius(seed: float, index: int) -> float:
+    var radial_ratio := sqrt(fposmod(float(index) * 0.438579021 + 0.11, 1.0))
+    return (
+        lerpf(UNDERGROWTH_INNER_M, UNDERGROWTH_OUTER_M, radial_ratio)
+        + sin(seed * 0.00031 + float(index) * 1.71) * 2.0
+    )
+
 func rebuild(
     position: Vector3,
     forward: Vector3,
@@ -196,9 +212,7 @@ func rebuild(
         var u := fposmod(float(i) * 0.61803398875 + 0.17, 1.0)
         var angle_offset := lerpf(-HALF_ANGLE_RAD, HALF_ANGLE_RAD, u)
         var phase := heading + angle_offset
-        var radial_ratio := sqrt(fposmod(float(i) * 0.754877666 + 0.31, 1.0))
-        var radius := lerpf(INNER_M + 3.0, OUTER_M, radial_ratio)
-        radius += sin(seed * 0.00017 + float(i) * 1.93) * 3.2
+        var radius := _tree_radius(seed, i)
         var x := clampf(position.x + sin(phase) * radius, -_half_m + 8.0, _half_m - 8.0)
         var z := clampf(position.z + cos(phase) * radius, -_half_m + 8.0, _half_m - 8.0)
         if not bool(_allowed_sampler.call(x, z)):
@@ -234,9 +248,7 @@ func rebuild(
         var u := fposmod(float(i) * 0.569840291 + 0.43, 1.0)
         var angle_offset := lerpf(-HALF_ANGLE_RAD, HALF_ANGLE_RAD, u)
         var phase := heading + angle_offset
-        var radial_ratio := sqrt(fposmod(float(i) * 0.438579021 + 0.11, 1.0))
-        var radius := lerpf(INNER_M, OUTER_M * 0.82, radial_ratio)
-        radius += sin(seed * 0.00031 + float(i) * 1.71) * 2.0
+        var radius := _undergrowth_radius(seed, i)
         var x := clampf(position.x + sin(phase) * radius, -_half_m + 5.0, _half_m - 5.0)
         var z := clampf(position.z + cos(phase) * radius, -_half_m + 5.0, _half_m - 5.0)
         if not bool(_allowed_sampler.call(x, z)):

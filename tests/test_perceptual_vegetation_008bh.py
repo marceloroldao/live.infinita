@@ -13,8 +13,10 @@ class PerceptualVegetation008BHTests(unittest.TestCase):
         for expected in (
             "const TREE_BUDGET := 72",
             "const UNDERGROWTH_BUDGET := 320",
-            "const INNER_M := 4.5",
-            "const OUTER_M := 58.0",
+            "const TREE_INNER_M := 27.0",
+            "const TREE_OUTER_M := 68.0",
+            "const UNDERGROWTH_INNER_M := 16.0",
+            "const UNDERGROWTH_OUTER_M := 52.0",
             '"PerceptualTreeTrunks"',
             '"PerceptualTreeCanopies"',
             '"PerceptualUndergrowth"',
