@@ -498,6 +498,9 @@ func rebuild(
     _mid_tree_batch.multimesh.visible_instance_count = mid_tree_count
     _understory_batch.multimesh.visible_instance_count = understory_count
     _rock_batch.multimesh.visible_instance_count = rock_count
+    preload("res://nature_batch_collision.gd").sync(_tree_batch, true)
+    preload("res://nature_batch_collision.gd").sync(_mid_tree_batch, true)
+    preload("res://nature_batch_collision.gd").sync(_rock_batch)
     _last_origin = position
     _last_forward = normalized
     var signature := "%s|%d|%d|%d|%d|%s|%s|%s" % [

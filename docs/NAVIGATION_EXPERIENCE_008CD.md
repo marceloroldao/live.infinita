@@ -1,0 +1,13 @@
+# 008CD — collision and local navigation experience
+
+Live presentation now moves the CharacterBody3D through the same traversability and swept collision checks as local movement. No live frame assigns the remote target directly as a walking step. Initial observer binding and explicit return-to-NOV still initialize presentation pose; this release does not turn remote world coordinates into authoritative 3D physics.
+
+Traversability samples the intervening surface every 0.2m and casts a capsule across the full displacement, blocking thin walls even when an endpoint is beyond them. Structures, standing stones, meadow mast, tile trees/rocks and near nature trees/rocks have bounded physical shapes. Tree shapes represent trunks; foliage and grass remain vegetation, not solid walls.
+
+The former fixed-angle detour in movement is replaced by local trial experience. Failed directed passages accumulate penalties. Visits discourage repeated local loops and permit retreat away from the goal. Successful trajectories are loop-erased and saved as reusable next steps for the same quantized destination. All remembered steps are still validated physically. If a learned step becomes blocked its cached route is removed and exploration resumes. Failure and success maps are bounded to 4096 entries.
+
+Storage: Godot user://nov-navigation-008cd.cfg, per renderer/profile. This is local navigation experience, not shared Memoria.ia cognition and not world-runtime learning. Browsers do not share their files; persistence depends on their user storage. Config write failures emit warnings. Changing destinations resets transient visit/trajectory state. No escape is guaranteed where no physically accessible exit exists; attempts continue without teleporting.
+
+Validation: U-shaped enclosure requires retreat; first trial reaches goal after 32 blocked attempts; second trial reuses successful escape with zero blocked attempts. A separate physical U with three StaticBody walls also requires retreat and reaches its goal after 33 blocked attempts. Restart reuses saved failed passages and successful routes. A capsule cannot tunnel through a thin wall; live feed presentation cannot cross a blocking wall. Existing gait, traversal, grounded camera, narrator/audience and ground alignment checks also run before export.
+
+Deployment: sudo bash /home/etbra/live.infinita/deploy/apply-navigation-experience-008cd-root.sh. Backs up native scripts and web exports, exports in isolation, runs smokes, restarts renderer and promotes /godot/ with rollback on failure. Root deployment remains separate from GitHub push.

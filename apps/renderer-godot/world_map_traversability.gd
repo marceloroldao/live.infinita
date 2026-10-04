@@ -79,6 +79,26 @@ func find_detour(
     return best
 
 func validate_step(current: Vector3, candidate: Vector3, space_state: PhysicsDirectSpaceState3D = null) -> Dictionary:
+    var length_m := Vector2(candidate.x - current.x, candidate.z - current.z).length()
+    var count := maxi(1, ceili(length_m / 0.2))
+    for i in range(1, count):
+        var intermediate := current.lerp(candidate, float(i) / count)
+        var probe := ground_position(intermediate.x, intermediate.z)
+        var classification := surface(probe)
+        if not bool(classification.get("walkable", false)) or absf(probe.y - current.y) > MAX_STEP_M:
+            return {"allowed": false, "position": current, "reason": classification.get("reason", "step_too_high"), "surface": classification.get("surface", "terrain")}
+    if space_state != null and length_m > 0.001:
+        var sweep_shape := CapsuleShape3D.new()
+        sweep_shape.radius = CAPSULE_RADIUS
+        sweep_shape.height = CAPSULE_HEIGHT
+        var sweep := PhysicsShapeQueryParameters3D.new()
+        sweep.shape = sweep_shape
+        sweep.transform = Transform3D(Basis.IDENTITY, current + Vector3(0, CAPSULE_HEIGHT * 0.5, 0))
+        sweep.motion = Vector3(candidate.x - current.x, 0, candidate.z - current.z)
+        sweep.collision_mask = 1
+        var fractions := space_state.cast_motion(sweep)
+        if fractions[0] < 1.0:
+            return {"allowed": false, "position": current, "reason": "static_obstacle", "surface": "terrain", "collisions": 1}
     var target := ground_position(candidate.x, candidate.z)
     var classification := surface(target)
     if not bool(classification.get("walkable", false)):

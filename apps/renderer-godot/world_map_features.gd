@@ -238,6 +238,15 @@ func _special_landmark(tile: Node3D, pos: Vector3, kind: String) -> void:
                 tile, "StandingStones", stone_centers,
                 Vector3(1.1, 2.8, 1.1), Color("#85847d")
             )
+            for center in stone_centers:
+                var body := StaticBody3D.new()
+                body.position = center
+                var shape := BoxShape3D.new()
+                shape.size = Vector3(1.1, 2.8, 1.1)
+                var collision := CollisionShape3D.new()
+                collision.shape = shape
+                body.add_child(collision)
+                tile.add_child(body)
             var compatibility_marker := Node3D.new()
             compatibility_marker.name = "StandingStone_0"
             compatibility_marker.position = stone_centers[0]
@@ -247,7 +256,7 @@ func _special_landmark(tile: Node3D, pos: Vector3, kind: String) -> void:
             _solid_box(tile, "CaveSideB", pos + Vector3(3.0, 2.0, 0), Vector3(2.2, 4.0, 5.0), Color("#5f5b56"))
             _box(tile, "CaveLintel", pos + Vector3(0, 4.3, 0), Vector3(8.0, 1.0, 5.0), Color("#57534f"))
         "meadow":
-            _box(tile, "MeadowMast", pos + Vector3(0, 3.0, 0), Vector3(0.7, 6.0, 0.7), Color("#9b7b4f"))
+            _solid_box(tile, "MeadowMast", pos + Vector3(0, 3.0, 0), Vector3(0.7, 6.0, 0.7), Color("#9b7b4f"))
             _box(tile, "MeadowBladeA", pos + Vector3(0, 5.6, 0.2), Vector3(7.0, 0.35, 0.35), Color("#d1c49e"))
             var blade := _box(tile, "MeadowBladeB", pos + Vector3(0, 5.6, 0.2), Vector3(7.0, 0.35, 0.35), Color("#d1c49e"))
             blade.rotation_degrees.z = 90.0

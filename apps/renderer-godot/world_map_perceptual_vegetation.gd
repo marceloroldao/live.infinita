@@ -315,6 +315,7 @@ func rebuild(
     _trunks.multimesh.visible_instance_count = tree_placed
     _canopies.multimesh.visible_instance_count = tree_placed
     _undergrowth.multimesh.visible_instance_count = undergrowth_placed
+    preload("res://nature_batch_collision.gd").sync(_trunks, true)
     _last_origin = position
     _last_forward = normalized
     if (

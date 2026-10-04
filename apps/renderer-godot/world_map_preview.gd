@@ -590,6 +590,8 @@ func _decoration(parent: Node3D, cx: int, cz: int, index: int, biome: String) ->
                 PLANT_VISIBILITY_RANGE_M, DECOR_VISIBILITY_MARGIN_M
             ])
     parent.add_child(n)
+    if kind == "tree" or kind == "rock":
+        preload("res://nature_batch_collision.gd").attach_model(n, kind == "tree")
 func _prune_tile_cache() -> void:
     while _tile_cache_order.size() > MAX_CACHED_TILES:
         var stale_id: String = str(_tile_cache_order.pop_front())
@@ -855,18 +857,25 @@ func _advance_live_walk(delta: float) -> void:
     var offset := target_flat - current_flat
     var distance := offset.length()
     var desired := Vector2.ZERO
+    if distance <= 0.04:
+        _live_walk_velocity = Vector2.ZERO
+        _follow_camera(false)
+        _animate_nov_movement(previous, dt)
+        return
     if distance > 0.04:
         var approach_speed := minf(LIVE_WALK_SPEED_MPS, sqrt(2.0 * LIVE_WALK_ACCEL_MPS2 * distance))
         desired = offset / distance * approach_speed
     _live_walk_velocity = _live_walk_velocity.move_toward(desired, LIVE_WALK_ACCEL_MPS2 * dt)
-    var step := _live_walk_velocity * dt
-    if distance <= 0.04 or step.length() >= distance:
-        current_flat = target_flat
-        _live_walk_velocity = Vector2.ZERO
-    else:
-        current_flat += step
     var old_cell := Vector2i(_cell(_position.x), _cell(_position.z))
-    _position = Vector3(current_flat.x, float(_features.call("walk_height", current_flat.x, current_flat.y)), current_flat.y)
+    var movement: Dictionary = _local_motion.advance(
+        _position, Vector2.ZERO, _last_live_position, dt, _walker,
+        get_world_3d().direct_space_state, true, _live_walk_velocity.length()
+    )
+    _position = movement.get("position", _position)
+    _local_surface = str(movement.get("surface", "terrain"))
+    _local_block_reason = str(movement.get("reason", ""))
+    if distance < 0.04:
+        _live_walk_velocity = Vector2.ZERO
     _update_camera_heading(previous, _position)
     if old_cell != Vector2i(_cell(_position.x), _cell(_position.z)):
         _sync_tiles()
@@ -875,7 +884,7 @@ func _advance_live_walk(delta: float) -> void:
         _rebuild_midground_vegetation()
     _perceptual_vegetation.rebuild(_position, _camera_forward, _live_region_id)
     _perceptual_assets.rebuild(_position, _camera_forward, _live_region_id)
-    _follow_camera()
+    _follow_camera(false)
     _animate_nov_movement(previous, dt)
 
 func _process(delta: float) -> void:
