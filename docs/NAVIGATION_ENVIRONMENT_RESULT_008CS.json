@@ -1,0 +1,543 @@
+{
+  "schema": "live-infinita-navigation-goal-quality-validation/v1",
+  "production_memory_written": false,
+  "world_write_authority": false,
+  "before": {
+    "fixed_delta_seconds": 0.1,
+    "production_memory_written": false,
+    "remembered_start_step": [
+      -101.006561279297,
+      0.161887496709824
+    ],
+    "results": [
+      {
+        "causal_memoria_decisions": 0,
+        "collisions": 0,
+        "decisions": 58,
+        "distance_away_from_goal_m": 28.3999942839146,
+        "distance_m": 57.6198825389147,
+        "first_selected": [
+          -101.0,
+          -8.74227765734759e-08
+        ],
+        "mode": "without_memory",
+        "reached": true,
+        "rejected_remembered_candidates": 0,
+        "remaining_goal_m": 0.0,
+        "revisited_end_cells": 15,
+        "simulated_seconds": 17.3,
+        "ticks": 173,
+        "trial": 1,
+        "variant": "unchanged_U"
+      },
+      {
+        "causal_memoria_decisions": 0,
+        "collisions": 0,
+        "decisions": 58,
+        "distance_away_from_goal_m": 28.3999942839146,
+        "distance_m": 57.6198825389147,
+        "first_selected": [
+          -101.0,
+          -8.74227765734759e-08
+        ],
+        "mode": "without_memory",
+        "reached": true,
+        "rejected_remembered_candidates": 0,
+        "remaining_goal_m": 0.0,
+        "revisited_end_cells": 15,
+        "simulated_seconds": 17.3,
+        "ticks": 173,
+        "trial": 2,
+        "variant": "unchanged_U"
+      },
+      {
+        "causal_memoria_decisions": 5,
+        "collisions": 0,
+        "decisions": 41,
+        "distance_away_from_goal_m": 19.4044077545404,
+        "distance_m": 42.1322233825922,
+        "first_selected": [
+          -101.006561279297,
+          0.161887496709824
+        ],
+        "mode": "with_memoria",
+        "reached": true,
+        "rejected_remembered_candidates": 0,
+        "remaining_goal_m": 2.98023223876953e-08,
+        "revisited_end_cells": 10,
+        "simulated_seconds": 12.5,
+        "ticks": 125,
+        "trial": 1,
+        "variant": "unchanged_U"
+      },
+      {
+        "causal_memoria_decisions": 5,
+        "collisions": 0,
+        "decisions": 41,
+        "distance_away_from_goal_m": 19.4044077545404,
+        "distance_m": 42.1322233825922,
+        "first_selected": [
+          -101.006561279297,
+          0.161887496709824
+        ],
+        "mode": "with_memoria",
+        "reached": true,
+        "rejected_remembered_candidates": 0,
+        "remaining_goal_m": 2.98023223876953e-08,
+        "revisited_end_cells": 10,
+        "simulated_seconds": 12.5,
+        "ticks": 125,
+        "trial": 2,
+        "variant": "unchanged_U"
+      },
+      {
+        "causal_memoria_decisions": 0,
+        "collisions": 0,
+        "decisions": 6,
+        "distance_away_from_goal_m": 0.0,
+        "distance_m": 6.0,
+        "first_selected": [
+          -99.0,
+          0.0
+        ],
+        "mode": "without_memory",
+        "reached": true,
+        "rejected_remembered_candidates": 0,
+        "remaining_goal_m": 0.0,
+        "revisited_end_cells": 0,
+        "simulated_seconds": 1.8,
+        "ticks": 18,
+        "trial": 1,
+        "variant": "opened_U"
+      },
+      {
+        "causal_memoria_decisions": 0,
+        "collisions": 0,
+        "decisions": 6,
+        "distance_away_from_goal_m": 0.0,
+        "distance_m": 6.0,
+        "first_selected": [
+          -99.0,
+          0.0
+        ],
+        "mode": "without_memory",
+        "reached": true,
+        "rejected_remembered_candidates": 0,
+        "remaining_goal_m": 0.0,
+        "revisited_end_cells": 0,
+        "simulated_seconds": 1.8,
+        "ticks": 18,
+        "trial": 2,
+        "variant": "opened_U"
+      },
+      {
+        "causal_memoria_decisions": 1,
+        "collisions": 0,
+        "decisions": 7,
+        "distance_away_from_goal_m": 0.129987925291061,
+        "distance_m": 6.52786648273468,
+        "first_selected": [
+          -99.0,
+          0.0
+        ],
+        "mode": "with_memoria",
+        "reached": true,
+        "rejected_remembered_candidates": 0,
+        "remaining_goal_m": 0.0,
+        "revisited_end_cells": 0,
+        "simulated_seconds": 2.0,
+        "ticks": 20,
+        "trial": 1,
+        "variant": "opened_U"
+      },
+      {
+        "causal_memoria_decisions": 1,
+        "collisions": 0,
+        "decisions": 7,
+        "distance_away_from_goal_m": 0.129987925291061,
+        "distance_m": 6.52786648273468,
+        "first_selected": [
+          -99.0,
+          0.0
+        ],
+        "mode": "with_memoria",
+        "reached": true,
+        "rejected_remembered_candidates": 0,
+        "remaining_goal_m": 0.0,
+        "revisited_end_cells": 0,
+        "simulated_seconds": 2.0,
+        "ticks": 20,
+        "trial": 2,
+        "variant": "opened_U"
+      },
+      {
+        "causal_memoria_decisions": 0,
+        "collisions": 0,
+        "decisions": 91,
+        "distance_away_from_goal_m": 45.3999939411879,
+        "distance_m": 90.8000241965055,
+        "first_selected": [
+          -99.0,
+          0.0
+        ],
+        "mode": "without_memory",
+        "reached": true,
+        "rejected_remembered_candidates": 0,
+        "remaining_goal_m": 0.0667170211672783,
+        "revisited_end_cells": 16,
+        "simulated_seconds": 27.2,
+        "ticks": 272,
+        "trial": 1,
+        "variant": "remembered_step_blocked"
+      },
+      {
+        "causal_memoria_decisions": 0,
+        "collisions": 0,
+        "decisions": 91,
+        "distance_away_from_goal_m": 45.3999939411879,
+        "distance_m": 90.8000241965055,
+        "first_selected": [
+          -99.0,
+          0.0
+        ],
+        "mode": "without_memory",
+        "reached": true,
+        "rejected_remembered_candidates": 0,
+        "remaining_goal_m": 0.0667170211672783,
+        "revisited_end_cells": 16,
+        "simulated_seconds": 27.2,
+        "ticks": 272,
+        "trial": 2,
+        "variant": "remembered_step_blocked"
+      },
+      {
+        "causal_memoria_decisions": 4,
+        "collisions": 0,
+        "decisions": 64,
+        "distance_away_from_goal_m": 31.7252335250378,
+        "distance_m": 63.9231335073709,
+        "first_selected": [
+          -99.0,
+          0.0
+        ],
+        "mode": "with_memoria",
+        "reached": true,
+        "rejected_remembered_candidates": 3,
+        "remaining_goal_m": 0.0,
+        "revisited_end_cells": 6,
+        "simulated_seconds": 19.1,
+        "ticks": 191,
+        "trial": 1,
+        "variant": "remembered_step_blocked"
+      },
+      {
+        "causal_memoria_decisions": 4,
+        "collisions": 0,
+        "decisions": 64,
+        "distance_away_from_goal_m": 31.7252335250378,
+        "distance_m": 63.9231335073709,
+        "first_selected": [
+          -99.0,
+          0.0
+        ],
+        "mode": "with_memoria",
+        "reached": true,
+        "rejected_remembered_candidates": 3,
+        "remaining_goal_m": 0.0,
+        "revisited_end_cells": 6,
+        "simulated_seconds": 19.1,
+        "ticks": 191,
+        "trial": 2,
+        "variant": "remembered_step_blocked"
+      }
+    ],
+    "schema": "live-infinita-navigation-environment-benchmark/v1",
+    "scope": "isolated_physics_with_actual_promoted_recall",
+    "speed_mps": 4.0,
+    "world_write_authority": false,
+    "source_hashes": {
+      "nov_navigation_experience.gd": "55ee645373516c79136c260b2638542edf3150d18c7997fb8cc144b6fc06721f",
+      "nov_navigation_working_memory.gd": "ab8fe7f5fb8d60c2cbcee417a3f88e30b2d3e54d974fa2e41d10103ffa08bd4c",
+      "nov_navigation_episodes.gd": "eebbac8c8cba3558e2a94b956353c20065899ec002943e389dc426077d91e0f2",
+      "world_map_local_motion.gd": "554b2bfbc18c16298cb0524b7651d0b0b7a2375afcda3851f04b360aec5156ef",
+      "world_map_traversability.gd": "33134c7312f80726c995f14c5a8267d13240e766ae99a32ef266c193a6707460",
+      "memoria_resolutiva.product_structural": "71de27b125b5ca2e30ab1abc6af83ed02e34e27f8034878d92c87c7825f6fce9",
+      "nov_navigation_promotion_sync": "84787533a2d23dbde3f02812cd3e5bb2ce317d222b3015ab03319df7aad140b9",
+      "nov_navigation_recall_export": "ba2b2b9ad3dfb02e2a9467ab220e404dd9718bf2a8f2cb260ac6d44a96ee6cf1"
+    },
+    "api_recovered": 6,
+    "promotions_verified": 6
+  },
+  "after": {
+    "fixed_delta_seconds": 0.1,
+    "production_memory_written": false,
+    "remembered_start_step": [
+      -101.006561279297,
+      0.161887496709824
+    ],
+    "results": [
+      {
+        "causal_memoria_decisions": 0,
+        "collisions": 0,
+        "decisions": 41,
+        "distance_away_from_goal_m": 19.0000051856041,
+        "distance_m": 40.5753124207258,
+        "first_selected": [
+          -101.0,
+          -8.74227765734759e-08
+        ],
+        "mode": "without_memory",
+        "reached": true,
+        "rejected_remembered_candidates": 0,
+        "remaining_goal_m": 7.45058059692383e-09,
+        "revisited_end_cells": 14,
+        "simulated_seconds": 12.2,
+        "ticks": 122,
+        "trial": 1,
+        "variant": "unchanged_U"
+      },
+      {
+        "causal_memoria_decisions": 0,
+        "collisions": 0,
+        "decisions": 41,
+        "distance_away_from_goal_m": 19.0000051856041,
+        "distance_m": 40.5753124207258,
+        "first_selected": [
+          -101.0,
+          -8.74227765734759e-08
+        ],
+        "mode": "without_memory",
+        "reached": true,
+        "rejected_remembered_candidates": 0,
+        "remaining_goal_m": 7.45058059692383e-09,
+        "revisited_end_cells": 14,
+        "simulated_seconds": 12.2,
+        "ticks": 122,
+        "trial": 2,
+        "variant": "unchanged_U"
+      },
+      {
+        "causal_memoria_decisions": 5,
+        "collisions": 0,
+        "decisions": 41,
+        "distance_away_from_goal_m": 19.4044077545404,
+        "distance_m": 42.1322233825922,
+        "first_selected": [
+          -101.006561279297,
+          0.161887496709824
+        ],
+        "mode": "with_memoria",
+        "reached": true,
+        "rejected_remembered_candidates": 0,
+        "remaining_goal_m": 2.98023223876953e-08,
+        "revisited_end_cells": 10,
+        "simulated_seconds": 12.5,
+        "ticks": 125,
+        "trial": 1,
+        "variant": "unchanged_U"
+      },
+      {
+        "causal_memoria_decisions": 5,
+        "collisions": 0,
+        "decisions": 41,
+        "distance_away_from_goal_m": 19.4044077545404,
+        "distance_m": 42.1322233825922,
+        "first_selected": [
+          -101.006561279297,
+          0.161887496709824
+        ],
+        "mode": "with_memoria",
+        "reached": true,
+        "rejected_remembered_candidates": 0,
+        "remaining_goal_m": 2.98023223876953e-08,
+        "revisited_end_cells": 10,
+        "simulated_seconds": 12.5,
+        "ticks": 125,
+        "trial": 2,
+        "variant": "unchanged_U"
+      },
+      {
+        "causal_memoria_decisions": 0,
+        "collisions": 0,
+        "decisions": 6,
+        "distance_away_from_goal_m": 0.0,
+        "distance_m": 6.0,
+        "first_selected": [
+          -99.0,
+          0.0
+        ],
+        "mode": "without_memory",
+        "reached": true,
+        "rejected_remembered_candidates": 0,
+        "remaining_goal_m": 0.0,
+        "revisited_end_cells": 0,
+        "simulated_seconds": 1.8,
+        "ticks": 18,
+        "trial": 1,
+        "variant": "opened_U"
+      },
+      {
+        "causal_memoria_decisions": 0,
+        "collisions": 0,
+        "decisions": 6,
+        "distance_away_from_goal_m": 0.0,
+        "distance_m": 6.0,
+        "first_selected": [
+          -99.0,
+          0.0
+        ],
+        "mode": "without_memory",
+        "reached": true,
+        "rejected_remembered_candidates": 0,
+        "remaining_goal_m": 0.0,
+        "revisited_end_cells": 0,
+        "simulated_seconds": 1.8,
+        "ticks": 18,
+        "trial": 2,
+        "variant": "opened_U"
+      },
+      {
+        "causal_memoria_decisions": 0,
+        "collisions": 0,
+        "decisions": 6,
+        "distance_away_from_goal_m": 0.0,
+        "distance_m": 6.0,
+        "first_selected": [
+          -99.0,
+          0.0
+        ],
+        "mode": "with_memoria",
+        "reached": true,
+        "rejected_remembered_candidates": 0,
+        "remaining_goal_m": 0.0,
+        "revisited_end_cells": 0,
+        "simulated_seconds": 1.8,
+        "ticks": 18,
+        "trial": 1,
+        "variant": "opened_U"
+      },
+      {
+        "causal_memoria_decisions": 0,
+        "collisions": 0,
+        "decisions": 6,
+        "distance_away_from_goal_m": 0.0,
+        "distance_m": 6.0,
+        "first_selected": [
+          -99.0,
+          0.0
+        ],
+        "mode": "with_memoria",
+        "reached": true,
+        "rejected_remembered_candidates": 0,
+        "remaining_goal_m": 0.0,
+        "revisited_end_cells": 0,
+        "simulated_seconds": 1.8,
+        "ticks": 18,
+        "trial": 2,
+        "variant": "opened_U"
+      },
+      {
+        "causal_memoria_decisions": 0,
+        "collisions": 0,
+        "decisions": 59,
+        "distance_away_from_goal_m": 28.000007212162,
+        "distance_m": 58.5927027910948,
+        "first_selected": [
+          -99.0,
+          0.0
+        ],
+        "mode": "without_memory",
+        "reached": true,
+        "rejected_remembered_candidates": 0,
+        "remaining_goal_m": 0.0,
+        "revisited_end_cells": 15,
+        "simulated_seconds": 17.6,
+        "ticks": 176,
+        "trial": 1,
+        "variant": "remembered_step_blocked"
+      },
+      {
+        "causal_memoria_decisions": 0,
+        "collisions": 0,
+        "decisions": 59,
+        "distance_away_from_goal_m": 28.000007212162,
+        "distance_m": 58.5927027910948,
+        "first_selected": [
+          -99.0,
+          0.0
+        ],
+        "mode": "without_memory",
+        "reached": true,
+        "rejected_remembered_candidates": 0,
+        "remaining_goal_m": 0.0,
+        "revisited_end_cells": 15,
+        "simulated_seconds": 17.6,
+        "ticks": 176,
+        "trial": 2,
+        "variant": "remembered_step_blocked"
+      },
+      {
+        "causal_memoria_decisions": 3,
+        "collisions": 0,
+        "decisions": 31,
+        "distance_away_from_goal_m": 13.7354687601328,
+        "distance_m": 30.7958537936211,
+        "first_selected": [
+          -99.0,
+          0.0
+        ],
+        "mode": "with_memoria",
+        "reached": true,
+        "rejected_remembered_candidates": 3,
+        "remaining_goal_m": 0.0,
+        "revisited_end_cells": 4,
+        "simulated_seconds": 9.2,
+        "ticks": 92,
+        "trial": 1,
+        "variant": "remembered_step_blocked"
+      },
+      {
+        "causal_memoria_decisions": 3,
+        "collisions": 0,
+        "decisions": 31,
+        "distance_away_from_goal_m": 13.7354687601328,
+        "distance_m": 30.7958537936211,
+        "first_selected": [
+          -99.0,
+          0.0
+        ],
+        "mode": "with_memoria",
+        "reached": true,
+        "rejected_remembered_candidates": 3,
+        "remaining_goal_m": 0.0,
+        "revisited_end_cells": 4,
+        "simulated_seconds": 9.2,
+        "ticks": 92,
+        "trial": 2,
+        "variant": "remembered_step_blocked"
+      }
+    ],
+    "schema": "live-infinita-navigation-environment-benchmark/v1",
+    "scope": "isolated_physics_with_actual_promoted_recall",
+    "speed_mps": 4.0,
+    "world_write_authority": false,
+    "source_hashes": {
+      "nov_navigation_experience.gd": "dc3bf2f1d78f7a4c878056855052c78213187ae60411de1e864d0b547b04e097",
+      "nov_navigation_working_memory.gd": "ab8fe7f5fb8d60c2cbcee417a3f88e30b2d3e54d974fa2e41d10103ffa08bd4c",
+      "nov_navigation_episodes.gd": "eebbac8c8cba3558e2a94b956353c20065899ec002943e389dc426077d91e0f2",
+      "world_map_local_motion.gd": "554b2bfbc18c16298cb0524b7651d0b0b7a2375afcda3851f04b360aec5156ef",
+      "world_map_traversability.gd": "33134c7312f80726c995f14c5a8267d13240e766ae99a32ef266c193a6707460",
+      "memoria_resolutiva.product_structural": "71de27b125b5ca2e30ab1abc6af83ed02e34e27f8034878d92c87c7825f6fce9",
+      "nov_navigation_promotion_sync": "84787533a2d23dbde3f02812cd3e5bb2ce317d222b3015ab03319df7aad140b9",
+      "nov_navigation_recall_export": "ba2b2b9ad3dfb02e2a9467ab220e404dd9718bf2a8f2cb260ac6d44a96ee6cf1"
+    },
+    "api_recovered": 5,
+    "promotions_verified": 5,
+    "validation_passed": true
+  },
+  "comparison_limits": [
+    "Each version learned its own memory seed; before/after persistent recall is not an identical-memory causal comparison.",
+    "Within each version and scenario, with/without memory share fixed start, goal and physical obstacles.",
+    "A clear nearby goal fixes a local case; no whole-route optimization or live gain is established."
+  ]
+}

@@ -30,12 +30,36 @@ def verify_promotions(data):
             assert math.dist(action["selected"], row["summary"]["to"]) <= 0.05
     return len(rows)
 
+def validate_environment(data):
+    expected = {(variant,mode,trial) for variant in
+        ("unchanged_U","opened_U","remembered_step_blocked")
+        for mode in ("without_memory","with_memoria") for trial in (1,2)}
+    rows = data["results"]
+    assert len(rows)==12
+    keyed = {(r["variant"],r["mode"],r["trial"]):r for r in rows}
+    assert set(keyed)==expected
+    for variant,mode,trial in expected:
+        row = keyed[(variant,mode,trial)]
+        assert row["reached"] is True and row["collisions"]==0
+        assert row["remaining_goal_m"]<0.1
+        if trial==1:
+            assert row==dict(keyed[(variant,mode,2)],trial=1)
+    for mode in ("without_memory","with_memoria"):
+        row=keyed[("opened_U",mode,1)]
+        assert abs(row["distance_m"]-6.0)<0.001 and row["revisited_end_cells"]==0
+        assert row["distance_away_from_goal_m"]<0.001
+    rejected=keyed[("remembered_step_blocked","with_memoria",1)]
+    assert rejected["rejected_remembered_candidates"]>=1
+    assert math.dist(rejected["first_selected"],data["remembered_start_step"])>0.05
+    return True
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--core-src", default=CORE)
     parser.add_argument("--godot-project", required=True)
     parser.add_argument("--engine", default="/opt/live-infinita-godot/engine/Godot_v4.7.2-stable_linux.x86_64")
     parser.add_argument("--report", required=True)
+    parser.add_argument("--environment-report", help="Optional changed-obstacle experiment using the same actual recall")
     args = parser.parse_args()
     project = Path(args.godot_project).resolve()
     if project == (ROOT/"apps/renderer-godot").resolve() or project.is_relative_to(Path("/opt/live.infinita")):
@@ -110,6 +134,20 @@ def main():
                 assert response.status_code == 200, response.text
                 return response.json()
             exported = recall.export_once(world, temp/"private.json", cache, fetch=fetch)
+        if args.environment_report:
+            environment_path = Path(args.environment_report)
+            command = [args.engine, "--headless", "--audio-driver", "Dummy", "--path", str(project),
+                "--script", str(ROOT/"tests/godot_navigation_environment_benchmark_008cs.gd"),
+                "--", "--offline-tour", "--recall="+str(cache), "--report="+str(environment_path)]
+            run = subprocess.run(command, capture_output=True, text=True, timeout=60)
+            if run.returncode or re.search(r"SCRIPT ERROR:|Parse Error:|^ERROR:", run.stdout+run.stderr, re.M):
+                raise RuntimeError(run.stdout+run.stderr)
+            environment = json.loads(environment_path.read_text())
+            environment["validation_passed"] = validate_environment(environment)
+            environment["source_hashes"] = source_hashes
+            environment["api_recovered"] = exported["cached"]
+            environment["promotions_verified"] = count
+            environment_path.write_text(json.dumps(environment, indent=2)+"\n")
         cached = json.loads(cache.read_text())
         assert {row["observation_id"] for row in cached["entries"]} == {r["observation_id"] for r in receipts}
         second = simulate(temp/"second.json", cache)

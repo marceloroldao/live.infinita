@@ -38,3 +38,23 @@ class PromotionEvidenceTests(unittest.TestCase):
         data=self.data()
         data["promotions"]["entries"][0]["summary"]["to"]=[1.0,0.0]
         with self.assertRaises(AssertionError): module.verify_promotions(data)
+
+
+class EnvironmentValidationTests(unittest.TestCase):
+    def data(self):
+        import json
+        return json.loads((Path(__file__).resolve().parents[1]/
+            "docs/NAVIGATION_ENVIRONMENT_RESULT_008CS.json").read_text())["after"]
+    def test_archived_complete_physical_trials_validate(self):
+        self.assertTrue(module.validate_environment(self.data()))
+    def test_collision_nonarrival_missing_or_unnecessary_detour_rejects(self):
+        for mutation in ("collision","arrival","missing","detour"):
+            data=self.data()
+            if mutation=="collision": data["results"][0]["collisions"]=1
+            elif mutation=="arrival": data["results"][0]["reached"]=False
+            elif mutation=="missing": data["results"].pop()
+            else:
+                for row in data["results"]:
+                    if row["variant"]=="opened_U": row["distance_m"]=7.0
+            with self.subTest(mutation=mutation), self.assertRaises(AssertionError):
+                module.validate_environment(data)

@@ -166,8 +166,29 @@ func apply_recall(snapshot: Dictionary) -> void:
 func _anticipated_target(current: Vector2, goal: Vector2, probe: Callable) -> Vector2:
     var direct := current.move_toward(goal, CELL_M)
     var address := key(goal) + "|" + key(current)
-    var candidates: Array[Dictionary] = [{"point": direct, "bonus": 0.0, "source": "perception", "id": ""}]
     var temporary: Dictionary = working_memory.lookup(address)
+    # A nearby goal with a fully observed clear corridor needs no remembered detour.
+    # The physics probe checks the entire segment, not just its endpoint.
+    if current.distance_to(goal) <= 3.0:
+        var corridor: Dictionary = probe.call(goal)
+        if bool(corridor.get("allowed", false)) and bool(corridor.get("clear_ahead", false)):
+            pending = direct
+            last_decision_source = "perception"
+            last_observation_id = ""
+            if not temporary.is_empty():
+                var remembered := Vector2(float(temporary["to"][0]), float(temporary["to"][1]))
+                if remembered.distance_to(direct) <= 0.05:
+                    last_decision_source = "perception-working-memory-agreement"
+            if last_decision_source == "perception" and memoria_enabled and recalled_routes.has(address):
+                if recalled_routes[address]["next"].distance_to(direct) <= 0.05:
+                    last_decision_source = "perception-memory-agreement"
+            decision_evidence = {"lookahead_m": 3.0, "goal_corridor_clear": true,
+                "without_memoria": [direct.x, direct.y],
+                "candidates": [{"point": [direct.x, direct.y], "allowed": true,
+                    "clear_ahead": true, "reason": ""}]}
+            active = true
+            return pending
+    var candidates: Array[Dictionary] = [{"point": direct, "bonus": 0.0, "source": "perception", "id": ""}]
     if not temporary.is_empty():
         var next := Vector2(float(temporary["to"][0]), float(temporary["to"][1]))
         if current.distance_to(next) > 0.05 and current.distance_to(next) < 2.0:
