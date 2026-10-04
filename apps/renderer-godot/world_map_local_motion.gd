@@ -7,6 +7,7 @@ const BODY_CENTER_Y := 0.9
 
 var _experience = preload("res://nov_navigation_experience.gd").new()
 var _traversability: RefCounted
+var route_goal_id := ""
 var _inference_log_at := 0
 var _working_memory_log_at := 0
 var _episodes = preload("res://nov_navigation_episodes.gd").new()
@@ -70,6 +71,7 @@ func advance(
         candidate.z = flat.y
 
     var policy: Dictionary = _traversability.validate_step(current, candidate, space_state)
+    policy["route_goal_id"] = route_goal_id
     policy["manual"] = manual
     policy["decision_source"] = _experience.last_decision_source
     policy["memory_observation_id"] = _experience.last_observation_id

@@ -71,6 +71,7 @@ var _resource_cache: Dictionary = {}
 var _walker: CharacterBody3D
 var _camera: Camera3D
 var _camera_forward := Vector3(0.0, 0.0, -1.0)
+var _route_goal = preload("res://nov_route_goal.gd").new()
 var _camera_stabilizer = preload("res://nov_camera_stabilizer.gd").new()
 var _horizon_ground: MeshInstance3D
 var _distant_relief: RefCounted
@@ -884,9 +885,13 @@ func _advance_live_walk(delta: float) -> void:
     _local_motion._episodes.enabled = not OS.has_feature("web") and not OS.get_cmdline_user_args().has("--offline-tour")
     _local_motion._experience.working_memory.enabled = _local_motion._episodes.enabled and not _local_motion._experience.working_memory.world_id.is_empty()
     var dt := clampf(delta, 0.0, 0.1)
+    var committed_target: Vector3 = _route_goal.choose(_position, _last_live_position, dt, str(_local_motion._episodes.context.get("world_id", "")))
+    if _local_motion.route_goal_id != _route_goal.identity():
+        _local_motion._experience.active = false
+    _local_motion.route_goal_id = _route_goal.identity()
     var previous := _position
     var current_flat := Vector2(_position.x, _position.z)
-    var target_flat := Vector2(_last_live_position.x, _last_live_position.z)
+    var target_flat := Vector2(committed_target.x, committed_target.z)
     var offset := target_flat - current_flat
     var distance := offset.length()
     var desired := Vector2.ZERO
@@ -901,7 +906,7 @@ func _advance_live_walk(delta: float) -> void:
     _live_walk_velocity = _live_walk_velocity.move_toward(desired, LIVE_WALK_ACCEL_MPS2 * dt)
     var old_cell := Vector2i(_cell(_position.x), _cell(_position.z))
     var movement: Dictionary = _local_motion.advance(
-        _position, Vector2.ZERO, _last_live_position, dt, _walker,
+        _position, Vector2.ZERO, committed_target, dt, _walker,
         get_world_3d().direct_space_state, true, _live_walk_velocity.length()
     )
     _position = movement.get("position", _position)
@@ -934,6 +939,7 @@ func _process(delta: float) -> void:
                 _update_caption()
             return
         _live_authoritative = false
+        _route_goal.reset()
         _live_region_id = ""
         _live_visual.clear_markers()
     _local_motion._episodes.enabled = false

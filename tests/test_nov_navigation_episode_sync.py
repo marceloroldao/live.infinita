@@ -42,6 +42,13 @@ class EpisodeTests(unittest.TestCase):
         self.assertEqual(value["provenance"]["decision_sources"],{"memoria.ia":1})
         self.assertFalse(value["provenance"]["world_write_authority"])
         self.assertEqual(value["provenance"]["world_ids"],["fixture"])
+    def test_optional_committed_route_identity_preserved(self):
+        row=episode(); row["actions"][0]["route_goal_id"]="c"*32+":2"
+        self.assertEqual(validate_episode(row)["actions"][0]["route_goal_id"],"c"*32+":2")
+        for invalid in (None, 1, True, "bad", "c"*32+":0", "c"*32+":1"+"0"*64):
+            candidate=episode(); candidate["actions"][0]["route_goal_id"]=invalid
+            with self.subTest(invalid=invalid), self.assertRaises(ValueError):
+                validate_episode(candidate)
     def test_idempotent_restart_and_partial_ack(self):
         self.write([episode(1),episode(2)])
         sends=[]

@@ -96,6 +96,9 @@ def validate_episode(row):
         action["decision_serial"] = integer(action.get("decision_serial"), 1)
         for name in ("started_at_ms", "duration_ms"):
             action[name] = integer(action[name])
+        route_id = action.get("route_goal_id", "")
+        if not isinstance(route_id, str) or (route_id and (len(route_id) > 64 or not re.fullmatch("[0-9a-f]{32}:[1-9][0-9]*", route_id))):
+            fail()
         if action.get("goal_kind") != "projected_runtime_observer_position":
             fail()
         source = action.get("decision_source")

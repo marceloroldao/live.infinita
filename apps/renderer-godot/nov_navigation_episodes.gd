@@ -49,6 +49,7 @@ func observe(serial: int, current: Vector3, goal: Vector3, selected: Vector2,
         return
     if active.is_empty():
         active = {
+            "route_goal_id": str(policy.get("route_goal_id", "")),
             "decision_serial": serial, "started_at_unix": Time.get_unix_time_from_system(),
             "started_at_ms": now_ms, "start": point(current), "goal": point(goal),
             "goal_kind": "projected_runtime_observer_position",

@@ -141,7 +141,7 @@ func arrived(goal: Vector2) -> void:
 func apply_recall(snapshot: Dictionary) -> void:
     recalled_failures.clear()
     recalled_routes.clear()
-    active = false
+    # Finish the current physically checked step; new evidence affects the next decision.
     var rows = snapshot.get("entries", [])
     if typeof(rows) != TYPE_ARRAY:
         return
