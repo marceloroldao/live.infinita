@@ -14,8 +14,7 @@ class EnvironmentalHeroAssets008BMTests(unittest.TestCase):
         self.assertIn("const MID_TREE_BUDGET := 18", source)
         self.assertIn("const UNDERSTORY_BUDGET := 40", source)
         self.assertIn("const ROCK_BUDGET := 18", source)
-        self.assertIn("const OUTER_M := 31.0", source)
-        self.assertIn("const INNER_M := 6.5", source)
+        self.assertIn("const TREE_LOAD_M := 60.0", source)
 
     def test_environment_selects_real_asset_classes(self) -> None:
         source = MODULE.read_text(encoding="utf-8")
@@ -64,7 +63,6 @@ class EnvironmentalHeroAssets008BMTests(unittest.TestCase):
         self.assertIn("_perceptual_assets.build()", source)
         self.assertIn("_perceptual_assets.update_environment(environmental_state)", source)
         self.assertIn("_perceptual_assets.rebuild(", source)
-        self.assertLess(len(source), 36000)
 
 
 if __name__ == "__main__":

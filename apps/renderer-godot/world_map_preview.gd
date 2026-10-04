@@ -53,6 +53,10 @@ const DISTANT_VEGETATION_OUTER_M := 390.0
 const MIDGROUND_VEGETATION_COUNT := 180
 const MIDGROUND_VEGETATION_INNER_M := 16.0
 const MIDGROUND_VEGETATION_OUTER_M := 94.0
+const Residency = preload("res://nature_local_residency.gd")
+const LOCAL_STABLE_RADIUS_M := 45.0
+var _midground_residency = Residency.new()
+var _distant_residency = Residency.new()
 var _map: Dictionary = {}
 var _catalog: RefCounted
 var _layout: RefCounted
@@ -356,29 +360,25 @@ func _build_distant_vegetation() -> void:
 func _rebuild_distant_vegetation() -> void:
     if _distant_trunks == null or _distant_canopies == null:
         return
-    var cx := _cell(_position.x)
-    var cz := _cell(_position.z)
-    var seed := float(cx * 92821 + cz * 68917)
-    for index in range(DISTANT_VEGETATION_COUNT):
-        var phase := float(index) * 2.39996323 + sin(seed * 0.00013) * 0.8
-        var ratio := sqrt((float(index) + 0.5) / float(DISTANT_VEGETATION_COUNT))
-        var radius := lerpf(DISTANT_VEGETATION_INNER_M, DISTANT_VEGETATION_OUTER_M, ratio)
-        radius += sin(seed * 0.00031 + float(index) * 1.73) * 13.0
-        var x := clampf(_position.x + cos(phase) * radius, -_layout.half_m + 12.0, _layout.half_m - 12.0)
-        var z := clampf(_position.z + sin(phase) * radius, -_layout.half_m + 12.0, _layout.half_m - 12.0)
-        if _biome(_cell(x), _cell(z)) == "river":
-            x = clampf(x + 24.0, -_layout.half_m + 12.0, _layout.half_m - 12.0)
-        var y := _height(x, z)
-        var scale_noise := 0.5 + 0.5 * sin(seed * 0.00017 + float(index) * 2.11)
-        var scale := 0.82 + 0.26 * scale_noise + 0.28 * ratio
-        var yaw := phase * 0.37
-        var basis := Basis(Vector3.UP, yaw).scaled(Vector3(scale, scale, scale))
-        _distant_trunks.multimesh.set_instance_transform(
-            index, Transform3D(basis, Vector3(x, y + 1.9 * scale, z))
-        )
-        _distant_canopies.multimesh.set_instance_transform(
-            index, Transform3D(basis, Vector3(x, y + 5.2 * scale, z))
-        )
+    var rows: Array = _distant_residency.update(_position, DISTANT_VEGETATION_COUNT,
+        1.0, 48.0, DISTANT_VEGETATION_OUTER_M, 430.0, 211,
+        _layout.half_m, Callable(self, "_midground_allowed"), DISTANT_VEGETATION_INNER_M)
+    var index := 0
+    for record in rows:
+        if not record.has("trunk"):
+            var p: Vector2 = record["point"]
+            var noise: float = record["noise"]
+            var scale := 0.82 + 0.54 * noise
+            var basis := Basis(Vector3.UP, noise * TAU).scaled(Vector3.ONE * scale)
+            var y := _height(p.x, p.y)
+            record["trunk"] = Transform3D(basis, Vector3(p.x, y + 1.9 * scale, p.y))
+            record["canopy"] = Transform3D(basis, Vector3(p.x, y + 5.2 * scale, p.y))
+        _distant_trunks.multimesh.set_instance_transform(index, record["trunk"])
+        _distant_canopies.multimesh.set_instance_transform(index, record["canopy"])
+        index += 1
+    _distant_trunks.multimesh.visible_instance_count = index
+    _distant_canopies.multimesh.visible_instance_count = index
+
 func _build_midground_vegetation() -> void:
     var mesh := CylinderMesh.new()
     mesh.top_radius = 0.16
@@ -401,35 +401,44 @@ func _midground_allowed(x: float, z: float) -> bool:
 func _rebuild_midground_vegetation() -> void:
     if _midground_vegetation == null:
         return
-    var cx := _cell(_position.x)
-    var cz := _cell(_position.z)
-    var seed := float(cx * 77191 + cz * 44893)
+    var rows: Array = _midground_residency.update(_position, MIDGROUND_VEGETATION_COUNT,
+        1.0, 8.0, MIDGROUND_VEGETATION_OUTER_M, 120.0, 237,
+        _layout.half_m, Callable(self, "_midground_allowed"), MIDGROUND_VEGETATION_INNER_M)
     var placed := 0
-    var attempts := 0
-    while placed < MIDGROUND_VEGETATION_COUNT and attempts < MIDGROUND_VEGETATION_COUNT * 4:
-        var index := attempts
-        attempts += 1
-        var phase := float(index) * 2.39996323 + sin(seed * 0.00021) * 1.1
-        var ratio := sqrt((float(index % MIDGROUND_VEGETATION_COUNT) + 0.5) / float(MIDGROUND_VEGETATION_COUNT))
-        var radius := lerpf(MIDGROUND_VEGETATION_INNER_M, MIDGROUND_VEGETATION_OUTER_M, ratio)
-        radius += sin(seed * 0.00037 + float(index) * 1.91) * 5.5
-        var x := clampf(_position.x + cos(phase) * radius, -_layout.half_m + 8.0, _layout.half_m - 8.0)
-        var z := clampf(_position.z + sin(phase) * radius, -_layout.half_m + 8.0, _layout.half_m - 8.0)
-        if not _midground_allowed(x, z):
-            continue
-        var y := _height(x, z)
-        var scale_noise := 0.5 + 0.5 * sin(seed * 0.00029 + float(index) * 2.37)
-        var scale := 0.55 + 0.65 * scale_noise
-        var basis := Basis(Vector3.UP, phase * 0.61).scaled(
-            Vector3(scale, scale * (0.82 + 0.28 * scale_noise), scale)
-        )
-        _midground_vegetation.multimesh.set_instance_transform(
-            placed, Transform3D(basis, Vector3(x, y + 0.67 * scale, z))
-        )
+    for record in rows:
+        if not record.has("transform"):
+            var p: Vector2 = record["point"]
+            var noise: float = record["noise"]
+            var scale := 0.55 + 0.65 * noise
+            var basis := Basis(Vector3.UP, noise * TAU).scaled(Vector3(scale, scale * (0.82 + 0.28 * noise), scale))
+            record["transform"] = Transform3D(basis, Vector3(p.x, _height(p.x, p.y) + 0.67 * scale, p.y))
+        _midground_vegetation.multimesh.set_instance_transform(placed, record["transform"])
         placed += 1
-
     _midground_vegetation.multimesh.visible_instance_count = placed
+
 func _height(x: float, z: float) -> float:
+    if _layout != null:
+        var cx := _cell(x)
+        var cz := _cell(z)
+        var id := "%d:%d" % [cx, cz]
+        if _tiles.has(id):
+            var tile: Node3D = _tiles[id]
+            var ground := tile.get_child(0)
+            if ground.has_meta("resident_ground_heights"):
+                var heights: PackedFloat32Array = ground.get_meta("resident_ground_heights")
+                var origin: Vector2 = _layout.tile_origin(cx, cz)
+                var step := TILE_M / 8.0
+                var ix := clampi(floori((x - origin.x) / step), 0, 7)
+                var iz := clampi(floori((z - origin.y) / step), 0, 7)
+                var u := clampf((x - origin.x) / step - float(ix), 0.0, 1.0)
+                var v := clampf((z - origin.y) / step - float(iz), 0.0, 1.0)
+                var a := heights[iz * 9 + ix]
+                var b := heights[iz * 9 + ix + 1]
+                var c := heights[(iz + 1) * 9 + ix]
+                if u + v <= 1.0:
+                    return a + u * (b - a) + v * (c - a)
+                var d := heights[(iz + 1) * 9 + ix + 1]
+                return d + (1.0 - u) * (c - d) + (1.0 - v) * (b - d)
     # Use the exact triangles of the 8 m rendered grid for feet and camera.
     var step := TILE_M / 8.0
     var half_m: float = _layout.half_m if _layout != null else 1024.0
@@ -502,6 +511,15 @@ func _terrain(cx: int, cz: int, biome: String) -> MeshInstance3D:
             _vertex(st, x, z + step)
     var ground := MeshInstance3D.new()
     ground.mesh = st.commit()
+    # Keep the actual rendered vertex heights with the resident tile.
+    var heights := PackedFloat32Array()
+    heights.resize(81)
+    var vertices: PackedVector3Array = ground.mesh.surface_get_arrays(0)[Mesh.ARRAY_VERTEX]
+    for vertex in vertices:
+        var ix := clampi(roundi((vertex.x - x0) / step), 0, 8)
+        var iz := clampi(roundi((vertex.z - z0) / step), 0, 8)
+        heights[iz * 9 + ix] = vertex.y
+    ground.set_meta("resident_ground_heights", heights)
     var center := origin + Vector2(TILE_M * 0.5, TILE_M * 0.5)
     var color := _environmental_color(_terrain_color(biome), center.x, center.y)
     ground.material_override = _material(color)
@@ -656,6 +674,11 @@ func _clear_tile_cache() -> void:
 func _rebuild_active_tiles() -> void:
     _clear_tile_cache()
     for id in _tiles.keys().duplicate():
+        var parts: PackedStringArray = str(id).split(":")
+        var bounds := Rect2(_layout.tile_origin(int(parts[0]), int(parts[1])), Vector2.ONE * _layout.tile_size_m)
+        var closest := Vector2(clampf(_position.x, bounds.position.x, bounds.end.x), clampf(_position.z, bounds.position.y, bounds.end.y))
+        if closest.distance_to(Vector2(_position.x, _position.z)) <= LOCAL_STABLE_RADIUS_M:
+            continue
         var stale: Node3D = _tiles[id]
         _tiles.erase(id)
         stale.queue_free()

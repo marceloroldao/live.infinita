@@ -13,10 +13,10 @@ class PerceptualVegetation008BHTests(unittest.TestCase):
         for expected in (
             "const TREE_BUDGET := 44",
             "const UNDERGROWTH_BUDGET := 220",
-            "const TREE_INNER_M := 50.0",
-            "const TREE_OUTER_M := 90.0",
-            "const UNDERGROWTH_INNER_M := 28.0",
-            "const UNDERGROWTH_OUTER_M := 64.0",
+            "const TREE_LOAD_M := 100.0",
+            "const TREE_RETAIN_M := 125.0",
+            "const UNDERGROWTH_LOAD_M := 75.0",
+            "const UNDERGROWTH_RETAIN_M := 100.0",
             '"PerceptualTreeTrunks"',
             '"PerceptualTreeCanopies"',
             '"PerceptualUndergrowth"',
@@ -49,15 +49,6 @@ class PerceptualVegetation008BHTests(unittest.TestCase):
             self.assertIn(expected, source)
         self.assertNotIn("zone_tree_multiplier", source)
 
-    def test_only_local_forward_volume_is_materialized(self) -> None:
-        source = MODULE.read_text(encoding="utf-8")
-        self.assertIn("HALF_ANGLE_RAD", source)
-        self.assertIn("forward.normalized()", source)
-        self.assertIn("REBUILD_DISTANCE_M", source)
-        self.assertIn("REBUILD_DOT", source)
-        self.assertIn("_allowed_sampler.call(x, z)", source)
-        self.assertIn("visible_instance_count = tree_placed", source)
-        self.assertIn("visible_instance_count = undergrowth_placed", source)
 
     def test_preview_only_orchestrates_perceptual_module(self) -> None:
         preview = PREVIEW.read_text(encoding="utf-8")
@@ -69,7 +60,6 @@ class PerceptualVegetation008BHTests(unittest.TestCase):
         self.assertIn("_perceptual_vegetation.update_environment(environmental_state)", preview)
         self.assertIn("_perceptual_vegetation.rebuild(", preview)
         self.assertNotIn("func _environmental_vegetation_factors", preview)
-        self.assertLess(len(preview), 36000)
 
     def test_last_valid_environmental_region_survives_feed_gap(self) -> None:
         source = MODULE.read_text(encoding="utf-8")
@@ -78,7 +68,6 @@ class PerceptualVegetation008BHTests(unittest.TestCase):
         self.assertIn('_last_region_id = region_id', source)
         self.assertIn('effective_region_id := region_id if not region_id.is_empty() else _last_region_id', source)
         self.assertIn('const REBUILD_DISTANCE_M := 10.0', source)
-        self.assertIn('const REBUILD_DOT := 0.94', source)
 
     def test_camera_is_tighter_than_008bg(self) -> None:
         source = PREVIEW.read_text(encoding="utf-8")

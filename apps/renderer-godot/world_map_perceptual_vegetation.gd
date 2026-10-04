@@ -4,13 +4,15 @@ extends RefCounted
 
 const TREE_BUDGET := 44
 const UNDERGROWTH_BUDGET := 220
-const TREE_INNER_M := 50.0
-const TREE_OUTER_M := 90.0
-const UNDERGROWTH_INNER_M := 28.0
-const UNDERGROWTH_OUTER_M := 64.0
-const HALF_ANGLE_RAD := 1.30
+const TREE_LOAD_M := 100.0
+const TREE_RETAIN_M := 125.0
+const UNDERGROWTH_LOAD_M := 75.0
+const UNDERGROWTH_RETAIN_M := 100.0
 const REBUILD_DISTANCE_M := 10.0
-const REBUILD_DOT := 0.94
+
+const Residency = preload("res://nature_local_residency.gd")
+var _tree_residency = Residency.new()
+var _undergrowth_residency = Residency.new()
 
 var _batch_factory: Callable
 var _height_sampler: Callable
@@ -200,22 +202,7 @@ func _rebuild_needed(position: Vector3, forward: Vector3) -> bool:
     ).length()
     if moved >= REBUILD_DISTANCE_M:
         return true
-    var normalized := forward.normalized()
-    return normalized.dot(_last_forward.normalized()) < REBUILD_DOT
-
-func _tree_radius(seed: float, index: int) -> float:
-    var radial_ratio := sqrt(fposmod(float(index) * 0.754877666 + 0.31, 1.0))
-    return (
-        lerpf(TREE_INNER_M, TREE_OUTER_M, radial_ratio)
-        + sin(seed * 0.00017 + float(index) * 1.93) * 3.2
-    )
-
-func _undergrowth_radius(seed: float, index: int) -> float:
-    var radial_ratio := sqrt(fposmod(float(index) * 0.438579021 + 0.11, 1.0))
-    return (
-        lerpf(UNDERGROWTH_INNER_M, UNDERGROWTH_OUTER_M, radial_ratio)
-        + sin(seed * 0.00031 + float(index) * 1.71) * 2.0
-    )
+    return false
 
 func rebuild(
     position: Vector3,
@@ -235,81 +222,36 @@ func rebuild(
     var normalized := forward.normalized()
     if normalized.length_squared() < 0.001:
         normalized = Vector3(0.0, 0.0, -1.0)
-    var heading := atan2(normalized.x, normalized.z)
     var factors := vegetation_factors(effective_region_id)
-    var tree_target := clampi(
-        int(round(float(TREE_BUDGET) * factors.x)),
-        0,
-        TREE_BUDGET
-    )
-    var undergrowth_target := clampi(
-        int(round(float(UNDERGROWTH_BUDGET) * factors.y)),
-        0,
-        UNDERGROWTH_BUDGET
-    )
-    var cx := int(_cell_sampler.call(position.x))
-    var cz := int(_cell_sampler.call(position.z))
-    var seed := float(cx * 104729 + cz * 130363)
-
+    var trees: Array = _tree_residency.update(position, TREE_BUDGET, factors.x, 12.0,
+        TREE_LOAD_M, TREE_RETAIN_M, 11, _half_m, _allowed_sampler)
+    var plants: Array = _undergrowth_residency.update(position, UNDERGROWTH_BUDGET, factors.y, 5.0,
+        UNDERGROWTH_LOAD_M, UNDERGROWTH_RETAIN_M, 37, _half_m, _allowed_sampler)
     var tree_placed := 0
-    var tree_attempt := 0
-    while tree_placed < tree_target and tree_attempt < TREE_BUDGET * 5:
-        var i := tree_attempt
-        tree_attempt += 1
-        var u := fposmod(float(i) * 0.61803398875 + 0.17, 1.0)
-        var angle_offset := lerpf(-HALF_ANGLE_RAD, HALF_ANGLE_RAD, u)
-        var phase := heading + angle_offset
-        var radius := _tree_radius(seed, i)
-        var x := clampf(position.x + sin(phase) * radius, -_half_m + 8.0, _half_m - 8.0)
-        var z := clampf(position.z + cos(phase) * radius, -_half_m + 8.0, _half_m - 8.0)
-        if not bool(_allowed_sampler.call(x, z)):
-            continue
-        var y := float(_height_sampler.call(x, z))
-        var scale_noise := 0.5 + 0.5 * sin(seed * 0.00023 + float(i) * 2.47)
-        var width_noise := 0.5 + 0.5 * sin(seed * 0.00037 + float(i) * 1.37)
-        var height_scale := 0.86 + 0.58 * scale_noise
-        var trunk_width := 0.72 + 0.30 * width_noise
-        var canopy_width := 0.72 + 0.48 * width_noise
-        var yaw := phase * 0.41 + width_noise * 0.7
-        var trunk_basis := Basis(Vector3.UP, yaw).scaled(
-            Vector3(trunk_width, height_scale, trunk_width)
-        )
-        var canopy_basis := Basis(Vector3.UP, yaw + 0.15).scaled(
-            Vector3(canopy_width, height_scale, canopy_width)
-        )
-        _trunks.multimesh.set_instance_transform(
-            tree_placed,
-            Transform3D(trunk_basis, Vector3(x, y + 2.2 * height_scale, z))
-        )
-        _canopies.multimesh.set_instance_transform(
-            tree_placed,
-            Transform3D(canopy_basis, Vector3(x, y + 5.5 * height_scale, z))
-        )
+    for record in trees:
+        if not record.has("trunk"):
+            var p: Vector2 = record["point"]
+            var noise: float = record["noise"]
+            var y := float(_height_sampler.call(p.x, p.y))
+            var height_scale := 0.86 + 0.58 * noise
+            var trunk_width := 0.72 + 0.30 * noise
+            var canopy_width := 0.72 + 0.48 * noise
+            var trunk_basis := Basis(Vector3.UP, noise * TAU).scaled(Vector3(trunk_width, height_scale, trunk_width))
+            var canopy_basis := Basis(Vector3.UP, noise * TAU + 0.15).scaled(Vector3(canopy_width, height_scale, canopy_width))
+            record["trunk"] = Transform3D(trunk_basis, Vector3(p.x, y + 2.2 * height_scale, p.y))
+            record["canopy"] = Transform3D(canopy_basis, Vector3(p.x, y + 5.5 * height_scale, p.y))
+        _trunks.multimesh.set_instance_transform(tree_placed, record["trunk"])
+        _canopies.multimesh.set_instance_transform(tree_placed, record["canopy"])
         tree_placed += 1
-
     var undergrowth_placed := 0
-    var undergrowth_attempt := 0
-    while undergrowth_placed < undergrowth_target and undergrowth_attempt < UNDERGROWTH_BUDGET * 4:
-        var i := undergrowth_attempt
-        undergrowth_attempt += 1
-        var u := fposmod(float(i) * 0.569840291 + 0.43, 1.0)
-        var angle_offset := lerpf(-HALF_ANGLE_RAD, HALF_ANGLE_RAD, u)
-        var phase := heading + angle_offset
-        var radius := _undergrowth_radius(seed, i)
-        var x := clampf(position.x + sin(phase) * radius, -_half_m + 5.0, _half_m - 5.0)
-        var z := clampf(position.z + cos(phase) * radius, -_half_m + 5.0, _half_m - 5.0)
-        if not bool(_allowed_sampler.call(x, z)):
-            continue
-        var y := float(_height_sampler.call(x, z))
-        var scale_noise := 0.5 + 0.5 * sin(seed * 0.00041 + float(i) * 2.21)
-        var scale := 0.45 + 0.80 * scale_noise
-        var basis := Basis(Vector3.UP, phase * 0.73).scaled(
-            Vector3(scale, scale * (0.72 + 0.38 * scale_noise), scale)
-        )
-        _undergrowth.multimesh.set_instance_transform(
-            undergrowth_placed,
-            Transform3D(basis, Vector3(x, y + 0.48 * scale, z))
-        )
+    for record in plants:
+        if not record.has("transform"):
+            var p: Vector2 = record["point"]
+            var noise: float = record["noise"]
+            var scale := 0.45 + 0.80 * noise
+            var basis := Basis(Vector3.UP, noise * TAU).scaled(Vector3(scale, scale * (0.72 + 0.38 * noise), scale))
+            record["transform"] = Transform3D(basis, Vector3(p.x, float(_height_sampler.call(p.x, p.y)) + 0.48 * scale, p.y))
+        _undergrowth.multimesh.set_instance_transform(undergrowth_placed, record["transform"])
         undergrowth_placed += 1
 
     _trunks.multimesh.visible_instance_count = tree_placed

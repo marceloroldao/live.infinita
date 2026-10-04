@@ -15,16 +15,19 @@ const TREE_BUDGET := 14
 const MID_TREE_BUDGET := 18
 const UNDERSTORY_BUDGET := 40
 const ROCK_BUDGET := 18
-const MID_TREE_INNER_M := 30.0
-const MID_TREE_OUTER_M := 58.0
-const INNER_M := 6.5
-const OUTER_M := 31.0
-const HALF_ANGLE_RAD := 1.22
+const TREE_LOAD_M := 60.0
+const TREE_RETAIN_M := 85.0
+const MID_TREE_LOAD_M := 85.0
+const MID_TREE_RETAIN_M := 110.0
+const UNDERSTORY_LOAD_M := 50.0
+const UNDERSTORY_RETAIN_M := 75.0
 const REBUILD_DISTANCE_M := 9.0
-const REBUILD_DOT := 0.94
-const CORRIDOR_LENGTH_M := 28.0
-const CORRIDOR_TREE_ROCK_HALF_WIDTH_M := 3.8
-const CORRIDOR_UNDERSTORY_HALF_WIDTH_M := 1.9
+
+const Residency = preload("res://nature_local_residency.gd")
+var _residencies: Dictionary = {}
+var _asset_batches: Dictionary = {}
+var _counts := Vector3i.ZERO
+var _mid_count := 0
 
 var _root: Node3D
 var _height_sampler: Callable
@@ -289,73 +292,13 @@ func _environment_factors(environment: Dictionary) -> Vector3:
     )
     return Vector3(tree_factor, understory_factor, rock_factor)
 
-func _set_environment_meshes(environment: Dictionary) -> void:
-    if not _vendor_ready:
-        return
-    var tree_asset := _tree_asset(environment)
-    if tree_asset != _current_tree_asset:
-        var tree_mesh := _asset_mesh(tree_asset)
-        if tree_mesh != null:
-            _tree_batch.multimesh.mesh = tree_mesh
-            _current_tree_asset = tree_asset
-    var mid_tree_asset := _mid_tree_asset(environment)
-    if mid_tree_asset != _current_mid_tree_asset:
-        var mid_tree_mesh := _asset_mesh(mid_tree_asset)
-        if mid_tree_mesh != null:
-            _mid_tree_batch.multimesh.mesh = mid_tree_mesh
-            _current_mid_tree_asset = mid_tree_asset
-    var understory_asset := _understory_asset(environment)
-    if understory_asset != _current_understory_asset:
-        var understory_mesh := _asset_mesh(understory_asset)
-        if understory_mesh != null:
-            _understory_batch.multimesh.mesh = understory_mesh
-            _current_understory_asset = understory_asset
-
 func _rebuild_needed(position: Vector3, forward: Vector3) -> bool:
     if _last_forward.length_squared() < 0.001:
         return true
     var moved := Vector2(position.x - _last_origin.x, position.z - _last_origin.z).length()
     if moved >= REBUILD_DISTANCE_M:
         return true
-    var normalized := forward.normalized()
-    return normalized.dot(_last_forward.normalized()) < REBUILD_DOT
-
-func _candidate_position(
-    position: Vector3,
-    heading: float,
-    seed: float,
-    index: int,
-    salt: float,
-    inner_m: float,
-    outer_m: float,
-) -> Vector2:
-    var u := fposmod(float(index) * (0.61803398875 + salt * 0.01) + 0.19 + salt, 1.0)
-    var angle_offset := lerpf(-HALF_ANGLE_RAD, HALF_ANGLE_RAD, u)
-    var phase := heading + angle_offset
-    var ratio := sqrt(fposmod(float(index) * (0.754877666 + salt * 0.013) + 0.27, 1.0))
-    var radius := lerpf(inner_m, outer_m, ratio)
-    radius += sin(seed * 0.00019 + float(index) * (1.71 + salt)) * 1.8
-    return Vector2(
-        clampf(position.x + sin(phase) * radius, -_half_m + 5.0, _half_m - 5.0),
-        clampf(position.z + cos(phase) * radius, -_half_m + 5.0, _half_m - 5.0),
-    )
-
-func _inside_corridor(
-    position: Vector3,
-    forward: Vector3,
-    point: Vector2,
-    half_width_m: float,
-) -> bool:
-    var flat_forward := Vector2(forward.x, forward.z).normalized()
-    if flat_forward.length_squared() < 0.001:
-        flat_forward = Vector2(0.0, -1.0)
-    var right := Vector2(-flat_forward.y, flat_forward.x)
-    var delta := point - Vector2(position.x, position.z)
-    var longitudinal := delta.dot(flat_forward)
-    if longitudinal <= 0.0 or longitudinal > CORRIDOR_LENGTH_M:
-        return false
-    var lateral := absf(delta.dot(right))
-    return lateral < half_width_m
+    return false
 
 func rebuild(
     position: Vector3,
@@ -383,124 +326,17 @@ func rebuild(
         _last_region_id = region_id
     var effective_region := region_id if not region_id.is_empty() else _last_region_id
     var environment := _environment(effective_region)
-    _set_environment_meshes(environment)
     var factors := _environment_factors(environment)
-    var tree_target := clampi(int(round(TREE_BUDGET * factors.x)), 0, TREE_BUDGET)
-    var mid_tree_target := clampi(
-        int(round(MID_TREE_BUDGET * factors.x * 0.92)), 0, MID_TREE_BUDGET
-    )
-    var understory_target := clampi(
-        int(round(UNDERSTORY_BUDGET * factors.y)), 0, UNDERSTORY_BUDGET
-    )
-    var rock_target := clampi(int(round(ROCK_BUDGET * factors.z)), 0, ROCK_BUDGET)
-
+    var tree_count := _stable_layer("tree", _tree_batch, position, TREE_BUDGET, factors.x, 12.0, TREE_LOAD_M, TREE_RETAIN_M, 101, _tree_asset(environment), true)
+    var mid_tree_count := _stable_layer("mid_tree", _mid_tree_batch, position, MID_TREE_BUDGET, factors.x * 0.92, 17.0, MID_TREE_LOAD_M, MID_TREE_RETAIN_M, 123, _mid_tree_asset(environment), true)
+    var understory_count := _stable_layer("plant", _understory_batch, position, UNDERSTORY_BUDGET, factors.y, 7.0, UNDERSTORY_LOAD_M, UNDERSTORY_RETAIN_M, 137, _understory_asset(environment), false)
+    var rock_count := _stable_layer("rock", _rock_batch, position, ROCK_BUDGET, factors.z, 13.0, TREE_LOAD_M, TREE_RETAIN_M, 173, ROCK, false)
+    _counts = Vector3i(tree_count, understory_count, rock_count)
+    _mid_count = mid_tree_count
+    _current_tree_asset = _tree_asset(environment)
+    _current_mid_tree_asset = _mid_tree_asset(environment)
+    _current_understory_asset = _understory_asset(environment)
     var normalized := forward.normalized()
-    if normalized.length_squared() < 0.001:
-        normalized = Vector3(0.0, 0.0, -1.0)
-    var heading := atan2(normalized.x, normalized.z)
-    var cx := int(_cell_sampler.call(position.x))
-    var cz := int(_cell_sampler.call(position.z))
-    var seed := float(cx * 161803 + cz * 104729)
-
-    var tree_count := 0
-    var attempts := 0
-    while tree_count < tree_target and attempts < TREE_BUDGET * 5:
-        var p := _candidate_position(position, heading, seed, attempts, 0.11, 8.5, OUTER_M)
-        attempts += 1
-        if not bool(_allowed_sampler.call(p.x, p.y)):
-            continue
-        if _inside_corridor(
-            position, normalized, p, CORRIDOR_TREE_ROCK_HALF_WIDTH_M
-        ):
-            continue
-        var y := float(_height_sampler.call(p.x, p.y))
-        var noise := 0.5 + 0.5 * sin(seed * 0.00023 + attempts * 2.17)
-        var scale := 0.82 + 0.34 * noise
-        var yaw := heading + noise * 2.7
-        var basis := Basis(Vector3.UP, yaw).scaled(Vector3(scale, scale, scale))
-        _tree_batch.multimesh.set_instance_transform(
-            tree_count, Transform3D(basis, Vector3(p.x, y, p.y))
-        )
-        tree_count += 1
-
-    var mid_tree_count := 0
-    attempts = 0
-    while mid_tree_count < mid_tree_target and attempts < MID_TREE_BUDGET * 5:
-        var p := _candidate_position(
-            position,
-            heading,
-            seed,
-            attempts,
-            0.23,
-            MID_TREE_INNER_M,
-            MID_TREE_OUTER_M
-        )
-        attempts += 1
-        if not bool(_allowed_sampler.call(p.x, p.y)):
-            continue
-        if _inside_corridor(
-            position, normalized, p, CORRIDOR_TREE_ROCK_HALF_WIDTH_M
-        ):
-            continue
-        var y := float(_height_sampler.call(p.x, p.y))
-        var noise := 0.5 + 0.5 * sin(seed * 0.00029 + attempts * 1.97)
-        var scale := 0.62 + 0.30 * noise
-        var yaw := heading + noise * 3.3
-        var basis := Basis(Vector3.UP, yaw).scaled(Vector3(scale, scale, scale))
-        _mid_tree_batch.multimesh.set_instance_transform(
-            mid_tree_count, Transform3D(basis, Vector3(p.x, y, p.y))
-        )
-        mid_tree_count += 1
-
-    var understory_count := 0
-    attempts = 0
-    while understory_count < understory_target and attempts < UNDERSTORY_BUDGET * 4:
-        var p := _candidate_position(position, heading, seed, attempts, 0.37, INNER_M, 24.0)
-        attempts += 1
-        if not bool(_allowed_sampler.call(p.x, p.y)):
-            continue
-        if _inside_corridor(
-            position, normalized, p, CORRIDOR_UNDERSTORY_HALF_WIDTH_M
-        ):
-            continue
-        var y := float(_height_sampler.call(p.x, p.y))
-        var noise := 0.5 + 0.5 * sin(seed * 0.00031 + attempts * 1.73)
-        var scale := 0.55 + 0.42 * noise
-        var basis := Basis(Vector3.UP, noise * 4.1).scaled(Vector3(scale, scale, scale))
-        _understory_batch.multimesh.set_instance_transform(
-            understory_count, Transform3D(basis, Vector3(p.x, y, p.y))
-        )
-        understory_count += 1
-
-    var rock_count := 0
-    attempts = 0
-    while rock_count < rock_target and attempts < ROCK_BUDGET * 4:
-        var p := _candidate_position(position, heading, seed, attempts, 0.73, INNER_M, 27.0)
-        attempts += 1
-        if not bool(_allowed_sampler.call(p.x, p.y)):
-            continue
-        if _inside_corridor(
-            position, normalized, p, CORRIDOR_TREE_ROCK_HALF_WIDTH_M
-        ):
-            continue
-        var y := float(_height_sampler.call(p.x, p.y))
-        var noise := 0.5 + 0.5 * sin(seed * 0.00041 + attempts * 2.43)
-        var scale := 0.48 + 0.48 * noise
-        var basis := Basis(Vector3.UP, noise * 5.3).scaled(
-            Vector3(scale, 0.65 + 0.45 * scale, scale)
-        )
-        _rock_batch.multimesh.set_instance_transform(
-            rock_count, Transform3D(basis, Vector3(p.x, y, p.y))
-        )
-        rock_count += 1
-
-    _tree_batch.multimesh.visible_instance_count = tree_count
-    _mid_tree_batch.multimesh.visible_instance_count = mid_tree_count
-    _understory_batch.multimesh.visible_instance_count = understory_count
-    _rock_batch.multimesh.visible_instance_count = rock_count
-    preload("res://nature_batch_collision.gd").sync(_tree_batch, true)
-    preload("res://nature_batch_collision.gd").sync(_mid_tree_batch, true)
-    preload("res://nature_batch_collision.gd").sync(_rock_batch)
     _last_origin = position
     _last_forward = normalized
     var signature := "%s|%d|%d|%d|%d|%s|%s|%s" % [
@@ -528,12 +364,55 @@ func rebuild(
         )
         _last_logged_signature = signature
 
+func _stable_layer(
+    layer: String, primary: MultiMeshInstance3D, position: Vector3, budget: int,
+    density: float, spacing: float, load_radius: float, retain_radius: float,
+    salt: int, asset: String, tree: bool,
+) -> int:
+    if not _residencies.has(layer):
+        _residencies[layer] = Residency.new()
+        _asset_batches[layer] = {}
+    var residency = _residencies[layer]
+    var rows: Array = residency.update(position, budget, density, spacing,
+        load_radius, retain_radius, salt, _half_m, _allowed_sampler)
+    var groups: Dictionary = {}
+    for row in rows:
+        if not row.has("asset"):
+            row["asset"] = asset
+            var p: Vector2 = row["point"]
+            var noise: float = row["noise"]
+            var scale := 0.82 + 0.34 * noise if tree else 0.55 + 0.42 * noise
+            if layer == "mid_tree":
+                scale = 0.62 + 0.30 * noise
+            if layer == "rock":
+                scale = 0.48 + 0.48 * noise
+            var basis := Basis(Vector3.UP, noise * TAU).scaled(Vector3.ONE * scale)
+            row["transform"] = Transform3D(basis, Vector3(p.x, float(_height_sampler.call(p.x, p.y)), p.y))
+        var identity: String = row["asset"]
+        if not groups.has(identity):
+            groups[identity] = []
+        groups[identity].append(row)
+    var batches: Dictionary = _asset_batches[layer]
+    for identity in groups:
+        if not batches.has(identity):
+            var mesh := _asset_mesh(identity)
+            if mesh == null:
+                continue
+            var batch: MultiMeshInstance3D = primary if batches.is_empty() else _batch(layer + "Variant", mesh, budget)
+            batch.multimesh.mesh = mesh
+            batches[identity] = batch
+    for identity in batches:
+        var batch: MultiMeshInstance3D = batches[identity]
+        var items: Array = groups.get(identity, [])
+        for i in range(items.size()):
+            batch.multimesh.set_instance_transform(i, items[i]["transform"])
+        batch.multimesh.visible_instance_count = items.size()
+        if tree or layer == "rock":
+            preload("res://nature_batch_collision.gd").sync(batch, tree)
+    return rows.size()
+
 func visible_counts() -> Vector3i:
-    return Vector3i(
-        0 if _tree_batch == null else _tree_batch.multimesh.visible_instance_count,
-        0 if _understory_batch == null else _understory_batch.multimesh.visible_instance_count,
-        0 if _rock_batch == null else _rock_batch.multimesh.visible_instance_count,
-    )
+    return _counts
 
 func mid_tree_visible_count() -> int:
-    return 0 if _mid_tree_batch == null else _mid_tree_batch.multimesh.visible_instance_count
+    return _mid_count
