@@ -6,14 +6,18 @@ DST=/opt/live.infinita/apps/renderer-godot
 WEB=/var/www/live-infinita-godot/world-map-preview
 SERVICE=live-infinita-renderer.service
 cd "$REPO"
-test -z "$(git status --porcelain)"
-SHA="$(git rev-parse --short HEAD)"
 LOG=/home/etbra/008bz-rollout.log
 touch "$LOG"
 chown etbra:etbra "$LOG"
 chmod 0644 "$LOG"
 exec > >(tee -a "$LOG") 2>&1
+SHA="$(git rev-parse --short HEAD)"
 echo "008BZ_START source=$SHA"
+if [ -n "$(git status --porcelain)" ]; then
+  echo "008BZ_ABORT: existem alterações locais; instalação não iniciada." >&2
+  git status --short
+  exit 3
+fi
 BACKUP="/opt/live.infinita/.rollouts/008bz-$(date -u +%Y%m%dT%H%M%SZ)"
 mkdir -p "$BACKUP"
 FILES=(nov_character_visual.gd world_map_preview.gd)
