@@ -1,6 +1,10 @@
 """Ingest chronological native navigation evidence; no authoritative world mutation."""
 from __future__ import annotations
-from hashlib import blake2b
+from hashlib import blake2b, sha256
+from collections import Counter
+import gzip
+import os
+import tempfile
 import json
 import math
 from pathlib import Path
@@ -11,7 +15,7 @@ from nov_navigation_memory_sync import write_checkpoint, cell
 SOURCE = Path("/opt/live.infinita/.local/share/godot/app_userdata/Live Infinita Showcase/nov-navigation-episodes-008ch.json")
 CHECKPOINT = Path("/var/lib/live-infinita/memoria-local/navigation-episodes.checkpoint.json")
 SCHEMA = "live-infinita-nov-navigation-episodes/v1"
-CP_SCHEMA = "live-infinita-nov-navigation-episodes-checkpoint/v1"
+CP_SCHEMA = "live-infinita-nov-navigation-episodes-checkpoint/v2"
 MAX_BYTES = 2_000_000
 OUTCOMES = {"blocked", "step_reached", "goal_reached", "interrupted", "no_passage_sensed"}
 
@@ -143,11 +147,17 @@ def payload(row):
     actions = row["actions"]
     world_ids = list(dict.fromkeys(a["context_start"]["world_id"] for a in actions))
     # Episodes may span a world switch. Keep each action's original world identity.
-    trail = [cell(actions[0]["start"])] + [cell(a["end"]) for a in actions]
+    # Keep a bounded structural path; the archive retains every candidate and action.
+    sampled = actions[::max(1, math.ceil(len(actions) / 15))]
+    trail = [cell(actions[0]["start"])] + [cell(a["end"]) for a in sampled]
+    if sampled[-1] is not actions[-1]:
+        trail.append(cell(actions[-1]["end"]))
+    archive = {"relative_path": "navigation-episodes/" + row["episode_id"].replace(":", "-") + ".json.gz",
+               "sha256": sha256(_canonical(row)).hexdigest(), "encoding": "gzip-json-v1", "action_count": len(actions)}
     event = {
         "version": 1, "source_id": "live.infinita:nov:navigation-episode:" + row["session_id"],
         "sequence": row["sequence"], "byte_offset": 0, "byte_length": len(_canonical(row)),
-        "trail": trail, "relation_ids": [int.from_bytes(blake2b(a["outcome"].encode(), digest_size=8).digest(), "big") for a in actions],
+        "trail": trail, "relation_ids": [int.from_bytes(blake2b(a["outcome"].encode(), digest_size=8).digest(), "big") for a in [next(a for a in actions if a["outcome"] == kind) for kind in sorted({a["outcome"] for a in actions})]],
         "signature": blake2b(_canonical(row), digest_size=8).hexdigest(), "resolution": 1,
     }
     return {"event": event, "provenance": {
@@ -155,8 +165,47 @@ def payload(row):
         "source_ledger": SOURCE.name, "entity_id": "nov", "world_ids": world_ids,
         "world_id_role": "recorded_world_feed_context", "authority": "observed-renderer-physical-results",
         "world_write_authority": False, "selection_authority": False, "chronological_episode": True,
-        "coordinate_space": "godot-renderer-xz-metres", "episode": row,
+        "coordinate_space": "godot-renderer-xz-metres", "episode_id": row["episode_id"],
+        "episode_archive": archive, "outcomes": dict(Counter(a["outcome"] for a in actions)),
+        "decision_sources": dict(Counter(a["decision_source"] for a in actions)),
+        "memory_observation_ids": list(dict.fromkeys(a["memory_observation_id"] for a in actions if a["memory_observation_id"]))[:16],
+        "structural_path_sampling": "at_most_17_cells_full_path_in_archive",
     }}
+
+def archive_episode(row, root):
+    info = payload(row)["provenance"]["episode_archive"]
+    directory = root / "navigation-episodes"
+    if directory.is_symlink():
+        fail()
+    directory.mkdir(parents=True, exist_ok=True, mode=0o700)
+    path = root / info["relative_path"]
+    if path.is_symlink():
+        fail()
+    raw = _canonical(row)
+    if path.exists():
+        if path.stat().st_size > MAX_BYTES:
+            fail()
+        with gzip.open(path, "rb") as f:
+            existing = f.read(MAX_BYTES + 1)
+        if existing != raw:
+            raise ValueError("episode_archive_identity_changed")
+        return info
+    fd, name = tempfile.mkstemp(prefix=path.name + ".", dir=directory)
+    try:
+        with os.fdopen(fd, "wb") as f:
+            f.write(gzip.compress(raw, mtime=0))
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(name, path)
+        fd = os.open(directory, os.O_RDONLY)
+        try:
+            os.fsync(fd)
+        finally:
+            os.close(fd)
+    finally:
+        if os.path.exists(name):
+            os.unlink(name)
+    return info
 
 def sync_once(source=SOURCE, checkpoint=CHECKPOINT, send=_post_local, limit=2):
     if type(limit) is not int or not 1 <= limit <= 2:
@@ -171,6 +220,8 @@ def sync_once(source=SOURCE, checkpoint=CHECKPOINT, send=_post_local, limit=2):
         if checkpoint.stat().st_size > MAX_BYTES:
             fail()
         state = json.loads(checkpoint.read_text())
+        if isinstance(state, dict) and state.get("schema") == "live-infinita-nov-navigation-episodes-checkpoint/v1":
+            state = {"schema": CP_SCHEMA, "seen": {}, "confirmed": 0, "legacy_full_episode_confirmed": state.get("confirmed", 0)}
         if not isinstance(state, dict) or state.get("schema") != CP_SCHEMA or not isinstance(state.get("seen"), dict):
             fail()
         if len(state["seen"]) > 1024 or type(state.get("confirmed")) is not int or state["confirmed"] < 0:
@@ -187,6 +238,8 @@ def sync_once(source=SOURCE, checkpoint=CHECKPOINT, send=_post_local, limit=2):
             if existing != expected:
                 raise ValueError("episode_identity_changed")
             continue
+        # Preserve full evidence durably before acknowledging its compact memory address.
+        archive_episode(row, checkpoint.parent)
         receipt = send(observation)
         _validate_ack(receipt, observation)
         if receipt["stored"] == receipt["duplicate"]:

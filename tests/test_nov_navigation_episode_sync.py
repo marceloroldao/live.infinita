@@ -1,4 +1,6 @@
 import copy
+import gzip
+from hashlib import sha256
 import json
 from pathlib import Path
 import tempfile
@@ -36,7 +38,8 @@ class EpisodeTests(unittest.TestCase):
         self.source.write_text(json.dumps({"schema":SCHEMA,"episodes":rows,"dropped_episodes":0}))
     def test_context_and_causal_evidence_preserved(self):
         row=validate_episode(episode()); value=payload(row)
-        self.assertEqual(value["provenance"]["episode"],row)
+        self.assertEqual(value["provenance"]["episode_archive"]["sha256"],sha256(__import__("nov_spatial_memory_sync")._canonical(row)).hexdigest())
+        self.assertEqual(value["provenance"]["decision_sources"],{"memoria.ia":1})
         self.assertFalse(value["provenance"]["world_write_authority"])
         self.assertEqual(value["provenance"]["world_ids"],["fixture"])
     def test_idempotent_restart_and_partial_ack(self):
@@ -91,6 +94,18 @@ class EpisodeTests(unittest.TestCase):
     def test_source_retention_disclosed_and_bounded(self):
         self.write([episode(n+1) for n in range(17)])
         with self.assertRaises(ValueError):sync_once(self.source,self.checkpoint,receipt)
+    def test_full_episode_archived_before_post_and_reused(self):
+        def send(value):
+            p=self.root/value["provenance"]["episode_archive"]["relative_path"]
+            self.assertEqual(json.loads(gzip.decompress(p.read_bytes())),episode())
+            return receipt(value)
+        sync_once(self.source,self.checkpoint,send)
+        self.assertEqual(sync_once(self.source,self.checkpoint,send)["acked"],0)
+    def test_compact_payload_does_not_repeat_full_perceptions(self):
+        row=episode(); row["actions"]=[copy.deepcopy(row["actions"][0]) for _ in range(128)]
+        value=payload(row)
+        self.assertLess(len(json.dumps(value)),4000)
+        self.assertNotIn("episode",value["provenance"])
     def test_incomplete_source_never_posts(self):
         self.source.write_text('{"schema":')
         with self.assertRaises(ValueError):sync_once(self.source,self.checkpoint,receipt)

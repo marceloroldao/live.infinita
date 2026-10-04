@@ -106,3 +106,36 @@ de cada handshake, incluindo os peers recriados em reconexões. O limite
 continua finito. O teste de episódios verifica a capacidade inicial e de
 reconexão. A auditoria isolada confirmou conectado, contextos reais de NOV
 e sequências oficiais recebidas. Reaplicar o instalador 008CH publica a correção.
+
+## Correção de volume da ingestão
+
+A sessão nativa corrigida começou a gravar ações reais, mas o primeiro envio
+de um episódio detalhado excedeu o prazo de 30 s da API. Pedidos posteriores
+também passaram a expirar. Ainda não havia ACK confirmado dos episódios.
+A camada de persistência da Memoria decompõe o envelope completo; repetir
+todos os candidatos e contextos nessa entrada amplia muito esse trabalho.
+
+A ponte agora salva primeiro a experiência completa em arquivo gzip imutável
+no diretório privado memoria-local/navigation-episodes. Faz fsync e verifica
+conteúdo em reenvios. A observação estrutural guarda hash SHA-256, caminho
+relativo, contagens de resultados e origens da decisão, IDs de memória usados
+e uma trajetória amostrada com no máximo 17 células. O episódio completo
+não é repetido dentro do payload estrutural. A referência só é confirmada
+no checkpoint depois do ACK durável da API. Os arquivos confirmados não
+participam da remoção da janela do renderer. Sua retenção ainda não tem
+política automática; acompanhar crescimento do disco é necessário.
+
+Checkpoint v2 distingue essas confirmações das antigas entradas completas.
+Uma migração conserva legacy_full_episode_confirmed e reingere referências
+compactas; não apaga observações antigas.
+
+Aplicação apenas da correção de ingestão:
+
+    sudo bash /home/etbra/live.infinita/deploy/apply-navigation-episode-ingest-fix-008ch-root.sh
+
+Interrompe o timer e o cliente de ingestão, reinicia a API local para liberar
+pedidos anteriores, instala a ponte e exige ACK de um episódio e arquivo
+durável antes de exibir 008CH_INGEST_OK. Não altera o mundo ou reinicia Godot.
+33 testes Python e integração isolada da API real: episódio de 128 ações,
+payload compacto, duplicação idempotente e recuperação após reabrir o banco.
+Até a aplicação e observação do ACK em produção, não afirmar ingestão resolvida.
