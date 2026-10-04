@@ -125,6 +125,8 @@ func _ready() -> void:
     _live_visual = LiveVisual.new(self, _features, _map)
     _cognitive_terrain = CognitiveTerrain.new(self)
     _local_motion = LocalMotion.new(Callable(_features, "walk_height"), _layout.half_m, Callable(_cognitive_terrain, "surface_at"))
+    if _live_feed != null and _live_feed.has_signal("navigation_context_received"):
+        _live_feed.navigation_context_received.connect(Callable(_local_motion._episodes, "set_context"))
     var navigation_recall = preload("res://nov_navigation_recall.gd").new()
     navigation_recall.name = "NavigationRecall"
     navigation_recall.snapshot_ready.connect(Callable(_local_motion._experience, "apply_recall"))
@@ -855,6 +857,7 @@ func _animate_nov_movement(previous: Vector3, delta: float) -> void:
     visual.call("set_motion_velocity", velocity, heading)
 
 func _advance_live_walk(delta: float) -> void:
+    _local_motion._episodes.enabled = not OS.has_feature("web") and not OS.get_cmdline_user_args().has("--offline-tour")
     var dt := clampf(delta, 0.0, 0.1)
     var previous := _position
     var current_flat := Vector2(_position.x, _position.z)
@@ -908,6 +911,8 @@ func _process(delta: float) -> void:
         _live_authoritative = false
         _live_region_id = ""
         _live_visual.clear_markers()
+    _local_motion._episodes.enabled = false
+    _local_motion._episodes.active = {}
     var input := Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
     var old_cell := Vector2i(_cell(_position.x), _cell(_position.z))
     var target := _waypoint(_route[_leg])

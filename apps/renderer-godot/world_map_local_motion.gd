@@ -8,6 +8,7 @@ const BODY_CENTER_Y := 0.9
 var _experience = preload("res://nov_navigation_experience.gd").new()
 var _traversability: RefCounted
 var _inference_log_at := 0
+var _episodes = preload("res://nov_navigation_episodes.gd").new()
 
 func _init(walk_height: Callable, half_m: float = 512.0, dynamic_surface: Callable = Callable()) -> void:
     _traversability = Traversability.new(walk_height, half_m, dynamic_surface)
@@ -71,6 +72,8 @@ func advance(
             _experience.blocked()
         policy["reached"] = false
         body.velocity = Vector3.ZERO
+        if auto_route and not manual:
+            _episodes.observe(_experience.decision_serial, current, route_target, _experience.pending, _experience.decision_evidence, policy)
         return policy
 
     var target: Vector3 = policy.get("position", current)
@@ -96,6 +99,8 @@ func advance(
         and not manual
         and Vector2(resolved.x, resolved.z).distance_to(Vector2(route_target.x, route_target.z)) < 0.1
     )
+    if auto_route and not manual:
+        _episodes.observe(_experience.decision_serial, current, route_target, _experience.pending, _experience.decision_evidence, policy)
     return policy
 
 func _sense_ahead(current: Vector3, point: Vector2, space_state: PhysicsDirectSpaceState3D, goal: Vector2) -> Dictionary:

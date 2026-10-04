@@ -2,6 +2,8 @@ extends Node
 
 signal world_slice_received(observer: Dictionary, current_region_id: String, hot_entities: Array, warm_entities: Array, region_descriptors: Array, sequence: int, cognitive_terrain: Dictionary, environmental_state: Dictionary)
 
+signal navigation_context_received(context: Dictionary)
+
 signal program_state_received(world: Dictionary)
 signal audience_event_received(event: Dictionary)
 
@@ -102,6 +104,13 @@ func _accept_packet(raw: String) -> void:
     var environmental_state = delivery.get("environmental_state", {})
     if typeof(environmental_state) != TYPE_DICTIONARY:
         environmental_state = {}
+    var observer_position = observer.get("position", observer)
+    navigation_context_received.emit({
+        "world_id": str(world.get("world_id", "")), "world_sequence": int(world.get("sequence", -1)),
+        "observer_entity_id": str(delivery.get("observer_entity_id", "")),
+        "runtime_position": Dictionary(observer_position).duplicate(true) if typeof(observer_position) == TYPE_DICTIONARY else {},
+        "region_id": str(interest.get("current_region_id", "")),
+    })
     world_slice_received.emit(
         Dictionary(observer).duplicate(true),
         str(interest.get("current_region_id", "")),

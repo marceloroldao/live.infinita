@@ -21,6 +21,8 @@ var anticipated_avoidances := 0
 var last_decision_source := "local-experience"
 var last_observation_id := ""
 var _probe_phase := 0
+var decision_serial := 0
+var decision_evidence: Dictionary = {}
 
 func _init(path: String = "user://nov-navigation-008cd.cfg") -> void:
     storage = path
@@ -57,6 +59,8 @@ func target(current: Vector2, goal: Vector2, probe: Callable = Callable()) -> Ve
         last_goal = goal
     if active:
         return pending
+    decision_serial += 1
+    decision_evidence = {}
     source = current
     if trace.is_empty():
         trace.append(current)
@@ -175,6 +179,9 @@ func _anticipated_target(current: Vector2, goal: Vector2, probe: Callable) -> Ve
         var candidate: Dictionary = candidates[i]
         var point: Vector2 = candidate["point"]
         var sensed: Dictionary = probe.call(point)
+        candidate["allowed"] = bool(sensed.get("allowed", false))
+        candidate["reason"] = str(sensed.get("reason", ""))
+        candidate["clear_ahead"] = bool(sensed.get("clear_ahead", false))
         if i == 0:
             direct_clear = bool(sensed.get("clear_ahead", false))
         if not bool(sensed.get("allowed", false)):
@@ -213,12 +220,22 @@ func _anticipated_target(current: Vector2, goal: Vector2, probe: Callable) -> Ve
         if score < baseline_best:
             baseline_best = score
             baseline = candidate
+    var sensed_rows: Array = []
+    for candidate in candidates:
+        var point: Vector2 = candidate["point"]
+        sensed_rows.append({"point": [point.x, point.y], "allowed": candidate.get("allowed", false), "clear_ahead": candidate.get("clear_ahead", false), "reason": candidate.get("reason", "")})
+    decision_evidence = {"lookahead_m": 3.0, "candidates": sensed_rows}
+    if not baseline.is_empty():
+        var base_point: Vector2 = baseline["point"]
+        decision_evidence["without_memoria"] = [base_point.x, base_point.y]
     if chosen.is_empty():
         # Continue sensing other headings; no speculative failure becomes experience.
         _probe_phase = (_probe_phase + 11) % 45
         recovery = true
         active = false
         last_decision_source = "perception-no-passage"
+        last_observation_id = ""
+        pending = current
         return current
     pending = chosen["point"]
     last_decision_source = str(chosen["source"])

@@ -211,6 +211,8 @@ def main() -> None:
         if not args.preview:
             from nov_navigation_recall_export import export_once
             result["recall"] = export_once()
+            from nov_navigation_episode_sync import sync_once as sync_episodes
+            result["episodes"] = sync_episodes()
     except (OSError,ValueError,RuntimeError) as exc:
         raise SystemExit(f"NAVIGATION_MEMORY_SYNC_BLOCKED {type(exc).__name__}: {exc}") from exc
     print("NAVIGATION_MEMORY_SYNC_OK "+json.dumps(result,sort_keys=True))
