@@ -1,0 +1,184 @@
+{
+  "schema": "live-infinita-live-navigation-audit/v1",
+  "scope": "observed_live_native_episode_window",
+  "generated_at_unix": 1791142955.1823652,
+  "source_snapshot_sha256": "9e79a9f82f649f31f5dda3986e7d35d388ddce1b24c03dd0c232484a5240a4f7",
+  "world_write_authority": false,
+  "production_memory_written": false,
+  "episode_ids": [
+    "1e57c25d487c072a126b01e2441e19b4:44",
+    "1e57c25d487c072a126b01e2441e19b4:45",
+    "1e57c25d487c072a126b01e2441e19b4:46",
+    "1e57c25d487c072a126b01e2441e19b4:47",
+    "1e57c25d487c072a126b01e2441e19b4:48",
+    "1e57c25d487c072a126b01e2441e19b4:49",
+    "1e57c25d487c072a126b01e2441e19b4:50",
+    "1e57c25d487c072a126b01e2441e19b4:51"
+  ],
+  "source_retention_dropped": 258,
+  "duplicate_actions_ignored": 0,
+  "window_started_at_unix": 1791142726.2615,
+  "window_ended_at_unix": 1791142949.36381,
+  "world_ids": [
+    "nov-live-autonomous-001"
+  ],
+  "all": {
+    "actions": 813,
+    "completed_steps": 758,
+    "goals_reached": 0,
+    "collisions": 0,
+    "outcomes": {
+      "step_reached": 758,
+      "interrupted": 55
+    },
+    "interruption_reasons": {
+      "new_decision": 55
+    },
+    "observed_distance_m": 798.7465,
+    "recorded_action_duration_seconds": 128.956
+  },
+  "decision_sources": {
+    "perception": 770,
+    "working-memory": 22,
+    "perception-working-memory-agreement": 21
+  },
+  "verified_causal_ram": {
+    "actions": 22,
+    "completed_steps": 21,
+    "goals_reached": 0,
+    "collisions": 0,
+    "outcomes": {
+      "step_reached": 21,
+      "interrupted": 1
+    },
+    "interruption_reasons": {
+      "new_decision": 1
+    },
+    "observed_distance_m": 23.2934,
+    "recorded_action_duration_seconds": 1.634
+  },
+  "verified_causal_memoria": {
+    "actions": 0,
+    "completed_steps": 0,
+    "goals_reached": 0,
+    "collisions": 0,
+    "outcomes": {},
+    "interruption_reasons": {},
+    "observed_distance_m": 0,
+    "recorded_action_duration_seconds": 0.0
+  },
+  "causal_claims_without_distinct_baseline": {
+    "ram": 0,
+    "memoria": 0
+  },
+  "repeated_ram_addresses": [
+    {
+      "address": "-234,-32|44,-26",
+      "causal_actions": 2
+    },
+    {
+      "address": "-144,-44|44,-24",
+      "causal_actions": 2
+    }
+  ],
+  "examples": [
+    {
+      "source": "working-memory",
+      "decision_serial": 4898,
+      "outcome": "step_reached",
+      "start": [
+        43.5512199401855,
+        -23.3827495574951
+      ],
+      "selected": [
+        43.9174423217773,
+        -24.0028266906738
+      ],
+      "baseline": [
+        43.5512199401855,
+        -24.3827495574951
+      ],
+      "observation_id": ""
+    },
+    {
+      "source": "working-memory",
+      "decision_serial": 4902,
+      "outcome": "step_reached",
+      "start": [
+        44.3224945068359,
+        -26.4078807830811
+      ],
+      "selected": [
+        43.6922149658203,
+        -25.1918144226074
+      ],
+      "baseline": [
+        43.6153869628906,
+        -27.1149883270264
+      ],
+      "observation_id": ""
+    },
+    {
+      "source": "working-memory",
+      "decision_serial": 4903,
+      "outcome": "step_reached",
+      "start": [
+        43.6922149658203,
+        -25.1918144226074
+      ],
+      "selected": [
+        43.6922149658203,
+        -24.1918144226074
+      ],
+      "baseline": [
+        43.6922149658203,
+        -26.1918144226074
+      ],
+      "observation_id": ""
+    },
+    {
+      "source": "working-memory",
+      "decision_serial": 4947,
+      "outcome": "step_reached",
+      "start": [
+        43.985107421875,
+        -23.5232391357422
+      ],
+      "selected": [
+        43.9174423217773,
+        -24.8310050964355
+      ],
+      "baseline": [
+        43.985107421875,
+        -24.5232391357422
+      ],
+      "observation_id": ""
+    },
+    {
+      "source": "working-memory",
+      "decision_serial": 4951,
+      "outcome": "step_reached",
+      "start": [
+        44.3364677429199,
+        -26.411979675293
+      ],
+      "selected": [
+        44.8139305114746,
+        -25.1269645690918
+      ],
+      "baseline": [
+        43.6293601989746,
+        -27.1190872192383
+      ],
+      "observation_id": ""
+    }
+  ],
+  "controlled_live_gain_measured": false,
+  "limitations": [
+    "Retention window is incomplete; absence here does not prove absence in the entire run.",
+    "Completed steps do not prove completed routes or shorter routes.",
+    "Baseline records an alternative choice; its physical outcome was not executed.",
+    "Distances and durations describe different observed situations and are not a controlled comparison.",
+    "Repeated quantized addresses do not guarantee identical terrain, start, goal or conditions."
+  ]
+}
