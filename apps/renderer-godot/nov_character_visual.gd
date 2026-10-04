@@ -12,6 +12,11 @@ var _catalog: Dictionary = {}
 var _body: Node3D
 var _player: AnimationPlayer
 var _visual_heading := 0.0
+var _motion_speed := 0.0
+var _walk_blend := 0.0
+var _gait_phase := 0.0
+var _idle_time := 0.0
+var _rest_positions: Dictionary = {}
 
 func _ready() -> void:
     _load_body()
@@ -151,7 +156,6 @@ func apply_visual_intent(action: String, heading_radians: float = 0.0) -> void:
         action = "idle"
     desired_action = action
     _visual_heading = heading_radians
-    rotation.y = _visual_heading
     _apply_action()
 
 func _apply_action() -> void:
@@ -174,3 +178,43 @@ func visual_status() -> Dictionary:
         "action": desired_action,
         "writes_world_state": false,
     }
+
+func set_motion_velocity(velocity: Vector3, relative_heading: float = 0.0) -> void:
+    _motion_speed = Vector2(velocity.x, velocity.z).length()
+    apply_visual_intent("walk" if _motion_speed > 0.08 else "idle", relative_heading)
+    if _player != null and rig_motion_ready:
+        _player.speed_scale = clampf(_motion_speed / 3.0, 0.45, 1.8) if desired_action == "walk" else 1.0
+
+func _process(delta: float) -> void:
+    var dt := clampf(delta, 0.0, 0.1)
+    _idle_time += dt
+    rotation.y = lerp_angle(rotation.y, _visual_heading, 1.0 - exp(-dt * 8.0))
+    var moving := desired_action in ["walk", "run"]
+    var speed := _motion_speed if _motion_speed > 0.0 else (3.0 if moving else 0.0)
+    _walk_blend = move_toward(_walk_blend, clampf(speed / 3.0, 0.0, 1.0), dt * 5.0)
+    # Phase follows distance traveled; stopped feet settle instead of skating.
+    if moving:
+        _gait_phase = fmod(_gait_phase + dt * speed * TAU / 2.4, TAU)
+    if model_loaded:
+        return
+    var stride := sin(_gait_phase) * _walk_blend
+    for part_name in ["ArmL", "ArmR", "LegL", "LegR", "Torso", "Head", "Hair", "PrimitiveWrap"]:
+        var part := get_node_or_null(part_name) as Node3D
+        if part == null:
+            continue
+        if not _rest_positions.has(part_name):
+            _rest_positions[part_name] = part.position
+        var rest: Vector3 = _rest_positions[part_name]
+        var side := -1.0 if part_name.ends_with("L") else 1.0
+        part.position = rest
+        if part_name.begins_with("Leg"):
+            part.rotation.x = stride * side * 0.48
+            part.position.z += stride * side * 0.08
+            part.position.y += maxf(0.0, stride * side) * 0.06
+        elif part_name.begins_with("Arm"):
+            part.rotation.x = -stride * side * 0.38
+        else:
+            var breath := sin(_idle_time * 1.8) * 0.008 * (1.0 - _walk_blend)
+            part.position.y += breath + absf(stride) * 0.018
+            if part_name == "Torso":
+                part.rotation.z = stride * 0.025

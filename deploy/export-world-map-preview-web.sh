@@ -100,6 +100,19 @@ grep -q 'World-map traversal smoke: 0 failures' "$SMOKE_LOG" || {
   exit 7
 }
 
+echo "[world-map-preview] Validando caminhada e câmera de NOV."
+for extra_smoke in godot_nov_locomotion_008bz_smoke.gd godot_nov_grounded_presentation_smoke.gd; do
+  EXTRA_LOG="$TEMP_ROOT/$extra_smoke.log"
+  if ! GODOT_SILENCE_ROOT_WARNING=1 "$GODOT_BIN" --headless --audio-driver Dummy --path "$WORK_PROJECT" --script "$SOURCE_DIR/tests/$extra_smoke" -- --offline-tour >"$EXTRA_LOG" 2>&1; then
+    cat "$EXTRA_LOG" >&2
+    exit 7
+  fi
+  if grep -Eiq 'SCRIPT ERROR:|Parse Error:|Failed to load script|^ERROR:' "$EXTRA_LOG"; then
+    cat "$EXTRA_LOG" >&2
+    exit 7
+  fi
+done
+
 echo "[world-map-preview] Exportando Web em diretório temporário."
 set +e
 GODOT_SILENCE_ROOT_WARNING=1 "$GODOT_BIN" --headless --path "$WORK_PROJECT" --export-release "Web" "$BUILD_DIR/index.html" >"$EXPORT_LOG" 2>&1
@@ -129,6 +142,8 @@ cat >"$BUILD_DIR/build.json" <<EOF
   "active_sector_cap": 9,
   "traversability": "local-physics-read-only",
   "touch_controls": true,
+  "nov_smooth_locomotion": true,
+  "nov_procedural_gait": true,
   "cognitive_visual_inertia": true,
   "visual_refresh_hint_seconds": 120,
   "ecological_continuous_transitions": true,

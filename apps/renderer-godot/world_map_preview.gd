@@ -32,7 +32,7 @@ const CAMERA_LOOK_HEIGHT_M := 1.35
 const CAMERA_LOOK_AHEAD_M := 11.0
 const CAMERA_SHOULDER_M := 0.95
 const CAMERA_MIN_GROUND_CLEARANCE_M := 1.9
-const CAMERA_HEADING_MIN_STEP_M := 0.35
+const CAMERA_HEADING_MIN_STEP_M := 0.01
 const CAMERA_HEADING_BLEND := 0.34
 const PERCEPTUAL_CAMERA_ENABLED := true
 const SHOW_DIAGNOSTIC_WORLD_OVERLAYS := false
@@ -96,6 +96,9 @@ var _local_block_reason := ""
 var _local_explore_enabled := false
 var _last_live_position := Vector3.ZERO
 var _has_live_position := false
+var _live_walk_velocity := Vector2.ZERO
+const LIVE_WALK_SPEED_MPS := 8.0
+const LIVE_WALK_ACCEL_MPS2 := 18.0
 var _render_control_path := ""
 var _render_control_next_poll_ms := 0
 var _decor_culling_announced := false
@@ -657,12 +660,11 @@ func _on_world_slice(observer: Dictionary, current_region_id: String, hot_entiti
         environmental_state
     ))
     var projected: Vector3 = _live_visual.project_position(observer)
-    if _has_live_position:
-        _update_camera_heading(_last_live_position, projected)
     _last_live_position = projected
     _has_live_position = true
-    if not _local_explore_enabled:
+    if not _local_explore_enabled and first_bind:
         _position = projected
+        _live_walk_velocity = Vector2.ZERO
     _live_authoritative = true
     _live_last_update_ms = Time.get_ticks_msec()
     _live_region_id = current_region_id
@@ -702,6 +704,7 @@ func _on_local_mode(enabled: bool) -> void:
     if not enabled and _has_live_position:
         var old_cell := Vector2i(_cell(_position.x), _cell(_position.z))
         _position = _last_live_position
+        _live_walk_velocity = Vector2.ZERO
         if old_cell != Vector2i(_cell(_position.x), _cell(_position.z)):
             _sync_tiles()
             _rebuild_horizon_ground()
@@ -779,6 +782,47 @@ func _update_caption() -> void:
         _hud.update_live(_tiles.size(), MAX_ACTIVE_DECOR, _live_region_id, _live_sequence, feed_state, cx, cz, _biome(cx, cz), _live_hot_count, _live_warm_count, _live_region_count)
     else:
         _hud.update_local(_tiles.size(), MAX_ACTIVE_DECOR, cx, cz, _biome(cx, cz), _local_surface, _local_block_reason, _local_explore_enabled)
+func _animate_nov_movement(previous: Vector3, delta: float) -> void:
+    var visual := _walker.get_node_or_null("NovVisual")
+    if visual == null:
+        return
+    var velocity := (_position - previous) / maxf(delta, 0.001)
+    var heading := atan2(velocity.x, velocity.z) - _walker.rotation.y
+    if Vector2(velocity.x, velocity.z).length() < 0.08:
+        heading = float(visual.get("_visual_heading"))
+    visual.call("set_motion_velocity", velocity, heading)
+
+func _advance_live_walk(delta: float) -> void:
+    var dt := clampf(delta, 0.0, 0.1)
+    var previous := _position
+    var current_flat := Vector2(_position.x, _position.z)
+    var target_flat := Vector2(_last_live_position.x, _last_live_position.z)
+    var offset := target_flat - current_flat
+    var distance := offset.length()
+    var desired := Vector2.ZERO
+    if distance > 0.04:
+        var approach_speed := minf(LIVE_WALK_SPEED_MPS, sqrt(2.0 * LIVE_WALK_ACCEL_MPS2 * distance))
+        desired = offset / distance * approach_speed
+    _live_walk_velocity = _live_walk_velocity.move_toward(desired, LIVE_WALK_ACCEL_MPS2 * dt)
+    var step := _live_walk_velocity * dt
+    if distance <= 0.04 or step.length() >= distance:
+        current_flat = target_flat
+        _live_walk_velocity = Vector2.ZERO
+    else:
+        current_flat += step
+    var old_cell := Vector2i(_cell(_position.x), _cell(_position.z))
+    _position = Vector3(current_flat.x, float(_features.call("walk_height", current_flat.x, current_flat.y)), current_flat.y)
+    _update_camera_heading(previous, _position)
+    if old_cell != Vector2i(_cell(_position.x), _cell(_position.z)):
+        _sync_tiles()
+        _rebuild_horizon_ground()
+        _rebuild_distant_vegetation()
+        _rebuild_midground_vegetation()
+    _perceptual_vegetation.rebuild(_position, _camera_forward, _live_region_id)
+    _perceptual_assets.rebuild(_position, _camera_forward, _live_region_id)
+    _follow_camera()
+    _animate_nov_movement(previous, dt)
+
 func _process(delta: float) -> void:
     _poll_native_fps_governor()
     if _route.size() < 2:
@@ -786,6 +830,7 @@ func _process(delta: float) -> void:
     if _live_authoritative and not _local_explore_enabled:
         var connected := _live_feed != null and str(_live_feed.get("connection_state")) == "conectado"
         if connected or Time.get_ticks_msec() - _live_last_update_ms < LIVE_STALE_MS:
+            _advance_live_walk(delta)
             _clock += delta
             if _clock > 0.5:
                 _clock = 0.0
@@ -816,6 +861,7 @@ func _process(delta: float) -> void:
     _perceptual_vegetation.rebuild(_position, _camera_forward, _live_region_id)
     _perceptual_assets.rebuild(_position, _camera_forward, _live_region_id)
     _follow_camera(false)
+    _animate_nov_movement(previous_position, delta)
     _clock += delta
     if _clock > 0.3:
         _clock = 0.0
