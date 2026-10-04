@@ -34,8 +34,6 @@ const CAMERA_LOOK_HEIGHT_M := 1.35
 const CAMERA_LOOK_AHEAD_M := 11.0
 const CAMERA_SHOULDER_M := 0.95
 const CAMERA_MIN_GROUND_CLEARANCE_M := 1.9
-const CAMERA_HEADING_MIN_STEP_M := 0.01
-const CAMERA_HEADING_BLEND := 0.34
 const PERCEPTUAL_CAMERA_ENABLED := true
 const SHOW_DIAGNOSTIC_WORLD_OVERLAYS := false
 const SHOW_TECHNICAL_STATUS := false
@@ -69,6 +67,7 @@ var _resource_cache: Dictionary = {}
 var _walker: CharacterBody3D
 var _camera: Camera3D
 var _camera_forward := Vector3(0.0, 0.0, -1.0)
+var _camera_stabilizer = preload("res://nov_camera_stabilizer.gd").new()
 var _horizon_ground: MeshInstance3D
 var _distant_relief: RefCounted
 var _distant_trunks: MultiMeshInstance3D
@@ -752,7 +751,8 @@ func _on_world_slice(observer: Dictionary, current_region_id: String, hot_entiti
             _rebuild_midground_vegetation()
         _perceptual_vegetation.rebuild(_position, _camera_forward, _live_region_id)
         _perceptual_assets.rebuild(_position, _camera_forward, _live_region_id)
-        _follow_camera()
+        if first_bind:
+            _follow_camera(true, 0.0, true)
     _update_caption()
     if first_bind:
         print("WORLD_MAP_LIVE_BOUND region=%s sequence=%d cell=%d:%d hot=%d warm=%d regions=%d" % [_live_region_id, _live_sequence, _cell(_position.x), _cell(_position.z), _live_hot_count, _live_warm_count, _live_region_count])
@@ -771,20 +771,14 @@ func _on_local_mode(enabled: bool) -> void:
     elif enabled:
         _local_motion.snap_body(_walker, _position)
     _update_caption()
-func _update_camera_heading(previous: Vector3, current: Vector3) -> void:
-    var flat_delta := Vector2(current.x - previous.x, current.z - previous.z)
-    if flat_delta.length() < CAMERA_HEADING_MIN_STEP_M:
-        return
-    var desired := Vector3(flat_delta.x, 0.0, flat_delta.y).normalized()
-    if _camera_forward.length_squared() < 0.001:
-        _camera_forward = desired
-    else:
-        _camera_forward = _camera_forward.lerp(desired, CAMERA_HEADING_BLEND).normalized()
+func _update_camera_heading(previous: Vector3, current: Vector3, delta: float = 1.0 / 60.0) -> void:
+    _camera_forward = _camera_stabilizer.observe_motion(previous, current, delta, _camera_forward)
+
 func _orient_nov_visual() -> void:
     if _walker == null or _camera_forward.length_squared() < 0.001:
         return
     _walker.rotation.y = atan2(_camera_forward.x, _camera_forward.z)
-func _follow_camera(snap_body: bool = true) -> void:
+func _follow_camera(snap_body: bool = true, delta: float = 1.0 / 60.0, reset_camera: bool = false) -> void:
     if snap_body:
         _local_motion.snap_body(_walker, _position)
     _orient_nov_visual()
@@ -811,6 +805,12 @@ func _follow_camera(snap_body: bool = true) -> void:
         camera_ground + CAMERA_MIN_GROUND_CLEARANCE_M
     )
 
+    _camera_stabilizer.follow(camera_position, target, delta, reset_camera)
+    camera_position = _camera_stabilizer.position
+    target = _camera_stabilizer.target
+    camera_position.y = maxf(camera_position.y,
+        _height(camera_position.x, camera_position.z) + CAMERA_MIN_GROUND_CLEARANCE_M)
+
     var pivot := _position + Vector3(0.0, CAMERA_LOOK_HEIGHT_M, 0.0)
     if is_inside_tree() and get_world_3d() != null:
         var query := PhysicsRayQueryParameters3D.create(pivot, camera_position, 1)
@@ -829,8 +829,9 @@ func _follow_camera(snap_body: bool = true) -> void:
                 resolved_ground + CAMERA_MIN_GROUND_CLEARANCE_M
             )
 
+    _camera_stabilizer.position = camera_position
     _camera.position = camera_position
-    _camera.look_at(target)
+    _camera.look_at(target, Vector3.UP)
 func _update_caption() -> void:
     var cx := _cell(_position.x)
     var cz := _cell(_position.z)
@@ -859,7 +860,7 @@ func _advance_live_walk(delta: float) -> void:
     var desired := Vector2.ZERO
     if distance <= 0.04:
         _live_walk_velocity = Vector2.ZERO
-        _follow_camera(false)
+        _follow_camera(false, dt)
         _animate_nov_movement(previous, dt)
         return
     if distance > 0.04:
@@ -876,7 +877,7 @@ func _advance_live_walk(delta: float) -> void:
     _local_block_reason = str(movement.get("reason", ""))
     if distance < 0.04:
         _live_walk_velocity = Vector2.ZERO
-    _update_camera_heading(previous, _position)
+    _update_camera_heading(previous, _position, dt)
     if old_cell != Vector2i(_cell(_position.x), _cell(_position.z)):
         _sync_tiles()
         _rebuild_horizon_ground()
@@ -884,7 +885,7 @@ func _advance_live_walk(delta: float) -> void:
         _rebuild_midground_vegetation()
     _perceptual_vegetation.rebuild(_position, _camera_forward, _live_region_id)
     _perceptual_assets.rebuild(_position, _camera_forward, _live_region_id)
-    _follow_camera(false)
+    _follow_camera(false, dt)
     _animate_nov_movement(previous, dt)
 
 func _process(delta: float) -> void:
@@ -912,7 +913,7 @@ func _process(delta: float) -> void:
     )
     var previous_position := _position
     _position = movement.get("position", _position)
-    _update_camera_heading(previous_position, _position)
+    _update_camera_heading(previous_position, _position, delta)
     _local_surface = str(movement.get("surface", "terrain"))
     _local_block_reason = str(movement.get("reason", ""))
     if bool(movement.get("reached", false)):
@@ -924,7 +925,7 @@ func _process(delta: float) -> void:
         _rebuild_midground_vegetation()
     _perceptual_vegetation.rebuild(_position, _camera_forward, _live_region_id)
     _perceptual_assets.rebuild(_position, _camera_forward, _live_region_id)
-    _follow_camera(false)
+    _follow_camera(false, delta)
     _animate_nov_movement(previous_position, delta)
     _clock += delta
     if _clock > 0.3:
