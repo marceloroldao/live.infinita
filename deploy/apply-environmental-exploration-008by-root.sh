@@ -10,12 +10,13 @@ PYTHON="$INSTALL/.venv/bin/python"
 cd "$REPO"
 test -z "$(git status --porcelain)"
 SHA="$(git rev-parse HEAD)"
+BASE=53c002f9ade568ddc913e95ab5eac83a125c2bd7
 FILES=(npc_environmental_exploration.py npc_idle_wander.py npc_cognitive_stack.py autonomous_runtime.py world_tick.py)
 # Confirm the reviewed source and reject unrelated installed changes.
 for f in "${FILES[@]}"; do
   git cat-file -e "$SHA:apps/world-runtime/$f"
   if [ "$f" != npc_environmental_exploration.py ]; then
-    cmp <(git show "$SHA^:apps/world-runtime/$f") "$DST/$f"
+    cmp <(git show "$BASE:apps/world-runtime/$f") "$DST/$f"
   fi
 done
 PYTHONDONTWRITEBYTECODE=1 "$PYTHON" - <<'PY'
@@ -53,7 +54,7 @@ trap rollback ERR
 for f in "${FILES[@]}"; do
   install -o liveinfinita -g liveinfinita -m 0664 "$SRC/$f" "$DST/$f"
 done
-PYTHONPATH="$INSTALL:$DST" "$PYTHON" - <<'PY'
+runuser -u liveinfinita -- env PYTHONPATH="$INSTALL:$DST" "$PYTHON" - <<'PY'
 import json
 from pathlib import Path
 from npc_environmental_exploration import EnvironmentalExploration, choose_local_region
