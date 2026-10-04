@@ -101,7 +101,7 @@ grep -q 'World-map traversal smoke: 0 failures' "$SMOKE_LOG" || {
 }
 
 echo "[world-map-preview] Validando caminhada e câmera de NOV."
-for extra_smoke in godot_nov_locomotion_008bz_smoke.gd godot_nov_grounded_presentation_smoke.gd godot_live_program_008cb_smoke.gd; do
+for extra_smoke in godot_nov_locomotion_008bz_smoke.gd godot_nov_grounded_presentation_smoke.gd godot_live_program_008cb_smoke.gd godot_ground_surface_008cc_smoke.gd; do
   EXTRA_LOG="$TEMP_ROOT/$extra_smoke.log"
   if ! GODOT_SILENCE_ROOT_WARNING=1 "$GODOT_BIN" --headless --audio-driver Dummy --path "$WORK_PROJECT" --script "$SOURCE_DIR/tests/$extra_smoke" -- --offline-tour >"$EXTRA_LOG" 2>&1; then
     cat "$EXTRA_LOG" >&2
@@ -149,6 +149,7 @@ cat >"$BUILD_DIR/build.json" <<EOF
   "narrator_caption_position": "center",
   "program_audio": true,
   "live_exploration_controls": false,
+  "ground_surface_alignment": true,
   "cognitive_visual_inertia": true,
   "visual_refresh_hint_seconds": 120,
   "ecological_continuous_transitions": true,

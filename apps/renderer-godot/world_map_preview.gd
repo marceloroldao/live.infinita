@@ -266,16 +266,40 @@ func _rebuild_horizon_ground() -> void:
     var step:=size / float(HORIZON_GRID)
     var st := SurfaceTool.new()
     st.begin(Mesh.PRIMITIVE_TRIANGLES)
-    for z_index in range(HORIZON_GRID):
-        for x_index in range(HORIZON_GRID):
-            var x:=origin+float(x_index)*step
-            var z:=origin+float(z_index)*step
+    # Split coarse patches along the active-tile boundary, leaving the local
+    # surface exclusively to the detailed mesh. A coarse triangle must never
+    # interpolate over NOV or the camera and bury them on a sharp slope.
+    var cx := _cell(_position.x)
+    var cz := _cell(_position.z)
+    var local_min_x: float = float(maxi(0, cx - 1)) * TILE_M - _layout.half_m
+    var local_max_x: float = float(mini(_layout.grid_size, cx + 2)) * TILE_M - _layout.half_m
+    var local_min_z: float = float(maxi(0, cz - 1)) * TILE_M - _layout.half_m
+    var local_max_z: float = float(mini(_layout.grid_size, cz + 2)) * TILE_M - _layout.half_m
+    var xs: Array[float] = [local_min_x, local_max_x]
+    var zs: Array[float] = [local_min_z, local_max_z]
+    for index in range(HORIZON_GRID + 1):
+        xs.append(origin + float(index) * step)
+        zs.append(origin + float(index) * step)
+    xs.sort()
+    zs.sort()
+    for z_index in range(zs.size() - 1):
+        for x_index in range(xs.size() - 1):
+            var x := xs[x_index]
+            var z := zs[z_index]
+            var nx := xs[x_index + 1]
+            var nz := zs[z_index + 1]
+            if is_equal_approx(x, nx) or is_equal_approx(z, nz):
+                continue
+            var mid_x := (x + nx) * 0.5
+            var mid_z := (z + nz) * 0.5
+            if mid_x > local_min_x and mid_x < local_max_x and mid_z > local_min_z and mid_z < local_max_z:
+                continue
             _horizon_vertex(st, x, z)
-            _horizon_vertex(st, x + step, z)
-            _horizon_vertex(st, x, z + step)
-            _horizon_vertex(st, x + step, z)
-            _horizon_vertex(st, x + step, z + step)
-            _horizon_vertex(st, x, z + step)
+            _horizon_vertex(st, nx, z)
+            _horizon_vertex(st, x, nz)
+            _horizon_vertex(st, nx, z)
+            _horizon_vertex(st, nx, nz)
+            _horizon_vertex(st, x, nz)
     _horizon_ground.mesh = st.commit()
     var material := _material(Color.WHITE)
     material.vertex_color_use_as_albedo = true
@@ -400,6 +424,28 @@ func _rebuild_midground_vegetation() -> void:
 
     _midground_vegetation.multimesh.visible_instance_count = placed
 func _height(x: float, z: float) -> float:
+    # Use the exact triangles of the 8 m rendered grid for feet and camera.
+    var step := TILE_M / 8.0
+    var half_m: float = _layout.half_m if _layout != null else 1024.0
+    var x0: float = floor((x + half_m) / step) * step - half_m
+    var z0: float = floor((z + half_m) / step) * step - half_m
+    var u: float = (x - x0) / step
+    var v: float = (z - z0) / step
+    var a := _raw_height(x0, z0)
+    if is_zero_approx(u) and is_zero_approx(v):
+        return a
+    if is_zero_approx(u):
+        return lerpf(a, _raw_height(x0, z0 + step), v)
+    if is_zero_approx(v):
+        return lerpf(a, _raw_height(x0 + step, z0), u)
+    var b := _raw_height(x0 + step, z0)
+    var c := _raw_height(x0, z0 + step)
+    if u + v <= 1.0:
+        return a + u * (b - a) + v * (c - a)
+    var d := _raw_height(x0 + step, z0 + step)
+    return d + (1.0 - u) * (c - d) + (1.0 - v) * (b - d)
+
+func _raw_height(x: float, z: float) -> float:
     var rise := 4.0 if x > 175.0 and z < -70.0 else 1.0
     var natural := (sin(x * 0.012) * 1.8 + cos(z * 0.016) * 1.6 + sin((x + z) * 0.021) * 0.9) * rise
     var cognitive := 0.0

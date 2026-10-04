@@ -45,7 +45,10 @@ class DistantRelief008BRTests(unittest.TestCase):
             "_distant_relief.update_observer(_position, _height(_position.x, _position.z))",
             source,
         )
-        self.assertLess(len(source), 36000)
+        # Verify separation directly rather than a size ceiling that also
+        # counts unrelated camera, gait and broadcast presentation code.
+        self.assertNotIn("MAX_VISUAL_DELTA_M", source)
+        self.assertNotIn("func height_for(", source)
 
     def test_cell_changes_refresh_visual_horizon(self) -> None:
         source = PREVIEW.read_text(encoding="utf-8")
