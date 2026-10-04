@@ -13,6 +13,8 @@ Ingestion alternates failure/success candidates and sends at most two changed su
 Deployment:
 sudo bash /home/etbra/live.infinita/deploy/apply-navigation-memory-bridge-008ce-root.sh
 
-The script validates tests and a read-only preview, backs up bridge/unit files, installs a separate service/timer, runs one ingestion and verifies its durable checkpoint. On failure it restores installation files and timer state. Acknowledged observations remain available and idempotent on retry. It does not restart or re-export the renderer, nor change the runtime writer. Success marker: 008CE_OK. Log: /home/etbra/008ce-rollout.log.
+The script validates tests, backs up bridge/unit files, copies the bridge into /opt/live.infinita and validates its read-only preview as the service user there, then installs a separate service/timer, runs one ingestion and verifies its durable checkpoint. On failure it restores installation files and timer state. Acknowledged observations remain available and idempotent on retry. It does not restart or re-export the renderer, nor change the runtime writer. Success marker: 008CE_OK. Log: /home/etbra/008ce-rollout.log.
 
 Next stage: retrieve matching navigation evidence from Memoria.ia and compare decisions with memory enabled/disabled. Receiving observations alone does not demonstrate a causal effect on choices.
+
+Installer correction: the service user cannot traverse private /home/etbra (0750). The preview runs only from installed /opt paths inside the rollback scope. Home permissions remain unchanged. The failed initial installer stopped before changing production files or services.

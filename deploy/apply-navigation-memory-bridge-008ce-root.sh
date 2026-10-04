@@ -21,7 +21,6 @@ test -s /etc/live-infinita/memoria-local.env
 systemctl is-active --quiet live-infinita-memoria-local.service
 systemctl is-active --quiet live-infinita-renderer.service
 PYTHONPATH="$REPO:$REPO/apps/world-runtime" PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s "$REPO/tests" -p test_nov_navigation_memory_sync.py
-sudo -u liveinfinita env PYTHONDONTWRITEBYTECODE=1 PYTHONPATH="$REPO:$REPO/apps/world-runtime" /opt/live.infinita/.venv/bin/python "$REPO/apps/world-runtime/$SCRIPT" --preview
 BACKUP="/opt/live.infinita/.rollouts/008ce-$(date -u +%Y%m%dT%H%M%SZ)"
 mkdir -p "$BACKUP"
 if [ -f "$DST/$SCRIPT" ]; then cp -a "$DST/$SCRIPT" "$BACKUP/$SCRIPT"; fi
@@ -52,6 +51,9 @@ trap rollback ERR
 if [ -f "/etc/systemd/system/$TIMER" ]; then systemctl stop "$TIMER"; fi
 if [ -f "/etc/systemd/system/$SERVICE" ]; then systemctl stop "$SERVICE"; fi
 install -o liveinfinita -g liveinfinita -m 0664 "$REPO/apps/world-runtime/$SCRIPT" "$DST/$SCRIPT"
+# Service account cannot traverse the private /home/etbra directory.
+# Validate the installed script under the same readable /opt paths as systemd.
+sudo -u liveinfinita env PYTHONDONTWRITEBYTECODE=1 PYTHONPATH="/opt/live.infinita:$DST" /opt/live.infinita/.venv/bin/python "$DST/$SCRIPT" --preview
 for unit in "$SERVICE" "$TIMER"; do
   install -o root -g root -m 0644 "$REPO/deploy/$unit" "/etc/systemd/system/$unit"
 done
