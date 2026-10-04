@@ -16,13 +16,21 @@ def fetch_recent() -> dict:
     key=os.environ.get("MEMORIA_API_KEY","")
     if len(key)<32:
         raise NavigationSyncError("local_api_key_unconfigured")
-    req=Request("http://127.0.0.1:8788/api/v1/structural/observations/recent?limit=100",
+    # Core recent() samples count before ordered_from(); concurrent intake can
+    # add rows between those reads. Leave bounded headroom and retry overflow.
+    req=Request("http://127.0.0.1:8788/api/v1/structural/observations/recent?limit=64",
                 headers={"X-Memoria-Key":key,"Accept":"application/json"})
-    with build_opener(ProxyHandler({})).open(req,timeout=15) as response:
-        raw=response.read(2_000_001)
-        if response.status!=200 or len(raw)>2_000_000:
-            raise NavigationSyncError("recall_response_invalid")
-    return json.loads(raw)
+    for attempt in range(2):
+        with build_opener(ProxyHandler({})).open(req,timeout=15) as response:
+            raw=response.read(2_000_001)
+            if response.status!=200 or len(raw)>2_000_000:
+                raise NavigationSyncError("recall_response_invalid")
+        data=json.loads(raw)
+        if not isinstance(data,dict) or data.get("semantic_projection") is not False or not isinstance(data.get("items"),list):
+            raise NavigationSyncError("recall_contract_invalid")
+        if len(data["items"])<=100:
+            return data
+    raise NavigationSyncError("recall_window_raced_after_retry")
 
 def export_once(world: Path=WORLD, private: Path=PRIVATE, public: Path=PUBLIC, fetch=fetch_recent, now=time.time) -> dict:
     world_id=_world_id(world)

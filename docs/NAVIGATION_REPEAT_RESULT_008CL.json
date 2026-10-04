@@ -1,0 +1,47 @@
+{
+  "schema": "live-infinita-navigation-repeat-validation/v1",
+  "scope": "isolated_physics_and_real_core_API_temporary_SQLite",
+  "production_memory_written": false,
+  "world_write_authority": false,
+  "fixture": "physical-U",
+  "fixed_delta_seconds": 0.1,
+  "memory_seed": "completed_first_trial_route_steps_test_fixture_not_RAM_promotions",
+  "api_observations_confirmed": 23,
+  "api_observations_recovered": 23,
+  "sqlite_reopened": true,
+  "control_reproduced": true,
+  "results": {
+    "with_memory": {
+      "anticipated_avoidances": 10,
+      "causal_memory_decisions": 7,
+      "collisions": 0,
+      "decisions": 22,
+      "distance_m": 22.5224555321038,
+      "reached": true,
+      "simulated_seconds": 2.4,
+      "ticks": 24
+    },
+    "without_memory": {
+      "anticipated_avoidances": 21,
+      "causal_memory_decisions": 0,
+      "collisions": 0,
+      "decisions": 58,
+      "distance_m": 57.6198753714561,
+      "reached": true,
+      "simulated_seconds": 5.8,
+      "ticks": 58
+    }
+  },
+  "difference": {
+    "simulated_seconds": -3.4,
+    "distance_m": -35.0974198393523,
+    "collisions": 0
+  },
+  "core_recent_race": {
+    "requested_before": 100,
+    "returned_before": 103,
+    "requested_after": 64,
+    "returned_after": 67,
+    "concurrent_appends_each_read": 3
+  }
+}
