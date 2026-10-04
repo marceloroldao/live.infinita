@@ -19,6 +19,13 @@ const MAX_MASSIF_HEIGHT_M := 84.0
 const MASSIF_MIN_BIAS_M := 6.0
 const MASSIF_MIN_MASS := 0.55
 const MASSIF_MIN_CAMERA_DISTANCE_M := 140.0
+const MAX_RIDGE_RANGES := 6
+const RIDGE_RANGE_MIN_HEIGHT_M := 3.5
+const RIDGE_RANGE_MIN_STRENGTH := 0.35
+const RIDGE_RANGE_VISIBILITY_BEGIN_M := 90.0
+const RIDGE_RANGE_SEGMENT_M := 22.0
+const RIDGE_RANGE_MAX_SEGMENTS := 8
+const RIDGE_RANGE_MAX_VISUAL_HEIGHT_M := 28.0
 
 var _host: Node3D
 var _root: Node3D
@@ -33,6 +40,7 @@ var _trail_count := 0
 var _trail_batch_count := 0
 var _massif_count := 0
 var _snow_cap_count := 0
+var _ridge_range_count := 0
 
 func _init(host: Node3D) -> void:
     _host = host
@@ -61,6 +69,9 @@ func massif_count() -> int:
 func snow_cap_count() -> int:
     return _snow_cap_count
 
+func ridge_range_count() -> int:
+    return _ridge_range_count
+
 func _clear_visuals() -> void:
     if _root == null:
         return
@@ -71,6 +82,7 @@ func _clear_visuals() -> void:
     _trail_batch_count = 0
     _massif_count = 0
     _snow_cap_count = 0
+    _ridge_range_count = 0
 
 func clear() -> bool:
     var changed := not _projection_id.is_empty() or not _anchors.is_empty() or not _ridges.is_empty() or not _spatial_trails.is_empty()
@@ -199,6 +211,8 @@ func update(
         var source: Dictionary = by_id[from_id]
         var target: Dictionary = by_id[to_id]
         next_ridges.append({
+            "from_region_id": from_id,
+            "to_region_id": to_id,
             "a": source["position"],
             "b": target["position"],
             "height": clampf(float(row.get("ridge_height_m", 1.0)), 0.0, 14.0),
@@ -242,6 +256,7 @@ func update(
     _spatial_trails = next_spatial_trails
     _rebuild_lakes(height_sampler)
     _rebuild_massifs(height_sampler)
+    _rebuild_ridge_ranges(height_sampler)
     _rebuild_trails(height_sampler)
     return true
 
@@ -419,6 +434,184 @@ func _rebuild_massifs(height_sampler: Callable) -> void:
             true
         )
         _massif_count += 1
+
+func _ridge_range_material() -> StandardMaterial3D:
+    var material := StandardMaterial3D.new()
+    material.albedo_color = Color.WHITE
+    material.vertex_color_use_as_albedo = true
+    material.shading_mode = BaseMaterial3D.SHADING_MODE_PER_VERTEX
+    material.cull_mode = BaseMaterial3D.CULL_DISABLED
+    material.roughness = 1.0
+    material.metallic = 0.0
+    return material
+
+func _ridge_range_color(ridge: Dictionary, crest: bool = false) -> Color:
+    var from_env := _massif_environment(str(ridge.get("from_region_id", "")))
+    var to_env := _massif_environment(str(ridge.get("to_region_id", "")))
+    var rock := 0.5 * (
+        clampf(float(from_env.get("rock_exposure", 0.0)), 0.0, 1.0)
+        + clampf(float(to_env.get("rock_exposure", 0.0)), 0.0, 1.0)
+    )
+    var snow := 0.5 * (
+        clampf(float(from_env.get("snow_cover", 0.0)), 0.0, 1.0)
+        + clampf(float(to_env.get("snow_cover", 0.0)), 0.0, 1.0)
+    )
+    var vegetation := 0.5 * (
+        clampf(float(from_env.get("vegetation_density", 0.35)), 0.0, 1.0)
+        + clampf(float(to_env.get("vegetation_density", 0.35)), 0.0, 1.0)
+    )
+    var color := Color("#59654f").lerp(
+        Color("#747773"),
+        clampf(0.22 + rock * 0.72, 0.0, 1.0)
+    )
+    color = color.lerp(Color("#76846b"), vegetation * 0.28)
+    if crest:
+        color = color.lightened(0.08 + snow * 0.16)
+        color = color.lerp(Color("#e2e7e5"), snow * 0.38)
+    return color
+
+func _ridge_range_score(ridge: Dictionary) -> float:
+    return (
+        float(ridge.get("height", 0.0))
+        * (0.45 + 0.55 * float(ridge.get("strength", 0.0)))
+    )
+
+func _ridge_range_ground(point: Vector2, height_sampler: Callable) -> float:
+    if height_sampler.is_valid():
+        return float(height_sampler.call(point.x, point.y))
+    return height_delta(point.x, point.y)
+
+func _ridge_range_vertex(
+    surface: SurfaceTool,
+    point: Vector3,
+    color: Color,
+) -> void:
+    surface.set_color(color)
+    surface.add_vertex(point)
+
+func _rebuild_ridge_ranges(height_sampler: Callable) -> void:
+    var candidates: Array = []
+    for ridge in _ridges:
+        if typeof(ridge) != TYPE_DICTIONARY:
+            continue
+        if float(ridge.get("height", 0.0)) < RIDGE_RANGE_MIN_HEIGHT_M:
+            continue
+        if float(ridge.get("strength", 0.0)) < RIDGE_RANGE_MIN_STRENGTH:
+            continue
+        var a: Vector2 = ridge["a"]
+        var b: Vector2 = ridge["b"]
+        if a.distance_to(b) < 12.0:
+            continue
+        candidates.append(ridge)
+    candidates.sort_custom(
+        func(a, b): return _ridge_range_score(a) > _ridge_range_score(b)
+    )
+    if candidates.is_empty():
+        return
+
+    var surface := SurfaceTool.new()
+    surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+    var built_ranges := 0
+    for ridge in candidates:
+        if built_ranges >= MAX_RIDGE_RANGES:
+            break
+        var a: Vector2 = ridge["a"]
+        var b: Vector2 = ridge["b"]
+        var axis := b - a
+        var distance := axis.length()
+        if distance < 12.0:
+            continue
+        var direction := axis / distance
+        var normal := Vector2(-direction.y, direction.x)
+        var strength := clampf(float(ridge.get("strength", 0.0)), 0.0, 1.0)
+        var source_height := clampf(float(ridge.get("height", 0.0)), 0.0, 14.0)
+        var base_half_width := clampf(
+            float(ridge.get("width", 40.0)) * 0.31,
+            8.0,
+            28.0
+        )
+        var visual_height := clampf(
+            4.0 + source_height * (1.20 + 0.72 * strength),
+            8.0,
+            RIDGE_RANGE_MAX_VISUAL_HEIGHT_M
+        )
+        var segments := clampi(
+            int(ceil(distance / RIDGE_RANGE_SEGMENT_M)),
+            2,
+            RIDGE_RANGE_MAX_SEGMENTS
+        )
+        var side_color := _ridge_range_color(ridge, false)
+        var crest_color := _ridge_range_color(ridge, true)
+        var seed := sin(
+            (a.x + b.x) * 0.017
+            + (a.y + b.y) * 0.013
+            + source_height * 0.11
+        )
+        var previous: Array[Vector3] = []
+        for index in range(segments + 1):
+            var t := float(index) / float(segments)
+            var center := a.lerp(b, t)
+            var envelope := 0.40 + 0.60 * sin(PI * t)
+            var width_scale := 0.62 + 0.38 * sin(PI * t)
+            var jagged := 1.0 + 0.09 * sin(
+                float(index) * 2.17 + seed * 2.9
+            )
+            var half_width := base_half_width * width_scale
+            var left2 := center + normal * half_width
+            var right2 := center - normal * half_width
+            var center_y := _ridge_range_ground(center, height_sampler)
+            var crest_y := center_y + visual_height * envelope * jagged
+            var section: Array[Vector3] = [
+                Vector3(
+                    left2.x,
+                    _ridge_range_ground(left2, height_sampler) + 0.06,
+                    left2.y
+                ),
+                Vector3(center.x, crest_y, center.y),
+                Vector3(
+                    right2.x,
+                    _ridge_range_ground(right2, height_sampler) + 0.06,
+                    right2.y
+                ),
+            ]
+            if not previous.is_empty():
+                var p0: Vector3 = previous[0]
+                var p1: Vector3 = previous[1]
+                var p2: Vector3 = previous[2]
+                var c0: Vector3 = section[0]
+                var c1: Vector3 = section[1]
+                var c2: Vector3 = section[2]
+
+                _ridge_range_vertex(surface, p0, side_color)
+                _ridge_range_vertex(surface, p1, crest_color)
+                _ridge_range_vertex(surface, c0, side_color)
+                _ridge_range_vertex(surface, c0, side_color)
+                _ridge_range_vertex(surface, p1, crest_color)
+                _ridge_range_vertex(surface, c1, crest_color)
+
+                _ridge_range_vertex(surface, p1, crest_color)
+                _ridge_range_vertex(surface, p2, side_color)
+                _ridge_range_vertex(surface, c1, crest_color)
+                _ridge_range_vertex(surface, c1, crest_color)
+                _ridge_range_vertex(surface, p2, side_color)
+                _ridge_range_vertex(surface, c2, side_color)
+            previous = section
+        built_ranges += 1
+
+    if built_ranges == 0:
+        return
+    surface.generate_normals()
+    var range_batch := MeshInstance3D.new()
+    range_batch.name = "MemoryRidgeRangeBatch"
+    range_batch.mesh = surface.commit()
+    range_batch.material_override = _ridge_range_material()
+    range_batch.visibility_range_begin = RIDGE_RANGE_VISIBILITY_BEGIN_M
+    range_batch.visibility_range_begin_margin = 10.0
+    range_batch.visibility_range_fade_mode = (
+        GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED
+    )
+    _root.add_child(range_batch)
+    _ridge_range_count = built_ranges
 
 func _trail_batch_material() -> StandardMaterial3D:
     var material := StandardMaterial3D.new()
