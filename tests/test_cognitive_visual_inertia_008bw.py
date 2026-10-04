@@ -319,6 +319,58 @@ class CognitiveVisualInertia008BWTests(unittest.TestCase):
                 break
         self.assertEqual(state["visual_transitions"], [])
 
+    def test_refresh_hint_matches_two_minute_projection_timer(self) -> None:
+        timer = (
+            ROOT / "deploy" / "live-infinita-cognitive-terrain.timer"
+        ).read_text(encoding="utf-8")
+        self.assertEqual(module.VISUAL_REFRESH_HINT_SECONDS, 120)
+        self.assertIn("OnUnitInactiveSec=2min", timer)
+
+    def test_raw_plus_visual_worst_case_fits_projection_file_budget(self) -> None:
+        raw = raw_projection("ctp_size_budget")
+        raw["regions"] = [
+            {
+                "region_id": f"region_{i:02d}",
+                "center": {"x": float(i * 64), "y": float((i % 8) * 64)},
+                "elevation_bias_m": 12.0 if i % 2 else -10.0,
+                "influence_radius_m": 220.0,
+                "cognitive_mass": 1.0,
+                "terrain_role": "uplift" if i % 2 else "basin",
+                "lake_candidate": not bool(i % 2),
+            }
+            for i in range(32)
+        ]
+        raw["transitions"] = [
+            {
+                "from_region_id": f"region_{i % 32:02d}",
+                "to_region_id": f"region_{(i + 1) % 32:02d}",
+                "count": 100000,
+                "strength": 1.0,
+                "ridge_height_m": 14.0,
+                "ridge_width_m": 96.0,
+                "trail_strength": 1.0,
+                "trail_width_m": 3.0,
+                "trail_candidate": True,
+            }
+            for i in range(48)
+        ]
+        raw["spatial_trails"] = [
+            {
+                "from_position": {"x": float(i * 4), "y": float(i * 3)},
+                "to_position": {"x": float(i * 4 + 64), "y": float(i * 3 + 64)},
+                "from_region_id": f"region_{i % 32:02d}",
+                "to_region_id": f"region_{(i + 1) % 32:02d}",
+                "count": 100000,
+                "trail_strength": 1.0,
+                "trail_width_m": 3.0,
+                "trail_candidate": True,
+            }
+            for i in range(128)
+        ]
+        result = module.stabilize_visual_projection(raw, None)
+        encoded = module._canonical(result)
+        self.assertLess(len(encoded), 128 * 1024)
+
     def test_visual_fields_remain_within_renderer_budgets(self) -> None:
         raw = raw_projection("ctp_budget")
         raw["regions"] = [

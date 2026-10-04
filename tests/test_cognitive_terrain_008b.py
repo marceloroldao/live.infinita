@@ -219,6 +219,78 @@ class CognitiveTerrain008BTests(unittest.TestCase):
         self.assertTrue(all(row["visits"] == 0 for row in rows.values()))
         self.assertFalse(projection["policy"]["world_write_authority"])
 
+    def test_visual_projection_persists_and_converges_across_timer_cycles(self) -> None:
+        self._episode(tick=10, region="clearing")
+        self._finish_checkpoint()
+        module.project_once(
+            db_path=self.db, checkpoint_path=self.checkpoint,
+            world_path=self.world, output_path=self.output,
+        )
+        baseline = json.loads(self.output.read_text(encoding="utf-8"))
+
+        # Strengthen the same cognitive structure substantially.
+        tick = 20
+        for region in [
+            "ridge", "clearing", "ridge", "clearing", "ridge",
+            "clearing", "ridge", "clearing", "ridge", "clearing",
+        ]:
+            self._episode(tick=tick, region=region)
+            tick += 10
+        self._finish_checkpoint()
+
+        module.project_once(
+            db_path=self.db, checkpoint_path=self.checkpoint,
+            world_path=self.world, output_path=self.output,
+        )
+        step1 = json.loads(self.output.read_text(encoding="utf-8"))
+        module.project_once(
+            db_path=self.db, checkpoint_path=self.checkpoint,
+            world_path=self.world, output_path=self.output,
+        )
+        step2 = json.loads(self.output.read_text(encoding="utf-8"))
+
+        self.assertNotEqual(
+            baseline["projection_id"],
+            step1["projection_id"],
+        )
+        self.assertEqual(
+            step1["projection_id"],
+            step2["projection_id"],
+        )
+        self.assertNotEqual(
+            step1["visual_projection_id"],
+            step2["visual_projection_id"],
+        )
+
+        raw1 = {
+            row["region_id"]: row for row in step1["regions"]
+        }["clearing"]
+        visual1 = {
+            row["region_id"]: row for row in step1["visual_regions"]
+        }["clearing"]
+        visual2 = {
+            row["region_id"]: row for row in step2["visual_regions"]
+        }["clearing"]
+
+        self.assertNotEqual(
+            visual1["elevation_bias_m"],
+            raw1["elevation_bias_m"],
+        )
+        self.assertLessEqual(
+            abs(
+                visual2["elevation_bias_m"]
+                - raw1["elevation_bias_m"]
+            ),
+            abs(
+                visual1["elevation_bias_m"]
+                - raw1["elevation_bias_m"]
+            ),
+        )
+        self.assertEqual(
+            step1["visual_stability"]["refresh_hint_seconds"],
+            120,
+        )
+
     def test_projection_reader_accepts_only_matching_visual_side_channel(self) -> None:
         self._episode(tick=10, region="clearing")
         self._finish_checkpoint()
