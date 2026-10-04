@@ -66,11 +66,13 @@ func run() -> void:
             var batch: MultiMeshInstance3D = nature._asset_batches[layer][identity]
             if layer == "plant":
                 continue
+            var expected: Array = nature._residencies[layer].records.values().filter(func(row):return row["asset"]==identity)
+            check(expected.size()==batch.multimesh.visible_instance_count,"rendered count matches immutable generated objects")
             var physical = batch.get_node_or_null("PhysicalInstances")
             check(physical != null, "trees and rocks retain physical colliders")
             for i in range(batch.multimesh.visible_instance_count):
                 var body: StaticBody3D = physical.get_child(i)
-                check(body.transform == batch.multimesh.get_instance_transform(i), "collider matches immutable rendered object")
+                check(body.transform.is_equal_approx(expected[i]["transform"]), "collider matches immutable generated object without render readback")
                 check(not body.get_child(0).disabled, "visible collider remains enabled")
 
     var stage = load("res://world_map_preview.tscn").instantiate()

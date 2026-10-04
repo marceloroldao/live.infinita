@@ -1,12 +1,12 @@
 extends RefCounted
 # Bounded colliders share the exact transforms of materialized nature instances.
-static func sync(batch: MultiMeshInstance3D, trunks: bool = false) -> void:
+static func sync(batch: MultiMeshInstance3D, transforms: Array, trunks: bool = false) -> void:
     var container := batch.get_node_or_null("PhysicalInstances")
     if container == null:
         container = Node3D.new()
         container.name = "PhysicalInstances"
         batch.add_child(container)
-    var count := batch.multimesh.visible_instance_count
+    var count := transforms.size()
     for i in range(container.get_child_count(), count):
         var body := StaticBody3D.new()
         body.collision_layer = 1
@@ -20,7 +20,8 @@ static func sync(batch: MultiMeshInstance3D, trunks: bool = false) -> void:
         collision.disabled = i >= count
         if i >= count:
             continue
-        body.transform = batch.multimesh.get_instance_transform(i)
+        # Use the generator's CPU transform, never a same-frame render-server readback.
+        body.transform = transforms[i]
         if trunks:
             var shape := CylinderShape3D.new()
             shape.radius = 0.42

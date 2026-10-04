@@ -382,6 +382,7 @@ func _rebuild_distant_vegetation() -> void:
         index += 1
     _distant_trunks.multimesh.visible_instance_count = index
     _distant_canopies.multimesh.visible_instance_count = index
+    preload("res://nature_batch_collision.gd").sync(_distant_trunks, rows.map(func(row): return row["trunk"]), true)
 
 func _build_midground_vegetation() -> void:
     var mesh := CylinderMesh.new()
@@ -419,6 +420,7 @@ func _rebuild_midground_vegetation() -> void:
         _midground_vegetation.multimesh.set_instance_transform(placed, record["transform"])
         placed += 1
     _midground_vegetation.multimesh.visible_instance_count = placed
+    preload("res://nature_batch_collision.gd").sync(_midground_vegetation, rows.map(func(row): return row["transform"]))
 
 func _height(x: float, z: float) -> float:
     # Use the exact triangles of the 8 m rendered grid for feet and camera.
@@ -602,7 +604,7 @@ func _decoration(parent: Node3D, cx: int, cz: int, index: int, biome: String) ->
                 PLANT_VISIBILITY_RANGE_M, DECOR_VISIBILITY_MARGIN_M
             ])
     parent.add_child(n)
-    if kind == "tree" or kind == "rock":
+    if kind == "tree" or kind == "rock" or path.get_file().begins_with("Bush_"):
         preload("res://nature_batch_collision.gd").attach_model(n, kind == "tree")
 func _prune_tile_cache() -> void:
     while _tile_cache_order.size() > MAX_CACHED_TILES:

@@ -407,8 +407,8 @@ func _stable_layer(
         for i in range(items.size()):
             batch.multimesh.set_instance_transform(i, items[i]["transform"])
         batch.multimesh.visible_instance_count = items.size()
-        if tree or layer == "rock":
-            preload("res://nature_batch_collision.gd").sync(batch, tree)
+        if tree or layer == "rock" or (layer == "plant" and identity == BUSH):
+            preload("res://nature_batch_collision.gd").sync(batch, items.map(func(row): return row["transform"]), tree)
     return rows.size()
 
 func visible_counts() -> Vector3i:
