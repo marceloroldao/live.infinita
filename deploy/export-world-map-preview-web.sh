@@ -146,6 +146,7 @@ cat >"$BUILD_DIR/build.json" <<EOF
   "nov_procedural_gait": true,
   "audience_overlay": true,
   "narrator_caption": true,
+  "narrator_caption_position": "center",
   "program_audio": true,
   "live_exploration_controls": false,
   "cognitive_visual_inertia": true,

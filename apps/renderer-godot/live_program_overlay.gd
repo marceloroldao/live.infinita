@@ -17,12 +17,14 @@ func _ready() -> void:
     _audience.offset_right = -18
     _audience.anchor_right = 1.0
     _audience.offset_bottom = 220
-    _narration = _label(layout, 18, -250, 20)
-    _narration.anchor_top = 1.0
-    _narration.anchor_bottom = 1.0
+    _narration = _label(layout, 18, -81, 20)
+    _narration.anchor_top = 0.5
+    _narration.anchor_bottom = 0.5
     _narration.anchor_right = 1.0
     _narration.offset_right = -18
-    _narration.offset_bottom = -88
+    _narration.offset_bottom = 81
+    _narration.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    _narration.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
     _narration.visible = false
     _audience.visible = false
 

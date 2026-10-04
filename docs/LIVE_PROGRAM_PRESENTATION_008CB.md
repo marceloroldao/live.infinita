@@ -32,3 +32,6 @@ restored on rollout failure. Output: /home/etbra/008cb-rollout.log.
 The existing autonomous world, memory, audience ingestion and narration services
 are reused. Synthetic UI fixtures were used only in tests, not injected into the
 production audience stream.
+
+Narrator captions are anchored at the vertical center of the scene, with
+centered text, to avoid the bottom UI area of streaming applications.
