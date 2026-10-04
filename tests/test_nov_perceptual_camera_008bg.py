@@ -24,10 +24,10 @@ class NovPerceptualCamera008BGTests(unittest.TestCase):
 
     def test_camera_follows_observed_and_local_motion_heading(self) -> None:
         source = (GODOT / "world_map_preview.gd").read_text(encoding="utf-8")
-        self.assertIn("_update_camera_heading(previous, _position)", source)
-        self.assertIn("_update_camera_heading(previous_position, _position)", source)
+        self.assertIn("_update_camera_heading(previous, _position, dt)", source)
+        self.assertIn("_update_camera_heading(previous_position, _position, delta)", source)
         self.assertIn("_orient_nov_visual()", source)
-        self.assertIn("CAMERA_HEADING_BLEND", source)
+        self.assertIn("_camera_stabilizer.observe_motion(previous, current, delta, _camera_forward)", source)
 
     def test_presentation_hides_map_diagnostic_overlays(self) -> None:
         preview = (GODOT / "world_map_preview.gd").read_text(encoding="utf-8")
