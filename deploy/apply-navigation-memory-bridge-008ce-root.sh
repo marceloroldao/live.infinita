@@ -53,7 +53,10 @@ if [ -f "/etc/systemd/system/$SERVICE" ]; then systemctl stop "$SERVICE"; fi
 install -o liveinfinita -g liveinfinita -m 0664 "$REPO/apps/world-runtime/$SCRIPT" "$DST/$SCRIPT"
 # Service account cannot traverse the private /home/etbra directory.
 # Validate the installed script under the same readable /opt paths as systemd.
-sudo -u liveinfinita env PYTHONDONTWRITEBYTECODE=1 PYTHONPATH="/opt/live.infinita:$DST" /opt/live.infinita/.venv/bin/python "$DST/$SCRIPT" --preview
+(
+  cd /opt/live.infinita
+  sudo -u liveinfinita env PYTHONDONTWRITEBYTECODE=1 PYTHONPATH="/opt/live.infinita:$DST" /opt/live.infinita/.venv/bin/python "$DST/$SCRIPT" --preview
+)
 for unit in "$SERVICE" "$TIMER"; do
   install -o root -g root -m 0644 "$REPO/deploy/$unit" "/etc/systemd/system/$unit"
 done
