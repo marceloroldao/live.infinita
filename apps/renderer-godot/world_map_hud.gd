@@ -29,6 +29,7 @@ func _ready() -> void:
     _toggle.offset_bottom = -18
     _toggle.pressed.connect(_toggle_local)
     add_child(_toggle)
+    _toggle.visible = false # Live presentation has no exploration control.
     _direction_buttons.append(_direction_button("←", "ui_left", 18, -84))
     _direction_buttons.append(_direction_button("↑", "ui_up", 78, -144))
     _direction_buttons.append(_direction_button("↓", "ui_down", 78, -84))

@@ -4,6 +4,8 @@ const Features = preload("res://world_map_features.gd")
 const LiveVisual = preload("res://world_map_live_visual.gd")
 const LocalMotion = preload("res://world_map_local_motion.gd")
 const Hud = preload("res://world_map_hud.gd")
+const LiveProgramOverlay = preload("res://live_program_overlay.gd")
+const LiveProgramAudio = preload("res://live_program_audio.gd")
 const Layout = preload("res://world_map_layout.gd")
 const CognitiveTerrain = preload("res://world_map_cognitive_terrain.gd")
 const PerceptualVegetation = preload("res://world_map_perceptual_vegetation.gd")
@@ -76,6 +78,7 @@ var _perceptual_vegetation: RefCounted
 var _environmental_palette: RefCounted
 var _perceptual_assets: RefCounted
 var _hud: CanvasLayer
+var _program_overlay: CanvasLayer
 var _route: Array = []
 var _leg := 1
 var _position := Vector3.ZERO
@@ -215,6 +218,12 @@ func _build_stage() -> void:
     _camera.far = CAMERA_FAR_M
     _camera.fov = CAMERA_FOV_DEG
     add_child(_camera)
+    _program_overlay = LiveProgramOverlay.new()
+    add_child(_program_overlay)
+    if _live_feed != null:
+        _live_feed.connect("program_state_received", Callable(_program_overlay, "apply_program_state"))
+        _live_feed.connect("audience_event_received", Callable(_program_overlay, "apply_audience_event"))
+    LiveProgramAudio.install()
     _hud = Hud.new()
     add_child(_hud)
     _hud.local_mode_changed.connect(_on_local_mode)

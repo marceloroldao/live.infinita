@@ -2,6 +2,9 @@ extends Node
 
 signal world_slice_received(observer: Dictionary, current_region_id: String, hot_entities: Array, warm_entities: Array, region_descriptors: Array, sequence: int, cognitive_terrain: Dictionary, environmental_state: Dictionary)
 
+signal program_state_received(world: Dictionary)
+signal audience_event_received(event: Dictionary)
+
 const RECONNECT_MAX_MS := 12000
 var socket := WebSocketPeer.new()
 var connection_state := "desconectado"
@@ -70,8 +73,16 @@ func _accept_packet(raw: String) -> void:
     if typeof(parsed) != TYPE_DICTIONARY:
         return
     var message: Dictionary = parsed
+    if str(message.get("type", "")) == "audience_event":
+        var event = message.get("event", {})
+        if typeof(event) == TYPE_DICTIONARY:
+            audience_event_received.emit(Dictionary(event).duplicate(true))
+        return
     if str(message.get("type", "")) != "world_state":
         return
+    var program_world = message.get("world", {})
+    if typeof(program_world) == TYPE_DICTIONARY:
+        program_state_received.emit(Dictionary(program_world).duplicate(true))
     var delivery = message.get("delivery", {})
     var world = message.get("world", {})
     if typeof(delivery) != TYPE_DICTIONARY or typeof(world) != TYPE_DICTIONARY:
