@@ -109,6 +109,9 @@ const LIVE_WALK_ACCEL_MPS2 := 18.0
 var _render_control_path := ""
 var _render_control_next_poll_ms := 0
 var _decor_culling_announced := false
+# Consolidated inference samples shared by every tile and surface consumer.
+# Session lifetime: do not mutate a vertex already used by physical presentation.
+var _consolidated_ground: Dictionary = {}
 func _ready() -> void:
     _configure_native_fps_governor()
     var data = JSON.parse_string(FileAccess.get_file_as_string(MAP_PATH))
@@ -418,28 +421,6 @@ func _rebuild_midground_vegetation() -> void:
     _midground_vegetation.multimesh.visible_instance_count = placed
 
 func _height(x: float, z: float) -> float:
-    if _layout != null:
-        var cx := _cell(x)
-        var cz := _cell(z)
-        var id := "%d:%d" % [cx, cz]
-        if _tiles.has(id):
-            var tile: Node3D = _tiles[id]
-            var ground := tile.get_child(0)
-            if ground.has_meta("resident_ground_heights"):
-                var heights: PackedFloat32Array = ground.get_meta("resident_ground_heights")
-                var origin: Vector2 = _layout.tile_origin(cx, cz)
-                var step := TILE_M / 8.0
-                var ix := clampi(floori((x - origin.x) / step), 0, 7)
-                var iz := clampi(floori((z - origin.y) / step), 0, 7)
-                var u := clampf((x - origin.x) / step - float(ix), 0.0, 1.0)
-                var v := clampf((z - origin.y) / step - float(iz), 0.0, 1.0)
-                var a := heights[iz * 9 + ix]
-                var b := heights[iz * 9 + ix + 1]
-                var c := heights[(iz + 1) * 9 + ix]
-                if u + v <= 1.0:
-                    return a + u * (b - a) + v * (c - a)
-                var d := heights[(iz + 1) * 9 + ix + 1]
-                return d + (1.0 - u) * (c - d) + (1.0 - v) * (b - d)
     # Use the exact triangles of the 8 m rendered grid for feet and camera.
     var step := TILE_M / 8.0
     var half_m: float = _layout.half_m if _layout != null else 1024.0
@@ -462,6 +443,12 @@ func _height(x: float, z: float) -> float:
     return d + (1.0 - u) * (c - d) + (1.0 - v) * (b - d)
 
 func _raw_height(x: float, z: float) -> float:
+    var key := Vector2(x, z)
+    if not _consolidated_ground.has(key):
+        _consolidated_ground[key] = _proposed_raw_height(x, z)
+    return float(_consolidated_ground[key])
+
+func _proposed_raw_height(x: float, z: float) -> float:
     var rise := 4.0 if x > 175.0 and z < -70.0 else 1.0
     var natural := (sin(x * 0.012) * 1.8 + cos(z * 0.016) * 1.6 + sin((x + z) * 0.021) * 0.9) * rise
     var cognitive := 0.0
