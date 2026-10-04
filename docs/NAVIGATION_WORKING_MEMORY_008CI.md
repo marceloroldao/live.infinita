@@ -111,3 +111,11 @@ Auditoria de uma cena isolada conectada ao feed real: auth=true,
 connection=conectado, entries=51, causal_reuses=0 e promoted=0.
 Comprova preenchimento por ações reais; não comprova melhoria de NOV na live.
 A 008CI ainda precisa ser aplicada e observada em produção.
+
+## Compatibilidade após reinício — 008CJ
+
+Godot recarrega os números JSON como decimais. O bridge aceita contadores decimais exatamente inteiros e os normaliza; rejeita booleanos, frações, valores não finitos e fora do limite. Os episódios existentes são comparados pelo conteúdo validado, preservando os bytes e o hash do arquivo original. Promoções mantêm a mesma identidade após reinício, inclusive se a resposta da API foi perdida.
+
+Validação: 50 testes Python; leitura e arquivamento em diretório temporário de 10 episódios reais da live, repetição sem novos arquivos. A RAM atingiu o limite previsto de 512 experiências, com zero reutilizações causais e zero promoções observadas; ainda não comprova aprendizagem durável nova.
+
+Instalação apenas do bridge: `sudo bash /home/etbra/live.infinita/deploy/apply-navigation-numeric-compatibility-008cj-root.sh`. O instalador faz backup e verifica o serviço, sem reiniciar renderer ou Memoria.ia.

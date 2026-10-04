@@ -27,6 +27,13 @@ def number(value, bound=10_000_000_000):
         fail()
     return value
 
+def integer(value, minimum=0, maximum=10_000_000_000):
+    # Godot JSON parsing converts integers to doubles on renderer restart.
+    value = number(value, maximum)
+    if value < minimum or value != int(value):
+        fail()
+    return int(value)
+
 def point(value):
     if not isinstance(value, list) or len(value) != 2:
         fail()
@@ -38,8 +45,7 @@ def context(value):
     world_id = value.get("world_id")
     if not isinstance(world_id, str) or not 1 <= len(world_id) <= 160:
         fail()
-    if type(value.get("world_sequence")) is not int or value["world_sequence"] < 0:
-        fail()
+    value["world_sequence"] = integer(value.get("world_sequence"))
     if value.get("observer_entity_id") != "nov":
         fail()
     p = value.get("runtime_position")
@@ -53,10 +59,11 @@ def validate_episode(row):
     if not isinstance(row, dict):
         fail()
     session = row.get("session_id")
-    seq = row.get("sequence")
+    seq = integer(row.get("sequence"), 1)
+    row["sequence"] = seq
     if not isinstance(session, str) or not re.fullmatch("[0-9a-f]{32}", session):
         fail()
-    if type(seq) is not int or seq < 1 or row.get("episode_id") != f"{session}:{seq}":
+    if row.get("episode_id") != f"{session}:{seq}":
         fail()
     if row.get("coordinate_space") != "godot-renderer-xz-metres" or row.get("world_write_authority") is not False or row.get("chronological_episode") is not True:
         fail()
@@ -69,8 +76,7 @@ def validate_episode(row):
             fail()
         if action.get("physical_attempt") is not (action["outcome"] != "no_passage_sensed"):
             fail()
-        if type(action.get("collisions")) is not int or not 0 <= action["collisions"] <= 1:
-            fail()
+        action["collisions"] = integer(action.get("collisions"), 0, 1)
         if not isinstance(action.get("surface"), str) or len(action["surface"]) > 100:
             fail()
         start_world = context(action.get("context_start"))
@@ -87,8 +93,9 @@ def validate_episode(row):
         if action["started_at_ms"] < last_time:
             fail()
         last_time = action["started_at_ms"] + action["duration_ms"]
-        if type(action.get("decision_serial")) is not int or action["decision_serial"] < 1:
-            fail()
+        action["decision_serial"] = integer(action.get("decision_serial"), 1)
+        for name in ("started_at_ms", "duration_ms"):
+            action[name] = integer(action[name])
         if action.get("goal_kind") != "projected_runtime_observer_position":
             fail()
         source = action.get("decision_source")
@@ -137,8 +144,7 @@ def read_source(path):
     rows = data.get("episodes")
     if not isinstance(rows, list) or len(rows) > 16:
         fail()
-    if type(data.get("dropped_episodes")) is not int or data["dropped_episodes"] < 0:
-        fail()
+    data["dropped_episodes"] = integer(data.get("dropped_episodes"))
     seen = set()
     for row in rows:
         validate_episode(row)
@@ -192,7 +198,10 @@ def archive_episode(row, root):
         with gzip.open(path, "rb") as f:
             existing = f.read(MAX_BYTES + 1)
         if existing != raw:
-            raise ValueError("episode_archive_identity_changed")
+            # Compare validated numerical meaning while preserving immutable bytes.
+            if len(existing) > MAX_BYTES or validate_episode(json.loads(existing)) != row:
+                raise ValueError("episode_archive_identity_changed")
+        info["sha256"] = sha256(existing).hexdigest()
         return info
     fd, name = tempfile.mkstemp(prefix=path.name + ".", dir=directory)
     try:

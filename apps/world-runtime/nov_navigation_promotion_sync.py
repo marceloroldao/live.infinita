@@ -1,4 +1,5 @@
 """Promote bounded, causally reused RAM experiences to local Memoria.ia."""
+from nov_navigation_episode_sync import integer
 from hashlib import blake2b
 import json
 from pathlib import Path
@@ -30,7 +31,10 @@ def read_source(source, world_id):
         raise ValueError("promotion_limit")
     keys=set()
     for row in rows:
-        if not isinstance(row,dict) or type(row.get("successful_causal_reuses")) is not int or row.get("successful_causal_reuses")!=3:
+        if not isinstance(row,dict):
+            raise ValueError("promotion_support_invalid")
+        row["successful_causal_reuses"] = integer(row.get("successful_causal_reuses"), 3, 3)
+        if row["successful_causal_reuses"]!=3:
             raise ValueError("promotion_support_invalid")
         ids=row.get("decision_ids")
         if (not isinstance(ids,list) or len(ids)!=3 or
@@ -39,8 +43,9 @@ def read_source(source, world_id):
         if len({i.split(":")[0] for i in ids})!=1:
             raise ValueError("promotion_session_invalid")
         item=row.get("summary")
-        if not isinstance(item,dict) or item.get("kind")!="successful_route_step" or type(item.get("observed_count")) is not int or item.get("observed_count")!=1:
+        if not isinstance(item,dict) or item.get("kind")!="successful_route_step":
             raise ValueError("promotion_summary_invalid")
+        item["observed_count"] = integer(item.get("observed_count"), 1, 1)
         key=item.get("key","")
         if not re.fullmatch(r"-?\d+,-?\d+\|-?\d+,-?\d+",key) or key in keys:
             raise ValueError("promotion_address_invalid")
