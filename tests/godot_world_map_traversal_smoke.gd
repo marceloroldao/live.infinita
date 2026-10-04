@@ -136,8 +136,10 @@ func run() -> void:
         [{"id":"clearing","center":{"x":640.0,"y":360.0},"radius":150.0}],
         999, cognitive_fixture
     )
-    check(stage._height(memory_center.x, memory_center.y) > base_memory_height + 5.0,
-        "Repeated memory must lift terrain visually")
+    check(stage._proposed_raw_height(memory_center.x, memory_center.y) > base_memory_height + 5.0,
+        "Repeated memory must propose uplift")
+    check(is_equal_approx(stage._height(memory_center.x, memory_center.y), base_memory_height),
+        "New inference must preserve already consolidated ground")
     check(stage._cognitive_terrain.lake_count() == 1, "Memory basin must create one visual lake")
     check(stage._tiles.size() <= 9, "Cognitive terrain rebuild must preserve tile cap")
     var authoritative: Vector3 = stage._position
