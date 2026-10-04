@@ -35,3 +35,8 @@ the tests, backs up changed runtime files, installs them, validates live evidenc
 and restarts only the autonomous-world service. It checks clock advancement
 and API health and restores previous files if installation or validation fails.
 This does not require a Godot export: rendering assets remain at 008BX.
+
+Rollout readiness allows up to 120 seconds for startup and clock advancement,
+with two-second probes. Execution output is saved to /home/etbra/008by-rollout.log.
+The first attempt rolled back after its original eight-second probe; the
+previous runtime stayed healthy. A slow startup is suspected, not yet proven.

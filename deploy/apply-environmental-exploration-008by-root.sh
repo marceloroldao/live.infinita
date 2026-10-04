@@ -8,6 +8,12 @@ DST="$INSTALL/apps/world-runtime"
 SERVICE=live-infinita-autonomous-world.service
 PYTHON="$INSTALL/.venv/bin/python"
 cd "$REPO"
+LOG=/home/etbra/008by-rollout.log
+touch "$LOG"
+chown etbra:etbra "$LOG"
+chmod 0644 "$LOG"
+exec > >(tee -a "$LOG") 2>&1
+echo "008BY_START $(date -u +%FT%TZ)"
 test -z "$(git status --porcelain)"
 SHA="$(git rev-parse HEAD)"
 BASE=53c002f9ade568ddc913e95ab5eac83a125c2bd7
@@ -67,15 +73,30 @@ print("008BY_ENVIRONMENT_OK",value["state_id"],len(value["regions"]))
 PY
 BEFORE="$("$PYTHON" -c 'import json; print(json.load(open("/var/lib/live-infinita/autonomous-world/simulation-clock.json"))["tick"])')"
 systemctl restart "$SERVICE"
-sleep 8
-systemctl is-active --quiet "$SERVICE"
 "$PYTHON" - "$BEFORE" <<'PY'
-import json,sys,urllib.request
-tick=json.load(open("/var/lib/live-infinita/autonomous-world/simulation-clock.json"))["tick"]
-assert tick > int(sys.argv[1]), "Simulation clock did not advance"
-with urllib.request.urlopen("http://127.0.0.1:8080/api/health",timeout=10) as r:
-    assert json.load(r)["ok"] is True
-print("008BY_RUNTIME_OK tick",tick)
+import json,sys,time,subprocess,urllib.request
+from pathlib import Path
+clock=Path("/var/lib/live-infinita/autonomous-world/simulation-clock.json")
+before=int(sys.argv[1])
+deadline=time.monotonic()+120
+last_error="clock not advancing"
+while time.monotonic() < deadline:
+    status=subprocess.run(["systemctl","is-active","--quiet","live-infinita-autonomous-world.service"])
+    try:
+        tick=json.loads(clock.read_text())["tick"]
+        if status.returncode == 0 and tick > before:
+            with urllib.request.urlopen("http://127.0.0.1:8080/api/health",timeout=5) as r:
+                assert json.load(r)["ok"] is True
+            print("008BY_RUNTIME_OK tick",tick,flush=True)
+            break
+        last_error=f"service_active={status.returncode == 0} tick={tick} before={before}"
+    except (OSError,ValueError,KeyError,AssertionError) as exc:
+        last_error=f"{type(exc).__name__}: {exc}"
+    print("008BY_WAIT",last_error,flush=True)
+    time.sleep(2)
+else:
+    subprocess.run(["journalctl","-u","live-infinita-autonomous-world.service","-n","60","--no-pager"])
+    raise RuntimeError("Runtime readiness timed out: "+last_error)
 PY
 trap - ERR
 echo "008BY_OK source=$SHA backup=$BACKUP"
