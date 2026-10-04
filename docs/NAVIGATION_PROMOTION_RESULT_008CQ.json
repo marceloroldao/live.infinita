@@ -1,0 +1,3266 @@
+{
+  "schema": "live-infinita-navigation-promotion-benchmark/v1",
+  "scope": "isolated_physics_production_RAM_and_real_core_API_temporary_SQLite",
+  "fixture": "physical-U",
+  "fixed_delta_seconds": 0.1,
+  "speed_mps": 4.0,
+  "production_memory_written": false,
+  "world_write_authority": false,
+  "memory_seed": "only_actual_completed_actions_no_injected_route",
+  "source_hashes": {
+    "nov_navigation_experience.gd": "55ee645373516c79136c260b2638542edf3150d18c7997fb8cc144b6fc06721f",
+    "nov_navigation_working_memory.gd": "ab8fe7f5fb8d60c2cbcee417a3f88e30b2d3e54d974fa2e41d10103ffa08bd4c",
+    "nov_navigation_episodes.gd": "eebbac8c8cba3558e2a94b956353c20065899ec002943e389dc426077d91e0f2",
+    "world_map_local_motion.gd": "554b2bfbc18c16298cb0524b7651d0b0b7a2375afcda3851f04b360aec5156ef",
+    "world_map_traversability.gd": "33134c7312f80726c995f14c5a8267d13240e766ae99a32ef266c193a6707460",
+    "memoria_resolutiva.product_structural": "71de27b125b5ca2e30ab1abc6af83ed02e34e27f8034878d92c87c7825f6fce9",
+    "nov_navigation_promotion_sync": "84787533a2d23dbde3f02812cd3e5bb2ce317d222b3015ab03319df7aad140b9",
+    "nov_navigation_recall_export": "ba2b2b9ad3dfb02e2a9467ab220e404dd9718bf2a8f2cb260ac6d44a96ee6cf1"
+  },
+  "control_reproduced": true,
+  "sqlite_reopened": true,
+  "fresh_navigator_after_recall": true,
+  "promotions_verified": 6,
+  "api_acks": 6,
+  "api_recovered": 6,
+  "training_results": [
+    {
+      "causal_memoria_decisions": 0,
+      "collisions": 0,
+      "completed_actions": 58,
+      "decisions": 58,
+      "distance_m": 57.6198825389147,
+      "mode": "without_memory",
+      "promoted_entries": 0,
+      "promotion_counted_ram_reuses": 0,
+      "ram_entries": 0,
+      "reached": true,
+      "selected_observation_ids": [],
+      "simulated_seconds": 17.3,
+      "ticks": 173,
+      "trial": 1,
+      "verified_causal_memoria_actions": 0,
+      "verified_causal_ram_actions": 0
+    },
+    {
+      "causal_memoria_decisions": 0,
+      "collisions": 0,
+      "completed_actions": 58,
+      "decisions": 58,
+      "distance_m": 57.6198825389147,
+      "mode": "without_memory",
+      "promoted_entries": 0,
+      "promotion_counted_ram_reuses": 0,
+      "ram_entries": 0,
+      "reached": true,
+      "selected_observation_ids": [],
+      "simulated_seconds": 17.3,
+      "ticks": 173,
+      "trial": 2,
+      "verified_causal_memoria_actions": 0,
+      "verified_causal_ram_actions": 0
+    },
+    {
+      "causal_memoria_decisions": 0,
+      "collisions": 0,
+      "completed_actions": 66,
+      "decisions": 66,
+      "distance_m": 65.7942117899656,
+      "mode": "ram_training",
+      "promoted_entries": 0,
+      "promotion_counted_ram_reuses": 2,
+      "ram_entries": 57,
+      "reached": true,
+      "selected_observation_ids": [],
+      "simulated_seconds": 19.7,
+      "ticks": 197,
+      "trial": 1,
+      "verified_causal_memoria_actions": 0,
+      "verified_causal_ram_actions": 2
+    },
+    {
+      "causal_memoria_decisions": 0,
+      "collisions": 0,
+      "completed_actions": 60,
+      "decisions": 60,
+      "distance_m": 60.5136225447059,
+      "mode": "ram_training",
+      "promoted_entries": 0,
+      "promotion_counted_ram_reuses": 6,
+      "ram_entries": 58,
+      "reached": true,
+      "selected_observation_ids": [],
+      "simulated_seconds": 18.1,
+      "ticks": 181,
+      "trial": 2,
+      "verified_causal_memoria_actions": 0,
+      "verified_causal_ram_actions": 6
+    },
+    {
+      "causal_memoria_decisions": 0,
+      "collisions": 0,
+      "completed_actions": 61,
+      "decisions": 61,
+      "distance_m": 61.1791109144688,
+      "mode": "ram_training",
+      "promoted_entries": 2,
+      "promotion_counted_ram_reuses": 8,
+      "ram_entries": 58,
+      "reached": true,
+      "selected_observation_ids": [],
+      "simulated_seconds": 18.3,
+      "ticks": 183,
+      "trial": 3,
+      "verified_causal_memoria_actions": 0,
+      "verified_causal_ram_actions": 8
+    },
+    {
+      "causal_memoria_decisions": 0,
+      "collisions": 0,
+      "completed_actions": 56,
+      "decisions": 56,
+      "distance_m": 56.3691868558526,
+      "mode": "ram_training",
+      "promoted_entries": 4,
+      "promotion_counted_ram_reuses": 6,
+      "ram_entries": 58,
+      "reached": true,
+      "selected_observation_ids": [],
+      "simulated_seconds": 16.9,
+      "ticks": 169,
+      "trial": 4,
+      "verified_causal_memoria_actions": 0,
+      "verified_causal_ram_actions": 7
+    },
+    {
+      "causal_memoria_decisions": 0,
+      "collisions": 0,
+      "completed_actions": 53,
+      "decisions": 53,
+      "distance_m": 53.0645440742373,
+      "mode": "ram_training",
+      "promoted_entries": 6,
+      "promotion_counted_ram_reuses": 2,
+      "ram_entries": 58,
+      "reached": true,
+      "selected_observation_ids": [],
+      "simulated_seconds": 15.9,
+      "ticks": 159,
+      "trial": 5,
+      "verified_causal_memoria_actions": 0,
+      "verified_causal_ram_actions": 5
+    },
+    {
+      "causal_memoria_decisions": 0,
+      "collisions": 0,
+      "completed_actions": 53,
+      "decisions": 53,
+      "distance_m": 53.0645440742373,
+      "mode": "ram_training",
+      "promoted_entries": 6,
+      "promotion_counted_ram_reuses": 0,
+      "ram_entries": 58,
+      "reached": true,
+      "selected_observation_ids": [],
+      "simulated_seconds": 15.9,
+      "ticks": 159,
+      "trial": 6,
+      "verified_causal_memoria_actions": 0,
+      "verified_causal_ram_actions": 5
+    }
+  ],
+  "after_restart_results": [
+    {
+      "causal_memoria_decisions": 5,
+      "collisions": 0,
+      "completed_actions": 41,
+      "decisions": 41,
+      "distance_m": 42.1322233825922,
+      "mode": "after_restart_memoria",
+      "promoted_entries": 0,
+      "promotion_counted_ram_reuses": 0,
+      "ram_entries": 0,
+      "reached": true,
+      "selected_observation_ids": [
+        "structural-event:dbdc8b7e8d7d9fb2e9ffa470721a75ae1796e470",
+        "structural-event:4e00b1290dabb9ac3908b3c3660515de2dc1ccff",
+        "structural-event:1105889b43dc79a6654cb1052a86b6249d39faf9"
+      ],
+      "simulated_seconds": 12.5,
+      "ticks": 125,
+      "trial": 1,
+      "verified_causal_memoria_actions": 5,
+      "verified_causal_ram_actions": 0
+    },
+    {
+      "causal_memoria_decisions": 5,
+      "collisions": 0,
+      "completed_actions": 41,
+      "decisions": 41,
+      "distance_m": 42.1322233825922,
+      "mode": "after_restart_memoria",
+      "promoted_entries": 0,
+      "promotion_counted_ram_reuses": 0,
+      "ram_entries": 0,
+      "reached": true,
+      "selected_observation_ids": [
+        "structural-event:dbdc8b7e8d7d9fb2e9ffa470721a75ae1796e470",
+        "structural-event:4e00b1290dabb9ac3908b3c3660515de2dc1ccff",
+        "structural-event:1105889b43dc79a6654cb1052a86b6249d39faf9"
+      ],
+      "simulated_seconds": 12.5,
+      "ticks": 125,
+      "trial": 2,
+      "verified_causal_memoria_actions": 5,
+      "verified_causal_ram_actions": 0
+    }
+  ],
+  "difference_from_cold_control": {
+    "final_ram": {
+      "distance_m": -4.555338464677405,
+      "simulated_seconds": -1.4000000000000004,
+      "collisions": 0,
+      "decisions": -5
+    },
+    "after_restart_memoria": {
+      "distance_m": -15.4876591563225,
+      "simulated_seconds": -4.800000000000001,
+      "collisions": 0,
+      "decisions": -17
+    }
+  },
+  "promotion_evidence": {
+    "entries": [
+      {
+        "decision_ids": [
+          "f931b78f13f0928092ae2c644de5ac73:72",
+          "f931b78f13f0928092ae2c644de5ac73:127",
+          "f931b78f13f0928092ae2c644de5ac73:131"
+        ],
+        "promoted_at_unix": 1791147035.46226,
+        "successful_causal_reuses": 3,
+        "summary": {
+          "from": [
+            -100.0,
+            0.0
+          ],
+          "goal": [
+            -94.0,
+            0.0
+          ],
+          "key": "-94,0|-100,0",
+          "kind": "successful_route_step",
+          "observed_count": 1,
+          "to": [
+            -101.006561279297,
+            0.161887496709824
+          ]
+        }
+      },
+      {
+        "decision_ids": [
+          "f931b78f13f0928092ae2c644de5ac73:65",
+          "f931b78f13f0928092ae2c644de5ac73:125",
+          "f931b78f13f0928092ae2c644de5ac73:186"
+        ],
+        "promoted_at_unix": 1791147035.68257,
+        "successful_causal_reuses": 3,
+        "summary": {
+          "from": [
+            -95.0,
+            0.0
+          ],
+          "goal": [
+            -94.0,
+            0.0
+          ],
+          "key": "-94,0|-95,0",
+          "kind": "successful_route_step",
+          "observed_count": 1,
+          "to": [
+            -94.8574371337891,
+            -0.510453820228577
+          ]
+        }
+      },
+      {
+        "decision_ids": [
+          "f931b78f13f0928092ae2c644de5ac73:77",
+          "f931b78f13f0928092ae2c644de5ac73:138",
+          "f931b78f13f0928092ae2c644de5ac73:194"
+        ],
+        "promoted_at_unix": 1791147035.71534,
+        "successful_causal_reuses": 3,
+        "summary": {
+          "from": [
+            -103.0,
+            0.0
+          ],
+          "goal": [
+            -94.0,
+            0.0
+          ],
+          "key": "-94,0|-103,0",
+          "kind": "successful_route_step",
+          "observed_count": 1,
+          "to": [
+            -104.127883911133,
+            -0.545219242572784
+          ]
+        }
+      },
+      {
+        "decision_ids": [
+          "f931b78f13f0928092ae2c644de5ac73:80",
+          "f931b78f13f0928092ae2c644de5ac73:141",
+          "f931b78f13f0928092ae2c644de5ac73:197"
+        ],
+        "promoted_at_unix": 1791147035.72833,
+        "successful_causal_reuses": 3,
+        "summary": {
+          "from": [
+            -104.0,
+            1.0
+          ],
+          "goal": [
+            -94.0,
+            0.0
+          ],
+          "key": "-94,0|-104,1",
+          "kind": "successful_route_step",
+          "observed_count": 1,
+          "to": [
+            -104.127883911133,
+            2.45478081703186
+          ]
+        }
+      },
+      {
+        "decision_ids": [
+          "f931b78f13f0928092ae2c644de5ac73:137",
+          "f931b78f13f0928092ae2c644de5ac73:193",
+          "f931b78f13f0928092ae2c644de5ac73:246"
+        ],
+        "promoted_at_unix": 1791147035.92868,
+        "successful_causal_reuses": 3,
+        "summary": {
+          "from": [
+            -102.0,
+            0.0
+          ],
+          "goal": [
+            -94.0,
+            0.0
+          ],
+          "key": "-94,0|-102,0",
+          "kind": "successful_route_step",
+          "observed_count": 1,
+          "to": [
+            -102.715621948242,
+            -0.482770949602127
+          ]
+        }
+      },
+      {
+        "decision_ids": [
+          "f931b78f13f0928092ae2c644de5ac73:139",
+          "f931b78f13f0928092ae2c644de5ac73:195",
+          "f931b78f13f0928092ae2c644de5ac73:248"
+        ],
+        "promoted_at_unix": 1791147035.93761,
+        "successful_causal_reuses": 3,
+        "summary": {
+          "from": [
+            -104.0,
+            -1.0
+          ],
+          "goal": [
+            -94.0,
+            0.0
+          ],
+          "key": "-94,0|-104,-1",
+          "kind": "successful_route_step",
+          "observed_count": 1,
+          "to": [
+            -104.127883911133,
+            0.454780757427216
+          ]
+        }
+      }
+    ],
+    "schema": "live-infinita-nov-navigation-promotions/v1",
+    "source": "native_renderer_working_memory",
+    "world_id": "navigation-promotion-008cq",
+    "world_write_authority": false
+  },
+  "promotion_evidence_actions": {
+    "f931b78f13f0928092ae2c644de5ac73:125": {
+      "collisions": 0,
+      "context_end": {
+        "observer_entity_id": "nov",
+        "region_id": "fixture",
+        "runtime_position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "world_id": "navigation-promotion-008cq",
+        "world_sequence": 1
+      },
+      "context_start": {
+        "observer_entity_id": "nov",
+        "region_id": "fixture",
+        "runtime_position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "world_id": "navigation-promotion-008cq",
+        "world_sequence": 1
+      },
+      "decision_serial": 125,
+      "decision_source": "working-memory",
+      "duration_ms": 0,
+      "end": [
+        -94.8574371337891,
+        -0.510453820228577
+      ],
+      "ended_at_unix": 1791147035.43686,
+      "goal": [
+        -94.0,
+        0.0
+      ],
+      "goal_kind": "projected_runtime_observer_position",
+      "memory_observation_id": "",
+      "outcome": "step_reached",
+      "perception": {
+        "candidates": [
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -94.0,
+              0.0
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -94.8574371337891,
+              -0.510453820228577
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -93.6614379882812,
+              0.254614353179932
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -93.9543304443359,
+              0.961721122264862
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -94.6614379882812,
+              1.25461435317993
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -95.3685455322266,
+              0.961721122264862
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -95.6614379882812,
+              0.254614263772964
+            ],
+            "reason": "static_obstacle"
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -95.3685455322266,
+              -0.452492356300354
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -94.6614379882812,
+              -0.745385646820068
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -93.9543304443359,
+              -0.452492535114288
+            ],
+            "reason": ""
+          }
+        ],
+        "lookahead_m": 3.0,
+        "without_memoria": [
+          -94.8574371337891,
+          -0.510453820228577
+        ],
+        "without_working_memory": [
+          -94.0,
+          0.0
+        ]
+      },
+      "physical_attempt": true,
+      "reason": "",
+      "remaining_goal_m": 0.99787849187851,
+      "route_goal_id": "",
+      "selected": [
+        -94.8574371337891,
+        -0.510453820228577
+      ],
+      "start": [
+        -94.6614379882812,
+        0.254614353179932
+      ],
+      "started_at_ms": 1381,
+      "started_at_unix": 1791147035.43661,
+      "surface": "terrain",
+      "working_memory_changed_choice": true,
+      "working_memory_key": "-94,0|-95,0",
+      "working_memory_session": "f931b78f13f0928092ae2c644de5ac73"
+    },
+    "f931b78f13f0928092ae2c644de5ac73:127": {
+      "collisions": 0,
+      "context_end": {
+        "observer_entity_id": "nov",
+        "region_id": "fixture",
+        "runtime_position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "world_id": "navigation-promotion-008cq",
+        "world_sequence": 1
+      },
+      "context_start": {
+        "observer_entity_id": "nov",
+        "region_id": "fixture",
+        "runtime_position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "world_id": "navigation-promotion-008cq",
+        "world_sequence": 1
+      },
+      "decision_serial": 127,
+      "decision_source": "working-memory",
+      "duration_ms": 0,
+      "end": [
+        -101.006561279297,
+        0.161887496709824
+      ],
+      "ended_at_unix": 1791147035.44641,
+      "goal": [
+        -94.0,
+        0.0
+      ],
+      "goal_kind": "projected_runtime_observer_position",
+      "memory_observation_id": "",
+      "outcome": "step_reached",
+      "perception": {
+        "candidates": [
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -99.0,
+              0.0
+            ],
+            "reason": "static_obstacle"
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -101.006561279297,
+              0.161887496709824
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -99.0,
+              0.0
+            ],
+            "reason": "static_obstacle"
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -99.2928924560547,
+              0.70710676908493
+            ],
+            "reason": "static_obstacle"
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -100.0,
+              1.0
+            ],
+            "reason": "static_obstacle"
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -100.707107543945,
+              0.70710676908493
+            ],
+            "reason": "static_obstacle"
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -101.0,
+              -8.74227765734759e-08
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -100.707107543945,
+              -0.707106709480286
+            ],
+            "reason": "static_obstacle"
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -100.0,
+              -1.0
+            ],
+            "reason": "static_obstacle"
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -99.2928924560547,
+              -0.70710688829422
+            ],
+            "reason": "static_obstacle"
+          }
+        ],
+        "lookahead_m": 3.0,
+        "without_memoria": [
+          -101.006561279297,
+          0.161887496709824
+        ],
+        "without_working_memory": [
+          -101.0,
+          -8.74227765734759e-08
+        ]
+      },
+      "physical_attempt": true,
+      "reason": "",
+      "remaining_goal_m": 7.00843095779419,
+      "route_goal_id": "",
+      "selected": [
+        -101.006561279297,
+        0.161887496709824
+      ],
+      "start": [
+        -100.0,
+        0.0
+      ],
+      "started_at_ms": 1390,
+      "started_at_unix": 1791147035.44615,
+      "surface": "terrain",
+      "working_memory_changed_choice": true,
+      "working_memory_key": "-94,0|-100,0",
+      "working_memory_session": "f931b78f13f0928092ae2c644de5ac73"
+    },
+    "f931b78f13f0928092ae2c644de5ac73:131": {
+      "collisions": 0,
+      "context_end": {
+        "observer_entity_id": "nov",
+        "region_id": "fixture",
+        "runtime_position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "world_id": "navigation-promotion-008cq",
+        "world_sequence": 1
+      },
+      "context_start": {
+        "observer_entity_id": "nov",
+        "region_id": "fixture",
+        "runtime_position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "world_id": "navigation-promotion-008cq",
+        "world_sequence": 1
+      },
+      "decision_serial": 131,
+      "decision_source": "working-memory",
+      "duration_ms": 0,
+      "end": [
+        -101.006561279297,
+        0.161887496709824
+      ],
+      "ended_at_unix": 1791147035.46208,
+      "goal": [
+        -94.0,
+        0.0
+      ],
+      "goal_kind": "projected_runtime_observer_position",
+      "memory_observation_id": "",
+      "outcome": "step_reached",
+      "perception": {
+        "candidates": [
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -99.0069274902344,
+              0.134945571422577
+            ],
+            "reason": "static_obstacle"
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -101.006561279297,
+              0.161887496709824
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -99.0065612792969,
+              0.161887586116791
+            ],
+            "reason": "static_obstacle"
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -99.2994537353516,
+              0.868994355201721
+            ],
+            "reason": "static_obstacle"
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -100.006561279297,
+              1.16188764572144
+            ],
+            "reason": "static_obstacle"
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -100.713668823242,
+              0.868994355201721
+            ],
+            "reason": "static_obstacle"
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -101.006561279297,
+              0.161887496709824
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -100.713668823242,
+              -0.545219123363495
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -100.006561279297,
+              -0.838112413883209
+            ],
+            "reason": "static_obstacle"
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -99.2994537353516,
+              -0.545219302177429
+            ],
+            "reason": "static_obstacle"
+          }
+        ],
+        "lookahead_m": 3.0,
+        "without_memoria": [
+          -101.006561279297,
+          0.161887496709824
+        ],
+        "without_working_memory": [
+          -100.713668823242,
+          -0.545219123363495
+        ]
+      },
+      "physical_attempt": true,
+      "reason": "",
+      "remaining_goal_m": 7.00843095779419,
+      "route_goal_id": "",
+      "selected": [
+        -101.006561279297,
+        0.161887496709824
+      ],
+      "start": [
+        -100.006561279297,
+        0.161887586116791
+      ],
+      "started_at_ms": 1406,
+      "started_at_unix": 1791147035.46179,
+      "surface": "terrain",
+      "working_memory_changed_choice": true,
+      "working_memory_key": "-94,0|-100,0",
+      "working_memory_session": "f931b78f13f0928092ae2c644de5ac73"
+    },
+    "f931b78f13f0928092ae2c644de5ac73:137": {
+      "collisions": 0,
+      "context_end": {
+        "observer_entity_id": "nov",
+        "region_id": "fixture",
+        "runtime_position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "world_id": "navigation-promotion-008cq",
+        "world_sequence": 1
+      },
+      "context_start": {
+        "observer_entity_id": "nov",
+        "region_id": "fixture",
+        "runtime_position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "world_id": "navigation-promotion-008cq",
+        "world_sequence": 1
+      },
+      "decision_serial": 137,
+      "decision_source": "working-memory",
+      "duration_ms": 1,
+      "end": [
+        -102.715621948242,
+        -0.482770979404449
+      ],
+      "ended_at_unix": 1791147035.48551,
+      "goal": [
+        -94.0,
+        0.0
+      ],
+      "goal_kind": "projected_runtime_observer_position",
+      "memory_observation_id": "",
+      "outcome": "step_reached",
+      "perception": {
+        "candidates": [
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -101.006767272949,
+              0.141672149300575
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -102.715621948242,
+              -0.482770949602127
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -101.006561279297,
+              0.161887347698212
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -101.299453735352,
+              0.868994116783142
+            ],
+            "reason": "static_obstacle"
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -102.006561279297,
+              1.16188740730286
+            ],
+            "reason": "static_obstacle"
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -102.713668823242,
+              0.868994116783142
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -103.006561279297,
+              0.161887258291245
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -102.713668823242,
+              -0.545219361782074
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -102.006561279297,
+              -0.838112652301788
+            ],
+            "reason": "static_obstacle"
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -101.299453735352,
+              -0.545219540596008
+            ],
+            "reason": ""
+          }
+        ],
+        "lookahead_m": 3.0,
+        "without_memoria": [
+          -102.715621948242,
+          -0.482770949602127
+        ],
+        "without_working_memory": [
+          -102.713668823242,
+          -0.545219361782074
+        ]
+      },
+      "physical_attempt": true,
+      "reason": "",
+      "remaining_goal_m": 8.72898292541504,
+      "route_goal_id": "",
+      "selected": [
+        -102.715621948242,
+        -0.482770949602127
+      ],
+      "start": [
+        -102.006561279297,
+        0.161887347698212
+      ],
+      "started_at_ms": 1429,
+      "started_at_unix": 1791147035.48524,
+      "surface": "terrain",
+      "working_memory_changed_choice": true,
+      "working_memory_key": "-94,0|-102,0",
+      "working_memory_session": "f931b78f13f0928092ae2c644de5ac73"
+    },
+    "f931b78f13f0928092ae2c644de5ac73:138": {
+      "collisions": 0,
+      "context_end": {
+        "observer_entity_id": "nov",
+        "region_id": "fixture",
+        "runtime_position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "world_id": "navigation-promotion-008cq",
+        "world_sequence": 1
+      },
+      "context_start": {
+        "observer_entity_id": "nov",
+        "region_id": "fixture",
+        "runtime_position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "world_id": "navigation-promotion-008cq",
+        "world_sequence": 1
+      },
+      "decision_serial": 138,
+      "decision_source": "working-memory",
+      "duration_ms": 1,
+      "end": [
+        -104.127883911133,
+        -0.545219242572784
+      ],
+      "ended_at_unix": 1791147035.48952,
+      "goal": [
+        -94.0,
+        0.0
+      ],
+      "goal_kind": "projected_runtime_observer_position",
+      "memory_observation_id": "",
+      "outcome": "step_reached",
+      "perception": {
+        "candidates": [
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -101.717155456543,
+              -0.427464306354523
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -104.127883911133,
+              -0.545219242572784
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -101.715621948242,
+              -0.482770979404449
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -102.008514404297,
+              0.224335789680481
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -102.715621948242,
+              0.517229020595551
+            ],
+            "reason": "static_obstacle"
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -103.422729492188,
+              0.224335789680481
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -103.715621948242,
+              -0.482771068811417
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -103.422729492188,
+              -1.18987774848938
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -102.715621948242,
+              -1.4827709197998
+            ],
+            "reason": "static_obstacle"
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -102.008514404297,
+              -1.18987786769867
+            ],
+            "reason": "static_obstacle"
+          }
+        ],
+        "lookahead_m": 3.0,
+        "without_memoria": [
+          -104.127883911133,
+          -0.545219242572784
+        ],
+        "without_working_memory": [
+          -103.422729492188,
+          -1.18987774848938
+        ]
+      },
+      "physical_attempt": true,
+      "reason": "",
+      "remaining_goal_m": 10.1425485610962,
+      "route_goal_id": "",
+      "selected": [
+        -104.127883911133,
+        -0.545219242572784
+      ],
+      "start": [
+        -102.715621948242,
+        -0.482770979404449
+      ],
+      "started_at_ms": 1433,
+      "started_at_unix": 1791147035.48915,
+      "surface": "terrain",
+      "working_memory_changed_choice": true,
+      "working_memory_key": "-94,0|-103,0",
+      "working_memory_session": "f931b78f13f0928092ae2c644de5ac73"
+    },
+    "f931b78f13f0928092ae2c644de5ac73:139": {
+      "collisions": 0,
+      "context_end": {
+        "observer_entity_id": "nov",
+        "region_id": "fixture",
+        "runtime_position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "world_id": "navigation-promotion-008cq",
+        "world_sequence": 1
+      },
+      "context_start": {
+        "observer_entity_id": "nov",
+        "region_id": "fixture",
+        "runtime_position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "world_id": "navigation-promotion-008cq",
+        "world_sequence": 1
+      },
+      "decision_serial": 139,
+      "decision_source": "working-memory",
+      "duration_ms": 1,
+      "end": [
+        -104.127883911133,
+        0.454780757427216
+      ],
+      "ended_at_unix": 1791147035.49368,
+      "goal": [
+        -94.0,
+        0.0
+      ],
+      "goal_kind": "projected_runtime_observer_position",
+      "memory_observation_id": "",
+      "outcome": "step_reached",
+      "perception": {
+        "candidates": [
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -103.129333496094,
+              -0.491463601589203
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -104.127883911133,
+              0.454780757427216
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -103.127883911133,
+              -0.545219242572784
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -103.420776367188,
+              0.161887526512146
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -104.127883911133,
+              0.454780757427216
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -104.834991455078,
+              0.161887526512146
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -105.127883911133,
+              -0.545219302177429
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -104.834991455078,
+              -1.25232601165771
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -104.127883911133,
+              -1.54521918296814
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -103.420776367188,
+              -1.252326130867
+            ],
+            "reason": "static_obstacle"
+          }
+        ],
+        "lookahead_m": 3.0,
+        "without_memoria": [
+          -104.127883911133,
+          0.454780757427216
+        ],
+        "without_working_memory": [
+          -103.127883911133,
+          -0.545219242572784
+        ]
+      },
+      "physical_attempt": true,
+      "reason": "",
+      "remaining_goal_m": 10.1380891799927,
+      "route_goal_id": "",
+      "selected": [
+        -104.127883911133,
+        0.454780757427216
+      ],
+      "start": [
+        -104.127883911133,
+        -0.545219242572784
+      ],
+      "started_at_ms": 1437,
+      "started_at_unix": 1791147035.4934,
+      "surface": "terrain",
+      "working_memory_changed_choice": true,
+      "working_memory_key": "-94,0|-104,-1",
+      "working_memory_session": "f931b78f13f0928092ae2c644de5ac73"
+    },
+    "f931b78f13f0928092ae2c644de5ac73:141": {
+      "collisions": 0,
+      "context_end": {
+        "observer_entity_id": "nov",
+        "region_id": "fixture",
+        "runtime_position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "world_id": "navigation-promotion-008cq",
+        "world_sequence": 1
+      },
+      "context_start": {
+        "observer_entity_id": "nov",
+        "region_id": "fixture",
+        "runtime_position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "world_id": "navigation-promotion-008cq",
+        "world_sequence": 1
+      },
+      "decision_serial": 141,
+      "decision_source": "working-memory",
+      "duration_ms": 0,
+      "end": [
+        -104.127883911133,
+        2.45478081703186
+      ],
+      "ended_at_unix": 1791147035.50194,
+      "goal": [
+        -94.0,
+        0.0
+      ],
+      "goal_kind": "projected_runtime_observer_position",
+      "memory_observation_id": "",
+      "outcome": "step_reached",
+      "perception": {
+        "candidates": [
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -103.138046264648,
+              1.31259894371033
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -104.127883911133,
+              2.45478081703186
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -103.127883911133,
+              1.45478081703186
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": false,
+            "clear_ahead": false,
+            "point": [
+              -103.420776367188,
+              2.16188764572144
+            ],
+            "reason": "static_obstacle"
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -104.127883911133,
+              2.45478081703186
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -104.834991455078,
+              2.16188764572144
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -105.127883911133,
+              1.45478069782257
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -104.834991455078,
+              0.747674107551575
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -104.127883911133,
+              0.45478081703186
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -103.420776367188,
+              0.74767392873764
+            ],
+            "reason": ""
+          }
+        ],
+        "lookahead_m": 3.0,
+        "without_memoria": [
+          -104.127883911133,
+          2.45478081703186
+        ],
+        "without_working_memory": [
+          -103.138046264648,
+          1.31259894371033
+        ]
+      },
+      "physical_attempt": true,
+      "reason": "",
+      "remaining_goal_m": 10.4211311340332,
+      "route_goal_id": "",
+      "selected": [
+        -104.127883911133,
+        2.45478081703186
+      ],
+      "start": [
+        -104.127883911133,
+        1.45478081703186
+      ],
+      "started_at_ms": 1446,
+      "started_at_unix": 1791147035.50159,
+      "surface": "terrain",
+      "working_memory_changed_choice": true,
+      "working_memory_key": "-94,0|-104,1",
+      "working_memory_session": "f931b78f13f0928092ae2c644de5ac73"
+    },
+    "f931b78f13f0928092ae2c644de5ac73:186": {
+      "collisions": 0,
+      "context_end": {
+        "observer_entity_id": "nov",
+        "region_id": "fixture",
+        "runtime_position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "world_id": "navigation-promotion-008cq",
+        "world_sequence": 1
+      },
+      "context_start": {
+        "observer_entity_id": "nov",
+        "region_id": "fixture",
+        "runtime_position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "world_id": "navigation-promotion-008cq",
+        "world_sequence": 1
+      },
+      "decision_serial": 186,
+      "decision_source": "working-memory",
+      "duration_ms": 0,
+      "end": [
+        -94.8574371337891,
+        -0.510453820228577
+      ],
+      "ended_at_unix": 1791147035.68233,
+      "goal": [
+        -94.0,
+        0.0
+      ],
+      "goal_kind": "projected_runtime_observer_position",
+      "memory_observation_id": "",
+      "outcome": "step_reached",
+      "perception": {
+        "candidates": [
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -94.0,
+              0.0
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -94.8574371337891,
+              -0.510453820228577
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -93.6614379882812,
+              0.254614353179932
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -93.9543304443359,
+              0.961721122264862
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -94.6614379882812,
+              1.25461435317993
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -95.3685455322266,
+              0.961721122264862
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -95.6614379882812,
+              0.254614263772964
+            ],
+            "reason": "static_obstacle"
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -95.3685455322266,
+              -0.452492356300354
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -94.6614379882812,
+              -0.745385646820068
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -93.9543304443359,
+              -0.452492535114288
+            ],
+            "reason": ""
+          }
+        ],
+        "lookahead_m": 3.0,
+        "without_memoria": [
+          -94.8574371337891,
+          -0.510453820228577
+        ],
+        "without_working_memory": [
+          -94.0,
+          0.0
+        ]
+      },
+      "physical_attempt": true,
+      "reason": "",
+      "remaining_goal_m": 0.99787849187851,
+      "route_goal_id": "",
+      "selected": [
+        -94.8574371337891,
+        -0.510453820228577
+      ],
+      "start": [
+        -94.6614379882812,
+        0.254614353179932
+      ],
+      "started_at_ms": 1626,
+      "started_at_unix": 1791147035.68187,
+      "surface": "terrain",
+      "working_memory_changed_choice": true,
+      "working_memory_key": "-94,0|-95,0",
+      "working_memory_session": "f931b78f13f0928092ae2c644de5ac73"
+    },
+    "f931b78f13f0928092ae2c644de5ac73:193": {
+      "collisions": 0,
+      "context_end": {
+        "observer_entity_id": "nov",
+        "region_id": "fixture",
+        "runtime_position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "world_id": "navigation-promotion-008cq",
+        "world_sequence": 1
+      },
+      "context_start": {
+        "observer_entity_id": "nov",
+        "region_id": "fixture",
+        "runtime_position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "world_id": "navigation-promotion-008cq",
+        "world_sequence": 1
+      },
+      "decision_serial": 193,
+      "decision_source": "working-memory",
+      "duration_ms": 0,
+      "end": [
+        -102.715621948242,
+        -0.482770949602127
+      ],
+      "ended_at_unix": 1791147035.71109,
+      "goal": [
+        -94.0,
+        0.0
+      ],
+      "goal_kind": "projected_runtime_observer_position",
+      "memory_observation_id": "",
+      "outcome": "step_reached",
+      "perception": {
+        "candidates": [
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -101.0,
+              -1.53096209487558e-07
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -102.715621948242,
+              -0.482770949602127
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -101.0,
+              -1.74967098587331e-07
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -101.292892456055,
+              0.707106590270996
+            ],
+            "reason": "static_obstacle"
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -102.0,
+              0.999999821186066
+            ],
+            "reason": "static_obstacle"
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -102.707107543945,
+              0.707106590270996
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -103.0,
+              -2.62389875160807e-07
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -102.707107543945,
+              -0.70710688829422
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -102.0,
+              -1.00000011920929
+            ],
+            "reason": "static_obstacle"
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -101.292892456055,
+              -0.707107067108154
+            ],
+            "reason": "static_obstacle"
+          }
+        ],
+        "lookahead_m": 3.0,
+        "without_memoria": [
+          -102.715621948242,
+          -0.482770949602127
+        ],
+        "without_working_memory": [
+          -102.707107543945,
+          0.707106590270996
+        ]
+      },
+      "physical_attempt": true,
+      "reason": "",
+      "remaining_goal_m": 8.72898292541504,
+      "route_goal_id": "",
+      "selected": [
+        -102.715621948242,
+        -0.482770949602127
+      ],
+      "start": [
+        -102.0,
+        -1.74967098587331e-07
+      ],
+      "started_at_ms": 1655,
+      "started_at_unix": 1791147035.71079,
+      "surface": "terrain",
+      "working_memory_changed_choice": true,
+      "working_memory_key": "-94,0|-102,0",
+      "working_memory_session": "f931b78f13f0928092ae2c644de5ac73"
+    },
+    "f931b78f13f0928092ae2c644de5ac73:194": {
+      "collisions": 0,
+      "context_end": {
+        "observer_entity_id": "nov",
+        "region_id": "fixture",
+        "runtime_position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "world_id": "navigation-promotion-008cq",
+        "world_sequence": 1
+      },
+      "context_start": {
+        "observer_entity_id": "nov",
+        "region_id": "fixture",
+        "runtime_position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "world_id": "navigation-promotion-008cq",
+        "world_sequence": 1
+      },
+      "decision_serial": 194,
+      "decision_source": "working-memory",
+      "duration_ms": 0,
+      "end": [
+        -104.127883911133,
+        -0.545219242572784
+      ],
+      "ended_at_unix": 1791147035.71518,
+      "goal": [
+        -94.0,
+        0.0
+      ],
+      "goal_kind": "projected_runtime_observer_position",
+      "memory_observation_id": "",
+      "outcome": "step_reached",
+      "perception": {
+        "candidates": [
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -101.717155456543,
+              -0.4274642765522
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -104.127883911133,
+              -0.545219242572784
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -101.715621948242,
+              -0.482770949602127
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -102.008514404297,
+              0.224335819482803
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -102.715621948242,
+              0.517229080200195
+            ],
+            "reason": "static_obstacle"
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -103.422729492188,
+              0.224335819482803
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -103.715621948242,
+              -0.482771039009094
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -103.422729492188,
+              -1.18987762928009
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -102.715621948242,
+              -1.4827709197998
+            ],
+            "reason": "static_obstacle"
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -102.008514404297,
+              -1.18987786769867
+            ],
+            "reason": "static_obstacle"
+          }
+        ],
+        "lookahead_m": 3.0,
+        "without_memoria": [
+          -104.127883911133,
+          -0.545219242572784
+        ],
+        "without_working_memory": [
+          -103.422729492188,
+          -1.18987762928009
+        ]
+      },
+      "physical_attempt": true,
+      "reason": "",
+      "remaining_goal_m": 10.1425485610962,
+      "route_goal_id": "",
+      "selected": [
+        -104.127883911133,
+        -0.545219242572784
+      ],
+      "start": [
+        -102.715621948242,
+        -0.482770949602127
+      ],
+      "started_at_ms": 1659,
+      "started_at_unix": 1791147035.71477,
+      "surface": "terrain",
+      "working_memory_changed_choice": true,
+      "working_memory_key": "-94,0|-103,0",
+      "working_memory_session": "f931b78f13f0928092ae2c644de5ac73"
+    },
+    "f931b78f13f0928092ae2c644de5ac73:195": {
+      "collisions": 0,
+      "context_end": {
+        "observer_entity_id": "nov",
+        "region_id": "fixture",
+        "runtime_position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "world_id": "navigation-promotion-008cq",
+        "world_sequence": 1
+      },
+      "context_start": {
+        "observer_entity_id": "nov",
+        "region_id": "fixture",
+        "runtime_position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "world_id": "navigation-promotion-008cq",
+        "world_sequence": 1
+      },
+      "decision_serial": 195,
+      "decision_source": "working-memory",
+      "duration_ms": 1,
+      "end": [
+        -104.127883911133,
+        0.454780757427216
+      ],
+      "ended_at_unix": 1791147035.71968,
+      "goal": [
+        -94.0,
+        0.0
+      ],
+      "goal_kind": "projected_runtime_observer_position",
+      "memory_observation_id": "",
+      "outcome": "step_reached",
+      "perception": {
+        "candidates": [
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -103.129333496094,
+              -0.491463601589203
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -104.127883911133,
+              0.454780757427216
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -103.127883911133,
+              -0.545219242572784
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -103.420776367188,
+              0.161887526512146
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -104.127883911133,
+              0.454780757427216
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -104.834991455078,
+              0.161887526512146
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -105.127883911133,
+              -0.545219302177429
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -104.834991455078,
+              -1.25232601165771
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -104.127883911133,
+              -1.54521918296814
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -103.420776367188,
+              -1.252326130867
+            ],
+            "reason": "static_obstacle"
+          }
+        ],
+        "lookahead_m": 3.0,
+        "without_memoria": [
+          -104.127883911133,
+          0.454780757427216
+        ],
+        "without_working_memory": [
+          -103.127883911133,
+          -0.545219242572784
+        ]
+      },
+      "physical_attempt": true,
+      "reason": "",
+      "remaining_goal_m": 10.1380891799927,
+      "route_goal_id": "",
+      "selected": [
+        -104.127883911133,
+        0.454780757427216
+      ],
+      "start": [
+        -104.127883911133,
+        -0.545219242572784
+      ],
+      "started_at_ms": 1663,
+      "started_at_unix": 1791147035.71941,
+      "surface": "terrain",
+      "working_memory_changed_choice": true,
+      "working_memory_key": "-94,0|-104,-1",
+      "working_memory_session": "f931b78f13f0928092ae2c644de5ac73"
+    },
+    "f931b78f13f0928092ae2c644de5ac73:197": {
+      "collisions": 0,
+      "context_end": {
+        "observer_entity_id": "nov",
+        "region_id": "fixture",
+        "runtime_position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "world_id": "navigation-promotion-008cq",
+        "world_sequence": 1
+      },
+      "context_start": {
+        "observer_entity_id": "nov",
+        "region_id": "fixture",
+        "runtime_position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "world_id": "navigation-promotion-008cq",
+        "world_sequence": 1
+      },
+      "decision_serial": 197,
+      "decision_source": "working-memory",
+      "duration_ms": 0,
+      "end": [
+        -104.127883911133,
+        2.45478081703186
+      ],
+      "ended_at_unix": 1791147035.72818,
+      "goal": [
+        -94.0,
+        0.0
+      ],
+      "goal_kind": "projected_runtime_observer_position",
+      "memory_observation_id": "",
+      "outcome": "step_reached",
+      "perception": {
+        "candidates": [
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -103.138046264648,
+              1.31259894371033
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -104.127883911133,
+              2.45478081703186
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -103.127883911133,
+              1.45478081703186
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": false,
+            "clear_ahead": false,
+            "point": [
+              -103.420776367188,
+              2.16188764572144
+            ],
+            "reason": "static_obstacle"
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -104.127883911133,
+              2.45478081703186
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -104.834991455078,
+              2.16188764572144
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -105.127883911133,
+              1.45478069782257
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -104.834991455078,
+              0.747674107551575
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -104.127883911133,
+              0.45478081703186
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -103.420776367188,
+              0.74767392873764
+            ],
+            "reason": ""
+          }
+        ],
+        "lookahead_m": 3.0,
+        "without_memoria": [
+          -104.127883911133,
+          2.45478081703186
+        ],
+        "without_working_memory": [
+          -103.138046264648,
+          1.31259894371033
+        ]
+      },
+      "physical_attempt": true,
+      "reason": "",
+      "remaining_goal_m": 10.4211311340332,
+      "route_goal_id": "",
+      "selected": [
+        -104.127883911133,
+        2.45478081703186
+      ],
+      "start": [
+        -104.127883911133,
+        1.45478081703186
+      ],
+      "started_at_ms": 1672,
+      "started_at_unix": 1791147035.72783,
+      "surface": "terrain",
+      "working_memory_changed_choice": true,
+      "working_memory_key": "-94,0|-104,1",
+      "working_memory_session": "f931b78f13f0928092ae2c644de5ac73"
+    },
+    "f931b78f13f0928092ae2c644de5ac73:246": {
+      "collisions": 0,
+      "context_end": {
+        "observer_entity_id": "nov",
+        "region_id": "fixture",
+        "runtime_position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "world_id": "navigation-promotion-008cq",
+        "world_sequence": 1
+      },
+      "context_start": {
+        "observer_entity_id": "nov",
+        "region_id": "fixture",
+        "runtime_position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "world_id": "navigation-promotion-008cq",
+        "world_sequence": 1
+      },
+      "decision_serial": 246,
+      "decision_source": "working-memory",
+      "duration_ms": 1,
+      "end": [
+        -102.715621948242,
+        -0.482770949602127
+      ],
+      "ended_at_unix": 1791147035.92851,
+      "goal": [
+        -94.0,
+        0.0
+      ],
+      "goal_kind": "projected_runtime_observer_position",
+      "memory_observation_id": "",
+      "outcome": "step_reached",
+      "perception": {
+        "candidates": [
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -101.0,
+              -1.53096209487558e-07
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -102.715621948242,
+              -0.482770949602127
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -101.0,
+              -1.74967098587331e-07
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -101.292892456055,
+              0.707106590270996
+            ],
+            "reason": "static_obstacle"
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -102.0,
+              0.999999821186066
+            ],
+            "reason": "static_obstacle"
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -102.707107543945,
+              0.707106590270996
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -103.0,
+              -2.62389875160807e-07
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -102.707107543945,
+              -0.70710688829422
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -102.0,
+              -1.00000011920929
+            ],
+            "reason": "static_obstacle"
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -101.292892456055,
+              -0.707107067108154
+            ],
+            "reason": "static_obstacle"
+          }
+        ],
+        "lookahead_m": 3.0,
+        "without_memoria": [
+          -102.715621948242,
+          -0.482770949602127
+        ],
+        "without_working_memory": [
+          -102.707107543945,
+          0.707106590270996
+        ]
+      },
+      "physical_attempt": true,
+      "reason": "",
+      "remaining_goal_m": 8.72898292541504,
+      "route_goal_id": "",
+      "selected": [
+        -102.715621948242,
+        -0.482770949602127
+      ],
+      "start": [
+        -102.0,
+        -1.74967098587331e-07
+      ],
+      "started_at_ms": 1872,
+      "started_at_unix": 1791147035.92825,
+      "surface": "terrain",
+      "working_memory_changed_choice": true,
+      "working_memory_key": "-94,0|-102,0",
+      "working_memory_session": "f931b78f13f0928092ae2c644de5ac73"
+    },
+    "f931b78f13f0928092ae2c644de5ac73:248": {
+      "collisions": 0,
+      "context_end": {
+        "observer_entity_id": "nov",
+        "region_id": "fixture",
+        "runtime_position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "world_id": "navigation-promotion-008cq",
+        "world_sequence": 1
+      },
+      "context_start": {
+        "observer_entity_id": "nov",
+        "region_id": "fixture",
+        "runtime_position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "world_id": "navigation-promotion-008cq",
+        "world_sequence": 1
+      },
+      "decision_serial": 248,
+      "decision_source": "working-memory",
+      "duration_ms": 0,
+      "end": [
+        -104.127883911133,
+        0.454780757427216
+      ],
+      "ended_at_unix": 1791147035.93745,
+      "goal": [
+        -94.0,
+        0.0
+      ],
+      "goal_kind": "projected_runtime_observer_position",
+      "memory_observation_id": "",
+      "outcome": "step_reached",
+      "perception": {
+        "candidates": [
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -103.129333496094,
+              -0.491463601589203
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -104.127883911133,
+              0.454780757427216
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -103.127883911133,
+              -0.545219242572784
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -103.420776367188,
+              0.161887526512146
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -104.127883911133,
+              0.454780757427216
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -104.834991455078,
+              0.161887526512146
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -105.127883911133,
+              -0.545219302177429
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -104.834991455078,
+              -1.25232601165771
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -104.127883911133,
+              -1.54521918296814
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -103.420776367188,
+              -1.252326130867
+            ],
+            "reason": "static_obstacle"
+          }
+        ],
+        "lookahead_m": 3.0,
+        "without_memoria": [
+          -104.127883911133,
+          0.454780757427216
+        ],
+        "without_working_memory": [
+          -103.127883911133,
+          -0.545219242572784
+        ]
+      },
+      "physical_attempt": true,
+      "reason": "",
+      "remaining_goal_m": 10.1380891799927,
+      "route_goal_id": "",
+      "selected": [
+        -104.127883911133,
+        0.454780757427216
+      ],
+      "start": [
+        -104.127883911133,
+        -0.545219242572784
+      ],
+      "started_at_ms": 1881,
+      "started_at_unix": 1791147035.93718,
+      "surface": "terrain",
+      "working_memory_changed_choice": true,
+      "working_memory_key": "-94,0|-104,-1",
+      "working_memory_session": "f931b78f13f0928092ae2c644de5ac73"
+    },
+    "f931b78f13f0928092ae2c644de5ac73:65": {
+      "collisions": 0,
+      "context_end": {
+        "observer_entity_id": "nov",
+        "region_id": "fixture",
+        "runtime_position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "world_id": "navigation-promotion-008cq",
+        "world_sequence": 1
+      },
+      "context_start": {
+        "observer_entity_id": "nov",
+        "region_id": "fixture",
+        "runtime_position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "world_id": "navigation-promotion-008cq",
+        "world_sequence": 1
+      },
+      "decision_serial": 65,
+      "decision_source": "working-memory",
+      "duration_ms": 0,
+      "end": [
+        -94.8574371337891,
+        -0.510453820228577
+      ],
+      "ended_at_unix": 1791147035.1963,
+      "goal": [
+        -94.0,
+        0.0
+      ],
+      "goal_kind": "projected_runtime_observer_position",
+      "memory_observation_id": "",
+      "outcome": "step_reached",
+      "perception": {
+        "candidates": [
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -94.0,
+              0.0
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -94.8574371337891,
+              -0.510453820228577
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -93.6614379882812,
+              0.254614353179932
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -93.9543304443359,
+              0.961721122264862
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -94.6614379882812,
+              1.25461435317993
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -95.3685455322266,
+              0.961721122264862
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -95.6614379882812,
+              0.254614263772964
+            ],
+            "reason": "static_obstacle"
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -95.3685455322266,
+              -0.452492356300354
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -94.6614379882812,
+              -0.745385646820068
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -93.9543304443359,
+              -0.452492535114288
+            ],
+            "reason": ""
+          }
+        ],
+        "lookahead_m": 3.0,
+        "without_memoria": [
+          -94.8574371337891,
+          -0.510453820228577
+        ],
+        "without_working_memory": [
+          -94.0,
+          0.0
+        ]
+      },
+      "physical_attempt": true,
+      "reason": "",
+      "remaining_goal_m": 0.99787849187851,
+      "route_goal_id": "",
+      "selected": [
+        -94.8574371337891,
+        -0.510453820228577
+      ],
+      "start": [
+        -94.6614379882812,
+        0.254614353179932
+      ],
+      "started_at_ms": 1140,
+      "started_at_unix": 1791147035.19605,
+      "surface": "terrain",
+      "working_memory_changed_choice": true,
+      "working_memory_key": "-94,0|-95,0",
+      "working_memory_session": "f931b78f13f0928092ae2c644de5ac73"
+    },
+    "f931b78f13f0928092ae2c644de5ac73:72": {
+      "collisions": 0,
+      "context_end": {
+        "observer_entity_id": "nov",
+        "region_id": "fixture",
+        "runtime_position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "world_id": "navigation-promotion-008cq",
+        "world_sequence": 1
+      },
+      "context_start": {
+        "observer_entity_id": "nov",
+        "region_id": "fixture",
+        "runtime_position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "world_id": "navigation-promotion-008cq",
+        "world_sequence": 1
+      },
+      "decision_serial": 72,
+      "decision_source": "working-memory",
+      "duration_ms": 0,
+      "end": [
+        -101.006561279297,
+        0.161887496709824
+      ],
+      "ended_at_unix": 1791147035.22413,
+      "goal": [
+        -94.0,
+        0.0
+      ],
+      "goal_kind": "projected_runtime_observer_position",
+      "memory_observation_id": "",
+      "outcome": "step_reached",
+      "perception": {
+        "candidates": [
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -98.5927658081055,
+              0.132951453328133
+            ],
+            "reason": "static_obstacle"
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -101.006561279297,
+              0.161887496709824
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -98.5923461914062,
+              0.161887347698212
+            ],
+            "reason": "static_obstacle"
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -98.8852386474609,
+              0.868994116783142
+            ],
+            "reason": "static_obstacle"
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -99.5923461914062,
+              1.16188740730286
+            ],
+            "reason": "static_obstacle"
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -100.299453735352,
+              0.868994116783142
+            ],
+            "reason": "static_obstacle"
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -100.592346191406,
+              0.161887258291245
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -100.299453735352,
+              -0.545219361782074
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -99.5923461914062,
+              -0.838112652301788
+            ],
+            "reason": "static_obstacle"
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -98.8852386474609,
+              -0.545219540596008
+            ],
+            "reason": "static_obstacle"
+          }
+        ],
+        "lookahead_m": 3.0,
+        "without_memoria": [
+          -101.006561279297,
+          0.161887496709824
+        ],
+        "without_working_memory": [
+          -100.299453735352,
+          -0.545219361782074
+        ]
+      },
+      "physical_attempt": true,
+      "reason": "",
+      "remaining_goal_m": 7.00843095779419,
+      "route_goal_id": "",
+      "selected": [
+        -101.006561279297,
+        0.161887496709824
+      ],
+      "start": [
+        -99.5923461914062,
+        0.161887347698212
+      ],
+      "started_at_ms": 1168,
+      "started_at_unix": 1791147035.22374,
+      "surface": "terrain",
+      "working_memory_changed_choice": true,
+      "working_memory_key": "-94,0|-100,0",
+      "working_memory_session": "f931b78f13f0928092ae2c644de5ac73"
+    },
+    "f931b78f13f0928092ae2c644de5ac73:77": {
+      "collisions": 0,
+      "context_end": {
+        "observer_entity_id": "nov",
+        "region_id": "fixture",
+        "runtime_position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "world_id": "navigation-promotion-008cq",
+        "world_sequence": 1
+      },
+      "context_start": {
+        "observer_entity_id": "nov",
+        "region_id": "fixture",
+        "runtime_position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "world_id": "navigation-promotion-008cq",
+        "world_sequence": 1
+      },
+      "decision_serial": 77,
+      "decision_source": "working-memory",
+      "duration_ms": 1,
+      "end": [
+        -104.127883911133,
+        -0.545219242572784
+      ],
+      "ended_at_unix": 1791147035.24377,
+      "goal": [
+        -94.0,
+        0.0
+      ],
+      "goal_kind": "projected_runtime_observer_position",
+      "memory_observation_id": "",
+      "outcome": "step_reached",
+      "perception": {
+        "candidates": [
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -101.717155456543,
+              -0.4274642765522
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -104.127883911133,
+              -0.545219242572784
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -101.715621948242,
+              -0.482770949602127
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -102.008514404297,
+              0.224335819482803
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -102.715621948242,
+              0.517229080200195
+            ],
+            "reason": "static_obstacle"
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -103.422729492188,
+              0.224335819482803
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -103.715621948242,
+              -0.482771039009094
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -103.422729492188,
+              -1.18987762928009
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -102.715621948242,
+              -1.4827709197998
+            ],
+            "reason": "static_obstacle"
+          },
+          {
+            "allowed": true,
+            "clear_ahead": false,
+            "point": [
+              -102.008514404297,
+              -1.18987786769867
+            ],
+            "reason": "static_obstacle"
+          }
+        ],
+        "lookahead_m": 3.0,
+        "without_memoria": [
+          -104.127883911133,
+          -0.545219242572784
+        ],
+        "without_working_memory": [
+          -103.715621948242,
+          -0.482771039009094
+        ]
+      },
+      "physical_attempt": true,
+      "reason": "",
+      "remaining_goal_m": 10.1425485610962,
+      "route_goal_id": "",
+      "selected": [
+        -104.127883911133,
+        -0.545219242572784
+      ],
+      "start": [
+        -102.715621948242,
+        -0.482770949602127
+      ],
+      "started_at_ms": 1187,
+      "started_at_unix": 1791147035.2434,
+      "surface": "terrain",
+      "working_memory_changed_choice": true,
+      "working_memory_key": "-94,0|-103,0",
+      "working_memory_session": "f931b78f13f0928092ae2c644de5ac73"
+    },
+    "f931b78f13f0928092ae2c644de5ac73:80": {
+      "collisions": 0,
+      "context_end": {
+        "observer_entity_id": "nov",
+        "region_id": "fixture",
+        "runtime_position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "world_id": "navigation-promotion-008cq",
+        "world_sequence": 1
+      },
+      "context_start": {
+        "observer_entity_id": "nov",
+        "region_id": "fixture",
+        "runtime_position": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "world_id": "navigation-promotion-008cq",
+        "world_sequence": 1
+      },
+      "decision_serial": 80,
+      "decision_source": "working-memory",
+      "duration_ms": 0,
+      "end": [
+        -104.127883911133,
+        2.45478081703186
+      ],
+      "ended_at_unix": 1791147035.2563,
+      "goal": [
+        -94.0,
+        0.0
+      ],
+      "goal_kind": "projected_runtime_observer_position",
+      "memory_observation_id": "",
+      "outcome": "step_reached",
+      "perception": {
+        "candidates": [
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -103.138046264648,
+              1.31259894371033
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -104.127883911133,
+              2.45478081703186
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -103.127883911133,
+              1.45478081703186
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": false,
+            "clear_ahead": false,
+            "point": [
+              -103.420776367188,
+              2.16188764572144
+            ],
+            "reason": "static_obstacle"
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -104.127883911133,
+              2.45478081703186
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -104.834991455078,
+              2.16188764572144
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -105.127883911133,
+              1.45478069782257
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -104.834991455078,
+              0.747674107551575
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -104.127883911133,
+              0.45478081703186
+            ],
+            "reason": ""
+          },
+          {
+            "allowed": true,
+            "clear_ahead": true,
+            "point": [
+              -103.420776367188,
+              0.74767392873764
+            ],
+            "reason": ""
+          }
+        ],
+        "lookahead_m": 3.0,
+        "without_memoria": [
+          -104.127883911133,
+          2.45478081703186
+        ],
+        "without_working_memory": [
+          -103.138046264648,
+          1.31259894371033
+        ]
+      },
+      "physical_attempt": true,
+      "reason": "",
+      "remaining_goal_m": 10.4211311340332,
+      "route_goal_id": "",
+      "selected": [
+        -104.127883911133,
+        2.45478081703186
+      ],
+      "start": [
+        -104.127883911133,
+        1.45478081703186
+      ],
+      "started_at_ms": 1200,
+      "started_at_unix": 1791147035.25598,
+      "surface": "terrain",
+      "working_memory_changed_choice": true,
+      "working_memory_key": "-94,0|-104,1",
+      "working_memory_session": "f931b78f13f0928092ae2c644de5ac73"
+    }
+  },
+  "limitations": [
+    "Single deterministic synthetic obstacle and fixed terrain.",
+    "Simulated time is ticks times fixed delta, not server performance.",
+    "Reused steps do not optimize a whole route; early RAM trials may be worse.",
+    "Not a controlled production result or proof of generalization."
+  ]
+}
