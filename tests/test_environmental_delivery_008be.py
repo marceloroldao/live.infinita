@@ -12,7 +12,10 @@ class EnvironmentalDelivery008BETests(unittest.TestCase):
             'delivery["environmental_state"] = derive_environmental_state(',
             source,
         )
-        self.assertIn('message["world"], projection', source)
+        self.assertIn('message["world"],', source)
+        self.assertIn('_visual_environment_projection(projection)', source)
+        self.assertIn('visual["regions"] = visual_regions', source)
+        self.assertIn('visual["projection_id"] = visual_id', source)
         self.assertNotIn('message["world"]["environmental_state"]', source)
         self.assertNotIn('payload["world"]["environmental_state"]', source)
 

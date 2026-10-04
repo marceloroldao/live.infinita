@@ -30,6 +30,7 @@ const RIDGE_RANGE_MAX_VISUAL_HEIGHT_M := 28.0
 var _host: Node3D
 var _root: Node3D
 var _projection_id := ""
+var _visual_projection_id := ""
 var _environment_state_id := ""
 var _environment_by_region: Dictionary = {}
 var _anchors: Array = []
@@ -50,6 +51,9 @@ func _init(host: Node3D) -> void:
 
 func projection_id() -> String:
     return _projection_id
+
+func visual_projection_id() -> String:
+    return _visual_projection_id
 
 func environment_state_id() -> String:
     return _environment_state_id
@@ -87,6 +91,7 @@ func _clear_visuals() -> void:
 func clear() -> bool:
     var changed := not _projection_id.is_empty() or not _anchors.is_empty() or not _ridges.is_empty() or not _spatial_trails.is_empty()
     _projection_id = ""
+    _visual_projection_id = ""
     _environment_state_id = ""
     _environment_by_region.clear()
     _anchors.clear()
@@ -150,6 +155,9 @@ func update(
     var next_id := str(projection.get("projection_id", ""))
     if next_id.is_empty():
         return clear()
+    var next_visual_id := str(projection.get("visual_projection_id", next_id))
+    if next_visual_id.is_empty():
+        next_visual_id = next_id
 
     var next_environment_id := ""
     var next_environment_by_region: Dictionary = {}
@@ -157,12 +165,22 @@ func update(
         next_environment_id = str(environmental_state.get("state_id", ""))
         next_environment_by_region = _environment_map(environmental_state)
 
-    if next_id == _projection_id and next_environment_id == _environment_state_id:
+    if (
+        next_visual_id == _visual_projection_id
+        and next_environment_id == _environment_state_id
+    ):
+        _projection_id = next_id
         return false
 
-    var rows = projection.get("regions", [])
-    var transitions = projection.get("transitions", [])
-    var spatial_trails = projection.get("spatial_trails", [])
+    var rows = projection.get("visual_regions", projection.get("regions", []))
+    var transitions = projection.get(
+        "visual_transitions",
+        projection.get("transitions", [])
+    )
+    var spatial_trails = projection.get(
+        "visual_spatial_trails",
+        projection.get("spatial_trails", [])
+    )
     if (
         typeof(rows) != TYPE_ARRAY
         or rows.size() > MAX_REGIONS
@@ -249,6 +267,7 @@ func update(
         })
 
     _projection_id = next_id
+    _visual_projection_id = next_visual_id
     _environment_state_id = next_environment_id
     _environment_by_region = next_environment_by_region
     _anchors = next_anchors

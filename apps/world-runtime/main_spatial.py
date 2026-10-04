@@ -382,6 +382,19 @@ def _world_marker(world: dict[str, Any]) -> tuple[int, str]:
     return int(world.get("sequence", 0)), str(world.get("state_hash") or "")
 
 
+def _visual_environment_projection(
+    projection: dict[str, Any],
+) -> dict[str, Any]:
+    visual_regions = projection.get("visual_regions")
+    visual_id = str(projection.get("visual_projection_id") or "")
+    if not isinstance(visual_regions, list) or not visual_id:
+        return projection
+    visual = dict(projection)
+    visual["regions"] = visual_regions
+    visual["projection_id"] = visual_id
+    return visual
+
+
 def _client_world_payload(message: dict[str, Any], view: dict[str, Any]) -> dict[str, Any]:
     """Attach visual memory projection outside authoritative World State."""
     payload = spatial_session.wrap_world_message(message, view)
@@ -400,7 +413,8 @@ def _client_world_payload(message: dict[str, Any], view: dict[str, Any]) -> dict
             delivery["cognitive_terrain"] = projection
             try:
                 delivery["environmental_state"] = derive_environmental_state(
-                    message["world"], projection
+                    message["world"],
+                    _visual_environment_projection(projection),
                 )
             except EnvironmentalRulesError:
                 pass

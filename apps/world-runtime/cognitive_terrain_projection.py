@@ -21,6 +21,22 @@ from pathlib import Path
 import sqlite3
 from typing import Any
 
+
+try:
+    from cognitive_terrain_visual_stability import stabilize_visual_projection
+except ModuleNotFoundError:
+    import importlib.util as _importlib_util
+    _stability_path = Path(__file__).with_name("cognitive_terrain_visual_stability.py")
+    _stability_spec = _importlib_util.spec_from_file_location(
+        "cognitive_terrain_visual_stability",
+        _stability_path,
+    )
+    if _stability_spec is None or _stability_spec.loader is None:
+        raise
+    _stability_module = _importlib_util.module_from_spec(_stability_spec)
+    _stability_spec.loader.exec_module(_stability_module)
+    stabilize_visual_projection = _stability_module.stabilize_visual_projection
+
 SCHEMA = "live-infinita-cognitive-terrain/v1"
 CHECKPOINT_SCHEMA = "live-infinita-nov-local-memory-checkpoint/v1"
 DEFAULT_DB = Path("/var/lib/live-infinita/memoria-local/external-episodes-incremental/external-episodes.sqlite3")
@@ -638,11 +654,26 @@ def project_once(
         checkpoint_cursor=int(checkpoint["cursor"]),
         spatial_records=spatial_records,
     )
+    previous_projection: dict[str, Any] | None = None
+    if output_path.exists():
+        try:
+            previous_projection = _read_json(
+                output_path,
+                MAX_OUTPUT_BYTES,
+                "previous_projection",
+            )
+        except CognitiveTerrainError:
+            previous_projection = None
+    projection = stabilize_visual_projection(projection, previous_projection)
     _atomic_write(output_path, projection)
     return {
         "status": "ok",
         "schema": SCHEMA,
         "projection_id": projection["projection_id"],
+        "visual_projection_id": projection.get("visual_projection_id"),
+        "visual_bootstrap": bool(
+            (projection.get("visual_stability") or {}).get("bootstrap", False)
+        ),
         "regions": len(projection["regions"]),
         "transitions": len(projection["transitions"]),
         "nov_observations": len(records),
@@ -667,6 +698,19 @@ class CognitiveTerrainProjectionReader:
         regions = value.get("regions")
         transitions = value.get("transitions")
         spatial_trails = value.get("spatial_trails", [])
+        visual_id = value.get("visual_projection_id")
+        visual_regions = value.get("visual_regions")
+        visual_transitions = value.get("visual_transitions")
+        visual_spatial_trails = value.get("visual_spatial_trails")
+        has_visual = any(
+            item is not None
+            for item in (
+                visual_id,
+                visual_regions,
+                visual_transitions,
+                visual_spatial_trails,
+            )
+        )
         if (
             value.get("schema") != SCHEMA
             or value.get("world_id") != world_id
@@ -681,6 +725,19 @@ class CognitiveTerrainProjectionReader:
             or len(transitions) > MAX_TRANSITIONS
             or not isinstance(spatial_trails, list)
             or len(spatial_trails) > MAX_SPATIAL_TRAILS
+            or (
+                has_visual
+                and (
+                    not isinstance(visual_id, str)
+                    or not visual_id
+                    or not isinstance(visual_regions, list)
+                    or len(visual_regions) > MAX_REGIONS
+                    or not isinstance(visual_transitions, list)
+                    or len(visual_transitions) > MAX_TRANSITIONS
+                    or not isinstance(visual_spatial_trails, list)
+                    or len(visual_spatial_trails) > MAX_SPATIAL_TRAILS
+                )
+            )
         ):
             raise CognitiveTerrainError("projection_contract")
 
