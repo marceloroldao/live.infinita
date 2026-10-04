@@ -85,8 +85,10 @@ func validate_step(current: Vector3, candidate: Vector3, space_state: PhysicsDir
         var intermediate := current.lerp(candidate, float(i) / count)
         var probe := ground_position(intermediate.x, intermediate.z)
         var classification := surface(probe)
-        if not bool(classification.get("walkable", false)) or absf(probe.y - current.y) > MAX_STEP_M:
-            return {"allowed": false, "position": current, "reason": classification.get("reason", "step_too_high"), "surface": classification.get("surface", "terrain")}
+        if not bool(classification.get("walkable", false)):
+            return {"allowed": false, "position": current, "reason": classification.get("reason", "blocked"), "surface": classification.get("surface", "terrain")}
+        if absf(probe.y - current.y) > MAX_STEP_M:
+            return {"allowed": false, "position": current, "reason": "step_too_high", "surface": classification.get("surface", "terrain"), "collisions": 0}
     if space_state != null and length_m > 0.001:
         var sweep_shape := CapsuleShape3D.new()
         sweep_shape.radius = CAPSULE_RADIUS

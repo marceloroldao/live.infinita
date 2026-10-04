@@ -872,7 +872,7 @@ func _advance_live_walk(delta: float) -> void:
     _local_motion._episodes.enabled = not OS.has_feature("web") and not OS.get_cmdline_user_args().has("--offline-tour")
     _local_motion._experience.working_memory.enabled = _local_motion._episodes.enabled and not _local_motion._experience.working_memory.world_id.is_empty()
     var dt := clampf(delta, 0.0, 0.1)
-    var committed_target: Vector3 = _route_goal.choose(_position, _last_live_position, dt, str(_local_motion._episodes.context.get("world_id", "")))
+    var committed_target: Vector3 = _route_goal.choose(_position, _last_live_position, dt, str(_local_motion._episodes.context.get("world_id", "")), Callable(_local_motion,"resolve_destination"))
     if _local_motion.route_goal_id != _route_goal.identity():
         _local_motion._experience.active = false
         _local_motion._experience.reset_route_plan()

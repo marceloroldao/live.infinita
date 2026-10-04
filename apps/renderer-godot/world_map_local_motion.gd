@@ -63,9 +63,7 @@ func advance(
         var flat_goal: Vector2 = _experience.target(Vector2(current.x, current.z), Vector2(route_target.x, route_target.z),
             func(point: Vector2) -> Dictionary: return _sense_ahead(current, point, space_state, Vector2(route_target.x, route_target.z)),
             func(start: Vector2, end: Vector2) -> bool:
-                var grounded: Vector3 = _traversability.ground_position(start.x,start.y)
-                var sensed: Dictionary = _sense_ahead(grounded,end,space_state,end)
-                return bool(sensed.get("allowed",false)) and bool(sensed.get("clear_ahead",false)))
+                return _route_connection_clear(start,end,space_state))
         if Time.get_ticks_msec() >= _inference_log_at and _experience.last_decision_source == "memoria.ia":
             _inference_log_at = Time.get_ticks_msec() + 10000
             print("NOV_NAVIGATION_INFERENCE source=memoria.ia observation=%s decisions=%d anticipations=%d" % [
@@ -125,6 +123,11 @@ func _sense_ahead(current: Vector3, point: Vector2, space_state: PhysicsDirectSp
     var distance := flat.distance_to(point)
     if distance < 0.001:
         return {"allowed": true, "clear_ahead": true}
+    # The proposed metre must pass the same whole-step check as execution.
+    # Short look-ahead samples alone can conceal an excessive total rise.
+    var proposed: Dictionary = _traversability.validate_step(current, Vector3(point.x,current.y,point.y), space_state)
+    if not bool(proposed.get("allowed",false)):
+        return {"allowed":false,"clear_ahead":false,"reason":proposed.get("reason","blocked")}
     var direction := (point - flat).normalized()
     var travel := distance if point.distance_to(goal) < 0.05 else maxf(distance, 3.0)
     var previous := current
@@ -138,3 +141,27 @@ func _sense_ahead(current: Vector3, point: Vector2, space_state: PhysicsDirectSp
         previous = policy.get("position", previous)
         clear_m = offset
     return {"allowed": true, "clear_ahead": true}
+
+func _route_connection_clear(start: Vector2, end: Vector2, space_state: PhysicsDirectSpaceState3D) -> bool:
+    # A graph edge is two metres; actual decisions advance at most one metre.
+    var previous: Vector3 = _traversability.ground_position(start.x,start.y)
+    var flat := start
+    while flat.distance_to(end)>0.001:
+        flat = flat.move_toward(end,1.0)
+        var policy: Dictionary = _traversability.validate_step(previous,Vector3(flat.x,previous.y,flat.y),space_state)
+        if not bool(policy.get("allowed",false)): return false
+        previous = policy.get("position",previous)
+    return true
+
+func resolve_destination(requested: Vector3) -> Dictionary:
+    # Resolve only the local presentation destination; the feed remains unchanged.
+    var ground: Vector3 = _traversability.ground_position(requested.x,requested.z)
+    if bool(_traversability.surface(ground).get("walkable",false)):
+        return {"allowed":true,"position":requested,"adjusted":false}
+    for radius in range(1,17):
+        for heading in range(16):
+            var offset := Vector2.RIGHT.rotated(TAU*float(heading)/16.0)*float(radius)
+            var candidate: Vector3 = _traversability.ground_position(requested.x+offset.x,requested.z+offset.y)
+            if bool(_traversability.surface(candidate).get("walkable",false)):
+                return {"allowed":true,"position":candidate,"adjusted":true}
+    return {"allowed":false,"reason":"no_walkable_destination_within_16m"}
