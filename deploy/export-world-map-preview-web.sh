@@ -145,6 +145,8 @@ cat >"$BUILD_DIR/build.json" <<EOF
   "nov_smooth_locomotion": true,
   "nov_procedural_gait": true,
   "audience_overlay": true,
+  "live_infinita_brand": true,
+  "live_infinita_brand_position": "top",
   "narrator_caption": true,
   "narrator_caption_position": "center",
   "program_audio": true,

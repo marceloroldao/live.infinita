@@ -1,5 +1,6 @@
 extends CanvasLayer
 
+var _brand: Control
 var _narration: Label
 var _audience: Label
 var _narration_remaining := 0.0
@@ -13,10 +14,18 @@ func _ready() -> void:
     layout.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
     layout.mouse_filter = Control.MOUSE_FILTER_IGNORE
     add_child(layout)
-    _audience = _label(layout, 18, 22, 18)
+    _brand = Control.new()
+    _brand.name = "LiveInfinitaBrand"
+    _brand.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    _brand.anchor_right = 1.0
+    _brand.offset_bottom = 90
+    layout.add_child(_brand)
+    _brand.draw.connect(_draw_brand)
+    _brand.resized.connect(_brand.queue_redraw)
+    _audience = _label(layout, 18, 104, 18)
     _audience.offset_right = -18
     _audience.anchor_right = 1.0
-    _audience.offset_bottom = 220
+    _audience.offset_bottom = 302
     _narration = _label(layout, 18, -81, 20)
     _narration.anchor_top = 0.5
     _narration.anchor_bottom = 0.5
@@ -27,6 +36,26 @@ func _ready() -> void:
     _narration.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
     _narration.visible = false
     _audience.visible = false
+
+func _draw_brand() -> void:
+    # Restore the original broadcast mark, including tagline and live badge.
+    var scale := clampf(_brand.size.x / 720.0, 0.5, 1.0)
+    var width := _brand.size.x / scale
+    var font := ThemeDB.fallback_font
+    _brand.draw_set_transform(Vector2.ZERO, 0.0, Vector2(scale, scale))
+    _brand.draw_circle(Vector2(46,52),15,Color(0.36,0.84,0.96,0.16))
+    _brand.draw_circle(Vector2(46,52),7,Color("#77d9ef"))
+    _brand.draw_string(font,Vector2(72,57),"LIVE INFINITA",HORIZONTAL_ALIGNMENT_LEFT,-1,22,Color.WHITE)
+    _brand.draw_string(font,Vector2(72,78),"um mundo que continua",HORIZONTAL_ALIGNMENT_LEFT,-1,12,Color(0.84,0.91,0.94,0.82))
+    var rect := Rect2(width-126,34,96,34)
+    var style := StyleBoxFlat.new()
+    style.bg_color = Color(0.35,0.05,0.08,0.82)
+    style.border_color = Color(1,0.25,0.34,0.55)
+    style.set_border_width_all(1)
+    style.set_corner_radius_all(14)
+    _brand.draw_style_box(style,rect)
+    _brand.draw_circle(rect.position+Vector2(16,17),4.5,Color("#ff4055"))
+    _brand.draw_string(font,rect.position+Vector2(29,23),"AO VIVO",HORIZONTAL_ALIGNMENT_LEFT,-1,13,Color.WHITE)
 
 func _label(parent: Control, x: float, y: float, size: int) -> Label:
     var label := Label.new()
