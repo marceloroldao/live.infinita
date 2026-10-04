@@ -92,7 +92,7 @@ def validate_episode(row):
         if action.get("goal_kind") != "projected_runtime_observer_position":
             fail()
         source = action.get("decision_source")
-        if source not in {"perception", "perception-no-passage", "local-experience", "memoria.ia", "perception-memory-agreement"}:
+        if source not in {"perception", "perception-no-passage", "local-experience", "memoria.ia", "perception-memory-agreement", "working-memory", "perception-working-memory-agreement"}:
             fail()
         identity = action.get("memory_observation_id")
         if source == "memoria.ia":
@@ -104,7 +104,7 @@ def validate_episode(row):
         if not isinstance(perception, dict) or perception.get("lookahead_m") != 3.0:
             fail()
         candidates = perception.get("candidates")
-        if not isinstance(candidates, list) or not 1 <= len(candidates) <= 11:
+        if not isinstance(candidates, list) or not 1 <= len(candidates) <= 12:
             fail()
         for candidate in candidates:
             if not isinstance(candidate, dict):
@@ -116,6 +116,10 @@ def validate_episode(row):
                 fail()
         if "without_memoria" in perception:
             point(perception["without_memoria"])
+        if "without_working_memory" in perception:
+            point(perception["without_working_memory"])
+        if "working_memory_changed_choice" in action and type(action["working_memory_changed_choice"]) is not bool:
+            fail()
         if not isinstance(action.get("reason"), str) or len(action["reason"]) > 100:
             fail()
     return row
@@ -256,3 +260,17 @@ def sync_once(source=SOURCE, checkpoint=CHECKPOINT, send=_post_local, limit=2):
             break
     return {"status": "ok", "acked": acked, "confirmed": state["confirmed"],
             "source_retention_dropped": data["dropped_episodes"], "world_mutated": False}
+
+
+def archive_once(source=SOURCE, root=CHECKPOINT.parent):
+    if not source.exists():
+        return {"status":"awaiting_native_episode", "archived":0, "memoria_posts":0}
+    data=read_source(source)
+    archived=0
+    for row in data["episodes"]:
+        info=payload(row)["provenance"]["episode_archive"]
+        existed=(root/info["relative_path"]).exists()
+        archive_episode(row,root)
+        archived += int(not existed)
+    return {"status":"ok", "archived":archived, "memoria_posts":0,
+            "source_retention_dropped":data["dropped_episodes"]}

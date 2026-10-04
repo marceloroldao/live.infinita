@@ -1,5 +1,7 @@
 extends RefCounted
 # Native presentation evidence. This recorder never writes authoritative World State.
+signal action_completed(action: Dictionary)
+
 const SCHEMA := "live-infinita-nov-navigation-episodes/v1"
 const MAX_BYTES := 1900000
 var storage := "user://nov-navigation-episodes-008ch.json"
@@ -54,6 +56,9 @@ func observe(serial: int, current: Vector3, goal: Vector3, selected: Vector2,
             "perception": evidence.duplicate(true),
             "decision_source": policy.get("decision_source", ""),
             "memory_observation_id": policy.get("memory_observation_id", ""),
+            "working_memory_session": policy.get("working_memory_session", ""),
+            "working_memory_key": policy.get("working_memory_key", ""),
+            "working_memory_changed_choice": bool(policy.get("working_memory_changed_choice", false)),
         }
     active["collisions"] = int(policy.get("collisions", 0))
     active["surface"] = str(policy.get("surface", "terrain"))
@@ -83,6 +88,7 @@ func _finish(outcome: String, resolved: Vector3, now_ms: int, reason: String) ->
     active["context_end"] = context.duplicate(true)
     active["remaining_goal_m"] = remaining
     actions.append(active)
+    action_completed.emit(active.duplicate(true))
     active = {}
 
 func tick(now_ms: int) -> void:

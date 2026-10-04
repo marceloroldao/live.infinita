@@ -23,6 +23,9 @@ var last_observation_id := ""
 var _probe_phase := 0
 var decision_serial := 0
 var decision_evidence: Dictionary = {}
+var working_memory = preload("res://nov_navigation_working_memory.gd").new()
+var working_memory_key := ""
+var working_memory_changed_choice := false
 
 func _init(path: String = "user://nov-navigation-008cd.cfg") -> void:
     storage = path
@@ -42,7 +45,7 @@ func edge(a: Vector2, b: Vector2) -> String:
     return key(a) + ">" + key(b)
 
 func save() -> void:
-    if storage.is_empty():
+    if storage.is_empty() or working_memory.enabled:
         return
     var cfg := ConfigFile.new()
     cfg.set_value("experience", "failures", failures)
@@ -61,6 +64,8 @@ func target(current: Vector2, goal: Vector2, probe: Callable = Callable()) -> Ve
         return pending
     decision_serial += 1
     decision_evidence = {}
+    working_memory_key = ""
+    working_memory_changed_choice = false
     source = current
     if trace.is_empty():
         trace.append(current)
@@ -122,10 +127,11 @@ func arrived(goal: Vector2) -> void:
         visits.erase(visits.keys()[0])
     active = false
     if pending.distance_to(goal) < 0.1:
-        for i in range(trace.size() - 1):
-            routes[key(goal) + "|" + key(trace[i])] = trace[i + 1]
-        while routes.size() > LIMIT:
-            routes.erase(routes.keys()[0])
+        if not working_memory.enabled:
+            for i in range(trace.size() - 1):
+                routes[key(goal) + "|" + key(trace[i])] = trace[i + 1]
+            while routes.size() > LIMIT:
+                routes.erase(routes.keys()[0])
         save()
         trace.clear()
         recovery = false
@@ -161,6 +167,11 @@ func _anticipated_target(current: Vector2, goal: Vector2, probe: Callable) -> Ve
     var direct := current.move_toward(goal, CELL_M)
     var address := key(goal) + "|" + key(current)
     var candidates: Array[Dictionary] = [{"point": direct, "bonus": 0.0, "source": "perception", "id": ""}]
+    var temporary: Dictionary = working_memory.lookup(address)
+    if not temporary.is_empty():
+        var next := Vector2(float(temporary["to"][0]), float(temporary["to"][1]))
+        if current.distance_to(next) > 0.05 and current.distance_to(next) < 2.0:
+            candidates.append({"point": next, "bonus": 1.5, "source": "working-memory", "id": ""})
     var local = routes.get(address)
     if local is Vector2 and current.distance_to(local) > 0.05 and current.distance_to(local) < 2.0:
         candidates.append({"point": local, "bonus": 1.5, "source": "local-experience", "id": ""})
@@ -220,6 +231,24 @@ func _anticipated_target(current: Vector2, goal: Vector2, probe: Callable) -> Ve
         if score < baseline_best:
             baseline_best = score
             baseline = candidate
+    var without_working: Dictionary = {}
+    var working_baseline_clear := false
+    var working_baseline_score := INF
+    for candidate in viable:
+        if str(candidate["source"]) != "working-memory":
+            working_baseline_clear = working_baseline_clear or bool(candidate["clear_ahead"])
+    for candidate in viable:
+        if str(candidate["source"]) == "working-memory" or (working_baseline_clear and not bool(candidate["clear_ahead"])):
+            continue
+        var point: Vector2 = candidate["point"]
+        var score := point.distance_to(goal) + float(visits.get(key(point), 0)) * 4.0
+        score += float(failures.get(edge(current, point), 0)) * 12.0
+        if memoria_enabled and recalled_failures.has(edge(current, point)):
+            score += float(recalled_failures[edge(current, point)]["count"]) * 12.0
+        score -= float(candidate["bonus"])
+        if score < working_baseline_score:
+            working_baseline_score = score
+            without_working = candidate
     var sensed_rows: Array = []
     for candidate in candidates:
         var point: Vector2 = candidate["point"]
@@ -238,6 +267,12 @@ func _anticipated_target(current: Vector2, goal: Vector2, probe: Callable) -> Ve
         pending = current
         return current
     pending = chosen["point"]
+    if str(chosen["source"]) == "working-memory":
+        working_memory_key = address
+        working_memory_changed_choice = without_working.is_empty() or pending.distance_to(without_working["point"]) > 0.05
+        if not without_working.is_empty():
+            var baseline_point: Vector2 = without_working["point"]
+            decision_evidence["without_working_memory"] = [baseline_point.x, baseline_point.y]
     last_decision_source = str(chosen["source"])
     last_observation_id = str(chosen["id"])
     var differs_from_baseline := baseline.is_empty() or pending.distance_to(baseline["point"]) > 0.05
@@ -252,6 +287,8 @@ func _anticipated_target(current: Vector2, goal: Vector2, probe: Callable) -> Ve
     elif last_decision_source == "memoria.ia":
         last_decision_source = "perception-memory-agreement"
         last_observation_id = ""
+    if last_decision_source == "working-memory" and not working_memory_changed_choice:
+        last_decision_source = "perception-working-memory-agreement"
     if not direct_clear and pending.distance_to(direct) > 0.05:
         anticipated_avoidances += 1
     active = true

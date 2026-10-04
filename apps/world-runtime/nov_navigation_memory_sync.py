@@ -207,16 +207,19 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--preview",action="store_true")
     args = parser.parse_args()
-    phase = "summary"
+    phase = "archive"
     try:
-        result = sync_once(preview=args.preview)
-        if not args.preview:
-            from nov_navigation_recall_export import export_once
+        if args.preview:
+            result = sync_once(preview=True)
+        else:
+            from nov_navigation_episode_sync import archive_once
+            result = {"episodes": archive_once()}
+            phase = "promotions"
+            from nov_navigation_promotion_sync import sync_once as promote
+            result["promotions"] = promote()
             phase = "recall"
+            from nov_navigation_recall_export import export_once
             result["recall"] = export_once()
-            from nov_navigation_episode_sync import sync_once as sync_episodes
-            phase = "episodes"
-            result["episodes"] = sync_episodes()
     except (OSError,ValueError,RuntimeError) as exc:
         raise SystemExit(f"NAVIGATION_MEMORY_SYNC_BLOCKED phase={phase} {type(exc).__name__}: {exc}") from exc
     print("NAVIGATION_MEMORY_SYNC_OK "+json.dumps(result,sort_keys=True))

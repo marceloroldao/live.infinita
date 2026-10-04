@@ -8,10 +8,13 @@ const BODY_CENTER_Y := 0.9
 var _experience = preload("res://nov_navigation_experience.gd").new()
 var _traversability: RefCounted
 var _inference_log_at := 0
+var _working_memory_log_at := 0
 var _episodes = preload("res://nov_navigation_episodes.gd").new()
 
 func _init(walk_height: Callable, half_m: float = 512.0, dynamic_surface: Callable = Callable()) -> void:
     _traversability = Traversability.new(walk_height, half_m, dynamic_surface)
+    _episodes.action_completed.connect(Callable(_experience.working_memory, "observe_completed"))
+    _experience.working_memory.promotion_ready.connect(Callable(_episodes, "flush"))
 
 func create_body(parent: Node3D, _material: Material) -> CharacterBody3D:
     var body := CharacterBody3D.new()
@@ -47,6 +50,9 @@ func advance(
     auto_route: bool = true,
     speed_mps: float = SPEED_MPS
 ) -> Dictionary:
+    if _experience.working_memory.enabled and Time.get_ticks_msec() >= _working_memory_log_at:
+        _working_memory_log_at = Time.get_ticks_msec() + 30000
+        print("NOV_WORKING_MEMORY_STATUS entries=%d causal_reuses=%d promoted=%d" % [_experience.working_memory.entries.size(), _experience.working_memory.causal_reuses, _experience.working_memory.promoted.size()])
     var candidate := current
     var manual := input_axis.length_squared() > 0.01
     if manual:
@@ -67,6 +73,9 @@ func advance(
     policy["manual"] = manual
     policy["decision_source"] = _experience.last_decision_source
     policy["memory_observation_id"] = _experience.last_observation_id
+    policy["working_memory_session"] = _experience.working_memory.session
+    policy["working_memory_key"] = _experience.working_memory_key
+    policy["working_memory_changed_choice"] = _experience.working_memory_changed_choice
     if not bool(policy.get("allowed", false)):
         if auto_route and not manual:
             _experience.blocked()
