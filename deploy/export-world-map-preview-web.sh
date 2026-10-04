@@ -128,7 +128,17 @@ cat >"$BUILD_DIR/build.json" <<EOF
   "logical_sectors": 1024,
   "active_sector_cap": 9,
   "traversability": "local-physics-read-only",
-  "touch_controls": true
+  "touch_controls": true,
+  "cognitive_visual_inertia": true,
+  "visual_refresh_hint_seconds": 120,
+  "ecological_continuous_transitions": true,
+  "ecological_affinities": [
+    "forest",
+    "meadow",
+    "shrub",
+    "wetland",
+    "alpine"
+  ]
 }
 EOF
 
