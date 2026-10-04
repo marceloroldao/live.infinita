@@ -139,3 +139,30 @@ durável antes de exibir 008CH_INGEST_OK. Não altera o mundo ou reinicia Godot.
 33 testes Python e integração isolada da API real: episódio de 128 ações,
 payload compacto, duplicação idempotente e recuperação após reabrir o banco.
 Até a aplicação e observação do ACK em produção, não afirmar ingestão resolvida.
+
+## Correção do conflito após resposta perdida
+
+A aplicação do ajuste compacto foi revertida porque a etapa de resumos
+retornou HTTP 409. A observação tinha identidade derivada do resumo individual,
+mas sua proveniência continha snapshot_sha256 do arquivo inteiro. Quando
+um envio era armazenado e sua resposta se perdia, outro passo podia mudar
+o arquivo antes da nova tentativa. O evento individual mantinha o mesmo ID,
+enquanto sua proveniência mudava: o armazenamento imutável rejeitava o reenvio.
+
+O formato de resumo 2 usa summary_sha256 do conteúdo individual e uma origem
+versionada renderer-navigation-summary:v2. Proveniência e ID permanecem
+estáveis quando o restante do arquivo muda. A nova origem evita colisões
+com os envelopes antigos que já foram confirmados ou armazenados sem ACK.
+Os envelopes anteriores são preservados. Não há reforço por cada reenvio.
+A saída de falha agora informa phase=summary, recall ou episodes.
+
+35 testes Python passaram. Na API real em banco isolado, o comportamento
+anterior reproduziu HTTP 409; o formato novo foi reenviado depois de uma
+mudança externa e retornou duplicata idempotente. Recall pela API e leitura
+após reabrir SQLite também passaram. A instalação compacta pode ser
+reaplicada pelo mesmo apply-navigation-episode-ingest-fix-008ch-root.sh.
+
+A etapa de memória temporária na RAM e promoção por reutilização fica depois
+do ACK em produção. Contar leituras não servirá como evidência de aprendizado;
+serão necessários uso em uma decisão e seu resultado físico. Não inferir
+melhoria de navegação apenas de serviços ativos ou de experiências gravadas.

@@ -26,6 +26,23 @@ class NavigationMemoryTests(unittest.TestCase):
                 "association_sync_deferred":True,"semantic_projection":False,"backend":"sqlite"}
     def run_sync(self,**kwargs):
         return nav.sync_once(self.source,self.world,self.checkpoint,send=self.send,**kwargs)
+    def test_same_item_has_immutable_provenance_across_snapshots(self):
+        items,_=nav.read_snapshot(self.source)
+        first=nav.payload(items[0],"fixture-world","a"*64)
+        later=nav.payload(items[0],"fixture-world","b"*64)
+        self.assertEqual(first,later)
+        self.assertEqual(first["provenance"]["summary_format"],2)
+        self.assertNotIn("snapshot_sha256",first["provenance"])
+    def test_lost_ack_retry_after_unrelated_change_is_same_request(self):
+        attempts=[]
+        def lost(value):
+            attempts.append(value)
+            raise OSError("response lost after store")
+        with self.assertRaises(OSError):
+            nav.sync_once(self.source,self.world,self.checkpoint,send=lost)
+        self.snapshot(to="Vector2(2.75, 0)")
+        self.run_sync(limit=1)
+        self.assertEqual(attempts[0],self.calls[0])
     def test_preview_reads_real_format_without_mutation(self):
         original = self.source.read_bytes()
         result = self.run_sync(preview=True)

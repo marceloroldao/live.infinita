@@ -91,7 +91,7 @@ def payload(item: dict, world_id: str, snapshot_hash: str) -> dict:
     identity = blake2b(_canonical({"kind":item["kind"],"key":item["key"]}),digest_size=16).hexdigest()
     event = {
         "version":1,
-        "source_id":f"live.infinita:{world_id}:nov:renderer-navigation-summary:{identity}",
+        "source_id":f"live.infinita:{world_id}:nov:renderer-navigation-summary:v2:{identity}",
         "sequence":item["observed_count"],
         "byte_offset":0,
         "byte_length":len(_canonical(item)),
@@ -106,7 +106,8 @@ def payload(item: dict, world_id: str, snapshot_hash: str) -> dict:
             "hierarchy_id":f"live:navigation:{world_id}:nov:renderer",
             "source_kind":"native_renderer_navigation_summary",
             "source_ledger":"nov-navigation-008cd.cfg",
-            "snapshot_sha256":snapshot_hash,
+            "summary_format":2,
+            "summary_sha256":sha256(_canonical(item)).hexdigest(),
             "world_id":world_id,
             "world_id_role":"current_runtime_context_only",
             "observation_granularity":"aggregate_snapshot",
@@ -206,15 +207,18 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--preview",action="store_true")
     args = parser.parse_args()
+    phase = "summary"
     try:
         result = sync_once(preview=args.preview)
         if not args.preview:
             from nov_navigation_recall_export import export_once
+            phase = "recall"
             result["recall"] = export_once()
             from nov_navigation_episode_sync import sync_once as sync_episodes
+            phase = "episodes"
             result["episodes"] = sync_episodes()
     except (OSError,ValueError,RuntimeError) as exc:
-        raise SystemExit(f"NAVIGATION_MEMORY_SYNC_BLOCKED {type(exc).__name__}: {exc}") from exc
+        raise SystemExit(f"NAVIGATION_MEMORY_SYNC_BLOCKED phase={phase} {type(exc).__name__}: {exc}") from exc
     print("NAVIGATION_MEMORY_SYNC_OK "+json.dumps(result,sort_keys=True))
 if __name__ == "__main__":
     main()
