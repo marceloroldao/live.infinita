@@ -61,7 +61,11 @@ func advance(
         candidate.z += input_axis.y * speed_mps * delta
     elif auto_route:
         var flat_goal: Vector2 = _experience.target(Vector2(current.x, current.z), Vector2(route_target.x, route_target.z),
-            func(point: Vector2) -> Dictionary: return _sense_ahead(current, point, space_state, Vector2(route_target.x, route_target.z)))
+            func(point: Vector2) -> Dictionary: return _sense_ahead(current, point, space_state, Vector2(route_target.x, route_target.z)),
+            func(start: Vector2, end: Vector2) -> bool:
+                var grounded: Vector3 = _traversability.ground_position(start.x,start.y)
+                var sensed: Dictionary = _sense_ahead(grounded,end,space_state,end)
+                return bool(sensed.get("allowed",false)) and bool(sensed.get("clear_ahead",false)))
         if Time.get_ticks_msec() >= _inference_log_at and _experience.last_decision_source == "memoria.ia":
             _inference_log_at = Time.get_ticks_msec() + 10000
             print("NOV_NAVIGATION_INFERENCE source=memoria.ia observation=%s decisions=%d anticipations=%d" % [
@@ -72,6 +76,8 @@ func advance(
 
     var policy: Dictionary = _traversability.validate_step(current, candidate, space_state)
     policy["route_goal_id"] = route_goal_id
+    if _experience._route_search.running and not manual:
+        policy["reason"] = "route_search_in_progress"
     policy["manual"] = manual
     policy["decision_source"] = _experience.last_decision_source
     policy["memory_observation_id"] = _experience.last_observation_id
@@ -103,7 +109,7 @@ func advance(
     if auto_route and not manual:
         if collisions > 0 or (displacement.length() > 0.001 and resolved.distance_to(current) < 0.0001):
             _experience.blocked()
-        elif Vector2(resolved.x, resolved.z).distance_to(_experience.pending) < 0.03:
+        elif _experience.active and Vector2(resolved.x, resolved.z).distance_to(_experience.pending) < 0.03:
             _experience.arrived(Vector2(route_target.x, route_target.z))
     policy["reached"] = (
         auto_route

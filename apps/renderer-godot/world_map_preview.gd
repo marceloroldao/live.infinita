@@ -875,6 +875,7 @@ func _advance_live_walk(delta: float) -> void:
     var committed_target: Vector3 = _route_goal.choose(_position, _last_live_position, dt, str(_local_motion._episodes.context.get("world_id", "")))
     if _local_motion.route_goal_id != _route_goal.identity():
         _local_motion._experience.active = false
+        _local_motion._experience.reset_route_plan()
     _local_motion.route_goal_id = _route_goal.identity()
     var previous := _position
     var current_flat := Vector2(_position.x, _position.z)

@@ -81,6 +81,10 @@ func run() -> void:
     await physics_frame
     var origin := Vector3(-100,0,0)
     var result: Dictionary = motion.advance(origin,Vector2.ZERO,Vector3(-94,0,0),0.05,body,stage.get_world_3d().direct_space_state,true,8.0)
+    for i in range(300):
+        if not motion._experience._route_search.running: break
+        check(motion._experience.attempts==0 and motion._experience.visits.is_empty(),"Planning pause cannot fabricate attempted or completed movement")
+        result = motion.advance(origin,Vector2.ZERO,Vector3(-94,0,0),0.05,body,stage.get_world_3d().direct_space_state,true,8.0)
     var resolved: Vector3 = result.get("position",origin)
     check(absf(resolved.z)>0.01,"Look-ahead must start deviating while wall is still metres away")
     check(motion._experience.anticipated_avoidances>0,"Anticipation must be counted separately")

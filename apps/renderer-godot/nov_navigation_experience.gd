@@ -24,6 +24,11 @@ var _probe_phase := 0
 var decision_serial := 0
 var decision_evidence: Dictionary = {}
 var working_memory = preload("res://nov_navigation_working_memory.gd").new()
+var _observed_route: Array[Vector2] = []
+var _route_search = preload("res://nov_observed_route.gd").new()
+var route_plan_builds := 0
+var _route_search_origin := Vector2(INF, INF)
+var _route_search_at := -10000
 var working_memory_key := ""
 var working_memory_changed_choice := false
 
@@ -37,6 +42,11 @@ func _init(path: String = "user://nov-navigation-008cd.cfg") -> void:
         failures = cfg.get_value("experience", "failures", {})
         if failures.size() > LIMIT:
             failures.clear()
+
+func reset_route_plan() -> void:
+    _observed_route.clear()
+    _route_search.cancel()
+    _route_search_origin = Vector2(INF,INF)
 
 func key(p: Vector2) -> String:
     return "%d,%d" % [roundi(p.x / CELL_M), roundi(p.y / CELL_M)]
@@ -54,11 +64,14 @@ func save() -> void:
     if result != OK:
         push_warning("NOV navigation experience could not persist: %s" % result)
 
-func target(current: Vector2, goal: Vector2, probe: Callable = Callable()) -> Vector2:
+func target(current: Vector2, goal: Vector2, probe: Callable = Callable(), route_probe: Callable = Callable()) -> Vector2:
     if last_goal.distance_to(goal) > 2.0:
         active = false
         visits.clear()
         trace.clear()
+        _observed_route.clear()
+        _route_search.cancel()
+        _route_search_origin = Vector2(INF,INF)
         last_goal = goal
     if active:
         return pending
@@ -70,7 +83,7 @@ func target(current: Vector2, goal: Vector2, probe: Callable = Callable()) -> Ve
     if trace.is_empty():
         trace.append(current)
     if probe.is_valid():
-        return _anticipated_target(current, goal, probe)
+        return _anticipated_target(current, goal, probe, route_probe)
     var remembered = routes.get(key(goal) + "|" + key(current))
     if remembered is Vector2 and current.distance_to(remembered) > 0.05 and current.distance_to(remembered) < 2.0:
         pending = remembered
@@ -111,6 +124,8 @@ func blocked() -> void:
     attempts += 1
     recovery = true
     active = false
+    _observed_route.clear()
+    _route_search.cancel()
     # Save collision evidence immediately; no frame-rate writes on free movement.
     save()
 
@@ -163,7 +178,7 @@ func apply_recall(snapshot: Dictionary) -> void:
                 if point.is_finite() and absf(point.x) <= 2048.0 and absf(point.y) <= 2048.0:
                     recalled_routes[address] = {"next": point, "id": identity}
 
-func _anticipated_target(current: Vector2, goal: Vector2, probe: Callable) -> Vector2:
+func _anticipated_target(current: Vector2, goal: Vector2, probe: Callable, route_probe: Callable = Callable()) -> Vector2:
     var direct := current.move_toward(goal, CELL_M)
     var address := key(goal) + "|" + key(current)
     var temporary: Dictionary = working_memory.lookup(address)
@@ -172,6 +187,8 @@ func _anticipated_target(current: Vector2, goal: Vector2, probe: Callable) -> Ve
     if current.distance_to(goal) <= 3.0:
         var corridor: Dictionary = probe.call(goal)
         if bool(corridor.get("allowed", false)) and bool(corridor.get("clear_ahead", false)):
+            _observed_route.clear()
+            _route_search.cancel()
             pending = direct
             last_decision_source = "perception"
             last_observation_id = ""
@@ -188,6 +205,44 @@ func _anticipated_target(current: Vector2, goal: Vector2, probe: Callable) -> Ve
                     "clear_ahead": true, "reason": ""}]}
             active = true
             return pending
+    while not _observed_route.is_empty() and current.distance_to(_observed_route[0])<0.05:
+        _observed_route.pop_front()
+    if _observed_route.is_empty() and route_probe.is_valid():
+        var front: Dictionary = probe.call(direct)
+        var retry := current.distance_to(_route_search_origin)>=12.0 or Time.get_ticks_msec()-_route_search_at>=5000
+        if _route_search.running or (retry and not bool(front.get("clear_ahead", false))):
+            if not _route_search.running:
+                _route_search_origin = current
+                _route_search_at = Time.get_ticks_msec()
+                route_plan_builds += 1
+            _observed_route = _route_search.advance(current, goal, route_probe)
+            if _route_search.running:
+                pending = current
+                active = false
+                last_decision_source = "perception-no-passage"
+                last_observation_id = ""
+                decision_evidence = {"lookahead_m": 3.0,
+                    "candidates": [{"point": [current.x,current.y], "allowed": true,
+                        "clear_ahead": false, "reason": "route_search_in_progress"}]}
+                return current
+            print("NOV_OBSERVED_ROUTE nodes=%d probes=%d elapsed_ms=%d max_slice_ms=%d" % [_observed_route.size(), _route_search.sampled_edges, _route_search.elapsed_ms, _route_search.max_slice_ms])
+    if not _observed_route.is_empty():
+        var next := current.move_toward(_observed_route[0], CELL_M)
+        var sensed: Dictionary = probe.call(next)
+        if bool(sensed.get("allowed", false)):
+            pending = next
+            active = true
+            last_decision_source = "perception"
+            last_observation_id = ""
+            decision_evidence = {"lookahead_m": 3.0, "observed_route_range_m": 32.0,
+                "without_memoria": [next.x,next.y],
+                "candidates": [{"point": [next.x,next.y], "allowed": true,
+                    "clear_ahead": bool(sensed.get("clear_ahead", false)),
+                    "reason": str(sensed.get("reason", ""))}]}
+            if pending.distance_to(direct)>0.05:
+                anticipated_avoidances += 1
+            return pending
+        _observed_route.clear()
     var candidates: Array[Dictionary] = [{"point": direct, "bonus": 0.0, "source": "perception", "id": ""}]
     if not temporary.is_empty():
         var next := Vector2(float(temporary["to"][0]), float(temporary["to"][1]))

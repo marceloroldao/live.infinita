@@ -101,7 +101,7 @@ grep -q 'World-map traversal smoke: 0 failures' "$SMOKE_LOG" || {
 }
 
 echo "[world-map-preview] Validando caminhada e câmera de NOV."
-for extra_smoke in godot_nov_locomotion_008bz_smoke.gd godot_nov_grounded_presentation_smoke.gd godot_live_program_008cb_smoke.gd godot_ground_surface_008cc_smoke.gd godot_navigation_experience_008cd_smoke.gd godot_camera_stabilization_008cf_smoke.gd godot_navigation_anticipation_008cg_smoke.gd godot_navigation_episodes_008ch_smoke.gd godot_navigation_working_memory_008ci_smoke.gd godot_nature_residency_008ck_smoke.gd godot_route_goal_008cn_smoke.gd godot_ground_continuity_008co_smoke.gd godot_navigation_goal_quality_008cs_smoke.gd; do
+for extra_smoke in godot_nov_locomotion_008bz_smoke.gd godot_nov_grounded_presentation_smoke.gd godot_live_program_008cb_smoke.gd godot_ground_surface_008cc_smoke.gd godot_navigation_experience_008cd_smoke.gd godot_camera_stabilization_008cf_smoke.gd godot_navigation_anticipation_008cg_smoke.gd godot_navigation_episodes_008ch_smoke.gd godot_navigation_working_memory_008ci_smoke.gd godot_nature_residency_008ck_smoke.gd godot_route_goal_008cn_smoke.gd godot_ground_continuity_008co_smoke.gd godot_navigation_goal_quality_008cs_smoke.gd godot_observed_crossing_008ct_smoke.gd; do
   EXTRA_LOG="$TEMP_ROOT/$extra_smoke.log"
   if ! GODOT_SILENCE_ROOT_WARNING=1 timeout 60s "$GODOT_BIN" --headless --audio-driver Dummy --path "$WORK_PROJECT" --script "$SOURCE_DIR/tests/$extra_smoke" -- --offline-tour >"$EXTRA_LOG" 2>&1; then
     cat "$EXTRA_LOG" >&2
@@ -156,6 +156,8 @@ cat >"$BUILD_DIR/build.json" <<EOF
   "camera_stabilization": true,
   "navigation_anticipation": true,
   "navigation_visible_goal_priority": true,
+  "navigation_observed_routes": true,
+  "navigation_observed_window_side_m": 64,
   "navigation_goal_visibility_range_m": 3,
   "navigation_memoria_recall": true,
   "navigation_experience": "renderer-local",

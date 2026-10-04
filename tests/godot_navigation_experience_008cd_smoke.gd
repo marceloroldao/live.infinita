@@ -138,7 +138,7 @@ func run() -> void:
     for i in range(30):
         preview._advance_live_walk(0.1)
     check(preview._position.x < x+1.6, "Live movement must use physics and cannot snap through wall")
-    check(preview._local_motion._experience.anticipated_avoidances > 0 or preview._local_motion._experience.attempts > 0, "Live obstacle must trigger anticipation or attempted-action evidence")
+    check(preview._local_motion._experience.anticipated_avoidances > 0 or preview._local_motion._experience.attempts > 0 or preview._local_motion._experience._route_search.running, "Live obstacle must trigger observed planning, anticipation or attempted-action evidence")
     preview.queue_free()
     stage.queue_free()
     await process_frame
