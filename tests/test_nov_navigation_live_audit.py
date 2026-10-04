@@ -42,3 +42,31 @@ class LiveAuditTests(unittest.TestCase):
         result=module.audit(self.data([]))
         self.assertIsNone(result["window_started_at_unix"])
         self.assertEqual(result["all"]["actions"],0)
+
+
+class CommittedRouteAuditTests(unittest.TestCase):
+    def action(self,serial=1,world="fixture",goal=(5.0,0.0),outcome="step_reached"):
+        row=episode()
+        action=row["actions"][0]
+        action.update(route_goal_id="c"*32+":1",decision_serial=serial,goal=list(goal),outcome=outcome)
+        action["context_start"]["world_id"]=world
+        action["context_end"]["world_id"]=world
+        return action
+    def test_goal_observation_does_not_claim_full_coverage(self):
+        result=module.route_metrics([self.action(),self.action(2,outcome="goal_reached")])
+        route=result["routes"][0]
+        self.assertTrue(route["goal_reached_observed"])
+        self.assertFalse(route["full_route_coverage_proven"])
+        self.assertEqual(route["observed"]["actions"],2)
+        self.assertEqual(route["causal_memoria_actions"],2)
+    def test_worlds_are_not_conflated(self):
+        result=module.route_metrics([self.action(world="a"),self.action(world="b")])
+        self.assertEqual(len(result["routes"]),2)
+    def test_goal_drift_is_disclosed(self):
+        route=module.route_metrics([self.action(),self.action(2,goal=(10,0))])["routes"][0]
+        self.assertFalse(route["goal_consistent"])
+        self.assertIsNone(route["goal"])
+    def test_older_actions_remain_counted_without_route_identity(self):
+        result=module.route_metrics([episode()["actions"][0]])
+        self.assertEqual(result["actions_without_route_identity"],1)
+        self.assertEqual(result["routes"],[])

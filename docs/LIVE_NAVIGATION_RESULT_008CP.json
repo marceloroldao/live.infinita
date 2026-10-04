@@ -1,0 +1,233 @@
+{
+  "schema": "live-infinita-live-navigation-audit/v1",
+  "scope": "observed_live_native_episode_window",
+  "generated_at_unix": 1791146515.6914146,
+  "source_snapshot_sha256": "250adafaa3824439b7baf2b4c4a14bc8cb127f263a46da12de6937a3c0e57144",
+  "world_write_authority": false,
+  "production_memory_written": false,
+  "episode_ids": [
+    "69289f3a796e9cbfb58d352a77587b13:3",
+    "69289f3a796e9cbfb58d352a77587b13:4",
+    "69289f3a796e9cbfb58d352a77587b13:5",
+    "69289f3a796e9cbfb58d352a77587b13:6",
+    "69289f3a796e9cbfb58d352a77587b13:7",
+    "69289f3a796e9cbfb58d352a77587b13:8",
+    "69289f3a796e9cbfb58d352a77587b13:9",
+    "69289f3a796e9cbfb58d352a77587b13:10",
+    "69289f3a796e9cbfb58d352a77587b13:11"
+  ],
+  "source_retention_dropped": 377,
+  "duplicate_actions_ignored": 0,
+  "window_started_at_unix": 1791146231.83878,
+  "window_ended_at_unix": 1791146501.9977,
+  "world_ids": [
+    "nov-live-autonomous-001"
+  ],
+  "committed_routes": {
+    "routes": [
+      {
+        "world_id": "nov-live-autonomous-001",
+        "route_goal_id": "cc99932c657ccce2f724234b56bfbb04:1",
+        "goal_consistent": true,
+        "goal": [
+          -689.450256347656,
+          -339.372375488281
+        ],
+        "first_observed_at_unix": 1791146231.83878,
+        "last_observed_at_unix": 1791146432.06691,
+        "last_remaining_goal_m": 0.0904950723052025,
+        "goal_reached_observed": true,
+        "full_route_coverage_proven": false,
+        "observed": {
+          "actions": 619,
+          "completed_steps": 619,
+          "goals_reached": 1,
+          "collisions": 0,
+          "outcomes": {
+            "step_reached": 618,
+            "goal_reached": 1
+          },
+          "interruption_reasons": {},
+          "observed_distance_m": 617.4689,
+          "recorded_action_duration_seconds": 105.868
+        },
+        "causal_ram_actions": 15,
+        "causal_memoria_actions": 0
+      },
+      {
+        "world_id": "nov-live-autonomous-001",
+        "route_goal_id": "cc99932c657ccce2f724234b56bfbb04:2",
+        "goal_consistent": true,
+        "goal": [
+          -360.826446533203,
+          -42.6896018981934
+        ],
+        "first_observed_at_unix": 1791146432.16303,
+        "last_observed_at_unix": 1791146501.9977,
+        "last_remaining_goal_m": 277.332061767578,
+        "goal_reached_observed": false,
+        "full_route_coverage_proven": false,
+        "observed": {
+          "actions": 232,
+          "completed_steps": 232,
+          "goals_reached": 0,
+          "collisions": 0,
+          "outcomes": {
+            "step_reached": 232
+          },
+          "interruption_reasons": {},
+          "observed_distance_m": 231.991,
+          "recorded_action_duration_seconds": 41.096
+        },
+        "causal_ram_actions": 0,
+        "causal_memoria_actions": 0
+      }
+    ],
+    "actions_without_route_identity": 0
+  },
+  "all": {
+    "actions": 851,
+    "completed_steps": 851,
+    "goals_reached": 1,
+    "collisions": 0,
+    "outcomes": {
+      "step_reached": 850,
+      "goal_reached": 1
+    },
+    "interruption_reasons": {},
+    "observed_distance_m": 849.4599,
+    "recorded_action_duration_seconds": 146.964
+  },
+  "decision_sources": {
+    "perception": 515,
+    "working-memory": 15,
+    "perception-working-memory-agreement": 321
+  },
+  "verified_causal_ram": {
+    "actions": 15,
+    "completed_steps": 15,
+    "goals_reached": 0,
+    "collisions": 0,
+    "outcomes": {
+      "step_reached": 15
+    },
+    "interruption_reasons": {},
+    "observed_distance_m": 13.8407,
+    "recorded_action_duration_seconds": 1.921
+  },
+  "verified_causal_memoria": {
+    "actions": 0,
+    "completed_steps": 0,
+    "goals_reached": 0,
+    "collisions": 0,
+    "outcomes": {},
+    "interruption_reasons": {},
+    "observed_distance_m": 0,
+    "recorded_action_duration_seconds": 0.0
+  },
+  "causal_claims_without_distinct_baseline": {
+    "ram": 0,
+    "memoria": 0
+  },
+  "repeated_ram_addresses": [],
+  "examples": [
+    {
+      "source": "working-memory",
+      "decision_serial": 378,
+      "outcome": "step_reached",
+      "start": [
+        -681.442993164062,
+        -341.193939208984
+      ],
+      "selected": [
+        -681.467895507812,
+        -342.415771484375
+      ],
+      "baseline": [
+        -682.418090820312,
+        -340.972106933594
+      ],
+      "observation_id": ""
+    },
+    {
+      "source": "working-memory",
+      "decision_serial": 379,
+      "outcome": "step_reached",
+      "start": [
+        -681.467895507812,
+        -342.415771484375
+      ],
+      "selected": [
+        -681.467895507812,
+        -343.415771484375
+      ],
+      "baseline": [
+        -682.402282714844,
+        -342.059509277344
+      ],
+      "observation_id": ""
+    },
+    {
+      "source": "working-memory",
+      "decision_serial": 380,
+      "outcome": "step_reached",
+      "start": [
+        -681.467895507812,
+        -343.415771484375
+      ],
+      "selected": [
+        -681.467895507812,
+        -344.415771484375
+      ],
+      "baseline": [
+        -682.359985351562,
+        -342.963897705078
+      ],
+      "observation_id": ""
+    },
+    {
+      "source": "working-memory",
+      "decision_serial": 381,
+      "outcome": "step_reached",
+      "start": [
+        -681.467895507812,
+        -344.415771484375
+      ],
+      "selected": [
+        -682.174987792969,
+        -345.122863769531
+      ],
+      "baseline": [
+        -682.313293457031,
+        -343.881622314453
+      ],
+      "observation_id": ""
+    },
+    {
+      "source": "working-memory",
+      "decision_serial": 511,
+      "outcome": "step_reached",
+      "start": [
+        -679.443786621094,
+        -341.611572265625
+      ],
+      "selected": [
+        -679.174987792969,
+        -342.537048339844
+      ],
+      "baseline": [
+        -680.419677734375,
+        -341.393188476562
+      ],
+      "observation_id": ""
+    }
+  ],
+  "controlled_live_gain_measured": false,
+  "limitations": [
+    "Retention window is incomplete; absence here does not prove absence in the entire run.",
+    "Completed steps do not prove completed routes or shorter routes.",
+    "Baseline records an alternative choice; its physical outcome was not executed.",
+    "Distances and durations describe different observed situations and are not a controlled comparison.",
+    "Repeated quantized addresses do not guarantee identical terrain, start, goal or conditions."
+  ]
+}
