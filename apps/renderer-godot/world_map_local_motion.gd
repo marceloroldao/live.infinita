@@ -7,6 +7,7 @@ const BODY_CENTER_Y := 0.9
 
 var _experience = preload("res://nov_navigation_experience.gd").new()
 var _traversability: RefCounted
+var _inference_log_at := 0
 
 func _init(walk_height: Callable, half_m: float = 512.0, dynamic_surface: Callable = Callable()) -> void:
     _traversability = Traversability.new(walk_height, half_m, dynamic_surface)
@@ -51,13 +52,20 @@ func advance(
         candidate.x += input_axis.x * speed_mps * delta
         candidate.z += input_axis.y * speed_mps * delta
     elif auto_route:
-        var flat_goal: Vector2 = _experience.target(Vector2(current.x, current.z), Vector2(route_target.x, route_target.z))
+        var flat_goal: Vector2 = _experience.target(Vector2(current.x, current.z), Vector2(route_target.x, route_target.z),
+            func(point: Vector2) -> Dictionary: return _sense_ahead(current, point, space_state, Vector2(route_target.x, route_target.z)))
+        if Time.get_ticks_msec() >= _inference_log_at and _experience.last_decision_source == "memoria.ia":
+            _inference_log_at = Time.get_ticks_msec() + 10000
+            print("NOV_NAVIGATION_INFERENCE source=memoria.ia observation=%s decisions=%d anticipations=%d" % [
+                _experience.last_observation_id, _experience.memory_decisions, _experience.anticipated_avoidances])
         var flat := Vector2(current.x, current.z).move_toward(flat_goal, speed_mps * delta)
         candidate.x = flat.x
         candidate.z = flat.y
 
     var policy: Dictionary = _traversability.validate_step(current, candidate, space_state)
     policy["manual"] = manual
+    policy["decision_source"] = _experience.last_decision_source
+    policy["memory_observation_id"] = _experience.last_observation_id
     if not bool(policy.get("allowed", false)):
         if auto_route and not manual:
             _experience.blocked()
@@ -89,3 +97,22 @@ func advance(
         and Vector2(resolved.x, resolved.z).distance_to(Vector2(route_target.x, route_target.z)) < 0.1
     )
     return policy
+
+func _sense_ahead(current: Vector3, point: Vector2, space_state: PhysicsDirectSpaceState3D, goal: Vector2) -> Dictionary:
+    var flat := Vector2(current.x, current.z)
+    var distance := flat.distance_to(point)
+    if distance < 0.001:
+        return {"allowed": true, "clear_ahead": true}
+    var direction := (point - flat).normalized()
+    var travel := distance if point.distance_to(goal) < 0.05 else maxf(distance, 3.0)
+    var previous := current
+    var clear_m := 0.0
+    for i in range(1, ceili(travel / 0.4) + 1):
+        var offset := minf(float(i) * 0.4, travel)
+        var next := flat + direction * offset
+        var policy: Dictionary = _traversability.validate_step(previous, Vector3(next.x, previous.y, next.y), space_state)
+        if not bool(policy.get("allowed", false)):
+            return {"allowed": clear_m >= distance - 0.01, "clear_ahead": false, "reason": policy.get("reason", "blocked")}
+        previous = policy.get("position", previous)
+        clear_m = offset
+    return {"allowed": true, "clear_ahead": true}

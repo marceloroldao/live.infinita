@@ -125,6 +125,10 @@ func _ready() -> void:
     _live_visual = LiveVisual.new(self, _features, _map)
     _cognitive_terrain = CognitiveTerrain.new(self)
     _local_motion = LocalMotion.new(Callable(_features, "walk_height"), _layout.half_m, Callable(_cognitive_terrain, "surface_at"))
+    var navigation_recall = preload("res://nov_navigation_recall.gd").new()
+    navigation_recall.name = "NavigationRecall"
+    navigation_recall.snapshot_ready.connect(Callable(_local_motion._experience, "apply_recall"))
+    add_child(navigation_recall)
     _perceptual_vegetation = PerceptualVegetation.new(
         Callable(self, "_new_vegetation_batch"),
         Callable(self, "_height"),

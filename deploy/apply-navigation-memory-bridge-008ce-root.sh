@@ -6,6 +6,9 @@ DST=/opt/live.infinita/apps/world-runtime
 SERVICE=live-infinita-nov-navigation-memory-sync.service
 TIMER=live-infinita-nov-navigation-memory-sync.timer
 SCRIPT=nov_navigation_memory_sync.py
+SCRIPTS=(nov_navigation_memory_sync.py nov_navigation_recall_export.py)
+PUBLIC=/var/www/live-infinita-godot/navigation-memory
+PRIVATE=/var/lib/live-infinita/memoria-local/navigation-recall.json
 CHECKPOINT=/var/lib/live-infinita/memoria-local/nov-navigation-ingest.checkpoint.json
 cd "$REPO"
 LOG=/home/etbra/008ce-rollout.log
@@ -20,10 +23,14 @@ test -s "$DST/nov_spatial_memory_sync.py"
 test -s /etc/live-infinita/memoria-local.env
 systemctl is-active --quiet live-infinita-memoria-local.service
 systemctl is-active --quiet live-infinita-renderer.service
-PYTHONPATH="$REPO:$REPO/apps/world-runtime" PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s "$REPO/tests" -p test_nov_navigation_memory_sync.py
+PYTHONPATH="$REPO:$REPO/apps/world-runtime" PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s "$REPO/tests" -p "test_nov_navigation*.py"
 BACKUP="/opt/live.infinita/.rollouts/008ce-$(date -u +%Y%m%dT%H%M%SZ)"
 mkdir -p "$BACKUP"
-if [ -f "$DST/$SCRIPT" ]; then cp -a "$DST/$SCRIPT" "$BACKUP/$SCRIPT"; fi
+for file in "${SCRIPTS[@]}"; do
+  if [ -f "$DST/$file" ]; then cp -a "$DST/$file" "$BACKUP/$file"; fi
+done
+if [ -d "$PUBLIC" ]; then cp -a "$PUBLIC" "$BACKUP/navigation-public"; fi
+if [ -f "$PRIVATE" ]; then cp -a "$PRIVATE" "$BACKUP/navigation-private.json"; fi
 for unit in "$SERVICE" "$TIMER"; do
   if [ -f "/etc/systemd/system/$unit" ]; then cp -a "/etc/systemd/system/$unit" "$BACKUP/$unit"; fi
 done
@@ -37,7 +44,11 @@ rollback() {
   echo "008CE_ROLLBACK rc=$rc" >&2
   systemctl disable --now "$TIMER" || true
   systemctl stop "$SERVICE" || true
-  if [ -f "$BACKUP/$SCRIPT" ]; then cp -a "$BACKUP/$SCRIPT" "$DST/$SCRIPT"; else rm -f "$DST/$SCRIPT"; fi
+  for file in "${SCRIPTS[@]}"; do
+    if [ -f "$BACKUP/$file" ]; then cp -a "$BACKUP/$file" "$DST/$file"; else rm -f "$DST/$file"; fi
+  done
+  if [ -d "$BACKUP/navigation-public" ]; then rsync -a --delete "$BACKUP/navigation-public/" "$PUBLIC/"; else rm -f "$PUBLIC/recall.json"; fi
+  if [ -f "$BACKUP/navigation-private.json" ]; then cp -a "$BACKUP/navigation-private.json" "$PRIVATE"; else rm -f "$PRIVATE"; fi
   for unit in "$SERVICE" "$TIMER"; do
     if [ -f "$BACKUP/$unit" ]; then cp -a "$BACKUP/$unit" "/etc/systemd/system/$unit"; else rm -f "/etc/systemd/system/$unit"; fi
   done
@@ -50,7 +61,10 @@ rollback() {
 trap rollback ERR
 if [ -f "/etc/systemd/system/$TIMER" ]; then systemctl stop "$TIMER"; fi
 if [ -f "/etc/systemd/system/$SERVICE" ]; then systemctl stop "$SERVICE"; fi
-install -o liveinfinita -g liveinfinita -m 0664 "$REPO/apps/world-runtime/$SCRIPT" "$DST/$SCRIPT"
+install -d -o liveinfinita -g liveinfinita -m 0755 "$PUBLIC"
+for file in "${SCRIPTS[@]}"; do
+  install -o liveinfinita -g liveinfinita -m 0664 "$REPO/apps/world-runtime/$file" "$DST/$file"
+done
 # Service account cannot traverse the private /home/etbra directory.
 # Validate the installed script under the same readable /opt paths as systemd.
 (
