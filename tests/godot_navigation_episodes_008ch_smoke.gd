@@ -7,6 +7,18 @@ func check(value: bool, label: String) -> void:
 func _initialize() -> void:
     call_deferred("run")
 func run() -> void:
+    var feed = load("res://world_map_live_feed.gd").new()
+    feed.enabled = false
+    root.add_child(feed)
+    feed._connect()
+    check(feed.socket.inbound_buffer_size >= 104833, "World feed must accept actual terrain slices above 64 KiB")
+    feed.socket = WebSocketPeer.new()
+    feed.reconnect_at_ms = Time.get_ticks_msec()
+    if feed.reconnect_at_ms == 0:
+        feed.reconnect_at_ms = 1
+    feed._maybe_reconnect()
+    check(feed.socket.inbound_buffer_size >= 104833, "Reconnect must retain world packet capacity")
+    feed.queue_free()
     var Recorder = load("res://nov_navigation_episodes.gd")
     var path := "user://008ch-episode-smoke.json"
     DirAccess.remove_absolute(path)

@@ -90,3 +90,19 @@ oficial deve decidir como aplicar deslocamentos e reconhecer chegadas.
 Hoje a posição oficial continua independente dos desvios físicos do renderer.
 Essa integração exige mudanças no contrato de execução, não apenas escrever
 diretamente world.json a partir de um espectador.
+
+## Correção encontrada na validação da instalação
+
+A primeira instalação da 008CH terminou com 008CH_OK e serviços saudáveis,
+mas a ingestão permaneceu awaiting_native_episode. A auditoria do WebSocket
+real encontrou desconexões 1009 / Message too big: o estado enviado tinha
+104833 bytes, enquanto WebSocketPeer aceitava por padrão 65535 bytes.
+Sem o feed, a cena entrava no passeio local; a gravação corretamente permanecia
+desabilitada. Portanto, serviço ativo e exportação correta não eram suficientes
+para comprovar a recepção ao vivo.
+
+world_map_live_feed.gd agora configura inbound_buffer_size=2097152 antes
+de cada handshake, incluindo os peers recriados em reconexões. O limite
+continua finito. O teste de episódios verifica a capacidade inicial e de
+reconexão. A auditoria isolada confirmou conectado, contextos reais de NOV
+e sequências oficiais recebidas. Reaplicar o instalador 008CH publica a correção.

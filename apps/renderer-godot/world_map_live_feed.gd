@@ -8,6 +8,7 @@ signal program_state_received(world: Dictionary)
 signal audience_event_received(event: Dictionary)
 
 const RECONNECT_MAX_MS := 12000
+const WORLD_PACKET_BUFFER_BYTES := 2 * 1024 * 1024
 var socket := WebSocketPeer.new()
 var connection_state := "desconectado"
 var reconnect_attempt := 0
@@ -29,6 +30,9 @@ func _websocket_url() -> String:
     return "ws://127.0.0.1:8080/ws"
 
 func _connect() -> void:
+    # Terrain and environmental slices exceed the default 64 KiB buffer.
+    # Configure every new peer, including reconnects, before the handshake.
+    socket.inbound_buffer_size = WORLD_PACKET_BUFFER_BYTES
     connection_state = "conectando"
     var err := socket.connect_to_url(_websocket_url())
     if err != OK:
