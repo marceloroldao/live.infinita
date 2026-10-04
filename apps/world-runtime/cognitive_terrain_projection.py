@@ -19,6 +19,7 @@ from math import exp, sqrt, isfinite
 import os
 from pathlib import Path
 import sqlite3
+import time
 from typing import Any
 
 
@@ -57,12 +58,32 @@ MAX_SPATIAL_TRAILS = 128
 SPATIAL_RECURRENCE_GRID_M = 64.0
 MAX_SPATIAL_INDEX_WINDOW_BYTES = 8 * 1024 * 1024
 MAX_OUTPUT_BYTES = 128 * 1024
+SQLITE_BUSY_TIMEOUT_SECONDS = 8.0
+SQLITE_READ_RETRIES = 4
+SQLITE_RETRY_BASE_SECONDS = 0.75
 WATERLIKE_BIOMES = frozenset({"river", "waterfall"})
 BASIN_BIOME_PRIORITY = {"meadow": 0, "forest": 1, "hills": 2, "moor": 3}
 
 
 class CognitiveTerrainError(RuntimeError):
     pass
+
+
+def _readonly_sqlite(db_path: Path) -> sqlite3.Connection:
+    uri = db_path.resolve().as_uri() + "?mode=ro"
+    db = sqlite3.connect(uri, uri=True, timeout=SQLITE_BUSY_TIMEOUT_SECONDS)
+    db.execute(f"PRAGMA busy_timeout={int(SQLITE_BUSY_TIMEOUT_SECONDS * 1000)}")
+    db.execute("PRAGMA query_only=ON")
+    return db
+
+
+def _sqlite_busy(exc: BaseException) -> bool:
+    message = str(exc).lower()
+    return (
+        "database is locked" in message
+        or "database table is locked" in message
+        or "database schema is locked" in message
+    )
 
 
 def _canonical(value: object) -> bytes:
@@ -132,10 +153,8 @@ def _validated_rows(db_path: Path, checkpoint: dict[str, Any], world_id: str) ->
     if size <= 0 or size > MAX_DB_BYTES:
         raise CognitiveTerrainError("memory_db_budget")
 
-    uri = db_path.resolve().as_uri() + "?mode=ro"
-    db = sqlite3.connect(uri, uri=True)
+    db = _readonly_sqlite(db_path)
     try:
-        db.execute("PRAGMA query_only=ON")
         db.execute("BEGIN")
         total = int(db.execute(
             "SELECT COUNT(*) FROM observations WHERE world_id=?", (world_id,)
@@ -256,11 +275,9 @@ def _validated_spatial_rows(index_path: Path, db_path: Path, world_id: str) -> l
         return []
     if db_path.is_symlink() or not db_path.is_file():
         raise CognitiveTerrainError("spatial_store_unavailable")
-    uri = db_path.resolve().as_uri() + "?mode=ro"
-    db = sqlite3.connect(uri, uri=True)
+    db = _readonly_sqlite(db_path)
     rows: list[dict[str, Any]] = []
     try:
-        db.execute("PRAGMA query_only=ON")
         for raw in lines:
             try:
                 index_row = json.loads(raw)
@@ -763,6 +780,38 @@ class CognitiveTerrainProjectionReader:
         return deepcopy(self._cached) if self._cached is not None else None
 
 
+def _project_with_busy_retry(
+    *,
+    db_path: Path,
+    checkpoint_path: Path,
+    world_path: Path,
+    output_path: Path,
+) -> dict[str, Any]:
+    for attempt in range(1, SQLITE_READ_RETRIES + 1):
+        try:
+            return project_once(
+                db_path=db_path,
+                checkpoint_path=checkpoint_path,
+                world_path=world_path,
+                output_path=output_path,
+            )
+        except sqlite3.OperationalError as exc:
+            if not _sqlite_busy(exc) or attempt >= SQLITE_READ_RETRIES:
+                raise
+            delay = SQLITE_RETRY_BASE_SECONDS * attempt
+            print(
+                "COGNITIVE_TERRAIN_RETRY "
+                + json.dumps(
+                    {"attempt": attempt, "reason": "sqlite_busy", "sleep_seconds": delay},
+                    sort_keys=True,
+                    separators=(",", ":"),
+                ),
+                flush=True,
+            )
+            time.sleep(delay)
+    raise AssertionError("unreachable")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--db", type=Path, default=DEFAULT_DB)
@@ -771,7 +820,7 @@ def main() -> None:
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     args = parser.parse_args()
     try:
-        result = project_once(
+        result = _project_with_busy_retry(
             db_path=args.db, checkpoint_path=args.checkpoint,
             world_path=args.world, output_path=args.output,
         )

@@ -6,6 +6,8 @@ import json
 from pathlib import Path
 import sqlite3
 import tempfile
+import threading
+import time
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -191,6 +193,48 @@ class CognitiveTerrain008BTests(unittest.TestCase):
         self.assertEqual(transitions[("clearing", "ridge")]["count"], 2)
         self.assertEqual(transitions[("ridge", "clearing")]["count"], 1)
         self.assertGreater(transitions[("clearing", "ridge")]["ridge_height_m"], 1.0)
+
+    def test_transient_sqlite_writer_lock_is_retried_without_losing_projection(self) -> None:
+        self._episode(tick=10, region="clearing")
+        self._finish_checkpoint()
+
+        lock = sqlite3.connect(self.db, timeout=0.0, check_same_thread=False)
+        lock.execute("BEGIN EXCLUSIVE")
+
+        released = threading.Event()
+
+        def release_lock() -> None:
+            time.sleep(0.15)
+            lock.rollback()
+            lock.close()
+            released.set()
+
+        worker = threading.Thread(target=release_lock, daemon=True)
+        worker.start()
+
+        old_timeout = module.SQLITE_BUSY_TIMEOUT_SECONDS
+        old_retries = module.SQLITE_READ_RETRIES
+        old_delay = module.SQLITE_RETRY_BASE_SECONDS
+        try:
+            module.SQLITE_BUSY_TIMEOUT_SECONDS = 0.03
+            module.SQLITE_READ_RETRIES = 6
+            module.SQLITE_RETRY_BASE_SECONDS = 0.02
+            result = module._project_with_busy_retry(
+                db_path=self.db,
+                checkpoint_path=self.checkpoint,
+                world_path=self.world,
+                output_path=self.output,
+            )
+        finally:
+            module.SQLITE_BUSY_TIMEOUT_SECONDS = old_timeout
+            module.SQLITE_READ_RETRIES = old_retries
+            module.SQLITE_RETRY_BASE_SECONDS = old_delay
+            worker.join(timeout=2.0)
+
+        self.assertTrue(released.is_set())
+        self.assertEqual(result["status"], "ok")
+        projection = json.loads(self.output.read_text(encoding="utf-8"))
+        self.assertEqual(projection["projection_id"], result["projection_id"])
 
     def test_corrupt_memoria_digest_fails_closed_and_does_not_write_projection(self) -> None:
         self._episode(tick=10, region="clearing")
