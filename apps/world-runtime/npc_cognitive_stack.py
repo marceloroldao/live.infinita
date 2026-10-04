@@ -81,6 +81,7 @@ def build_npc_cognitive_stack(
     plan_scheduler: Any,
     npc_ids: list[str],
     world_provider: Any | None = None,
+    environmental_provider: Any | None = None,
     need_threshold: float = 0.70,
     cooldown_ticks: int = 20,
     target_exploration_samples: int = 2,
@@ -159,6 +160,7 @@ def build_npc_cognitive_stack(
         npc_ids=ids,
         interval_ticks=4,
         priority=25,
+        environmental_provider=environmental_provider,
     )
     need_outcomes = NpcNeedOutcomeProcessor(
         root / "npc-need-outcomes.jsonl",

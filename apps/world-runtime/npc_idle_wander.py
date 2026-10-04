@@ -5,6 +5,7 @@ import zlib
 from typing import Any
 
 from plan_scheduler import PlanScheduler
+from npc_environmental_exploration import choose_local_region
 
 
 class NpcIdleWander:
@@ -23,11 +24,15 @@ class NpcIdleWander:
         npc_ids: list[str],
         interval_ticks: int = 4,
         priority: int = 25,
+        environmental_provider: Any | None = None,
     ) -> None:
         self.plans = plan_scheduler
         self.npc_ids = tuple(sorted({str(value).strip() for value in npc_ids if str(value).strip()}))
         self.interval_ticks = max(2, int(interval_ticks))
         self.priority = int(priority)
+        self.environmental_provider = environmental_provider
+        self._environmental_stimulus: dict[str, Any] = {}
+        self._environmental_decision: dict[str, Any] = {}
 
     def _entity(self, entity_id: str) -> dict[str, Any] | None:
         return self.plans.planner.store.get_entity(entity_id)
@@ -53,6 +58,7 @@ class NpcIdleWander:
         return previous if arrived == current_id else ""
 
     def _select_region(self, entity: dict[str, Any], bucket: int):
+        self._environmental_decision = {}
         regions = self.plans.planner.regions
         current_id = str(entity.get("region_id") or "").strip()
         current = regions.get(current_id)
@@ -69,7 +75,11 @@ class NpcIdleWander:
             choices = [region_id for region_id in neighbors if region_id != previous]
             if not choices:
                 choices = neighbors
-            return regions.get(choices[(bucket // 4) % len(choices)])
+            baseline = choices[(bucket // 4) % len(choices)]
+            target, self._environmental_decision = choose_local_region(
+                choices, baseline, self._environmental_stimulus, bucket
+            )
+            return regions.get(target)
         return current
 
     @staticmethod
@@ -104,6 +114,9 @@ class NpcIdleWander:
                 results.append({"npc_id": npc_id, "tick": tick, "status": "busy"})
                 continue
 
+            self._environmental_stimulus = (
+                self.environmental_provider() if callable(self.environmental_provider) else {}
+            )
             region = self._select_region(entity, bucket)
             if region is None:
                 results.append({"npc_id": npc_id, "tick": tick, "status": "no_region"})
@@ -116,6 +129,7 @@ class NpcIdleWander:
                 "position": position,
                 "region_id": region.id,
                 "idle_wander": True,
+                "environmental_context": dict(self._environmental_decision),
             }
             current_id = str(entity.get("region_id") or "").strip()
             if region.id != current_id:
@@ -155,6 +169,7 @@ class NpcIdleWander:
                         "region_id": region.id,
                         "position": position,
                         "priority": self.priority,
+                        "environmental_context": dict(self._environmental_decision),
                         "ephemeral": True,
                         "mutation_decision_id": execution.get(
                             "mutation_decision_id"
@@ -179,6 +194,7 @@ class NpcIdleWander:
                 "region_id": region.id,
                 "position": position,
                 "priority": self.priority,
+                "environmental_context": dict(self._environmental_decision),
                 "ephemeral": False,
             })
         return results

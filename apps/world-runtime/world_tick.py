@@ -226,6 +226,7 @@ class WorldTickRunner:
                     "region_id": row.get("region_id"),
                     "position": row.get("position"),
                     "priority": row.get("priority"),
+                    "environmental_context": row.get("environmental_context"),
                 })
 
         strategy_results: list[dict[str, Any]] = []

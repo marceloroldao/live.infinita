@@ -274,12 +274,19 @@ def build_authoritative_autonomous_runtime(
     _install_bootstrap_schedules(bootstrap_value, event_scheduler)
     _install_bootstrap_conditionals(bootstrap_value, conditional_event_scheduler)
     world_provider = engine.load_world
+    from npc_environmental_exploration import EnvironmentalExploration
+    environmental_provider = EnvironmentalExploration(
+        world_provider,
+        Path(cognitive_terrain_file) if cognitive_terrain_file is not None
+        else root.parent / "cognitive-terrain" / "projection.json",
+    )
     cognition = build_npc_cognitive_stack(
         data_dir=root,
         proposal_ledger=proposals,
         plan_scheduler=scheduler,
         npc_ids=npc_ids,
         world_provider=world_provider,
+        environmental_provider=environmental_provider,
     )
     clock = SimulationClock(root / "simulation-clock.json", tick_duration_ms=tick_duration_ms)
     cognition.social_exchange_producer.clock_provider = lambda: clock.state().tick
