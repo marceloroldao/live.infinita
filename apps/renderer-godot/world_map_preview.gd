@@ -831,7 +831,9 @@ func _follow_camera(snap_body: bool = true, delta: float = 1.0 / 60.0, reset_cam
     camera_position.y = maxf(camera_position.y,
         _height(camera_position.x, camera_position.z) + CAMERA_MIN_GROUND_CLEARANCE_M)
 
+    _camera_stabilizer.position.y = camera_position.y
     var pivot := _position + Vector3(0.0, CAMERA_LOOK_HEIGHT_M, 0.0)
+    var safe_arm := pivot.distance_to(camera_position)
     if is_inside_tree() and get_world_3d() != null:
         var query := PhysicsRayQueryParameters3D.create(pivot, camera_position, 1)
         query.collide_with_areas = false
@@ -839,17 +841,11 @@ func _follow_camera(snap_body: bool = true, delta: float = 1.0 / 60.0, reset_cam
         var hit := get_world_3d().direct_space_state.intersect_ray(query)
         if not hit.is_empty():
             var hit_position: Vector3 = hit.get("position", camera_position)
-            var toward_pivot := (pivot - hit_position).normalized()
-            if toward_pivot.length_squared() < 0.001:
-                toward_pivot = forward
-            camera_position = hit_position + toward_pivot * CAMERA_COLLISION_MARGIN_M
-            var resolved_ground := _height(camera_position.x, camera_position.z)
-            camera_position.y = maxf(
-                camera_position.y,
-                resolved_ground + CAMERA_MIN_GROUND_CLEARANCE_M
-            )
-
-    _camera_stabilizer.position = camera_position
+            safe_arm = maxf(0.0,pivot.distance_to(hit_position)-CAMERA_COLLISION_MARGIN_M)
+    camera_position = _camera_stabilizer.constrain_arm(pivot,camera_position,safe_arm,delta,reset_camera)
+    camera_position.y = maxf(camera_position.y,
+        _height(camera_position.x,camera_position.z)+CAMERA_MIN_GROUND_CLEARANCE_M)
+    # Keep the nominal follower independent from the collision-constrained eye.
     _camera.position = camera_position
     _camera.look_at(target, Vector3.UP)
 func _update_caption() -> void:
