@@ -179,6 +179,40 @@ func _environment(region_id: String) -> Dictionary:
     var value = _environment_by_region.get(region_id, {})
     return value if typeof(value) == TYPE_DICTIONARY else {}
 
+func _ecological_affinity(environment: Dictionary, key: String) -> float:
+    if environment.has(key):
+        return clampf(float(environment.get(key, 0.0)), 0.0, 1.0)
+    var zone := str(environment.get("ecological_zone", "sparse"))
+    match key:
+        "forest_affinity":
+            if zone == "forest":
+                return 1.0
+            if zone == "wetland":
+                return 0.35
+            if zone == "meadow":
+                return 0.18
+        "meadow_affinity":
+            if zone in ["meadow", "alpine_meadow"]:
+                return 0.85
+            if zone == "shrubland":
+                return 0.35
+        "shrub_affinity":
+            if zone == "shrubland":
+                return 0.85
+            if zone == "meadow":
+                return 0.30
+        "wetland_affinity":
+            if zone == "wetland":
+                return 1.0
+        "alpine_affinity":
+            if zone == "snowfield":
+                return 1.0
+            if zone == "alpine_rock":
+                return 0.92
+            if zone == "alpine_meadow":
+                return 0.65
+    return 0.0
+
 func _tree_asset(environment: Dictionary) -> String:
     var climate := str(environment.get("climate_type", "temperate_humid"))
     var zone := str(environment.get("ecological_zone", "sparse"))
@@ -206,34 +240,53 @@ func _environment_factors(environment: Dictionary) -> Vector3:
     var tree := clampf(float(environment.get("tree_suitability", 0.0)), 0.0, 1.0)
     var rock := clampf(float(environment.get("rock_exposure", 0.0)), 0.0, 1.0)
     var snow := clampf(float(environment.get("snow_cover", 0.0)), 0.0, 1.0)
-    var zone := str(environment.get("ecological_zone", "sparse"))
+    var forest_affinity := _ecological_affinity(environment, "forest_affinity")
+    var meadow_affinity := _ecological_affinity(environment, "meadow_affinity")
+    var shrub_affinity := _ecological_affinity(environment, "shrub_affinity")
+    var wetland_affinity := _ecological_affinity(environment, "wetland_affinity")
+    var alpine_affinity := _ecological_affinity(environment, "alpine_affinity")
 
-    var tree_zone := 0.18
-    match zone:
-        "forest":
-            tree_zone = 1.0
-        "wetland":
-            tree_zone = 0.55
-        "meadow":
-            tree_zone = 0.28
-        "shrubland":
-            tree_zone = 0.12
-        "alpine_meadow":
-            tree_zone = 0.08
-        "alpine_rock", "snowfield":
-            tree_zone = 0.0
-
+    var tree_membership := clampf(
+        0.06
+        + 0.94 * forest_affinity
+        + 0.26 * wetland_affinity
+        + 0.16 * meadow_affinity
+        + 0.08 * shrub_affinity
+        - 0.84 * alpine_affinity,
+        0.0,
+        1.0
+    )
     var tree_factor := clampf(
-        tree * tree_zone * (1.0 - rock) * (1.0 - snow) * 1.45,
+        tree * tree_membership * (1.0 - rock) * (1.0 - snow) * 1.45,
+        0.0,
+        1.0
+    )
+    var understory_membership := clampf(
+        0.22
+        + 0.52 * meadow_affinity
+        + 0.45 * shrub_affinity
+        + 0.68 * forest_affinity
+        + 0.36 * wetland_affinity
+        - 0.62 * alpine_affinity,
         0.0,
         1.0
     )
     var understory_factor := clampf(
-        vegetation * (1.0 - 0.65 * rock) * (1.0 - 0.82 * snow) * 1.25,
+        vegetation
+        * (1.0 - 0.65 * rock)
+        * (1.0 - 0.82 * snow)
+        * 1.25
+        * understory_membership,
         0.0,
         1.0
     )
-    var rock_factor := clampf(rock * (0.65 + 0.55 * (1.0 - vegetation)), 0.0, 1.0)
+    var rock_factor := clampf(
+        rock
+        * (0.65 + 0.55 * (1.0 - vegetation))
+        * (0.72 + 0.45 * alpine_affinity),
+        0.0,
+        1.0
+    )
     return Vector3(tree_factor, understory_factor, rock_factor)
 
 func _set_environment_meshes(environment: Dictionary) -> void:

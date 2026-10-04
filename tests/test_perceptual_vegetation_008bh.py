@@ -37,8 +37,17 @@ class PerceptualVegetation008BHTests(unittest.TestCase):
             'environment.get("ecological_zone"',
         ):
             self.assertIn(field, source)
-        self.assertIn('"alpine_rock", "snowfield"', source)
-        self.assertIn("zone_tree_multiplier = 0.0", source)
+        for expected in (
+            'forest_affinity',
+            'meadow_affinity',
+            'shrub_affinity',
+            'wetland_affinity',
+            'alpine_affinity',
+            'tree_membership := clampf(',
+            'undergrowth_membership := clampf(',
+        ):
+            self.assertIn(expected, source)
+        self.assertNotIn("zone_tree_multiplier", source)
 
     def test_only_local_forward_volume_is_materialized(self) -> None:
         source = MODULE.read_text(encoding="utf-8")

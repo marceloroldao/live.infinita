@@ -62,8 +62,12 @@ func run() -> void:
         "Dense forest must materialize many local trees"
     )
     check(
-        stage._perceptual_vegetation.undergrowth_visible_count() > 220,
-        "Dense forest must materialize dense local undergrowth"
+        stage._perceptual_vegetation.undergrowth_visible_count() >= 200,
+        "Dense forest must materialize dense local undergrowth within budget"
+    )
+    check(
+        stage._perceptual_vegetation.undergrowth_visible_count() <= 220,
+        "Local undergrowth must respect the bounded instance budget"
     )
 
     var camera: Camera3D = stage._camera

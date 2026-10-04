@@ -179,6 +179,68 @@ def _climate_type(temp_c: float, precipitation_mm: float, altitude_m: float) -> 
     return "temperate_humid"
 
 
+def _ecological_affinities(
+    *,
+    effective_altitude_m: float,
+    climate_temperature_c: float,
+    soil_moisture: float,
+    snow_cover: float,
+    rock_exposure: float,
+    vegetation_density: float,
+    tree_suitability: float,
+    water_influence: float,
+) -> dict[str, float]:
+    """Continuous ecological memberships used by presentation.
+
+    ecological_zone remains a compact diagnostic label. These affinities are
+    intentionally continuous so visual density/material transitions do not
+    jump when a threshold is crossed.
+    """
+    cold = _clamp((12.0 - climate_temperature_c) / 14.0, 0.0, 1.0)
+    altitude = _clamp((effective_altitude_m - 900.0) / 2100.0, 0.0, 1.0)
+    alpine = _clamp(
+        0.42 * altitude + 0.30 * cold + 0.18 * rock_exposure + 0.22 * snow_cover,
+        0.0,
+        1.0,
+    )
+    wetland = _clamp(
+        water_influence * (0.35 + 0.65 * soil_moisture) * (1.0 - 0.45 * alpine),
+        0.0,
+        1.0,
+    )
+    forest = _clamp(
+        tree_suitability
+        * (0.45 + 0.75 * vegetation_density)
+        * (1.0 - 0.82 * alpine)
+        * (1.0 - 0.55 * wetland),
+        0.0,
+        1.0,
+    )
+    meadow = _clamp(
+        vegetation_density
+        * (1.0 - 0.58 * forest)
+        * (1.0 - 0.55 * rock_exposure)
+        * (1.0 - 0.62 * snow_cover),
+        0.0,
+        1.0,
+    )
+    shrub = _clamp(
+        vegetation_density
+        * (0.42 + 0.58 * rock_exposure)
+        * (1.0 - 0.62 * forest)
+        * (1.0 - 0.55 * snow_cover),
+        0.0,
+        1.0,
+    )
+    return {
+        "forest_affinity": forest,
+        "meadow_affinity": meadow,
+        "shrub_affinity": shrub,
+        "wetland_affinity": wetland,
+        "alpine_affinity": alpine,
+    }
+
+
 def derive_environmental_state(
     world: dict[str, Any],
     cognitive_projection: dict[str, Any],
@@ -288,6 +350,16 @@ def derive_environmental_state(
             tree_suitability=tree_suitability,
             water_influence=water_influence,
         )
+        affinities = _ecological_affinities(
+            effective_altitude_m=effective_altitude,
+            climate_temperature_c=climate_temp,
+            soil_moisture=soil_moisture,
+            snow_cover=snow_cover,
+            rock_exposure=rock_exposure,
+            vegetation_density=vegetation_density,
+            tree_suitability=tree_suitability,
+            water_influence=water_influence,
+        )
         output_rows.append({
             "region_id": region_id,
             "source_biome": biome,
@@ -311,6 +383,7 @@ def derive_environmental_state(
             "tree_suitability": round(tree_suitability, 4),
             "trees_allowed": tree_suitability >= 0.42,
             "ecological_zone": zone,
+            **{key: round(value, 4) for key, value in affinities.items()},
         })
 
     output_rows.sort(key=lambda row: row["region_id"])

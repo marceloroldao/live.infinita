@@ -12,6 +12,10 @@ func terrain_color(base: Color, environment: Dictionary) -> Color:
     var snow := clampf(float(environment.get("snow_cover", 0.0)), 0.0, 1.0)
     var influence := clampf(float(environment.get("cognitive_influence", 1.0)), 0.0, 1.0)
     var zone := str(environment.get("ecological_zone", ""))
+    var forest_affinity := clampf(float(environment.get("forest_affinity", 0.0)), 0.0, 1.0)
+    var meadow_affinity := clampf(float(environment.get("meadow_affinity", 0.0)), 0.0, 1.0)
+    var wetland_affinity := clampf(float(environment.get("wetland_affinity", 0.0)), 0.0, 1.0)
+    var alpine_affinity := clampf(float(environment.get("alpine_affinity", 0.0)), 0.0, 1.0)
 
     var color := base
     var vegetation_tint := Color("#486d40")
@@ -21,7 +25,17 @@ func terrain_color(base: Color, environment: Dictionary) -> Color:
 
     color = color.lerp(
         vegetation_tint,
-        clampf(vegetation * 0.34 * influence, 0.0, 0.34)
+        clampf(
+            vegetation
+            * (0.20 + 0.26 * forest_affinity + 0.16 * meadow_affinity)
+            * influence,
+            0.0,
+            0.46
+        )
+    )
+    color = color.lerp(
+        wet_tint,
+        clampf(wetland_affinity * 0.26 * influence, 0.0, 0.26)
     )
     if zone == "wetland":
         color = color.lerp(
@@ -33,6 +47,10 @@ func terrain_color(base: Color, environment: Dictionary) -> Color:
     elif zone in ["alpine_rock", "snowfield"]:
         color = color.lerp(rock_tint, 0.20 * influence)
 
+    color = color.lerp(
+        rock_tint,
+        clampf(alpine_affinity * 0.22 * influence, 0.0, 0.22)
+    )
     color = color.lerp(
         rock_tint,
         clampf(rock * 0.72 * influence, 0.0, 0.72)

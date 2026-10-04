@@ -109,6 +109,35 @@ class EnvironmentalRules008BETests(unittest.TestCase):
         self.assertLess(high["climate_temperature_c"], low["climate_temperature_c"])
         self.assertGreater(high["rock_exposure"], low["rock_exposure"])
 
+    def test_ecological_affinities_change_continuously_with_altitude(self) -> None:
+        samples = []
+        for bias in (2.0, 5.0, 8.0, 11.0, 14.0, 18.0):
+            peak = region_environment_map(
+                derive_environmental_state(world(), projection(peak_bias=bias))
+            )["peak"]
+            samples.append(peak)
+
+        alpine = [row["alpine_affinity"] for row in samples]
+        forest = [row["forest_affinity"] for row in samples]
+
+        self.assertTrue(all(0.0 <= value <= 1.0 for value in alpine + forest))
+        self.assertTrue(all(a <= b for a, b in zip(alpine, alpine[1:])))
+        self.assertGreater(alpine[-1], alpine[0])
+        self.assertLess(forest[-1], forest[0])
+
+        # A gradual elevation change should not force every adjacent sample to
+        # flip its diagnostic ecological label. Visual membership is continuous
+        # even while ecological_zone remains a compact categorical summary.
+        for row in samples:
+            for key in (
+                "forest_affinity",
+                "meadow_affinity",
+                "shrub_affinity",
+                "wetland_affinity",
+                "alpine_affinity",
+            ):
+                self.assertIn(key, row)
+
     def test_projection_is_read_only_deterministic_and_bounded(self) -> None:
         source_world = world()
         source_projection = projection()
