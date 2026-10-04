@@ -1,0 +1,34 @@
+[Unit]
+Description=Live Infinita — native Nov navigation summaries into local Memoria.ia
+After=live-infinita-memoria-local.service
+Requires=live-infinita-memoria-local.service
+ConditionPathExists=/opt/live.infinita/.local/share/godot/app_userdata/Live Infinita Showcase/nov-navigation-008cd.cfg
+ConditionPathExists=/var/lib/live-infinita/autonomous-world/world.json
+
+[Service]
+Type=oneshot
+User=liveinfinita
+Group=liveinfinita
+WorkingDirectory=/opt/live.infinita
+Environment="PYTHONUNBUFFERED=1"
+Environment="PYTHONDONTWRITEBYTECODE=1"
+Environment="PYTHONPATH=/opt/live.infinita:/opt/live.infinita/apps/world-runtime"
+EnvironmentFile=/etc/live-infinita/memoria-local.env
+ExecStart=/opt/live.infinita/.venv/bin/python /opt/live.infinita/apps/world-runtime/nov_navigation_memory_sync.py
+TimeoutStartSec=80
+UMask=0077
+Nice=15
+CPUWeight=10
+IOWeight=10
+MemoryHigh=128M
+MemoryMax=256M
+TasksMax=16
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadOnlyPaths="/opt/live.infinita/.local/share/godot/app_userdata/Live Infinita Showcase"
+ReadOnlyPaths=/var/lib/live-infinita/autonomous-world
+ReadWritePaths=/var/lib/live-infinita/memoria-local
+IPAddressDeny=any
+IPAddressAllow=localhost

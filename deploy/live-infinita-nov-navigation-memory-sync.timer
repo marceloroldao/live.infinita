@@ -1,0 +1,13 @@
+[Unit]
+Description=Live Infinita — synchronize Nov navigation experience summaries
+
+[Timer]
+OnBootSec=2min
+OnUnitInactiveSec=30s
+RandomizedDelaySec=5s
+AccuracySec=5s
+Persistent=false
+Unit=live-infinita-nov-navigation-memory-sync.service
+
+[Install]
+WantedBy=timers.target
