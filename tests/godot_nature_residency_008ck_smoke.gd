@@ -82,14 +82,10 @@ func run() -> void:
     var local_instance_id := local_tile.get_instance_id()
     var vegetation_before: Dictionary = stage._midground_residency.records.duplicate(true)
     var sampled_height: float = stage._height(stage._position.x, stage._position.z)
-    var local_ground = local_tile.get_child(0)
-    var saved_heights: PackedFloat32Array = local_ground.get_meta("resident_ground_heights")
-    var raised_heights := saved_heights.duplicate()
-    for i in range(raised_heights.size()):
-        raised_heights[i] += 7.0
-    local_ground.set_meta("resident_ground_heights", raised_heights)
-    check(absf(stage._height(stage._position.x, stage._position.z) - sampled_height - 7.0) < 0.001, "feet height reads resident mesh vertices rather than refreshed cognitive target")
-    local_ground.set_meta("resident_ground_heights", saved_heights)
+    # The shared consolidated surface is now authoritative for local geometry.
+    # A new inference changes its proposal, not the physical floor in this session.
+    stage._cognitive_terrain._anchors = [{"position":Vector2(stage._position.x,stage._position.z),"radius":100.0,"bias":7.0}]
+    check(is_equal_approx(stage._height(stage._position.x,stage._position.z),sampled_height), "feet retain shared consolidated ground during inference update")
     stage._rebuild_active_tiles()
     check(absf(stage._height(stage._position.x, stage._position.z) - sampled_height) < 0.001, "nearby ground height survives refresh")
     check(stage._tiles[local_id].get_instance_id() == local_instance_id, "cognitive terrain refresh preserves nearby tile and decor")
