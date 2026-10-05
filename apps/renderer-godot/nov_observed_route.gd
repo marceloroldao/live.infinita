@@ -29,6 +29,7 @@ var _parents: Dictionary = {}
 var _best := Vector2i.ZERO
 var _best_distance := INF
 var _head := 0
+var _goal_connected := false
 
 func cancel() -> void:
     running = false
@@ -56,15 +57,20 @@ func advance(current: Vector2, goal: Vector2, probe: Callable, coverage: Diction
         _best = Vector2i.ZERO
         _best_distance = current.distance_to(goal)
         _head = 0
+        _goal_connected = false
         sampled_edges = 0
         elapsed_ms = 0
         max_slice_ms = 0
         running = true
     var started := Time.get_ticks_msec()
     var processed := 0
+    if _head==0 and _origin.distance_to(_goal)<=3.0:
+        sampled_edges += 1
+        _goal_connected = bool(probe.call(_origin,_goal))
     var offset := _goal-_origin
+    var goal_in_window := absf(offset.x)<=RANGE_M and absf(offset.y)<=RANGE_M
     var directions := [Vector2i.UP,Vector2i.DOWN,Vector2i.RIGHT,Vector2i.LEFT] if absf(offset.x)>=absf(offset.y) else [Vector2i.LEFT,Vector2i.RIGHT,Vector2i.UP,Vector2i.DOWN]
-    while _head<_queue.size() and _head<MAX_NODES and processed<NODES_PER_SLICE:
+    while not _goal_connected and _head<_queue.size() and _head<MAX_NODES and processed<NODES_PER_SLICE:
         var cell := _queue[_head]
         _head += 1
         processed += 1
@@ -77,6 +83,14 @@ func advance(current: Vector2, goal: Vector2, probe: Callable, coverage: Diction
             if not bool(probe.call(start,point)): continue
             _parents[next] = cell
             _queue.append(next)
+            # Connect the actual destination, including off-grid goals, only
+            # after sensing the complete final corridor with the physical probe.
+            if goal_in_window and point.distance_to(_goal)<=3.0:
+                sampled_edges += 1
+                if bool(probe.call(point,_goal)):
+                    _best = next
+                    _goal_connected = true
+                    break
             var boundary := absi(next.x)==EXTENT or absi(next.y)==EXTENT
             var direction_to_edge := (point-_origin).normalized()
             if boundary and _heading.length_squared()>0.1:
@@ -100,17 +114,19 @@ func advance(current: Vector2, goal: Vector2, probe: Callable, coverage: Diction
             if distance<_best_distance-0.01:
                 _best = next
                 _best_distance = distance
-        if Time.get_ticks_msec()-started>=SLICE_MS: break
+        if _goal_connected or Time.get_ticks_msec()-started>=SLICE_MS: break
     var spent := Time.get_ticks_msec()-started
     elapsed_ms += spent
     max_slice_ms = maxi(max_slice_ms,spent)
-    if _head<_queue.size() and _head<MAX_NODES: return result
+    if not _goal_connected and _head<_queue.size() and _head<MAX_NODES: return result
     running = false
     var endpoint := _origin+Vector2(_best)*CELL_M
     var progress := _best_distance<_origin.distance_to(_goal)-0.5
     # A known endpoint back toward the goal must not undo an exploratory leg.
-    var fresh := not _coverage.has(coverage_key(endpoint)) or endpoint.distance_to(_goal)<3.0
-    if _returning and _ahead!=Vector2i.ZERO:
+    var fresh := not _coverage.has(coverage_key(endpoint))
+    if _goal_connected:
+        mode = "goal"
+    elif _returning and _ahead!=Vector2i.ZERO:
         _best = _ahead
         mode = "frontier" if not _coverage.has(coverage_key(_origin+Vector2(_best)*CELL_M)) else "frontier-return"
     elif progress and fresh:
@@ -129,6 +145,8 @@ func advance(current: Vector2, goal: Vector2, probe: Callable, coverage: Diction
         while cursor!=Vector2i.ZERO:
             result.push_front(_origin + Vector2(cursor)*CELL_M)
             cursor = _parents[cursor]
+        if _goal_connected and (result.is_empty() or result[-1].distance_to(_goal)>0.05):
+            result.append(_goal)
     return result
 
 func build(current: Vector2, goal: Vector2, probe: Callable, coverage: Dictionary = {}, heading: Vector2 = Vector2.ZERO, returning: bool = false) -> Array[Vector2]:

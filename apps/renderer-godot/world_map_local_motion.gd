@@ -10,6 +10,7 @@ var _traversability: RefCounted
 var route_goal_id := ""
 var _inference_log_at := 0
 var _working_memory_log_at := 0
+var _body_ref: WeakRef
 var _episodes = preload("res://nov_navigation_episodes.gd").new()
 
 func _init(walk_height: Callable, half_m: float = 512.0, dynamic_surface: Callable = Callable()) -> void:
@@ -35,6 +36,7 @@ func create_body(parent: Node3D, _material: Material) -> CharacterBody3D:
     var collision := CollisionShape3D.new()
     collision.shape = shape
     body.add_child(collision)
+    _body_ref = weakref(body)
     return body
 
 func snap_body(body: CharacterBody3D, ground_position: Vector3) -> void:
@@ -155,13 +157,24 @@ func _route_connection_clear(start: Vector2, end: Vector2, space_state: PhysicsD
 
 func resolve_destination(requested: Vector3) -> Dictionary:
     # Resolve only the local presentation destination; the feed remains unchanged.
+    var space: PhysicsDirectSpaceState3D = null
+    if _body_ref!=null:
+        var body = _body_ref.get_ref()
+        if is_instance_valid(body) and body.is_inside_tree():
+            space = body.get_world_3d().direct_space_state
     var ground: Vector3 = _traversability.ground_position(requested.x,requested.z)
-    if bool(_traversability.surface(ground).get("walkable",false)):
+    if _destination_clear(ground,space):
         return {"allowed":true,"position":requested,"adjusted":false}
     for radius in range(1,17):
         for heading in range(16):
             var offset := Vector2.RIGHT.rotated(TAU*float(heading)/16.0)*float(radius)
             var candidate: Vector3 = _traversability.ground_position(requested.x+offset.x,requested.z+offset.y)
-            if bool(_traversability.surface(candidate).get("walkable",false)):
+            if _destination_clear(candidate,space):
                 return {"allowed":true,"position":candidate,"adjusted":true}
     return {"allowed":false,"reason":"no_walkable_destination_within_16m"}
+
+
+func _destination_clear(ground: Vector3, space: PhysicsDirectSpaceState3D) -> bool:
+    # A zero-length step checks the full body at the endpoint without
+    # interpreting a blocked approach corridor as an occupied destination.
+    return bool(_traversability.validate_step(ground,ground,space).get("allowed",false))
