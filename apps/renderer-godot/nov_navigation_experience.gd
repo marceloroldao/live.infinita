@@ -2,6 +2,9 @@ extends RefCounted
 # Presentation navigator: local experience plus retrieved Memoria.ia evidence; no World State write authority.
 const CELL_M := 1.0
 const LIMIT := 4096
+const SHORTCUT_RANGE_M := 6.0
+const SHORTCUT_PROBES := 3
+var route_shortcuts_enabled := true
 var failures: Dictionary = {}
 var visits: Dictionary = {}
 var routes: Dictionary = {}
@@ -242,14 +245,18 @@ func _anticipated_target(current: Vector2, goal: Vector2, probe: Callable, route
                 _exploration_returning = _route_search.mode=="frontier-return"
             print("NOV_OBSERVED_ROUTE mode=%s nodes=%d probes=%d elapsed_ms=%d max_slice_ms=%d" % [_route_search.mode, _observed_route.size(), _route_search.sampled_edges, _route_search.elapsed_ms, _route_search.max_slice_ms])
     if not _observed_route.is_empty():
-        var next := current.move_toward(_observed_route[0], CELL_M)
+        var shortcut_index := _observed_shortcut_index(current, route_probe)
+        var next := current.move_toward(_observed_route[shortcut_index], CELL_M)
         var sensed: Dictionary = probe.call(next)
         if bool(sensed.get("allowed", false)):
+            for i in range(shortcut_index):
+                _observed_route.pop_front()
             pending = next
             active = true
             last_decision_source = "perception"
             last_observation_id = ""
             decision_evidence = {"lookahead_m": 3.0, "observed_route_range_m": 32.0, "observed_route_mode": _route_search.mode,
+                "observed_route_shortcut_waypoints": shortcut_index,
                 "without_memoria": [next.x,next.y],
                 "candidates": [{"point": [next.x,next.y], "allowed": true,
                     "clear_ahead": bool(sensed.get("clear_ahead", false)),
@@ -384,3 +391,23 @@ func _anticipated_target(current: Vector2, goal: Vector2, probe: Callable, route
         anticipated_avoidances += 1
     active = true
     return pending
+
+
+# Shortcuts stay inside the already planned local path and use the same complete
+# physics corridor probe as planning. The movement step is still sensed/executed.
+func _observed_shortcut_index(current: Vector2, route_probe: Callable) -> int:
+    if not route_shortcuts_enabled or not route_probe.is_valid():
+        return 0
+    var end_index := 0
+    var length := 0.0
+    var previous := current
+    for i in range(mini(_observed_route.size(), SHORTCUT_PROBES + 1)):
+        length += previous.distance_to(_observed_route[i])
+        if length > SHORTCUT_RANGE_M:
+            break
+        end_index = i
+        previous = _observed_route[i]
+    for i in range(end_index, 0, -1):
+        if bool(route_probe.call(current, _observed_route[i])):
+            return i
+    return 0
