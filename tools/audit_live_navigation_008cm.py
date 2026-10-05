@@ -25,6 +25,8 @@ def metrics(rows):
     return {"actions":len(rows),"completed_steps":len(completed),
         "goals_reached":sum(a["outcome"]=="goal_reached" for a in rows),
         "collisions":sum(a["collisions"] for a in rows),
+        "observed_route_revisions":len({json.dumps(a["perception"]["route_revision"],sort_keys=True) for a in rows if isinstance(a.get("perception",{}).get("route_revision"),dict)}),
+        "completed_revised_steps":sum(isinstance(a.get("perception",{}).get("route_revision"),dict) for a in completed),
         "completed_shortcut_steps":sum(int(a.get("perception",{}).get("observed_route_shortcut_waypoints",0))>0 for a in completed),
         "outcomes":dict(Counter(a["outcome"] for a in rows)),
         "interruption_reasons":dict(Counter(a["reason"] for a in rows if a["outcome"]=="interrupted")),

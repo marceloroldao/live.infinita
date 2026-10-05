@@ -30,6 +30,8 @@ var working_memory = preload("res://nov_navigation_working_memory.gd").new()
 var _observed_route: Array[Vector2] = []
 var _route_search = preload("res://nov_observed_route.gd").new()
 var route_plan_builds := 0
+var route_revision_count := 0
+var _route_revision: Dictionary = {}
 var explored_cells: Dictionary = {}
 var _exploration_heading := Vector2.ZERO
 var _exploration_returning := false
@@ -50,6 +52,7 @@ func _init(path: String = "user://nov-navigation-008cd.cfg") -> void:
             failures.clear()
 
 func reset_route_plan() -> void:
+    _route_revision.clear()
     explored_cells.clear()
     _exploration_heading = Vector2.ZERO
     _exploration_returning = false
@@ -84,12 +87,16 @@ func target(current: Vector2, goal: Vector2, probe: Callable = Callable(), route
         explored_cells.clear()
         _exploration_heading = Vector2.ZERO
         _exploration_returning = false
+        _route_revision.clear()
         last_goal = goal
     explored_cells[_route_search.coverage_key(current)] = true
     while explored_cells.size()>LIMIT:
         explored_cells.erase(explored_cells.keys()[0])
     if active:
-        return pending
+        if route_probe.is_valid() and not bool(route_probe.call(current,pending)):
+            _invalidate_changed_route(current,pending,"pending_passage_changed")
+        else:
+            return pending
     decision_serial += 1
     decision_evidence = {}
     working_memory_key = ""
@@ -98,7 +105,12 @@ func target(current: Vector2, goal: Vector2, probe: Callable = Callable(), route
     if trace.is_empty():
         trace.append(current)
     if probe.is_valid():
-        return _anticipated_target(current, goal, probe, route_probe)
+        var result := _anticipated_target(current, goal, probe, route_probe)
+        if not _route_revision.is_empty():
+            decision_evidence["route_revision"] = _route_revision.duplicate(true)
+            if active:
+                _route_revision.clear()
+        return result
     var remembered = routes.get(key(goal) + "|" + key(current))
     if remembered is Vector2 and current.distance_to(remembered) > 0.05 and current.distance_to(remembered) < 2.0:
         pending = remembered
@@ -139,8 +151,7 @@ func blocked() -> void:
     attempts += 1
     recovery = true
     active = false
-    _observed_route.clear()
-    _route_search.cancel()
+    _invalidate_changed_route(source,pending,"executed_passage_blocked")
     # Save collision evidence immediately; no frame-rate writes on free movement.
     save()
 
@@ -264,7 +275,15 @@ func _anticipated_target(current: Vector2, goal: Vector2, probe: Callable, route
             if pending.distance_to(direct)>0.05:
                 anticipated_avoidances += 1
             return pending
-        _observed_route.clear()
+        _invalidate_changed_route(current,next,"planned_passage_changed")
+        pending = current
+        active = false
+        last_decision_source = "perception-no-passage"
+        last_observation_id = ""
+        decision_evidence = {"lookahead_m":3.0,
+            "candidates":[{"point":[next.x,next.y],"allowed":false,
+                "clear_ahead":false,"reason":str(sensed.get("reason","changed_passage"))}]}
+        return current
     var candidates: Array[Dictionary] = [{"point": direct, "bonus": 0.0, "source": "perception", "id": ""}]
     if not temporary.is_empty():
         var next := Vector2(float(temporary["to"][0]), float(temporary["to"][1]))
@@ -294,6 +313,8 @@ func _anticipated_target(current: Vector2, goal: Vector2, probe: Callable, route
         if i == 0:
             direct_clear = bool(sensed.get("clear_ahead", false))
         if not bool(sensed.get("allowed", false)):
+            if str(candidate["source"])=="working-memory":
+                working_memory.invalidate_candidate(address)
             continue
         candidate["clear_ahead"] = bool(sensed.get("clear_ahead", false))
         clear_available = clear_available or candidate["clear_ahead"]
@@ -411,3 +432,23 @@ func _observed_shortcut_index(current: Vector2, route_probe: Callable) -> int:
         if bool(route_probe.call(current, _observed_route[i])):
             return i
     return 0
+
+
+func _invalidate_changed_route(current: Vector2, rejected: Vector2, reason: String) -> void:
+    working_memory.invalidate_candidate(key(last_goal)+"|"+key(source))
+    working_memory.invalidate_candidate(key(last_goal)+"|"+key(current))
+    routes.erase(key(last_goal)+"|"+key(source))
+    active = false
+    _observed_route.clear()
+    _route_search.cancel()
+    _route_search_origin = Vector2(INF,INF)
+    _route_search_at = -10000
+    # These are transient exploration hints, not durable knowledge.
+    explored_cells.clear()
+    explored_cells[_route_search.coverage_key(current)] = true
+    _exploration_heading = Vector2.ZERO
+    _exploration_returning = false
+    route_revision_count += 1
+    _route_revision = {"reason":reason,"from":[current.x,current.y],
+        "rejected":[rejected.x,rejected.y],
+        "detected_at_unix":Time.get_unix_time_from_system()}

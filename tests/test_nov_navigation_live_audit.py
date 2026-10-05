@@ -137,3 +137,23 @@ class SessionAndPathAuditTests(unittest.TestCase):
         b=copy.deepcopy(a)
         b["outcome"]="no_passage_sensed"
         self.assertEqual(module.metrics([a,b])["completed_shortcut_steps"],1)
+
+
+class ChangingRouteAuditTests(unittest.TestCase):
+    def test_revision_repeated_during_planning_counts_once(self):
+        a=episode()["actions"][0]
+        a["perception"]["route_revision"]={"reason":"pending_passage_changed",
+            "from":[0,0],"rejected":[0,1],"detected_at_unix":100.0}
+        b=copy.deepcopy(a)
+        b["outcome"]="no_passage_sensed"
+        result=module.metrics([b,a])
+        self.assertEqual(result["observed_route_revisions"],1)
+        self.assertEqual(result["completed_revised_steps"],1)
+    def test_adaptation_evidence_is_not_a_causal_memory_claim(self):
+        row=episode()
+        row["actions"][0]["decision_source"]="perception"
+        row["actions"][0]["perception"]["route_revision"]={"reason":"planned_passage_changed"}
+        result=module.audit({"episodes":[row],"dropped_episodes":0})
+        self.assertEqual(result["all"]["completed_revised_steps"],1)
+        self.assertEqual(result["verified_causal_ram"]["actions"],0)
+        self.assertEqual(result["verified_causal_memoria"]["actions"],0)

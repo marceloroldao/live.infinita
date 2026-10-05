@@ -54,6 +54,11 @@ func lookup(key: String, now_ms: int = -1) -> Dictionary:
     prune(now_ms)
     return Dictionary(entries.get(key, {})).duplicate(true)
 
+func invalidate_candidate(key: String) -> void:
+    # A sensed contradiction invalidates the temporary recommendation, not
+    # historical promotions and not a fabricated failed movement.
+    entries.erase(key)
+
 func observe_completed(action: Dictionary, now_ms: int = -1) -> void:
     if not enabled or action.get("context_start", {}).get("world_id", "") != world_id:
         return
