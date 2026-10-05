@@ -1,0 +1,14 @@
+{
+  "release": "008DI1",
+  "python_tests": 112,
+  "permissions_before_replace_test": "passed",
+  "interrupted_prepare_preserves_previous_test": "passed",
+  "installation": "pending user root installer",
+  "web_build_unchanged": "8a6dcb2",
+  "sha256": {
+    "apps/world-runtime/nov_navigation_panel_export.py": "482dc2680361cd36a67b27f43e2f2abe27eea6a038d6d97f8acca407398b5037",
+    "deploy/live-infinita-nov-panel.service": "cb80f1932519be5874629e5cc8801c8e706d1ad46cd172eb904b184a161a301b",
+    "tests/test_nov_navigation_panel_export.py": "75805baf12260c0de7c3d6cece4a105de4e3db53ed4348b5682b10d042615377",
+    "deploy/apply-panel-permissions-008di1-root.sh": "8d3880c07d02fa50ae1d76a8d2695046b0e5783b41ff31fabb16ff4f55f4aa94"
+  }
+}

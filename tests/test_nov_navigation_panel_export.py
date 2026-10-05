@@ -34,6 +34,26 @@ class PanelDeliveryTests(unittest.TestCase):
         self.source.write_text(json.dumps(self.status))
         self.assertFalse(self.export()["available"])
         self.assertEqual(json.loads(self.public.read_text())["learning_status"],{})
+    def test_replacement_already_has_public_permissions(self):
+        import os
+        real_replace = os.replace
+        modes = []
+        def replace(source, target):
+            modes.append(Path(source).stat().st_mode & 0o777)
+            real_replace(source, target)
+        with patch("nov_navigation_panel_export.os.replace", side_effect=replace):
+            self.export()
+        self.assertEqual(modes, [0o644])
+    def test_interrupted_preparation_preserves_previous_public_file(self):
+        self.export()
+        before = self.public.read_bytes()
+        with patch("nov_navigation_panel_export.os.fsync", side_effect=OSError("interrupted")):
+            with self.assertRaises(OSError):
+                self.export()
+        self.assertEqual(self.public.read_bytes(), before)
+        self.assertEqual(self.public.stat().st_mode & 0o777,0o644)
+        self.assertEqual(list(self.public.parent.glob("status.json.*")), [])
+
     def test_wrong_world_rejected(self):
         self.world.write_text('{"world_id":"other"}')
         self.assertFalse(self.export()["available"])

@@ -11,7 +11,7 @@ WorkingDirectory=/opt/live.infinita
 Environment="PYTHONDONTWRITEBYTECODE=1"
 Environment="PYTHONPATH=/opt/live.infinita:/opt/live.infinita/apps/world-runtime"
 ExecStart=/opt/live.infinita/.venv/bin/python /opt/live.infinita/apps/world-runtime/nov_navigation_panel_export.py
-TimeoutStartSec=10
+TimeoutStartSec=30
 UMask=0077
 Nice=10
 NoNewPrivileges=true
