@@ -1,0 +1,11 @@
+[Unit]
+Description=Live Infinita — refresh Nov panel every five seconds
+
+[Timer]
+OnBootSec=5s
+OnUnitInactiveSec=5s
+AccuracySec=1s
+Unit=live-infinita-nov-panel.service
+
+[Install]
+WantedBy=timers.target

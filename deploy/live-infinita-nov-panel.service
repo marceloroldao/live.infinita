@@ -1,0 +1,24 @@
+[Unit]
+Description=Live Infinita — publish current Nov learning panel
+After=live-infinita-renderer.service
+ConditionPathExists=/var/lib/live-infinita/autonomous-world/world.json
+
+[Service]
+Type=oneshot
+User=liveinfinita
+Group=liveinfinita
+WorkingDirectory=/opt/live.infinita
+Environment="PYTHONDONTWRITEBYTECODE=1"
+Environment="PYTHONPATH=/opt/live.infinita:/opt/live.infinita/apps/world-runtime"
+ExecStart=/opt/live.infinita/.venv/bin/python /opt/live.infinita/apps/world-runtime/nov_navigation_panel_export.py
+TimeoutStartSec=10
+UMask=0077
+Nice=10
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadOnlyPaths="/opt/live.infinita/.local/share/godot/app_userdata/Live Infinita Showcase"
+ReadOnlyPaths=/var/lib/live-infinita/autonomous-world
+ReadWritePaths=/var/www/live-infinita-godot/navigation-memory
+IPAddressDeny=any

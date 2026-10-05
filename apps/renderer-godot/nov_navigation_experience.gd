@@ -182,8 +182,14 @@ func arrived(goal: Vector2) -> void:
         visits.clear()
 
 
+func apply_learning_status(status: Dictionary) -> void:
+    server_learning_status = status.duplicate(true)
+
 func apply_recall(snapshot: Dictionary) -> void:
-    server_learning_status = snapshot.get("learning_status",{}).duplicate(true) if typeof(snapshot.get("learning_status"))==TYPE_DICTIONARY else {}
+    if typeof(snapshot.get("learning_status")) == TYPE_DICTIONARY:
+        var incoming: Dictionary = snapshot["learning_status"]
+        if float(incoming.get("observed_at_unix",0.0)) >= float(server_learning_status.get("observed_at_unix",0.0)):
+            apply_learning_status(incoming)
     recalled_failures.clear()
     recalled_routes.clear()
     # Finish the current physically checked step; new evidence affects the next decision.

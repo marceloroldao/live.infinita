@@ -139,6 +139,7 @@ func _ready() -> void:
     var navigation_recall = preload("res://nov_navigation_recall.gd").new()
     navigation_recall.name = "NavigationRecall"
     navigation_recall.snapshot_ready.connect(Callable(_local_motion._experience, "apply_recall"))
+    navigation_recall.learning_status_ready.connect(Callable(_local_motion._experience, "apply_learning_status"))
     add_child(navigation_recall)
     _perceptual_vegetation = PerceptualVegetation.new(
         Callable(self, "_new_vegetation_batch"),

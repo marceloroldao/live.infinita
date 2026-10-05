@@ -1,0 +1,120 @@
+{
+  "release": "008DI",
+  "python_tests": 110,
+  "godot_checks": [
+    {
+      "test": "godot_world_map_traversal_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nov_locomotion_008bz_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nov_grounded_presentation_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_live_program_008cb_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_ground_surface_008cc_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_experience_008cd_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_camera_stabilization_008cf_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_anticipation_008cg_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_episodes_008ch_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_working_memory_008ci_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nature_residency_008ck_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_route_goal_008cn_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_ground_continuity_008co_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_goal_quality_008cs_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_observed_crossing_008ct_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_consistency_008cu_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nature_collision_008cv_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_camera_contact_008cw_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_frontier_routes_008cx_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_route_shortcuts_008cy_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_goal_approach_008da_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_changing_routes_008db_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_live_learning_008df_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_journey_samples_008dg_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_water_egress_008dh_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_panel_delivery_008di_smoke.gd",
+      "passed": true
+    }
+  ],
+  "http_fixture": "Godot HTTPRequest -> status response -> panel consumer, 0 failures",
+  "production_installation": "pending user root installer",
+  "sha256": {
+    "apps/renderer-godot/nov_navigation_recall.gd": "b7cd0435ddf55dc67acae1d83f7027e0cd4afe261d37881f21ed396f82f27742",
+    "apps/renderer-godot/nov_navigation_experience.gd": "25984dbd3f76b6fbfaaa676892b268a8f72ffcfd09b2ff7bf9936729e6b4276e",
+    "apps/renderer-godot/world_map_preview.gd": "abdf6ebcffe113a65058f109475b1ae0e34bb1da147d635ee3e4a38873d2b6e6",
+    "apps/world-runtime/nov_navigation_panel_export.py": "76cb5b8c4cfcf5e6b4468555367a7002e18f6f62abd9d11020424d2414fdb915",
+    "tests/godot_panel_delivery_008di_smoke.gd": "6c148d27e50c92f9bb342720738beaadfd6eef62ff10b8e7c3625de8578e3176",
+    "deploy/apply-panel-delivery-008di-root.sh": "b270f37ac27f98b7d43f0597472a5a90d46bf0b7c96e494092782f7ef3014574"
+  }
+}
