@@ -115,6 +115,7 @@ var _decor_culling_announced := false
 # Consolidated inference samples shared by every tile and surface consumer.
 # Session lifetime: do not mutate a vertex already used by physical presentation.
 var _consolidated_ground: Dictionary = {}
+var _ground_consolidation = preload("res://nov_ground_consolidation.gd").new()
 func _ready() -> void:
     _configure_native_fps_governor()
     var data = JSON.parse_string(FileAccess.get_file_as_string(MAP_PATH))
@@ -451,12 +452,13 @@ func _height(x: float, z: float) -> float:
 
 func _raw_height(x: float, z: float) -> float:
     var key := Vector2(x, z)
-    if not _consolidated_ground.has(key):
-        _consolidated_ground[key] = _proposed_raw_height(x, z)
-    return float(_consolidated_ground[key])
+    if _consolidated_ground.has(key):
+        return float(_consolidated_ground[key])
+    return _ground_consolidation.sample(key,_proposed_raw_height(x,z),_consolidated_ground)
 
 func _proposed_raw_height(x: float, z: float) -> float:
-    var rise := 4.0 if x > 175.0 and z < -70.0 else 1.0
+    var highland_mix := smoothstep(143.0,207.0,x)*(1.0-smoothstep(-102.0,-38.0,z))
+    var rise := lerpf(1.0,4.0,highland_mix)
     var natural := (sin(x * 0.012) * 1.8 + cos(z * 0.016) * 1.6 + sin((x + z) * 0.021) * 0.9) * rise
     var cognitive := 0.0
     if _cognitive_terrain != null:

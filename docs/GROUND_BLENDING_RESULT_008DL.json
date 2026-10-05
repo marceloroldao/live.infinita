@@ -1,0 +1,143 @@
+{
+  "release": "008DL",
+  "godot_checks": [
+    {
+      "test": "godot_world_map_traversal_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nov_locomotion_008bz_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nov_grounded_presentation_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_live_program_008cb_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_ground_surface_008cc_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_experience_008cd_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_camera_stabilization_008cf_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_anticipation_008cg_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_episodes_008ch_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_working_memory_008ci_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nature_residency_008ck_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_route_goal_008cn_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_ground_continuity_008co_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_goal_quality_008cs_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_observed_crossing_008ct_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_consistency_008cu_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nature_collision_008cv_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_camera_contact_008cw_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_frontier_routes_008cx_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_route_shortcuts_008cy_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_goal_approach_008da_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_changing_routes_008db_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_live_learning_008df_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_journey_samples_008dg_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_water_egress_008dh_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_panel_delivery_008di_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_stuck_recovery_008dk_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_ground_blending_008dl_smoke.gd",
+      "passed": true
+    }
+  ],
+  "ground_test_log": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\nGround blending smoke: 0 failures; distance_m=24.0 old_proposal_drop_m=24 new_first_drop_m=5.2\n",
+  "physical_fixture": {
+    "proposed_drop_m": 24,
+    "blended_first_drop_m": 5.2,
+    "grid_spacing_m": 8,
+    "walked_distance_m": 24,
+    "forced_reset": false
+  },
+  "production_008DK_observation": {
+    "arrivals": 7,
+    "recoveries": 1,
+    "source": "published native renderer status",
+    "ground_blending_installed": false
+  },
+  "sha256": {
+    "apps/renderer-godot/nov_ground_consolidation.gd": "76c4c5be88d92e6c0bce8a0a61be3b66a62a1b211ebd5c3df3b361a6b468b421",
+    "apps/renderer-godot/world_map_preview.gd": "d240a3835f0fed5d37169c63901c3162b6e218aedce8e18728f57340704d6124",
+    "tests/godot_ground_blending_008dl_smoke.gd": "425597a9776982e1938ccaa2340a6bf15156ca28a9a1a4773e066407a2e64cf3",
+    "deploy/apply-ground-blending-008dl-root.sh": "fb4a8f83a7a20a84aa37251c8a77302da0e413a873bb9a2f8efd7203bf6963b5"
+  },
+  "installation": "pending root installer",
+  "limitations": [
+    "Local grade envelope only constrains new samples with known neighbors.",
+    "Conflicting previously consolidated samples remain unchanged and are reported.",
+    "This prevents some abrupt transitions; it does not prove all basins or changed maps are escapable."
+  ]
+}
