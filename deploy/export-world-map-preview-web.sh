@@ -168,6 +168,7 @@ cat >"$BUILD_DIR/build.json" <<EOF
   "navigation_blocked_status_heartbeat": true,
   "navigation_absolute_web_requests": true,
   "navigation_independent_panel_refresh": true,
+  "navigation_server_recall_metrics": true,
   "navigation_anticipation": true,
   "navigation_visible_goal_priority": true,
   "navigation_observed_routes": true,

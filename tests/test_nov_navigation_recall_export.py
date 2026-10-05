@@ -33,6 +33,18 @@ class RecallExportTests(unittest.TestCase):
         self.assertEqual(private["source"],"memoria.ia-local-structural-api")
         self.assertFalse(private["world_write_authority"])
         self.assertEqual(self.public.stat().st_mode & 0o777,0o644)
+    def test_public_recall_is_readable_at_replacement(self):
+        from unittest.mock import patch
+        import os
+        real_replace=os.replace
+        observed=[]
+        def replace(source,target):
+            observed.append((Path(target),Path(source).stat().st_mode & 0o777))
+            real_replace(source,target)
+        with patch("nov_navigation_memory_sync.os.replace",side_effect=replace):
+            self.run_export([self.envelope()])
+        self.assertEqual(observed,[(self.private,0o600),(self.public,0o644)])
+
     def test_unrelated_hierarchy_ignored(self):
         row=self.envelope()
         row["provenance"]["hierarchy_id"]="different"

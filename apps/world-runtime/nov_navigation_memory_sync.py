@@ -139,13 +139,14 @@ def read_checkpoint(path: Path, world_id: str) -> dict:
         raise NavigationSyncError("checkpoint_invalid")
     return value
 
-def write_checkpoint(path: Path, value: dict) -> None:
+def write_checkpoint(path: Path, value: dict, mode: int = 0o600) -> None:
     path.parent.mkdir(parents=True,exist_ok=True,mode=0o700)
     if path.is_symlink():
         raise NavigationSyncError("checkpoint_symlink")
     fd, name = tempfile.mkstemp(prefix=path.name+".",dir=path.parent)
     try:
         with os.fdopen(fd,"wb") as fh:
+            os.fchmod(fh.fileno(), mode)
             fh.write(_canonical(value)+b"\n")
             fh.flush()
             os.fsync(fh.fileno())

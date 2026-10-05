@@ -151,8 +151,9 @@ func update_learning(experience: RefCounted, journey: RefCounted) -> void:
         var progress := "Caminhando: %.1f m" % float(data.get("distance_m",0.0)) if bool(data.get("active",false)) else str(data.get("result","aguardando caminhada")).left(60)
         if data.get("motion_state","")=="no_passage":progress = "Procurando passagem"
         elif data.get("motion_state","")=="water_egress":progress = "Saindo do lago: %.1f m" % float(data.get("distance_m",0.0))
+        var recall_line := server_recall_line(data)
         if not data.is_empty() and Time.get_unix_time_from_system()-float(data.get("observed_at_unix",0.0))<60.0:
-            _learning.text = "NOV • TENTATIVA E ERRO\nSessão do servidor\nChegadas: %d | Interrompidas: %d\nEscolhas: RAM %d / Memoria.ia %d\nMemoria.ia: %d passos (%d com custo)\n%s" % [int(data.get("arrivals",0)),int(data.get("interruptions",0)),int(data.get("causal_ram_steps",0)),int(data.get("causal_memoria_steps",0)),experience.recalled_routes.size(),qualified,progress]
+            _learning.text = "NOV • TENTATIVA E ERRO\nSessão do servidor\nChegadas: %d | Interrompidas: %d\nEscolhas: RAM %d / Memoria.ia %d\n%s\n%s" % [int(data.get("arrivals",0)),int(data.get("interruptions",0)),int(data.get("causal_ram_steps",0)),int(data.get("causal_memoria_steps",0)),recall_line,progress]
         else:
             _learning.text = "NOV • TENTATIVA E ERRO\nAguardando dados do servidor\nDecisão desta prévia: %s\nMemoria.ia: %d passos lembrados\nPassos avaliados: %d" % [source,experience.recalled_routes.size(),qualified]
     else:
@@ -166,3 +167,10 @@ RAM: %d | Promovidas: %d
 Chegadas: %d | Interrompidas: %d
 Escolhas: RAM %d / Memoria.ia %d
 %s" % [source,memory.entries.size(),memory.promoted.size(),data.arrivals,data.interruptions,data.causal_ram_steps,data.causal_memoria_steps,progress]
+
+
+func server_recall_line(data: Dictionary) -> String:
+    var metrics: Dictionary = data.get("memoria_recall",{})
+    if bool(metrics.get("available",false)) and Time.get_unix_time_from_system()-float(metrics.get("generated_at_unix",0.0))<180.0:
+        return "Memoria.ia: %d recuperados (%d com custo)" % [int(metrics.get("routes",0)),int(metrics.get("with_cost",0))]
+    return "Memoria.ia: aguardando recuperação"

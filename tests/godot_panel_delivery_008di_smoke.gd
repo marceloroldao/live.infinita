@@ -46,6 +46,17 @@ func run() -> void:
                 await process_frame
             check(experience.server_learning_status.get("completed_steps",0)==27,"Real HTTP response must reach panel consumer")
             request.queue_free()
+    var metrics := {"available":true,"routes":190,"with_cost":2,"generated_at_unix":now}
+    envelope["learning_status"] = status
+    envelope["memoria_recall"] = metrics
+    feed._accept_status(JSON.stringify(envelope))
+    check(experience.server_learning_status.get("memoria_recall",{}).get("routes",0)==190,"Independent panel must carry server recovered counts")
+    experience.apply_recall({"entries":[],"learning_status":{"world_id":"fixture","observed_at_unix":now+1,"completed_steps":28}})
+    check(experience.server_learning_status.get("memoria_recall",{}).get("routes",0)==190,"Recall fallback must preserve independently published metrics from same world")
+    var hud = load("res://world_map_hud.gd").new()
+    check(hud.server_recall_line(experience.server_learning_status)=="Memoria.ia: 190 recuperados (2 com custo)","Server session label must use server counts even when browser has no routes")
+    check(hud.server_recall_line({})=="Memoria.ia: aguardando recuperação","Missing recall must not fabricate zero stored steps")
+    hud.free()
     feed.queue_free()
     await process_frame
     print("Panel delivery smoke: ",failures," failures")

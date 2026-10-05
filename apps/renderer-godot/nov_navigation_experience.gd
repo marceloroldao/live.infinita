@@ -189,6 +189,9 @@ func apply_recall(snapshot: Dictionary) -> void:
     if typeof(snapshot.get("learning_status")) == TYPE_DICTIONARY:
         var incoming: Dictionary = snapshot["learning_status"]
         if float(incoming.get("observed_at_unix",0.0)) >= float(server_learning_status.get("observed_at_unix",0.0)):
+            incoming = incoming.duplicate(true)
+            if not incoming.has("memoria_recall") and incoming.get("world_id","")==server_learning_status.get("world_id","") and server_learning_status.has("memoria_recall"):
+                incoming["memoria_recall"] = server_learning_status["memoria_recall"].duplicate(true)
             apply_learning_status(incoming)
     recalled_failures.clear()
     recalled_routes.clear()

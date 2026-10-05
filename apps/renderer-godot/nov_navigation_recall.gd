@@ -14,7 +14,7 @@ func _ready() -> void:
             enabled = false
     if OS.has_feature("web"):
         _request = HTTPRequest.new()
-        _request.timeout = 5.0
+        _request.timeout = 15.0
         add_child(_request)
         _request.request_completed.connect(_on_response)
         _status_request = HTTPRequest.new()
@@ -48,6 +48,8 @@ func _process(_delta: float) -> void:
 func _on_response(result: int, code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
     if result == HTTPRequest.RESULT_SUCCESS and code == 200 and body.size() <= 2000000:
         _accept(body.get_string_from_utf8())
+    else:
+        _next_poll = Time.get_ticks_msec()+5000
 func _on_status_response(result: int, code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
     if result == HTTPRequest.RESULT_SUCCESS and code == 200 and body.size() <= 12000:
         _accept_status(body.get_string_from_utf8())
@@ -70,6 +72,9 @@ func _accept_status(raw: String) -> void:
         var observed := float(status.get("observed_at_unix",0.0))
         if not is_finite(observed) or observed > now+30.0 or now-observed>60.0 or str(status.get("world_id","")) != str(data.get("world_id","")):
             return
+    status = status.duplicate(true)
+    if typeof(data.get("memoria_recall")) == TYPE_DICTIONARY:
+        status["memoria_recall"] = data["memoria_recall"].duplicate(true)
     learning_status_ready.emit(status)
 func _accept(raw: String) -> void:
     if raw.length() > 2000000:

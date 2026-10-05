@@ -93,8 +93,7 @@ def export_once(world: Path=WORLD, private: Path=PRIVATE, public: Path=PUBLIC, f
     if len(_canonical(result))>2_000_000:
         raise NavigationSyncError("recall_export_oversized")
     write_checkpoint(private,result)
-    write_checkpoint(public,result)
-    os.chmod(public,0o644)
+    write_checkpoint(public,result,mode=0o644)
     return {"recovered":recovered,"cached":len(rows),"source":result["source"]}
 
 def read_learning_status(path: Path,world_id: str,now: float) -> dict | None:

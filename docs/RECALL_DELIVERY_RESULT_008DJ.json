@@ -1,0 +1,261 @@
+{
+  "schema": "live-infinita-navigation-live-learning-benchmark/v1",
+  "scope": "isolated_current_physics_and_actual_learning_with_process_restarted_SQLite_API",
+  "source_commit": "c95c8e8407bda07782a97034f689daddd867990b",
+  "source_hashes": {
+    "nov_navigation_experience.gd": "ede12198d2e918246c349cd2ea1d69aff38242409d420b8970e3048c59c6eb6e",
+    "nov_navigation_working_memory.gd": "7fde86c0b11480d4afee13112d5bab7140dd20554ffebde362320d7d4446e310",
+    "nov_navigation_episodes.gd": "eebbac8c8cba3558e2a94b956353c20065899ec002943e389dc426077d91e0f2",
+    "nov_navigation_journey.gd": "ecf7abad1f9d529ec0c85a125582bd46061c80a816eadb4c4ccc5d3c2ee757c5",
+    "nov_observed_route.gd": "929e74c82762e376fa1c4d92fa99f4edd443bc8b1fa4c73c4d48ac80cf53e224",
+    "world_map_local_motion.gd": "fbe28793847bdc07877badda24597a13cdc5f0dd3fc6c90c7606ae4288818b4a",
+    "world_map_traversability.gd": "394c5b12d0223514a14c0db4fd581bc5e742423b5f9281ff1740219769af8fb4",
+    "benchmark_godot": "44633cf8e5f00dea519c0ffaef8bac7df79296f7ae0b214e6372b232ce931748",
+    "benchmark_python": "7d741741020597367d181815fc2235a0d6e489688c8f6e4f10c9d3c13f3121f1",
+    "memoria_resolutiva.product_structural": "71de27b125b5ca2e30ab1abc6af83ed02e34e27f8034878d92c87c7825f6fce9",
+    "nov_navigation_promotion_sync": "84787533a2d23dbde3f02812cd3e5bb2ce317d222b3015ab03319df7aad140b9",
+    "nov_navigation_recall_export": "517227c5a9717a354629e8fe0f60e7fb5d8b81793a8fbb24b840ed7cad6e8e63"
+  },
+  "production_memory_written": false,
+  "eligible_shared_entries": 5,
+  "api_acks": 5,
+  "api_recovered": 5,
+  "separate_store_and_recall_processes": true,
+  "comparisons": [
+    {
+      "variant": "unchanged_U",
+      "mode": "without_memory",
+      "distance_m": 40.5753124207258,
+      "difference_from_no_memory_m": 0.0,
+      "moving_seconds": 12.2,
+      "causal_ram_actions": 0,
+      "causal_memoria_actions": 0,
+      "revisited_end_cells": 14.0,
+      "arrivals": 2,
+      "trials": 2
+    },
+    {
+      "variant": "unchanged_U",
+      "mode": "with_trained_ram",
+      "distance_m": 20.0518279075623,
+      "difference_from_no_memory_m": -20.523484513163503,
+      "moving_seconds": 6.0,
+      "causal_ram_actions": 10,
+      "causal_memoria_actions": 0,
+      "revisited_end_cells": 1.0,
+      "arrivals": 2,
+      "trials": 2
+    },
+    {
+      "variant": "unchanged_U",
+      "mode": "after_restart_memoria",
+      "distance_m": 20.0518279075623,
+      "difference_from_no_memory_m": -20.523484513163503,
+      "moving_seconds": 6.0,
+      "causal_ram_actions": 0,
+      "causal_memoria_actions": 10,
+      "revisited_end_cells": 1.0,
+      "arrivals": 2,
+      "trials": 2
+    },
+    {
+      "variant": "opened_U",
+      "mode": "without_memory",
+      "distance_m": 6.0,
+      "difference_from_no_memory_m": 0.0,
+      "moving_seconds": 1.8,
+      "causal_ram_actions": 0,
+      "causal_memoria_actions": 0,
+      "revisited_end_cells": 0.0,
+      "arrivals": 2,
+      "trials": 2
+    },
+    {
+      "variant": "opened_U",
+      "mode": "with_trained_ram",
+      "distance_m": 6.0,
+      "difference_from_no_memory_m": 0.0,
+      "moving_seconds": 1.8,
+      "causal_ram_actions": 0,
+      "causal_memoria_actions": 0,
+      "revisited_end_cells": 0.0,
+      "arrivals": 2,
+      "trials": 2
+    },
+    {
+      "variant": "opened_U",
+      "mode": "after_restart_memoria",
+      "distance_m": 6.0,
+      "difference_from_no_memory_m": 0.0,
+      "moving_seconds": 1.8,
+      "causal_ram_actions": 0,
+      "causal_memoria_actions": 0,
+      "revisited_end_cells": 0.0,
+      "arrivals": 2,
+      "trials": 2
+    },
+    {
+      "variant": "remembered_step_blocked",
+      "mode": "without_memory",
+      "distance_m": 53.7431426495314,
+      "difference_from_no_memory_m": 0.0,
+      "moving_seconds": 16.1,
+      "causal_ram_actions": 0,
+      "causal_memoria_actions": 0,
+      "revisited_end_cells": 14.0,
+      "arrivals": 2,
+      "trials": 2
+    },
+    {
+      "variant": "remembered_step_blocked",
+      "mode": "with_trained_ram",
+      "distance_m": 30.8434517383575,
+      "difference_from_no_memory_m": -22.8996909111739,
+      "moving_seconds": 9.2,
+      "causal_ram_actions": 4,
+      "causal_memoria_actions": 0,
+      "revisited_end_cells": 3.0,
+      "arrivals": 2,
+      "trials": 2
+    },
+    {
+      "variant": "remembered_step_blocked",
+      "mode": "after_restart_memoria",
+      "distance_m": 30.8434517383575,
+      "difference_from_no_memory_m": -22.8996909111739,
+      "moving_seconds": 9.2,
+      "causal_ram_actions": 0,
+      "causal_memoria_actions": 4,
+      "revisited_end_cells": 3.0,
+      "arrivals": 2,
+      "trials": 2
+    }
+  ],
+  "validation_passed": true,
+  "limitations": [
+    "Synthetic U obstacle and flat terrain; not a controlled live measurement.",
+    "Transient navigation state is reset between training trials; only learned RAM and its evidence persist.",
+    "RAM recommendation at promotion is reconstructed from verified actions; latest evolving RAM can differ.",
+    "Changed obstacles are finite test cases, not proof of universal generalization.",
+    "Movement time uses fixed simulation ticks; planning ticks depend on CPU slicing and are reported separately."
+  ],
+  "release": "008DJ",
+  "python_tests": 116,
+  "godot_checks": [
+    {
+      "test": "godot_world_map_traversal_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nov_locomotion_008bz_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nov_grounded_presentation_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_live_program_008cb_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_ground_surface_008cc_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_experience_008cd_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_camera_stabilization_008cf_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_anticipation_008cg_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_episodes_008ch_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_working_memory_008ci_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nature_residency_008ck_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_route_goal_008cn_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_ground_continuity_008co_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_goal_quality_008cs_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_observed_crossing_008ct_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_consistency_008cu_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nature_collision_008cv_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_camera_contact_008cw_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_frontier_routes_008cx_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_route_shortcuts_008cy_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_goal_approach_008da_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_changing_routes_008db_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_live_learning_008df_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_journey_samples_008dg_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_water_egress_008dh_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_panel_delivery_008di_smoke.gd",
+      "passed": true
+    }
+  ],
+  "http_panel_fixture": "passed after final consumer change",
+  "live_recall_probe": {
+    "http_code": 200,
+    "bytes": 57683,
+    "loaded_routes": 190,
+    "loaded_blocked_passages": 72,
+    "read_only": true
+  },
+  "evidence_sha256": "711d3254e62e00112e0750a5dcc5f10244b7f2bc866a3e969970e6d5d5451cee",
+  "evidence_gzip_sha256": "b4f4c8287e10c60bd567cfbc747fe472dc50c21fc764eee3d8cc08422b8f1f55",
+  "installation": "pending root installer"
+}
