@@ -12,6 +12,7 @@ var closed := true
 var valid := true
 var arrivals := 0
 var interruptions := 0
+var recoveries := 0
 var blocked_attempts := 0
 var completed_steps := 0
 var last_serial := 0
@@ -92,7 +93,7 @@ func observe_completed(action: Dictionary) -> void:
         print("NOV_JOURNEY_COMPLETE goal=%s distance_m=%.3f quality_eligible=%s" % [identity,distance_m,str(valid)])
 
 func status() -> Dictionary:
-    return {"arrivals":arrivals,"interruptions":interruptions,"blocked_attempts":blocked_attempts,
+    return {"recoveries":recoveries,"arrivals":arrivals,"interruptions":interruptions,"blocked_attempts":blocked_attempts,
         "completed_steps":completed_steps,"causal_ram_steps":causal_ram_steps,"causal_memoria_steps":causal_memoria_steps,
         "distance_m":distance_m,"result":last_result,"active":not closed,"motion_state":motion_state,"last_reason":last_reason}
 

@@ -206,3 +206,42 @@ func commit_journey(identity: String, target: Vector3, current: Vector3) -> void
     var changed: bool = _journey.begin(identity,Vector2(target.x,target.z),str(_episodes.context.get("world_id","")))
     if changed and not _episodes.active.is_empty():
         _episodes._finish("interrupted",current,Time.get_ticks_msec(),"journey_goal_changed")
+
+
+func resolve_recovery_start(requested: Vector3, space: PhysicsDirectSpaceState3D) -> Dictionary:
+    # Arrival and at least one two-metre exit must be physically clear.
+    # Bounded local search around the original start; never enter water.
+    if not requested.is_finite():
+        return {"allowed":false,"reason":"invalid_recovery_origin"}
+    for radius in [0.0,4.0,8.0,12.0,16.0,24.0,32.0]:
+        for heading in range(1 if radius==0.0 else 12):
+            var offset := Vector2.RIGHT.rotated(TAU*float(heading)/12.0)*float(radius)
+            var candidate: Vector3 = _traversability.ground_position(requested.x+offset.x,requested.z+offset.y)
+            if not candidate.is_finite() or not _destination_clear(candidate,space):
+                continue
+            for escape_heading in range(8):
+                var direction := Vector2.RIGHT.rotated(TAU*float(escape_heading)/8.0)
+                var first := candidate+Vector3(direction.x,0,direction.y)
+                var step: Dictionary = _traversability.validate_step(candidate,first,space)
+                if not bool(step.get("allowed",false)):continue
+                var second: Vector3 = step["position"]+Vector3(direction.x,0,direction.y)
+                if bool(_traversability.validate_step(step["position"],second,space).get("allowed",false)):
+                    return {"allowed":true,"position":candidate}
+    return {"allowed":false,"reason":"no_safe_recovery_start"}
+
+func recover_to(current: Vector3, destination: Vector3, body: CharacterBody3D, space: PhysicsDirectSpaceState3D) -> bool:
+    if not destination.is_finite() or not _destination_clear(destination,space):
+        return false
+    if _episodes.enabled:
+        if not _episodes.active.is_empty():
+            _episodes._finish("interrupted",current,Time.get_ticks_msec(),"stuck_recovery")
+        _journey.abort("preso; retorno ao início")
+        _journey.recoveries += 1
+        _journey.save_status(true)
+    _experience.active = false
+    _experience.reset_route_plan()
+    _experience.visits.clear()
+    route_goal_id = ""
+    snap_body(body,destination)
+    print("NOV_STUCK_RECOVERY from=(%.1f,%.1f) to=(%.1f,%.1f)" % [current.x,current.z,destination.x,destination.z])
+    return true

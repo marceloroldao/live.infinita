@@ -82,6 +82,17 @@ class PanelDeliveryTests(unittest.TestCase):
         self.export()
         self.assertEqual(json.loads(self.public.read_text())["memoria_recall"]["with_cost"],0)
 
+    def test_recovery_count_is_carried_without_faking_arrivals(self):
+        self.status["recoveries"]=2
+        self.source.write_text(json.dumps(self.status))
+        self.export()
+        d=json.loads(self.public.read_text())["learning_status"]
+        self.assertEqual(d["recoveries"],2)
+        self.assertEqual(d["arrivals"],0)
+        self.status["recoveries"]=True
+        self.source.write_text(json.dumps(self.status))
+        self.assertFalse(self.export()["available"])
+
     def test_wrong_world_rejected(self):
         self.world.write_text('{"world_id":"other"}')
         self.assertFalse(self.export()["available"])

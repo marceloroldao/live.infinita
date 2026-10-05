@@ -17,7 +17,7 @@ func _ready() -> void:
     _learning.offset_left = -330
     _learning.offset_right = -18
     _learning.offset_top = 104
-    _learning.offset_bottom = 272
+    _learning.offset_bottom = 294
     _learning.add_theme_font_size_override("font_size",16)
     _learning.add_theme_color_override("font_color",Color.WHITE)
     var box := StyleBoxFlat.new()
@@ -153,7 +153,7 @@ func update_learning(experience: RefCounted, journey: RefCounted) -> void:
         elif data.get("motion_state","")=="water_egress":progress = "Saindo do lago: %.1f m" % float(data.get("distance_m",0.0))
         var recall_line := server_recall_line(data)
         if not data.is_empty() and Time.get_unix_time_from_system()-float(data.get("observed_at_unix",0.0))<60.0:
-            _learning.text = "NOV • TENTATIVA E ERRO\nSessão do servidor\nChegadas: %d | Interrompidas: %d\nEscolhas: RAM %d / Memoria.ia %d\n%s\n%s" % [int(data.get("arrivals",0)),int(data.get("interruptions",0)),int(data.get("causal_ram_steps",0)),int(data.get("causal_memoria_steps",0)),recall_line,progress]
+            _learning.text = "NOV • TENTATIVA E ERRO\nSessão do servidor\nChegadas: %d | Interrompidas: %d\nRetornos ao início: %d\nEscolhas: RAM %d / Memoria.ia %d\n%s\n%s" % [int(data.get("arrivals",0)),int(data.get("interruptions",0)),int(data.get("recoveries",0)),int(data.get("causal_ram_steps",0)),int(data.get("causal_memoria_steps",0)),recall_line,progress]
         else:
             _learning.text = "NOV • TENTATIVA E ERRO\nAguardando dados do servidor\nDecisão desta prévia: %s\nMemoria.ia: %d passos lembrados\nPassos avaliados: %d" % [source,experience.recalled_routes.size(),qualified]
     else:
@@ -165,8 +165,9 @@ func update_learning(experience: RefCounted, journey: RefCounted) -> void:
 Decisão: %s
 RAM: %d | Promovidas: %d
 Chegadas: %d | Interrompidas: %d
+Retornos ao início: %d
 Escolhas: RAM %d / Memoria.ia %d
-%s" % [source,memory.entries.size(),memory.promoted.size(),data.arrivals,data.interruptions,data.causal_ram_steps,data.causal_memoria_steps,progress]
+%s" % [source,memory.entries.size(),memory.promoted.size(),data.arrivals,data.interruptions,data.recoveries,data.causal_ram_steps,data.causal_memoria_steps,progress]
 
 
 func server_recall_line(data: Dictionary) -> String:

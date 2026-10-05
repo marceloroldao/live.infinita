@@ -109,6 +109,9 @@ def read_learning_status(path: Path,world_id: str,now: float) -> dict | None:
         fields=("arrivals","interruptions","blocked_attempts","completed_steps","causal_ram_steps","causal_memoria_steps")
         if any(not isinstance(value.get(k),(int,float)) or isinstance(value[k],bool) or not 0<=value[k]<=1e9 or value[k]!=int(value[k]) for k in fields):
             return None
+        recoveries=value.get("recoveries",0)
+        if isinstance(recoveries,bool) or not isinstance(recoveries,(int,float)) or not 0<=recoveries<=1e9 or recoveries!=int(recoveries):
+            return None
         distance=value.get("distance_m",0.0)
         if not isinstance(distance,(int,float)) or isinstance(distance,bool) or not math.isfinite(distance) or not 0<=distance<=1e7:
             return None
@@ -118,7 +121,7 @@ def read_learning_status(path: Path,world_id: str,now: float) -> dict | None:
         state=value.get("motion_state","walking" if active else "idle")
         if state not in ("idle","walking","no_passage","water_egress"):
             return None
-        return {"motion_state":state,"last_reason":str(value.get("last_reason",""))[:80],"distance_m":distance,"active":active,**{k:int(value[k]) for k in fields},"observed_at_unix":stamp,"result":str(value.get("result",""))[:120],
+        return {"recoveries":int(recoveries),"motion_state":state,"last_reason":str(value.get("last_reason",""))[:80],"distance_m":distance,"active":active,**{k:int(value[k]) for k in fields},"observed_at_unix":stamp,"result":str(value.get("result",""))[:120],
             "source":"native_renderer_journey","world_id":world_id}
     except (OSError,ValueError,TypeError):
         return None

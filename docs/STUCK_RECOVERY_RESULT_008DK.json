@@ -1,0 +1,127 @@
+{
+  "release": "008DK",
+  "python_tests": 117,
+  "godot_checks": [
+    {
+      "test": "godot_world_map_traversal_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nov_locomotion_008bz_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nov_grounded_presentation_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_live_program_008cb_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_ground_surface_008cc_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_experience_008cd_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_camera_stabilization_008cf_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_anticipation_008cg_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_episodes_008ch_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_working_memory_008ci_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nature_residency_008ck_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_route_goal_008cn_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_ground_continuity_008co_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_goal_quality_008cs_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_observed_crossing_008ct_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_consistency_008cu_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nature_collision_008cv_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_camera_contact_008cw_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_frontier_routes_008cx_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_route_shortcuts_008cy_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_goal_approach_008da_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_changing_routes_008db_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_live_learning_008df_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_journey_samples_008dg_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_water_egress_008dh_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_panel_delivery_008di_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_stuck_recovery_008dk_smoke.gd",
+      "passed": true
+    }
+  ],
+  "final_recovery_integration_test": "passed",
+  "recovery_test_log": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\nNOV_WORKING_MEMORY_STATUS entries=0 causal_reuses=0 promoted=0\nNOV_WORKING_MEMORY_PROMOTED key=-90,0|-99,0 successful_reuses=3\nNOV_WORKING_MEMORY_PROMOTED key=-90,0|-99,-1 successful_reuses=3\nNOV_WORKING_MEMORY_PROMOTED key=-90,0|-100,-1 successful_reuses=3\nNOV_STUCK_RECOVERY from=(-98.7,-0.2) to=(-116.0,0.0)\nNOV_STUCK_RECOVERY from=(-98.7,-0.2) to=(-136.0,0.0)\nStuck recovery smoke: 0 failures\n",
+  "sha256": {
+    "apps/renderer-godot/nov_stuck_recovery.gd": "1c9cd482c177e1c3d44a4dbf3bba56e868004b84f8781efb78f7ec09f9921244",
+    "apps/renderer-godot/world_map_preview.gd": "30d8623163b9ac364fbb1d7fa7d9ca0888e680f7501033670172bab307b3ba3e",
+    "apps/renderer-godot/world_map_local_motion.gd": "f7c01ad1f6c87db77bb24badfdc273de4e99dc9b9b36f95022996e8fbebdd34c",
+    "apps/renderer-godot/nov_navigation_journey.gd": "bf9c1f0e18dc085c76c6d85181cfb7b90013e774fba1c126c367cdd4b63cbfeb",
+    "apps/renderer-godot/world_map_hud.gd": "07a00a9c9c8c11f9e4846aa335f15d214aceeaffdb9ae780e8e869b2c998b85b",
+    "apps/world-runtime/nov_navigation_recall_export.py": "450cf2852df4a29d1227a6d62bd668efc9118ecd4851174637cb32ebe7240d9b",
+    "tests/godot_stuck_recovery_008dk_smoke.gd": "da216d696e9ea20eeb39e7513fa5921d5ba873d157b39e7d734755a7e212c8ac",
+    "deploy/apply-stuck-recovery-008dk-root.sh": "1023549a5ff9d65cb2edbd5de75dfd9bd69bedc740833ed7ef44edc71e2d8f8a"
+  },
+  "production_installation": "pending user root installer"
+}

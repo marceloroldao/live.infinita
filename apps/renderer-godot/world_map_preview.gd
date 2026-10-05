@@ -72,6 +72,9 @@ var _walker: CharacterBody3D
 var _camera: Camera3D
 var _camera_forward := Vector3(0.0, 0.0, -1.0)
 var _route_goal = preload("res://nov_route_goal.gd").new()
+var _stuck_recovery = preload("res://nov_stuck_recovery.gd").new()
+var _recovery_pending := false
+var _recovery_start := Vector3.ZERO
 var _camera_stabilizer = preload("res://nov_camera_stabilizer.gd").new()
 var _horizon_ground: MeshInstance3D
 var _distant_relief: RefCounted
@@ -170,6 +173,7 @@ func _ready() -> void:
                 var z := parts[1].to_int()
                 if x >= 0 and x < _layout.grid_size and z >= 0 and z < _layout.grid_size:
                     _position = _waypoint([x, z])
+    _recovery_start = _position
     _build_stage()
     _sync_tiles()
     _update_caption()
@@ -887,6 +891,12 @@ func _advance_live_walk(delta: float) -> void:
     var distance := offset.length()
     var desired := Vector2.ZERO
     if distance <= 0.04:
+        # Rejected destinations can leave no committed route. Keep monitoring
+        # that failed attempt, while ordinary idle/arrival remains exempt.
+        var rejected_latest: bool = _route_goal._rejected_latest.is_finite() and _route_goal._rejected_latest.distance_to(_last_live_position)<0.1
+        if not OS.get_cmdline_user_args().has("--offline-tour") and _stuck_recovery.observe(_position,_last_live_position,delta,rejected_latest):
+            _attempt_stuck_recovery()
+            return
         _live_walk_velocity = Vector2.ZERO
         _follow_camera(false, dt)
         _animate_nov_movement(previous, dt)
@@ -903,6 +913,9 @@ func _advance_live_walk(delta: float) -> void:
     _position = movement.get("position", _position)
     _local_surface = str(movement.get("surface", "terrain"))
     _local_block_reason = str(movement.get("reason", ""))
+    if not OS.get_cmdline_user_args().has("--offline-tour") and _stuck_recovery.observe(_position,committed_target,delta,true):
+        _attempt_stuck_recovery()
+        return
     if distance < 0.04:
         _live_walk_velocity = Vector2.ZERO
     _update_camera_heading(previous, _position, dt)
@@ -916,8 +929,44 @@ func _advance_live_walk(delta: float) -> void:
     _follow_camera(false, dt)
     _animate_nov_movement(previous, dt)
 
+func _attempt_stuck_recovery() -> void:
+    _recovery_pending = true
+    var trapped := _position
+    # Load actual start-area colliders before accepting the reset destination.
+    _position = _recovery_start
+    _sync_tiles()
+    _perceptual_vegetation.rebuild(_position,_camera_forward,_live_region_id)
+    _perceptual_assets.rebuild(_position,_camera_forward,_live_region_id)
+    await get_tree().physics_frame
+    var space := get_world_3d().direct_space_state
+    var recovery: Dictionary = _local_motion.resolve_recovery_start(_recovery_start,space)
+    var recovered := false
+    if bool(recovery.get("allowed",false)):
+        var safe: Vector3 = recovery["position"]
+        recovered = _local_motion.recover_to(trapped,safe,_walker,space)
+        if recovered:
+            _position = safe
+            _route_goal.reset()
+            _live_walk_velocity = Vector2.ZERO
+            _local_block_reason = ""
+            _local_surface = "terrain"
+    if not recovered:
+        _position = trapped
+        print("NOV_STUCK_RECOVERY_DEFERRED reason=no_safe_recovery_start")
+    _stuck_recovery.reset()
+    _sync_tiles()
+    _rebuild_horizon_ground()
+    _rebuild_distant_vegetation()
+    _rebuild_midground_vegetation()
+    _perceptual_vegetation.rebuild(_position,_camera_forward,_live_region_id)
+    _perceptual_assets.rebuild(_position,_camera_forward,_live_region_id)
+    _follow_camera(true,0.0,true)
+    _recovery_pending = false
+
 func _process(delta: float) -> void:
     _poll_native_fps_governor()
+    if _recovery_pending:
+        return
     if _route.size() < 2:
         return
     if _live_authoritative and not _local_explore_enabled:
