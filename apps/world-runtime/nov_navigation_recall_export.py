@@ -1,6 +1,7 @@
 """Export bounded navigation evidence retrieved from local Memoria.ia."""
 from __future__ import annotations
 import json
+import math
 import os
 from pathlib import Path
 import time
@@ -109,7 +110,13 @@ def read_learning_status(path: Path,world_id: str,now: float) -> dict | None:
         fields=("arrivals","interruptions","blocked_attempts","completed_steps","causal_ram_steps","causal_memoria_steps")
         if any(not isinstance(value.get(k),(int,float)) or isinstance(value[k],bool) or not 0<=value[k]<=1e9 or value[k]!=int(value[k]) for k in fields):
             return None
-        return {**{k:int(value[k]) for k in fields},"observed_at_unix":stamp,"result":str(value.get("result",""))[:120],
+        distance=value.get("distance_m",0.0)
+        if not isinstance(distance,(int,float)) or isinstance(distance,bool) or not math.isfinite(distance) or not 0<=distance<=1e7:
+            return None
+        active=value.get("active",False)
+        if not isinstance(active,bool):
+            return None
+        return {"distance_m":distance,"active":active,**{k:int(value[k]) for k in fields},"observed_at_unix":stamp,"result":str(value.get("result",""))[:120],
             "source":"native_renderer_journey","world_id":world_id}
     except (OSError,ValueError,TypeError):
         return None

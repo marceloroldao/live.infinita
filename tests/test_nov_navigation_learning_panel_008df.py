@@ -45,3 +45,16 @@ class LearningPanelTests(unittest.TestCase):
             value=self.status();value["arrivals"]=2.0
             path.write_text(json.dumps(value))
             self.assertEqual(read_learning_status(path,"fixture",110)["arrivals"],2)
+
+    def test_current_distance_and_active_state_survive_export(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/"panel.json"
+            value=self.status();value["distance_m"]=12.5;value["active"]=True
+            path.write_text(json.dumps(value))
+            result=read_learning_status(path,"fixture",110)
+            self.assertEqual(result["distance_m"],12.5)
+            self.assertIs(result["active"],True)
+            for bad in [-1,float("nan"),float("inf"),True,"12"]:
+                value["distance_m"]=bad
+                path.write_text(json.dumps(value))
+                self.assertIsNone(read_learning_status(path,"fixture",110))

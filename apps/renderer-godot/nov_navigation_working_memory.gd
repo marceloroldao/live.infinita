@@ -156,16 +156,25 @@ func observed_quality(address_value: String, next: Vector2) -> Dictionary:
 func observe_journey(steps: Array) -> void:
     if not enabled or steps.is_empty():return
     var remaining := 0.0
+    var observations: Dictionary = {}
     for i in range(steps.size()-1,-1,-1):
         var step: Dictionary = steps[i]
         remaining += float(step["distance_m"])
         var identity := quality_key(str(step["address"]),step["to"])
+        # Reverse traversal overwrites with the earliest real departure. This
+        # includes its later circuit cost, rather than selecting the cheapest
+        # revisit or multiplying confidence inside one journey.
+        observations[identity] = remaining
+    for identity in observations:
         var item: Dictionary = quality.get(identity,{"remaining_cost_m":0.0,"reference_cost_m":0.0,"samples":0})
         var count := int(item.get("samples",0))
-        # Bounded running mean: old observations progressively lose influence.
+        # Old releases counted repeated departures inside a journey. Keep their
+        # cost as one prior estimate, not as many independent completed walks.
+        if count>0 and item.get("sample_unit","")!="completed_journey":count = 1
         var denominator := mini(count+1,32)
-        item["remaining_cost_m"] = float(item["remaining_cost_m"])+(remaining-float(item["remaining_cost_m"]))/float(denominator)
+        item["remaining_cost_m"] = float(item["remaining_cost_m"])+(float(observations[identity])-float(item["remaining_cost_m"]))/float(denominator)
         item["samples"] = mini(count+1,32)
+        item["sample_unit"] = "completed_journey"
         item["reference_cost_m"] = item["remaining_cost_m"]
         quality[identity] = item
     while quality.size()>LIMIT*4:quality.erase(quality.keys()[0])

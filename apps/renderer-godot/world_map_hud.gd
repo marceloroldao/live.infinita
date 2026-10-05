@@ -148,15 +148,17 @@ func update_learning(experience: RefCounted, journey: RefCounted) -> void:
         for key_value in experience.recalled_routes:
             if experience.recalled_routes[key_value].has("route_quality"):qualified += 1
         var data: Dictionary = experience.server_learning_status
+        var progress := "Caminhando: %.1f m" % float(data.get("distance_m",0.0)) if bool(data.get("active",false)) else str(data.get("result","aguardando caminhada")).left(60)
         if not data.is_empty() and Time.get_unix_time_from_system()-float(data.get("observed_at_unix",0.0))<60.0:
-            _learning.text = "NOV • TENTATIVA E ERRO\nSessão do servidor\nChegadas: %d | Interrompidas: %d\nEscolhas: RAM %d / Memoria.ia %d\nMemoria.ia: %d passos (%d com custo)\n%s" % [int(data.get("arrivals",0)),int(data.get("interruptions",0)),int(data.get("causal_ram_steps",0)),int(data.get("causal_memoria_steps",0)),experience.recalled_routes.size(),qualified,str(data.get("result","")).left(60)]
+            _learning.text = "NOV • TENTATIVA E ERRO\nSessão do servidor\nChegadas: %d | Interrompidas: %d\nEscolhas: RAM %d / Memoria.ia %d\nMemoria.ia: %d passos (%d com custo)\n%s" % [int(data.get("arrivals",0)),int(data.get("interruptions",0)),int(data.get("causal_ram_steps",0)),int(data.get("causal_memoria_steps",0)),experience.recalled_routes.size(),qualified,progress]
         else:
-            _learning.text = "NOV • TENTATIVA E ERRO\nAguardando dados do servidor\nDecisão desta prévia: %s\nMemoria.ia: %d passos lembrados\nCom custo observado: %d\nLembrar não garante melhoria" % [source,experience.recalled_routes.size(),qualified]
+            _learning.text = "NOV • TENTATIVA E ERRO\nAguardando dados do servidor\nDecisão desta prévia: %s\nMemoria.ia: %d passos lembrados\nPassos avaliados: %d" % [source,experience.recalled_routes.size(),qualified]
     else:
         var data: Dictionary = journey.status()
+        var progress := "Caminhando: %.1f m" % float(data.distance_m) if bool(data.active) else str(data.result)
         _learning.text = "NOV • TENTATIVA E ERRO
 Decisão: %s
 RAM: %d | Promovidas: %d
 Chegadas: %d | Interrompidas: %d
 Escolhas: RAM %d / Memoria.ia %d
-%s" % [source,memory.entries.size(),memory.promoted.size(),data.arrivals,data.interruptions,data.causal_ram_steps,data.causal_memoria_steps,data.result]
+%s" % [source,memory.entries.size(),memory.promoted.size(),data.arrivals,data.interruptions,data.causal_ram_steps,data.causal_memoria_steps,progress]
