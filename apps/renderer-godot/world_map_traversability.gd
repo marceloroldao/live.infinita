@@ -81,14 +81,18 @@ func find_detour(
 func validate_step(current: Vector3, candidate: Vector3, space_state: PhysicsDirectSpaceState3D = null) -> Dictionary:
     var length_m := Vector2(candidate.x - current.x, candidate.z - current.z).length()
     var count := maxi(1, ceili(length_m / 0.2))
+    var start_surface := surface(ground_position(current.x,current.z))
+    var previous_surface: Dictionary = start_surface
+    var escaping := str(start_surface.get("reason",""))=="cognitive_lake" and _valid_depth(start_surface)
     for i in range(1, count):
         var intermediate := current.lerp(candidate, float(i) / count)
         var probe := ground_position(intermediate.x, intermediate.z)
         var classification := surface(probe)
-        if not bool(classification.get("walkable", false)):
+        if not bool(classification.get("walkable", false)) and not _water_egress_allowed(previous_surface,classification):
             return {"allowed": false, "position": current, "reason": classification.get("reason", "blocked"), "surface": classification.get("surface", "terrain")}
         if absf(probe.y - current.y) > MAX_STEP_M:
             return {"allowed": false, "position": current, "reason": "step_too_high", "surface": classification.get("surface", "terrain"), "collisions": 0}
+        previous_surface = classification
     if space_state != null and length_m > 0.001:
         var sweep_shape := CapsuleShape3D.new()
         sweep_shape.radius = CAPSULE_RADIUS
@@ -103,7 +107,7 @@ func validate_step(current: Vector3, candidate: Vector3, space_state: PhysicsDir
             return {"allowed": false, "position": current, "reason": "static_obstacle", "surface": "terrain", "collisions": 1}
     var target := ground_position(candidate.x, candidate.z)
     var classification := surface(target)
-    if not bool(classification.get("walkable", false)):
+    if not bool(classification.get("walkable", false)) and not _water_egress_allowed(previous_surface,classification):
         return {
             "allowed": false,
             "position": current,
@@ -150,4 +154,15 @@ func validate_step(current: Vector3, candidate: Vector3, space_state: PhysicsDir
         "reason": "",
         "collisions": 0,
         "step_height": step_height,
+        "environment_escape": escaping,
     }
+
+func _valid_depth(value: Dictionary) -> bool:
+    if not typeof(value.get("escape_depth_m")) in [TYPE_FLOAT,TYPE_INT]:return false
+    var depth := float(value["escape_depth_m"])
+    return is_finite(depth) and depth>0.0 and depth<=100000.0
+
+func _water_egress_allowed(previous: Dictionary, next: Dictionary) -> bool:
+    # Only an already submerged body may make strictly outward local steps.
+    # Static river, map bounds, height and swept-body collision remain unchanged.
+    return str(previous.get("reason",""))=="cognitive_lake" and str(next.get("reason",""))=="cognitive_lake" and _valid_depth(previous) and _valid_depth(next) and float(next["escape_depth_m"])<float(previous["escape_depth_m"])-0.00001

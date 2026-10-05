@@ -787,6 +787,7 @@ func environment_at(x: float, z: float) -> Dictionary:
 
 func surface_at(x: float, z: float) -> Dictionary:
     var point := Vector2(x, z)
+    var depth := 0.0
     for anchor in _anchors:
         if typeof(anchor) != TYPE_DICTIONARY or not bool(anchor.get("lake", false)):
             continue
@@ -794,9 +795,11 @@ func surface_at(x: float, z: float) -> Dictionary:
             continue
         var radius := minf(68.0, float(anchor.get("radius", 120.0)) * 0.38)
         var pos: Vector2 = anchor["position"]
-        if point.distance_to(pos) <= radius:
-            return {"walkable": false, "surface": "water", "reason": "cognitive_lake"}
-    return {"walkable": true, "surface": "terrain", "reason": ""}
+        depth += maxf(0.0,radius-point.distance_to(pos))
+    if depth>0.0:
+        return {"walkable":false,"surface":"water","reason":"cognitive_lake","escape_depth_m":depth}
+    return {"walkable":true,"surface":"terrain","reason":""}
+
 
 func _trail_decor_profile(point: Vector2) -> Dictionary:
     var best_edge_influence := 0.0

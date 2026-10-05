@@ -19,6 +19,8 @@ var saved_at := -10000
 var causal_ram_steps := 0
 var causal_memoria_steps := 0
 var last_result := "aguardando caminhada"
+var motion_state := "idle"
+var last_reason := ""
 
 func _init(value: RefCounted = null) -> void:
     memory = value
@@ -38,6 +40,8 @@ func begin(value: String, target: Vector2, world: String) -> bool:
     pending_m = 0.0
     closed = false
     valid = true
+    motion_state = "walking"
+    last_reason = ""
     last_serial = 0
     return interrupted
 
@@ -79,6 +83,7 @@ func observe_completed(action: Dictionary) -> void:
     if steps.size()>LIMIT:steps.pop_front()
     if outcome=="goal_reached" and float(action.get("remaining_goal_m",INF))<0.1:
         closed = true
+        motion_state = "idle"
         arrivals += 1
         last_result = "chegou: %.1f m" % distance_m
         if valid and memory!=null and memory.enabled and memory.world_id==world_id:
@@ -89,12 +94,14 @@ func observe_completed(action: Dictionary) -> void:
 func status() -> Dictionary:
     return {"arrivals":arrivals,"interruptions":interruptions,"blocked_attempts":blocked_attempts,
         "completed_steps":completed_steps,"causal_ram_steps":causal_ram_steps,"causal_memoria_steps":causal_memoria_steps,
-        "distance_m":distance_m,"result":last_result,"active":not closed}
+        "distance_m":distance_m,"result":last_result,"active":not closed,"motion_state":motion_state,"last_reason":last_reason}
 
 func abort(reason: String) -> void:
     if closed:return
     closed = true
     valid = false
+    motion_state = "idle"
+    last_reason = ""
     interruptions += 1
     last_result = reason+"; caminhada interrompida"
     save_status(true)

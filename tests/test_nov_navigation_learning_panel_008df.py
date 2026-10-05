@@ -58,3 +58,18 @@ class LearningPanelTests(unittest.TestCase):
                 value["distance_m"]=bad
                 path.write_text(json.dumps(value))
                 self.assertIsNone(read_learning_status(path,"fixture",110))
+
+    def test_blocked_and_egress_states_reach_panel_without_fake_counters(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/"panel.json"
+            value=self.status();value["active"]=True;value["distance_m"]=0.0
+            for state in ("no_passage","water_egress"):
+                value["motion_state"]=state;value["last_reason"]="cognitive_lake"
+                path.write_text(json.dumps(value))
+                result=read_learning_status(path,"fixture",110)
+                self.assertEqual(result["motion_state"],state)
+                self.assertEqual(result["last_reason"],"cognitive_lake")
+                self.assertEqual(result["arrivals"],2)
+            value["motion_state"]="invented"
+            path.write_text(json.dumps(value))
+            self.assertIsNone(read_learning_status(path,"fixture",110))

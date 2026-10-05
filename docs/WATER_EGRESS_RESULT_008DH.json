@@ -1,0 +1,141 @@
+{
+  "schema": "live-infinita-water-egress-benchmark/v1",
+  "production_installation_performed": false,
+  "source_hashes": {
+    "apps/renderer-godot/world_map_cognitive_terrain.gd": "3ccdcc9d2b0e56f3826afee68ceee998c96dd121984e603ead51a6a97a278cda",
+    "apps/renderer-godot/world_map_traversability.gd": "394c5b12d0223514a14c0db4fd581bc5e742423b5f9281ff1740219769af8fb4",
+    "apps/renderer-godot/world_map_local_motion.gd": "fbe28793847bdc07877badda24597a13cdc5f0dd3fc6c90c7606ae4288818b4a",
+    "apps/renderer-godot/nov_navigation_journey.gd": "ecf7abad1f9d529ec0c85a125582bd46061c80a816eadb4c4ccc5d3c2ee757c5",
+    "apps/renderer-godot/world_map_hud.gd": "0b03b8df543e9fd2d3659705a7f1f403596aeda95e46eaa901c3ca4cf63a856e",
+    "apps/world-runtime/nov_navigation_recall_export.py": "1004c15385865437c3b8f984fa7cab202edbbec8ca07e0a2d7f8788986c24372",
+    "tests/godot_water_egress_008dh_smoke.gd": "1ff5b09c634fcc29512f6b7334d39ae2c4d1df679e9e3323b2e9011e41621363"
+  },
+  "result": {
+    "collisions": 0,
+    "distance_after_change_m": 8.99998654425144,
+    "final": "(-92.08767, 0.0, 0.020521)",
+    "goal": "(-92.0, 0.0, 0.0)",
+    "journey": {
+      "active": false,
+      "arrivals": 1,
+      "blocked_attempts": 0,
+      "causal_memoria_steps": 0,
+      "causal_ram_steps": 0,
+      "completed_steps": 10,
+      "distance_m": 9.3999877423048,
+      "interruptions": 0,
+      "last_reason": "",
+      "motion_state": "idle",
+      "result": "chegou: 9.4 m"
+    },
+    "reached": true
+  },
+  "godot_checks": [
+    {
+      "test": "godot_world_map_traversal_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nov_locomotion_008bz_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nov_grounded_presentation_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_live_program_008cb_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_ground_surface_008cc_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_experience_008cd_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_camera_stabilization_008cf_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_anticipation_008cg_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_episodes_008ch_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_working_memory_008ci_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nature_residency_008ck_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_route_goal_008cn_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_ground_continuity_008co_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_goal_quality_008cs_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_observed_crossing_008ct_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_consistency_008cu_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nature_collision_008cv_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_camera_contact_008cw_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_frontier_routes_008cx_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_route_shortcuts_008cy_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_goal_approach_008da_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_changing_routes_008db_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_live_learning_008df_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_journey_samples_008dg_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_water_egress_008dh_smoke.gd",
+      "passed": true
+    }
+  ],
+  "python_checks_passed": 106,
+  "extra_final_journey_and_egress_checks_passed": true,
+  "limitations": [
+    "Synthetic physical fixture; live exit must be verified after installation.",
+    "Outward permission is a physics recovery rule, not proof of Memoria inference."
+  ]
+}

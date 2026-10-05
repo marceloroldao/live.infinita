@@ -81,6 +81,15 @@ func advance(
         candidate.z = flat.y
 
     var policy: Dictionary = _traversability.validate_step(current, candidate, space_state)
+    if _episodes.enabled:
+        if not bool(policy.get("allowed",false)) or _experience.last_decision_source=="perception-no-passage":
+            _journey.motion_state = "no_passage"
+            _journey.last_reason = str(policy.get("reason",""))
+        else:
+            _journey.motion_state = "water_egress" if bool(policy.get("environment_escape",false)) else "walking"
+            _journey.last_reason = ""
+        # Publish a heartbeat even when perception rejects every candidate.
+        _journey.save_status()
     policy["route_goal_id"] = route_goal_id
     if _experience._route_search.running and not manual:
         policy["reason"] = "route_search_in_progress"

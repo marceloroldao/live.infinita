@@ -149,6 +149,8 @@ func update_learning(experience: RefCounted, journey: RefCounted) -> void:
             if experience.recalled_routes[key_value].has("route_quality"):qualified += 1
         var data: Dictionary = experience.server_learning_status
         var progress := "Caminhando: %.1f m" % float(data.get("distance_m",0.0)) if bool(data.get("active",false)) else str(data.get("result","aguardando caminhada")).left(60)
+        if data.get("motion_state","")=="no_passage":progress = "Procurando passagem"
+        elif data.get("motion_state","")=="water_egress":progress = "Saindo do lago: %.1f m" % float(data.get("distance_m",0.0))
         if not data.is_empty() and Time.get_unix_time_from_system()-float(data.get("observed_at_unix",0.0))<60.0:
             _learning.text = "NOV • TENTATIVA E ERRO\nSessão do servidor\nChegadas: %d | Interrompidas: %d\nEscolhas: RAM %d / Memoria.ia %d\nMemoria.ia: %d passos (%d com custo)\n%s" % [int(data.get("arrivals",0)),int(data.get("interruptions",0)),int(data.get("causal_ram_steps",0)),int(data.get("causal_memoria_steps",0)),experience.recalled_routes.size(),qualified,progress]
         else:
@@ -156,6 +158,8 @@ func update_learning(experience: RefCounted, journey: RefCounted) -> void:
     else:
         var data: Dictionary = journey.status()
         var progress := "Caminhando: %.1f m" % float(data.distance_m) if bool(data.active) else str(data.result)
+        if data.get("motion_state","")=="no_passage":progress = "Procurando passagem"
+        elif data.get("motion_state","")=="water_egress":progress = "Saindo do lago: %.1f m" % float(data.distance_m)
         _learning.text = "NOV • TENTATIVA E ERRO
 Decisão: %s
 RAM: %d | Promovidas: %d

@@ -116,7 +116,10 @@ def read_learning_status(path: Path,world_id: str,now: float) -> dict | None:
         active=value.get("active",False)
         if not isinstance(active,bool):
             return None
-        return {"distance_m":distance,"active":active,**{k:int(value[k]) for k in fields},"observed_at_unix":stamp,"result":str(value.get("result",""))[:120],
+        state=value.get("motion_state","walking" if active else "idle")
+        if state not in ("idle","walking","no_passage","water_egress"):
+            return None
+        return {"motion_state":state,"last_reason":str(value.get("last_reason",""))[:80],"distance_m":distance,"active":active,**{k:int(value[k]) for k in fields},"observed_at_unix":stamp,"result":str(value.get("result",""))[:120],
             "source":"native_renderer_journey","world_id":world_id}
     except (OSError,ValueError,TypeError):
         return None
