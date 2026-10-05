@@ -8,6 +8,7 @@ const BODY_CENTER_Y := 0.9
 var _experience = preload("res://nov_navigation_experience.gd").new()
 var _traversability: RefCounted
 var route_goal_id := ""
+var _journey = preload("res://nov_navigation_journey.gd").new(_experience.working_memory)
 var _inference_log_at := 0
 var _working_memory_log_at := 0
 var _body_ref: WeakRef
@@ -16,6 +17,7 @@ var _episodes = preload("res://nov_navigation_episodes.gd").new()
 func _init(walk_height: Callable, half_m: float = 512.0, dynamic_surface: Callable = Callable()) -> void:
     _traversability = Traversability.new(walk_height, half_m, dynamic_surface)
     _episodes.action_completed.connect(Callable(_experience.working_memory, "observe_completed"))
+    _episodes.action_completed.connect(Callable(_journey,"observe_completed"))
     _experience.working_memory.promotion_ready.connect(Callable(_episodes, "flush"))
 
 func create_body(parent: Node3D, _material: Material) -> CharacterBody3D:
@@ -56,6 +58,10 @@ func advance(
     if _experience.working_memory.enabled and Time.get_ticks_msec() >= _working_memory_log_at:
         _working_memory_log_at = Time.get_ticks_msec() + 30000
         print("NOV_WORKING_MEMORY_STATUS entries=%d causal_reuses=%d promoted=%d" % [_experience.working_memory.entries.size(), _experience.working_memory.causal_reuses, _experience.working_memory.promoted.size()])
+    if auto_route and input_axis.length_squared()<=0.01 and _episodes.enabled and not route_goal_id.is_empty():
+        commit_journey(route_goal_id,route_target,current)
+        if _journey.closed:
+            return {"allowed":true,"position":current,"reached":true,"collisions":0,"surface":"terrain"}
     var candidate := current
     var manual := input_axis.length_squared() > 0.01
     if manual:
@@ -117,6 +123,7 @@ func advance(
         and Vector2(resolved.x, resolved.z).distance_to(Vector2(route_target.x, route_target.z)) < 0.1
     )
     if auto_route and not manual:
+        _journey.movement(current,resolved)
         _episodes.observe(_experience.decision_serial, current, route_target, _experience.pending, _experience.decision_evidence, policy)
     return policy
 
@@ -178,3 +185,15 @@ func _destination_clear(ground: Vector3, space: PhysicsDirectSpaceState3D) -> bo
     # A zero-length step checks the full body at the endpoint without
     # interpreting a blocked approach corridor as an occupied destination.
     return bool(_traversability.validate_step(ground,ground,space).get("allowed",false))
+
+func commit_journey(identity: String, target: Vector3, current: Vector3) -> void:
+    if not _episodes.enabled:return
+    if identity.is_empty():
+        if not _journey.closed:
+            _journey.abort("objetivo encerrado")
+            if not _episodes.active.is_empty():
+                _episodes._finish("interrupted",current,Time.get_ticks_msec(),"journey_goal_ended")
+        return
+    var changed: bool = _journey.begin(identity,Vector2(target.x,target.z),str(_episodes.context.get("world_id","")))
+    if changed and not _episodes.active.is_empty():
+        _episodes._finish("interrupted",current,Time.get_ticks_msec(),"journey_goal_changed")

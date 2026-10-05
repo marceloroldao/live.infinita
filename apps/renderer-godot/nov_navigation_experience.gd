@@ -12,6 +12,8 @@ var trace: Array[Vector2] = []
 var pending := Vector2.ZERO
 var source := Vector2.ZERO
 var active := false
+var trial_error_enabled := false
+var server_learning_status: Dictionary = {}
 var recovery := false
 var attempts := 0
 var last_goal := Vector2(INF, INF)
@@ -77,6 +79,7 @@ func save() -> void:
         push_warning("NOV navigation experience could not persist: %s" % result)
 
 func target(current: Vector2, goal: Vector2, probe: Callable = Callable(), route_probe: Callable = Callable()) -> Vector2:
+    if trial_error_enabled:route_probe = Callable()
     if last_goal.distance_to(goal) > 2.0:
         active = false
         visits.clear()
@@ -180,6 +183,7 @@ func arrived(goal: Vector2) -> void:
 
 
 func apply_recall(snapshot: Dictionary) -> void:
+    server_learning_status = snapshot.get("learning_status",{}).duplicate(true) if typeof(snapshot.get("learning_status"))==TYPE_DICTIONARY else {}
     recalled_failures.clear()
     recalled_routes.clear()
     # Finish the current physically checked step; new evidence affects the next decision.
@@ -203,6 +207,8 @@ func apply_recall(snapshot: Dictionary) -> void:
                 var point := Vector2(float(next[0]), float(next[1]))
                 if point.is_finite() and absf(point.x) <= 2048.0 and absf(point.y) <= 2048.0:
                     recalled_routes[address] = {"next": point, "id": identity}
+                    if typeof(row.get("route_quality"))==TYPE_DICTIONARY and working_memory.valid_quality(row["route_quality"]):
+                        recalled_routes[address]["route_quality"] = row["route_quality"].duplicate(true)
 
 func _anticipated_target(current: Vector2, goal: Vector2, probe: Callable, route_probe: Callable = Callable()) -> Vector2:
     var direct := current.move_toward(goal, CELL_M)
@@ -288,7 +294,7 @@ func _anticipated_target(current: Vector2, goal: Vector2, probe: Callable, route
     if not temporary.is_empty():
         var next := Vector2(float(temporary["to"][0]), float(temporary["to"][1]))
         if current.distance_to(next) > 0.05 and current.distance_to(next) < 2.0:
-            candidates.append({"point": next, "bonus": 1.5, "source": "working-memory", "id": ""})
+            candidates.append({"point": next, "bonus": _quality_bonus(address,next,1.5), "source": "working-memory", "id": ""})
     var local = routes.get(address)
     if local is Vector2 and current.distance_to(local) > 0.05 and current.distance_to(local) < 2.0:
         candidates.append({"point": local, "bonus": 1.5, "source": "local-experience", "id": ""})
@@ -296,7 +302,7 @@ func _anticipated_target(current: Vector2, goal: Vector2, probe: Callable, route
         var recalled: Dictionary = recalled_routes[address]
         var next: Vector2 = recalled["next"]
         if current.distance_to(next) > 0.05 and current.distance_to(next) < 2.0:
-            candidates.append({"point": next, "bonus": 2.0, "source": "memoria.ia", "id": recalled["id"]})
+            candidates.append({"point": next, "bonus": _quality_bonus(address,next,2.0), "source": "memoria.ia", "id": recalled["id"]})
     for i in range(8):
         var direction := Vector2.RIGHT.rotated(TAU * float(i) / 8.0 + deg_to_rad(float(_probe_phase)))
         candidates.append({"point": current + direction * CELL_M, "bonus": 0.0, "source": "perception", "id": ""})
@@ -452,3 +458,11 @@ func _invalidate_changed_route(current: Vector2, rejected: Vector2, reason: Stri
     _route_revision = {"reason":reason,"from":[current.x,current.y],
         "rejected":[rejected.x,rejected.y],
         "detected_at_unix":Time.get_unix_time_from_system()}
+
+func _quality_bonus(address_value: String, next: Vector2, bonus: float) -> float:
+    var q: Dictionary = working_memory.observed_quality(address_value,next) if working_memory.enabled else {}
+    if q.is_empty() and memoria_enabled and recalled_routes.has(address_value):
+        var row: Dictionary = recalled_routes[address_value]
+        if row["next"].distance_to(next)<=0.05:q = row.get("route_quality",{})
+    if not working_memory.valid_quality(q):return bonus
+    return maxf(0.0,bonus-maxf(0.0,float(q["remaining_cost_m"])-float(q["reference_cost_m"])))

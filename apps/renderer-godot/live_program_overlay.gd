@@ -23,7 +23,7 @@ func _ready() -> void:
     _brand.draw.connect(_draw_brand)
     _brand.resized.connect(_brand.queue_redraw)
     _audience = _label(layout, 18, 104, 18)
-    _audience.offset_right = -18
+    _audience.offset_right = -350
     _audience.anchor_right = 1.0
     _audience.offset_bottom = 302
     _narration = _label(layout, 18, -81, 20)

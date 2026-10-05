@@ -2,6 +2,7 @@ extends CanvasLayer
 
 signal local_mode_changed(enabled: bool)
 
+var _learning: Label
 var _status: Label
 var _toggle: Button
 var _direction_buttons: Array[Button] = []
@@ -9,6 +10,23 @@ var _local_mode := false
 var _world_size_m := 1024
 
 func _ready() -> void:
+    _learning = Label.new()
+    _learning.name = "NovLearningPanel"
+    _learning.anchor_left = 1.0
+    _learning.anchor_right = 1.0
+    _learning.offset_left = -330
+    _learning.offset_right = -18
+    _learning.offset_top = 104
+    _learning.offset_bottom = 272
+    _learning.add_theme_font_size_override("font_size",16)
+    _learning.add_theme_color_override("font_color",Color.WHITE)
+    var box := StyleBoxFlat.new()
+    box.bg_color = Color(0.02,0.05,0.08,0.78)
+    box.set_content_margin_all(12)
+    box.set_corner_radius_all(8)
+    _learning.add_theme_stylebox_override("normal",box)
+    _learning.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    add_child(_learning)
     _status = Label.new()
     _status.position = Vector2(18, 22)
     _status.add_theme_color_override("font_color", Color.WHITE)
@@ -119,3 +137,26 @@ func update_local(
 
 func _exit_tree() -> void:
     _release_all()
+
+func update_learning(experience: RefCounted, journey: RefCounted) -> void:
+    if _learning==null:return
+    var names := {"working-memory":"RAM","memoria.ia":"Memoria.ia","perception":"percepção"}
+    var source := str(names.get(experience.last_decision_source,"percepção"))
+    var memory: RefCounted = experience.working_memory
+    if OS.has_feature("web"):
+        var qualified := 0
+        for key_value in experience.recalled_routes:
+            if experience.recalled_routes[key_value].has("route_quality"):qualified += 1
+        var data: Dictionary = experience.server_learning_status
+        if not data.is_empty() and Time.get_unix_time_from_system()-float(data.get("observed_at_unix",0.0))<60.0:
+            _learning.text = "NOV • TENTATIVA E ERRO\nSessão do servidor\nChegadas: %d | Interrompidas: %d\nEscolhas: RAM %d / Memoria.ia %d\nMemoria.ia: %d passos (%d com custo)\n%s" % [int(data.get("arrivals",0)),int(data.get("interruptions",0)),int(data.get("causal_ram_steps",0)),int(data.get("causal_memoria_steps",0)),experience.recalled_routes.size(),qualified,str(data.get("result","")).left(60)]
+        else:
+            _learning.text = "NOV • TENTATIVA E ERRO\nAguardando dados do servidor\nDecisão desta prévia: %s\nMemoria.ia: %d passos lembrados\nCom custo observado: %d\nLembrar não garante melhoria" % [source,experience.recalled_routes.size(),qualified]
+    else:
+        var data: Dictionary = journey.status()
+        _learning.text = "NOV • TENTATIVA E ERRO
+Decisão: %s
+RAM: %d | Promovidas: %d
+Chegadas: %d | Interrompidas: %d
+Escolhas: RAM %d / Memoria.ia %d
+%s" % [source,memory.entries.size(),memory.promoted.size(),data.arrivals,data.interruptions,data.causal_ram_steps,data.causal_memoria_steps,data.result]

@@ -12,6 +12,8 @@ var promoted: Dictionary = {}
 var session := Crypto.new().generate_random_bytes(16).hex_encode()
 var storage := "user://nov-navigation-promotions-008ci.json"
 var causal_reuses := 0
+var quality: Dictionary = {}
+var quality_journeys := 0
 
 func _init(path: String = "user://nov-navigation-promotions-008ci.json") -> void:
     storage = path
@@ -19,6 +21,7 @@ func _init(path: String = "user://nov-navigation-promotions-008ci.json") -> void
 func set_context(value: Dictionary) -> void:
     var identity := str(value.get("world_id", ""))
     if identity != world_id:
+        quality.clear()
         entries.clear()
         promoted.clear()
         world_id = identity
@@ -32,6 +35,9 @@ func set_context(value: Dictionary) -> void:
                         for row in rows:
                             if typeof(row) == TYPE_DICTIONARY and typeof(row.get("summary")) == TYPE_DICTIONARY:
                                 promoted[str(row["summary"].get("key", ""))] = row
+                                var summary: Dictionary = row["summary"]
+                                if typeof(summary.get("route_quality"))==TYPE_DICTIONARY and valid_quality(summary["route_quality"]) and typeof(summary.get("to"))==TYPE_ARRAY and summary["to"].size()==2:
+                                    quality[quality_key(str(summary.get("key","")),summary["to"])] = summary["route_quality"].duplicate(true)
         if not identity.is_empty() and not OS.has_feature("web") and not OS.get_cmdline_user_args().has("--offline-tour"):
             save()
     enabled = not identity.is_empty() and str(value.get("observer_entity_id", "")) == "nov" and not OS.has_feature("web") and not OS.get_cmdline_user_args().has("--offline-tour")
@@ -130,3 +136,53 @@ func save() -> void:
     file.close()
     if DirAccess.rename_absolute(storage + ".tmp", storage) != OK:
         push_warning("NOV_WORKING_MEMORY_SAVE_FAILED rename")
+
+func quality_key(address_value: String, next: Array) -> String:
+    return "%s@%d,%d" % [address_value,roundi(float(next[0])*20.0),roundi(float(next[1])*20.0)]
+
+func valid_quality(item: Dictionary) -> bool:
+    if not typeof(item.get("samples")) in [TYPE_FLOAT,TYPE_INT]:return false
+    var count := float(item["samples"])
+    if not is_finite(count) or count<1.0 or count!=floor(count):return false
+    for field in ["remaining_cost_m","reference_cost_m"]:
+        if not typeof(item.get(field)) in [TYPE_FLOAT,TYPE_INT]:return false
+        if not is_finite(float(item[field])) or float(item[field])<0.0:return false
+    return float(item["reference_cost_m"])<=float(item["remaining_cost_m"])
+
+func observed_quality(address_value: String, next: Vector2) -> Dictionary:
+    var item: Dictionary = quality.get(quality_key(address_value,[next.x,next.y]),{})
+    return item if valid_quality(item) else {}
+
+func observe_journey(steps: Array) -> void:
+    if not enabled or steps.is_empty():return
+    var remaining := 0.0
+    for i in range(steps.size()-1,-1,-1):
+        var step: Dictionary = steps[i]
+        remaining += float(step["distance_m"])
+        var identity := quality_key(str(step["address"]),step["to"])
+        var item: Dictionary = quality.get(identity,{"remaining_cost_m":0.0,"reference_cost_m":0.0,"samples":0})
+        var count := int(item.get("samples",0))
+        # Bounded running mean: old observations progressively lose influence.
+        var denominator := mini(count+1,32)
+        item["remaining_cost_m"] = float(item["remaining_cost_m"])+(remaining-float(item["remaining_cost_m"]))/float(denominator)
+        item["samples"] = mini(count+1,32)
+        item["reference_cost_m"] = item["remaining_cost_m"]
+        quality[identity] = item
+    while quality.size()>LIMIT*4:quality.erase(quality.keys()[0])
+    var references: Dictionary = {}
+    for identity in quality:
+        var address_value := str(identity).split("@")[0]
+        references[address_value] = minf(float(references.get(address_value,INF)),float(quality[identity]["remaining_cost_m"]))
+    for identity in quality:
+        quality[identity]["reference_cost_m"] = references[str(identity).split("@")[0]]
+    quality_journeys += 1
+    var changed := false
+    for key_value in promoted:
+        var summary: Dictionary = promoted[key_value]["summary"]
+        var q: Dictionary = quality.get(quality_key(str(key_value),summary["to"]),{})
+        if valid_quality(q):
+            summary["route_quality"] = q.duplicate(true)
+            changed = true
+    if changed:
+        save()
+        promotion_ready.emit()

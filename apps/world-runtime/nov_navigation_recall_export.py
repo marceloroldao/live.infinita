@@ -11,6 +11,7 @@ SCHEMA="live-infinita-nov-navigation-recall/v1"
 PRIVATE=Path("/var/lib/live-infinita/memoria-local/navigation-recall.json")
 PUBLIC=Path("/var/www/live-infinita-godot/navigation-memory/recall.json")
 LIMIT=4096
+PANEL=Path("/opt/live.infinita/.local/share/godot/app_userdata/Live Infinita Showcase/nov-learning-status-008df.json")
 
 def fetch_recent() -> dict:
     key=os.environ.get("MEMORIA_API_KEY","")
@@ -32,7 +33,7 @@ def fetch_recent() -> dict:
             return data
     raise NavigationSyncError("recall_window_raced_after_retry")
 
-def export_once(world: Path=WORLD, private: Path=PRIVATE, public: Path=PUBLIC, fetch=fetch_recent, now=time.time) -> dict:
+def export_once(world: Path=WORLD, private: Path=PRIVATE, public: Path=PUBLIC, fetch=fetch_recent, now=time.time, panel_source: Path=PANEL) -> dict:
     world_id=_world_id(world)
     response=fetch()
     if not isinstance(response,dict) or response.get("semantic_projection") is not False or not isinstance(response.get("items"),list) or len(response["items"])>100:
@@ -85,9 +86,30 @@ def export_once(world: Path=WORLD, private: Path=PRIVATE, public: Path=PUBLIC, f
     result={"schema":SCHEMA,"world_id":world_id,"generated_at_unix":now(),"expires_after_seconds":180,
             "source":"memoria.ia-local-structural-api","coordinate_space":"godot-renderer-xz-metres",
             "world_write_authority":False,"entries":rows}
+    panel=read_learning_status(panel_source,world_id,now())
+    if panel is not None:
+        result["learning_status"]=panel
     if len(_canonical(result))>2_000_000:
         raise NavigationSyncError("recall_export_oversized")
     write_checkpoint(private,result)
     write_checkpoint(public,result)
     os.chmod(public,0o644)
     return {"recovered":recovered,"cached":len(rows),"source":result["source"]}
+
+def read_learning_status(path: Path,world_id: str,now: float) -> dict | None:
+    try:
+        if path.is_symlink() or not path.exists() or path.stat().st_size>12000:
+            return None
+        value=json.loads(path.read_text())
+        if not isinstance(value,dict) or value.get("schema")!="live-infinita-nov-learning-status/v1" or value.get("world_id")!=world_id:
+            return None
+        stamp=value.get("observed_at_unix")
+        if not isinstance(stamp,(float,int)) or isinstance(stamp,bool) or not 0<=now-stamp<=60:
+            return None
+        fields=("arrivals","interruptions","blocked_attempts","completed_steps","causal_ram_steps","causal_memoria_steps")
+        if any(not isinstance(value.get(k),(int,float)) or isinstance(value[k],bool) or not 0<=value[k]<=1e9 or value[k]!=int(value[k]) for k in fields):
+            return None
+        return {**{k:int(value[k]) for k in fields},"observed_at_unix":stamp,"result":str(value.get("result",""))[:120],
+            "source":"native_renderer_journey","world_id":world_id}
+    except (OSError,ValueError,TypeError):
+        return None

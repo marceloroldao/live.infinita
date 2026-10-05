@@ -55,6 +55,7 @@ class RouteQualityLearningTests(unittest.TestCase):
     def test_candidate_scoring_is_production_code_except_quality_and_evidence(self):
         production=(ROOT/"apps/renderer-godot/nov_navigation_experience.gd").read_text()
         expected=production[production.index("func _anticipated_target("):production.index("\n\n# Shortcuts")]
+        expected=expected.replace("_quality_bonus(address,next,1.5)","1.5").replace("_quality_bonus(address,next,2.0)","2.0")
         actual=(ROOT/"tests/nov_trial_error_quality_008de.gd").read_text()
         actual=actual[actual.index("func _anticipated_target("):].rstrip()
         actual=actual.replace("quality_bonus(address,next,1.5)","1.5").replace("quality_bonus(address,next,2.0)","2.0")

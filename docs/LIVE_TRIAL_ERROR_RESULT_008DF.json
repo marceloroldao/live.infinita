@@ -1,0 +1,1244 @@
+{
+  "schema": "live-infinita-navigation-live-learning-benchmark/v1",
+  "scope": "isolated_current_physics_and_actual_learning_with_process_restarted_SQLite_API",
+  "source_commit": "1f87b6b5954a7d68fcfde838f042574e63ebdebc",
+  "production_memory_written": false,
+  "world_write_authority": false,
+  "fixed_delta_seconds": 0.1,
+  "speed_mps": 4.0,
+  "source_hashes": {
+    "nov_navigation_experience.gd": "de70ea53c1c996855d2966b7c0258f6d29c81d791aa3975cfef8468626dc79a4",
+    "nov_navigation_working_memory.gd": "a50759522c72c85fa24183ef07219477b8aaf1a399d990a398bcf3177dd93431",
+    "nov_navigation_episodes.gd": "eebbac8c8cba3558e2a94b956353c20065899ec002943e389dc426077d91e0f2",
+    "nov_navigation_journey.gd": "8c9a638e9f9d82394bb5c57d73ae3ce022815d6208785b97994b9d044945f41d",
+    "nov_observed_route.gd": "929e74c82762e376fa1c4d92fa99f4edd443bc8b1fa4c73c4d48ac80cf53e224",
+    "world_map_local_motion.gd": "b0d4c123ebb42508b7188288bbf27d515d26c45778c620cb813c181a3b33e147",
+    "world_map_traversability.gd": "e5666095a79cf73af9f75f098d4a1a5edba5bce1b8fa392ac36a71a63716e016",
+    "benchmark_godot": "44633cf8e5f00dea519c0ffaef8bac7df79296f7ae0b214e6372b232ce931748",
+    "benchmark_python": "7d741741020597367d181815fc2235a0d6e489688c8f6e4f10c9d3c13f3121f1",
+    "memoria_resolutiva.product_structural": "71de27b125b5ca2e30ab1abc6af83ed02e34e27f8034878d92c87c7825f6fce9",
+    "nov_navigation_promotion_sync": "84787533a2d23dbde3f02812cd3e5bb2ce317d222b3015ab03319df7aad140b9",
+    "nov_navigation_recall_export": "61605f20a8ea3dad1f960e6b39ea4157fb557dc6a9caa9c808246e2b32feace5"
+  },
+  "same_verified_knowledge_in_ram_and_memoria": true,
+  "eligible_shared_entries": 6,
+  "api_acks": 6,
+  "api_recovered": 6,
+  "api_receipts": [
+    {
+      "stored": true,
+      "duplicate": false,
+      "observation_id": "structural-event:fff401c571ca81e7c21840732522204a0891ea92",
+      "association_sync_observations": 0,
+      "association_sync_deferred": true,
+      "semantic_projection": false,
+      "backend": "sqlite"
+    },
+    {
+      "stored": true,
+      "duplicate": false,
+      "observation_id": "structural-event:85a4f938b4d881552a72009920f5aecf0963b1ac",
+      "association_sync_observations": 0,
+      "association_sync_deferred": true,
+      "semantic_projection": false,
+      "backend": "sqlite"
+    },
+    {
+      "stored": true,
+      "duplicate": false,
+      "observation_id": "structural-event:5ffabcceea4787267588ecb1abf77d7439d731b6",
+      "association_sync_observations": 0,
+      "association_sync_deferred": true,
+      "semantic_projection": false,
+      "backend": "sqlite"
+    },
+    {
+      "stored": true,
+      "duplicate": false,
+      "observation_id": "structural-event:2ae870e31211db656a0c64a3c4b80d0a0aca351f",
+      "association_sync_observations": 0,
+      "association_sync_deferred": true,
+      "semantic_projection": false,
+      "backend": "sqlite"
+    },
+    {
+      "stored": true,
+      "duplicate": false,
+      "observation_id": "structural-event:7f95f763dbc31fadd019791fcd620f4a56777b1a",
+      "association_sync_observations": 0,
+      "association_sync_deferred": true,
+      "semantic_projection": false,
+      "backend": "sqlite"
+    },
+    {
+      "stored": true,
+      "duplicate": false,
+      "observation_id": "structural-event:fc25d67efb8decc6a8c58ec1fa59a0d427f546ed",
+      "association_sync_observations": 0,
+      "association_sync_deferred": true,
+      "semantic_projection": false,
+      "backend": "sqlite"
+    }
+  ],
+  "recovered_recall": {
+    "coordinate_space": "godot-renderer-xz-metres",
+    "entries": [
+      {
+        "from": [
+          -100.0,
+          0.0
+        ],
+        "goal": [
+          -94.0,
+          0.0
+        ],
+        "key": "-94,0|-100,0",
+        "kind": "successful_route_step",
+        "observation_id": "structural-event:fff401c571ca81e7c21840732522204a0891ea92",
+        "observed_count": 1,
+        "route_quality": {
+          "reference_cost_m": 21.0323324948549,
+          "remaining_cost_m": 25.0151610895991,
+          "samples": 4
+        },
+        "to": [
+          -101.006561279297,
+          0.161887496709824
+        ]
+      },
+      {
+        "from": [
+          -103.0,
+          0.0
+        ],
+        "goal": [
+          -94.0,
+          0.0
+        ],
+        "key": "-94,0|-103,0",
+        "kind": "successful_route_step",
+        "observation_id": "structural-event:85a4f938b4d881552a72009920f5aecf0963b1ac",
+        "observed_count": 1,
+        "route_quality": {
+          "reference_cost_m": 17.0050846487284,
+          "remaining_cost_m": 17.0050846487284,
+          "samples": 6
+        },
+        "to": [
+          -104.127883911133,
+          -0.545219242572784
+        ]
+      },
+      {
+        "from": [
+          -104.0,
+          1.0
+        ],
+        "goal": [
+          -94.0,
+          0.0
+        ],
+        "key": "-94,0|-104,1",
+        "kind": "successful_route_step",
+        "observation_id": "structural-event:5ffabcceea4787267588ecb1abf77d7439d731b6",
+        "observed_count": 1,
+        "route_quality": {
+          "reference_cost_m": 13.6603828072548,
+          "remaining_cost_m": 13.6603828072548,
+          "samples": 6
+        },
+        "to": [
+          -104.127883911133,
+          2.45478081703186
+        ]
+      },
+      {
+        "from": [
+          -102.0,
+          0.0
+        ],
+        "goal": [
+          -94.0,
+          0.0
+        ],
+        "key": "-94,0|-102,0",
+        "kind": "successful_route_step",
+        "observation_id": "structural-event:2ae870e31211db656a0c64a3c4b80d0a0aca351f",
+        "observed_count": 1,
+        "route_quality": {
+          "reference_cost_m": 18.0406701296568,
+          "remaining_cost_m": 18.0406701296568,
+          "samples": 5
+        },
+        "to": [
+          -102.715621948242,
+          -0.482770949602127
+        ]
+      },
+      {
+        "from": [
+          -104.0,
+          -1.0
+        ],
+        "goal": [
+          -94.0,
+          0.0
+        ],
+        "key": "-94,0|-104,-1",
+        "kind": "successful_route_step",
+        "observation_id": "structural-event:7f95f763dbc31fadd019791fcd620f4a56777b1a",
+        "observed_count": 1,
+        "route_quality": {
+          "reference_cost_m": 15.6603828668594,
+          "remaining_cost_m": 15.6603828668594,
+          "samples": 6
+        },
+        "to": [
+          -104.127883911133,
+          0.454780757427216
+        ]
+      },
+      {
+        "from": [
+          -101.0,
+          0.0
+        ],
+        "goal": [
+          -94.0,
+          0.0
+        ],
+        "key": "-94,0|-101,0",
+        "kind": "successful_route_step",
+        "observation_id": "structural-event:fc25d67efb8decc6a8c58ec1fa59a0d427f546ed",
+        "observed_count": 1,
+        "route_quality": {
+          "reference_cost_m": 23.2561406731606,
+          "remaining_cost_m": 23.2561406731606,
+          "samples": 5
+        },
+        "to": [
+          -100.299453735352,
+          -0.545219421386719
+        ]
+      }
+    ],
+    "expires_after_seconds": 180,
+    "generated_at_unix": 1791178374.834136,
+    "schema": "live-infinita-nov-navigation-recall/v1",
+    "source": "memoria.ia-local-structural-api",
+    "world_id": "navigation-live-learning-008df",
+    "world_write_authority": false
+  },
+  "separate_store_and_recall_processes": true,
+  "fresh_planner_every_evaluation": true,
+  "observed_route_search_enabled": false,
+  "fresh_transient_state_every_training_trial": true,
+  "evaluation_learning_enabled": false,
+  "training_complete_journey_learning_enabled": true,
+  "knowledge_seed": "same_actually_promoted_steps_replayed_in_RAM_and_recovered_from_API",
+  "training_results": [
+    {
+      "causal_memoria_decisions": 0,
+      "collisions": 0,
+      "completed_actions": 41,
+      "decisions": 41,
+      "distance_m": 40.5753124207258,
+      "journey": {
+        "active": false,
+        "arrivals": 1,
+        "blocked_attempts": 0,
+        "causal_memoria_steps": 0,
+        "causal_ram_steps": 0,
+        "completed_steps": 41,
+        "distance_m": 40.5753124207258,
+        "interruptions": 0,
+        "result": "chegou: 40.6 m"
+      },
+      "mode": "without_memory",
+      "promoted_entries": 0,
+      "promotion_counted_ram_reuses": 0,
+      "quality_journeys": 0,
+      "ram_entries": 0,
+      "reached": true,
+      "route_plan_builds": 0,
+      "selected_observation_ids": [],
+      "simulated_seconds": 12.2,
+      "ticks": 122,
+      "trial": 1,
+      "verified_causal_memoria_actions": 0,
+      "verified_causal_ram_actions": 0
+    },
+    {
+      "causal_memoria_decisions": 0,
+      "collisions": 0,
+      "completed_actions": 41,
+      "decisions": 41,
+      "distance_m": 40.5753124207258,
+      "journey": {
+        "active": false,
+        "arrivals": 1,
+        "blocked_attempts": 0,
+        "causal_memoria_steps": 0,
+        "causal_ram_steps": 0,
+        "completed_steps": 41,
+        "distance_m": 40.5753124207258,
+        "interruptions": 0,
+        "result": "chegou: 40.6 m"
+      },
+      "mode": "without_memory",
+      "promoted_entries": 0,
+      "promotion_counted_ram_reuses": 0,
+      "quality_journeys": 0,
+      "ram_entries": 0,
+      "reached": true,
+      "route_plan_builds": 0,
+      "selected_observation_ids": [],
+      "simulated_seconds": 12.2,
+      "ticks": 122,
+      "trial": 2,
+      "verified_causal_memoria_actions": 0,
+      "verified_causal_ram_actions": 0
+    },
+    {
+      "causal_memoria_decisions": 0,
+      "collisions": 0,
+      "completed_actions": 33,
+      "decisions": 33,
+      "distance_m": 32.6669320762157,
+      "journey": {
+        "active": false,
+        "arrivals": 1,
+        "blocked_attempts": 0,
+        "causal_memoria_steps": 0,
+        "causal_ram_steps": 1,
+        "completed_steps": 33,
+        "distance_m": 32.6669320762157,
+        "interruptions": 0,
+        "result": "chegou: 32.7 m"
+      },
+      "mode": "ram_training",
+      "promoted_entries": 0,
+      "promotion_counted_ram_reuses": 1,
+      "quality_journeys": 1,
+      "ram_entries": 26,
+      "reached": true,
+      "route_plan_builds": 0,
+      "selected_observation_ids": [],
+      "simulated_seconds": 9.8,
+      "ticks": 98,
+      "trial": 1,
+      "verified_causal_memoria_actions": 0,
+      "verified_causal_ram_actions": 1
+    },
+    {
+      "causal_memoria_decisions": 0,
+      "collisions": 0,
+      "completed_actions": 27,
+      "decisions": 27,
+      "distance_m": 27.386342830956,
+      "journey": {
+        "active": false,
+        "arrivals": 1,
+        "blocked_attempts": 0,
+        "causal_memoria_steps": 0,
+        "causal_ram_steps": 5,
+        "completed_steps": 27,
+        "distance_m": 27.386342830956,
+        "interruptions": 0,
+        "result": "chegou: 27.4 m"
+      },
+      "mode": "ram_training",
+      "promoted_entries": 0,
+      "promotion_counted_ram_reuses": 5,
+      "quality_journeys": 2,
+      "ram_entries": 27,
+      "reached": true,
+      "route_plan_builds": 0,
+      "selected_observation_ids": [],
+      "simulated_seconds": 8.2,
+      "ticks": 82,
+      "trial": 2,
+      "verified_causal_memoria_actions": 0,
+      "verified_causal_ram_actions": 5
+    },
+    {
+      "causal_memoria_decisions": 0,
+      "collisions": 0,
+      "completed_actions": 28,
+      "decisions": 28,
+      "distance_m": 28.0518312007189,
+      "journey": {
+        "active": false,
+        "arrivals": 1,
+        "blocked_attempts": 0,
+        "causal_memoria_steps": 0,
+        "causal_ram_steps": 7,
+        "completed_steps": 28,
+        "distance_m": 28.0518312007189,
+        "interruptions": 0,
+        "result": "chegou: 28.1 m"
+      },
+      "mode": "ram_training",
+      "promoted_entries": 1,
+      "promotion_counted_ram_reuses": 7,
+      "quality_journeys": 3,
+      "ram_entries": 27,
+      "reached": true,
+      "route_plan_builds": 0,
+      "selected_observation_ids": [],
+      "simulated_seconds": 8.4,
+      "ticks": 84,
+      "trial": 3,
+      "verified_causal_memoria_actions": 0,
+      "verified_causal_ram_actions": 7
+    },
+    {
+      "causal_memoria_decisions": 0,
+      "collisions": 0,
+      "completed_actions": 24,
+      "decisions": 24,
+      "distance_m": 23.9200431257486,
+      "journey": {
+        "active": false,
+        "arrivals": 1,
+        "blocked_attempts": 0,
+        "causal_memoria_steps": 0,
+        "causal_ram_steps": 5,
+        "completed_steps": 24,
+        "distance_m": 23.9200431257486,
+        "interruptions": 0,
+        "result": "chegou: 23.9 m"
+      },
+      "mode": "ram_training",
+      "promoted_entries": 3,
+      "promotion_counted_ram_reuses": 5,
+      "quality_journeys": 4,
+      "ram_entries": 27,
+      "reached": true,
+      "route_plan_builds": 0,
+      "selected_observation_ids": [],
+      "simulated_seconds": 7.2,
+      "ticks": 72,
+      "trial": 4,
+      "verified_causal_memoria_actions": 0,
+      "verified_causal_ram_actions": 5
+    },
+    {
+      "causal_memoria_decisions": 0,
+      "collisions": 0,
+      "completed_actions": 24,
+      "decisions": 24,
+      "distance_m": 23.9200431257486,
+      "journey": {
+        "active": false,
+        "arrivals": 1,
+        "blocked_attempts": 0,
+        "causal_memoria_steps": 0,
+        "causal_ram_steps": 5,
+        "completed_steps": 24,
+        "distance_m": 23.9200431257486,
+        "interruptions": 0,
+        "result": "chegou: 23.9 m"
+      },
+      "mode": "ram_training",
+      "promoted_entries": 5,
+      "promotion_counted_ram_reuses": 3,
+      "quality_journeys": 5,
+      "ram_entries": 27,
+      "reached": true,
+      "route_plan_builds": 0,
+      "selected_observation_ids": [],
+      "simulated_seconds": 7.2,
+      "ticks": 72,
+      "trial": 5,
+      "verified_causal_memoria_actions": 0,
+      "verified_causal_ram_actions": 5
+    },
+    {
+      "causal_memoria_decisions": 0,
+      "collisions": 0,
+      "completed_actions": 24,
+      "decisions": 24,
+      "distance_m": 23.9200431257486,
+      "journey": {
+        "active": false,
+        "arrivals": 1,
+        "blocked_attempts": 0,
+        "causal_memoria_steps": 0,
+        "causal_ram_steps": 5,
+        "completed_steps": 24,
+        "distance_m": 23.9200431257486,
+        "interruptions": 0,
+        "result": "chegou: 23.9 m"
+      },
+      "mode": "ram_training",
+      "promoted_entries": 6,
+      "promotion_counted_ram_reuses": 1,
+      "quality_journeys": 6,
+      "ram_entries": 27,
+      "reached": true,
+      "route_plan_builds": 0,
+      "selected_observation_ids": [],
+      "simulated_seconds": 7.2,
+      "ticks": 72,
+      "trial": 6,
+      "verified_causal_memoria_actions": 0,
+      "verified_causal_ram_actions": 5
+    }
+  ],
+  "promotion_evidence": {
+    "entries": [
+      {
+        "decision_ids": [
+          "c4960de64a43aee98a645a96cb202ef3:39",
+          "c4960de64a43aee98a645a96cb202ef3:61",
+          "c4960de64a43aee98a645a96cb202ef3:65"
+        ],
+        "promoted_at_unix": 1791178371.14204,
+        "successful_causal_reuses": 3,
+        "summary": {
+          "from": [
+            -100.0,
+            0.0
+          ],
+          "goal": [
+            -94.0,
+            0.0
+          ],
+          "key": "-94,0|-100,0",
+          "kind": "successful_route_step",
+          "observed_count": 1,
+          "route_quality": {
+            "reference_cost_m": 21.0323324948549,
+            "remaining_cost_m": 25.0151610895991,
+            "samples": 4
+          },
+          "to": [
+            -101.006561279297,
+            0.161887496709824
+          ]
+        }
+      },
+      {
+        "decision_ids": [
+          "c4960de64a43aee98a645a96cb202ef3:44",
+          "c4960de64a43aee98a645a96cb202ef3:72",
+          "c4960de64a43aee98a645a96cb202ef3:96"
+        ],
+        "promoted_at_unix": 1791178371.42076,
+        "successful_causal_reuses": 3,
+        "summary": {
+          "from": [
+            -103.0,
+            0.0
+          ],
+          "goal": [
+            -94.0,
+            0.0
+          ],
+          "key": "-94,0|-103,0",
+          "kind": "successful_route_step",
+          "observed_count": 1,
+          "route_quality": {
+            "reference_cost_m": 17.0050846487284,
+            "remaining_cost_m": 17.0050846487284,
+            "samples": 6
+          },
+          "to": [
+            -104.127883911133,
+            -0.545219242572784
+          ]
+        }
+      },
+      {
+        "decision_ids": [
+          "c4960de64a43aee98a645a96cb202ef3:47",
+          "c4960de64a43aee98a645a96cb202ef3:75",
+          "c4960de64a43aee98a645a96cb202ef3:99"
+        ],
+        "promoted_at_unix": 1791178371.44841,
+        "successful_causal_reuses": 3,
+        "summary": {
+          "from": [
+            -104.0,
+            1.0
+          ],
+          "goal": [
+            -94.0,
+            0.0
+          ],
+          "key": "-94,0|-104,1",
+          "kind": "successful_route_step",
+          "observed_count": 1,
+          "route_quality": {
+            "reference_cost_m": 13.6603828072548,
+            "remaining_cost_m": 13.6603828072548,
+            "samples": 6
+          },
+          "to": [
+            -104.127883911133,
+            2.45478081703186
+          ]
+        }
+      },
+      {
+        "decision_ids": [
+          "c4960de64a43aee98a645a96cb202ef3:71",
+          "c4960de64a43aee98a645a96cb202ef3:95",
+          "c4960de64a43aee98a645a96cb202ef3:119"
+        ],
+        "promoted_at_unix": 1791178371.58419,
+        "successful_causal_reuses": 3,
+        "summary": {
+          "from": [
+            -102.0,
+            0.0
+          ],
+          "goal": [
+            -94.0,
+            0.0
+          ],
+          "key": "-94,0|-102,0",
+          "kind": "successful_route_step",
+          "observed_count": 1,
+          "route_quality": {
+            "reference_cost_m": 18.0406701296568,
+            "remaining_cost_m": 18.0406701296568,
+            "samples": 5
+          },
+          "to": [
+            -102.715621948242,
+            -0.482770949602127
+          ]
+        }
+      },
+      {
+        "decision_ids": [
+          "c4960de64a43aee98a645a96cb202ef3:73",
+          "c4960de64a43aee98a645a96cb202ef3:97",
+          "c4960de64a43aee98a645a96cb202ef3:121"
+        ],
+        "promoted_at_unix": 1791178371.59563,
+        "successful_causal_reuses": 3,
+        "summary": {
+          "from": [
+            -104.0,
+            -1.0
+          ],
+          "goal": [
+            -94.0,
+            0.0
+          ],
+          "key": "-94,0|-104,-1",
+          "kind": "successful_route_step",
+          "observed_count": 1,
+          "route_quality": {
+            "reference_cost_m": 15.6603828668594,
+            "remaining_cost_m": 15.6603828668594,
+            "samples": 6
+          },
+          "to": [
+            -104.127883911133,
+            0.454780757427216
+          ]
+        }
+      },
+      {
+        "decision_ids": [
+          "c4960de64a43aee98a645a96cb202ef3:90",
+          "c4960de64a43aee98a645a96cb202ef3:114",
+          "c4960de64a43aee98a645a96cb202ef3:138"
+        ],
+        "promoted_at_unix": 1791178371.67087,
+        "successful_causal_reuses": 3,
+        "summary": {
+          "from": [
+            -101.0,
+            0.0
+          ],
+          "goal": [
+            -94.0,
+            0.0
+          ],
+          "key": "-94,0|-101,0",
+          "kind": "successful_route_step",
+          "observed_count": 1,
+          "route_quality": {
+            "reference_cost_m": 23.2561406731606,
+            "remaining_cost_m": 23.2561406731606,
+            "samples": 5
+          },
+          "to": [
+            -100.299453735352,
+            -0.545219421386719
+          ]
+        }
+      }
+    ],
+    "schema": "live-infinita-nov-navigation-promotions/v1",
+    "source": "native_renderer_working_memory",
+    "world_id": "navigation-live-learning-008df",
+    "world_write_authority": false
+  },
+  "evaluation_results": [
+    {
+      "collisions": 0,
+      "completed_actions": 41,
+      "distance_m": 40.5753124207258,
+      "loaded_knowledge": 0,
+      "mode": "without_memory",
+      "moving_seconds": 12.2,
+      "planning_ticks": 0,
+      "reached": true,
+      "remaining_goal_m": 7.45058059692383e-09,
+      "revisited_end_cells": 14,
+      "route_plan_builds": 0,
+      "selected_observation_ids": [],
+      "trial": 1,
+      "variant": "unchanged_U",
+      "verified_causal_memoria_actions": 0,
+      "verified_causal_ram_actions": 0
+    },
+    {
+      "collisions": 0,
+      "completed_actions": 41,
+      "distance_m": 40.5753124207258,
+      "loaded_knowledge": 0,
+      "mode": "without_memory",
+      "moving_seconds": 12.2,
+      "planning_ticks": 0,
+      "reached": true,
+      "remaining_goal_m": 7.45058059692383e-09,
+      "revisited_end_cells": 14,
+      "route_plan_builds": 0,
+      "selected_observation_ids": [],
+      "trial": 2,
+      "variant": "unchanged_U",
+      "verified_causal_memoria_actions": 0,
+      "verified_causal_ram_actions": 0
+    },
+    {
+      "collisions": 0,
+      "completed_actions": 24,
+      "distance_m": 23.9200431257486,
+      "loaded_knowledge": 6,
+      "mode": "with_trained_ram",
+      "moving_seconds": 7.2,
+      "planning_ticks": 0,
+      "reached": true,
+      "remaining_goal_m": 0.0,
+      "revisited_end_cells": 3,
+      "route_plan_builds": 0,
+      "selected_observation_ids": [],
+      "trial": 1,
+      "variant": "unchanged_U",
+      "verified_causal_memoria_actions": 0,
+      "verified_causal_ram_actions": 5
+    },
+    {
+      "collisions": 0,
+      "completed_actions": 24,
+      "distance_m": 23.9200431257486,
+      "loaded_knowledge": 6,
+      "mode": "with_trained_ram",
+      "moving_seconds": 7.2,
+      "planning_ticks": 0,
+      "reached": true,
+      "remaining_goal_m": 0.0,
+      "revisited_end_cells": 3,
+      "route_plan_builds": 0,
+      "selected_observation_ids": [],
+      "trial": 2,
+      "variant": "unchanged_U",
+      "verified_causal_memoria_actions": 0,
+      "verified_causal_ram_actions": 5
+    },
+    {
+      "collisions": 0,
+      "completed_actions": 24,
+      "distance_m": 23.9200431257486,
+      "loaded_knowledge": 6,
+      "mode": "after_restart_memoria",
+      "moving_seconds": 7.2,
+      "planning_ticks": 0,
+      "reached": true,
+      "remaining_goal_m": 0.0,
+      "revisited_end_cells": 3,
+      "route_plan_builds": 0,
+      "selected_observation_ids": [
+        "structural-event:fc25d67efb8decc6a8c58ec1fa59a0d427f546ed",
+        "structural-event:2ae870e31211db656a0c64a3c4b80d0a0aca351f",
+        "structural-event:85a4f938b4d881552a72009920f5aecf0963b1ac",
+        "structural-event:7f95f763dbc31fadd019791fcd620f4a56777b1a",
+        "structural-event:5ffabcceea4787267588ecb1abf77d7439d731b6"
+      ],
+      "trial": 1,
+      "variant": "unchanged_U",
+      "verified_causal_memoria_actions": 5,
+      "verified_causal_ram_actions": 0
+    },
+    {
+      "collisions": 0,
+      "completed_actions": 24,
+      "distance_m": 23.9200431257486,
+      "loaded_knowledge": 6,
+      "mode": "after_restart_memoria",
+      "moving_seconds": 7.2,
+      "planning_ticks": 0,
+      "reached": true,
+      "remaining_goal_m": 0.0,
+      "revisited_end_cells": 3,
+      "route_plan_builds": 0,
+      "selected_observation_ids": [
+        "structural-event:fc25d67efb8decc6a8c58ec1fa59a0d427f546ed",
+        "structural-event:2ae870e31211db656a0c64a3c4b80d0a0aca351f",
+        "structural-event:85a4f938b4d881552a72009920f5aecf0963b1ac",
+        "structural-event:7f95f763dbc31fadd019791fcd620f4a56777b1a",
+        "structural-event:5ffabcceea4787267588ecb1abf77d7439d731b6"
+      ],
+      "trial": 2,
+      "variant": "unchanged_U",
+      "verified_causal_memoria_actions": 5,
+      "verified_causal_ram_actions": 0
+    },
+    {
+      "collisions": 0,
+      "completed_actions": 6,
+      "distance_m": 6.0,
+      "loaded_knowledge": 0,
+      "mode": "without_memory",
+      "moving_seconds": 1.8,
+      "planning_ticks": 0,
+      "reached": true,
+      "remaining_goal_m": 0.0,
+      "revisited_end_cells": 0,
+      "route_plan_builds": 0,
+      "selected_observation_ids": [],
+      "trial": 1,
+      "variant": "opened_U",
+      "verified_causal_memoria_actions": 0,
+      "verified_causal_ram_actions": 0
+    },
+    {
+      "collisions": 0,
+      "completed_actions": 6,
+      "distance_m": 6.0,
+      "loaded_knowledge": 0,
+      "mode": "without_memory",
+      "moving_seconds": 1.8,
+      "planning_ticks": 0,
+      "reached": true,
+      "remaining_goal_m": 0.0,
+      "revisited_end_cells": 0,
+      "route_plan_builds": 0,
+      "selected_observation_ids": [],
+      "trial": 2,
+      "variant": "opened_U",
+      "verified_causal_memoria_actions": 0,
+      "verified_causal_ram_actions": 0
+    },
+    {
+      "collisions": 0,
+      "completed_actions": 6,
+      "distance_m": 6.0,
+      "loaded_knowledge": 6,
+      "mode": "with_trained_ram",
+      "moving_seconds": 1.8,
+      "planning_ticks": 0,
+      "reached": true,
+      "remaining_goal_m": 0.0,
+      "revisited_end_cells": 0,
+      "route_plan_builds": 0,
+      "selected_observation_ids": [],
+      "trial": 1,
+      "variant": "opened_U",
+      "verified_causal_memoria_actions": 0,
+      "verified_causal_ram_actions": 0
+    },
+    {
+      "collisions": 0,
+      "completed_actions": 6,
+      "distance_m": 6.0,
+      "loaded_knowledge": 6,
+      "mode": "with_trained_ram",
+      "moving_seconds": 1.8,
+      "planning_ticks": 0,
+      "reached": true,
+      "remaining_goal_m": 0.0,
+      "revisited_end_cells": 0,
+      "route_plan_builds": 0,
+      "selected_observation_ids": [],
+      "trial": 2,
+      "variant": "opened_U",
+      "verified_causal_memoria_actions": 0,
+      "verified_causal_ram_actions": 0
+    },
+    {
+      "collisions": 0,
+      "completed_actions": 6,
+      "distance_m": 6.0,
+      "loaded_knowledge": 6,
+      "mode": "after_restart_memoria",
+      "moving_seconds": 1.8,
+      "planning_ticks": 0,
+      "reached": true,
+      "remaining_goal_m": 0.0,
+      "revisited_end_cells": 0,
+      "route_plan_builds": 0,
+      "selected_observation_ids": [],
+      "trial": 1,
+      "variant": "opened_U",
+      "verified_causal_memoria_actions": 0,
+      "verified_causal_ram_actions": 0
+    },
+    {
+      "collisions": 0,
+      "completed_actions": 6,
+      "distance_m": 6.0,
+      "loaded_knowledge": 6,
+      "mode": "after_restart_memoria",
+      "moving_seconds": 1.8,
+      "planning_ticks": 0,
+      "reached": true,
+      "remaining_goal_m": 0.0,
+      "revisited_end_cells": 0,
+      "route_plan_builds": 0,
+      "selected_observation_ids": [],
+      "trial": 2,
+      "variant": "opened_U",
+      "verified_causal_memoria_actions": 0,
+      "verified_causal_ram_actions": 0
+    },
+    {
+      "collisions": 0,
+      "completed_actions": 59,
+      "distance_m": 58.5927027910948,
+      "loaded_knowledge": 0,
+      "mode": "without_memory",
+      "moving_seconds": 17.6,
+      "planning_ticks": 0,
+      "reached": true,
+      "remaining_goal_m": 0.0,
+      "revisited_end_cells": 15,
+      "route_plan_builds": 0,
+      "selected_observation_ids": [],
+      "trial": 1,
+      "variant": "remembered_step_blocked",
+      "verified_causal_memoria_actions": 0,
+      "verified_causal_ram_actions": 0
+    },
+    {
+      "collisions": 0,
+      "completed_actions": 59,
+      "distance_m": 58.5927027910948,
+      "loaded_knowledge": 0,
+      "mode": "without_memory",
+      "moving_seconds": 17.6,
+      "planning_ticks": 0,
+      "reached": true,
+      "remaining_goal_m": 0.0,
+      "revisited_end_cells": 15,
+      "route_plan_builds": 0,
+      "selected_observation_ids": [],
+      "trial": 2,
+      "variant": "remembered_step_blocked",
+      "verified_causal_memoria_actions": 0,
+      "verified_causal_ram_actions": 0
+    },
+    {
+      "collisions": 0,
+      "completed_actions": 31,
+      "distance_m": 30.7958537936211,
+      "loaded_knowledge": 6,
+      "mode": "with_trained_ram",
+      "moving_seconds": 9.2,
+      "planning_ticks": 0,
+      "reached": true,
+      "remaining_goal_m": 0.0,
+      "revisited_end_cells": 4,
+      "route_plan_builds": 0,
+      "selected_observation_ids": [],
+      "trial": 1,
+      "variant": "remembered_step_blocked",
+      "verified_causal_memoria_actions": 0,
+      "verified_causal_ram_actions": 3
+    },
+    {
+      "collisions": 0,
+      "completed_actions": 31,
+      "distance_m": 30.7958537936211,
+      "loaded_knowledge": 6,
+      "mode": "with_trained_ram",
+      "moving_seconds": 9.2,
+      "planning_ticks": 0,
+      "reached": true,
+      "remaining_goal_m": 0.0,
+      "revisited_end_cells": 4,
+      "route_plan_builds": 0,
+      "selected_observation_ids": [],
+      "trial": 2,
+      "variant": "remembered_step_blocked",
+      "verified_causal_memoria_actions": 0,
+      "verified_causal_ram_actions": 3
+    },
+    {
+      "collisions": 0,
+      "completed_actions": 31,
+      "distance_m": 30.7958537936211,
+      "loaded_knowledge": 6,
+      "mode": "after_restart_memoria",
+      "moving_seconds": 9.2,
+      "planning_ticks": 0,
+      "reached": true,
+      "remaining_goal_m": 0.0,
+      "revisited_end_cells": 4,
+      "route_plan_builds": 0,
+      "selected_observation_ids": [
+        "structural-event:85a4f938b4d881552a72009920f5aecf0963b1ac",
+        "structural-event:7f95f763dbc31fadd019791fcd620f4a56777b1a",
+        "structural-event:5ffabcceea4787267588ecb1abf77d7439d731b6"
+      ],
+      "trial": 1,
+      "variant": "remembered_step_blocked",
+      "verified_causal_memoria_actions": 3,
+      "verified_causal_ram_actions": 0
+    },
+    {
+      "collisions": 0,
+      "completed_actions": 31,
+      "distance_m": 30.7958537936211,
+      "loaded_knowledge": 6,
+      "mode": "after_restart_memoria",
+      "moving_seconds": 9.2,
+      "planning_ticks": 0,
+      "reached": true,
+      "remaining_goal_m": 0.0,
+      "revisited_end_cells": 4,
+      "route_plan_builds": 0,
+      "selected_observation_ids": [
+        "structural-event:85a4f938b4d881552a72009920f5aecf0963b1ac",
+        "structural-event:7f95f763dbc31fadd019791fcd620f4a56777b1a",
+        "structural-event:5ffabcceea4787267588ecb1abf77d7439d731b6"
+      ],
+      "trial": 2,
+      "variant": "remembered_step_blocked",
+      "verified_causal_memoria_actions": 3,
+      "verified_causal_ram_actions": 0
+    }
+  ],
+  "comparisons": [
+    {
+      "variant": "unchanged_U",
+      "mode": "without_memory",
+      "distance_m": 40.5753124207258,
+      "difference_from_no_memory_m": 0.0,
+      "moving_seconds": 12.2,
+      "causal_ram_actions": 0,
+      "causal_memoria_actions": 0,
+      "revisited_end_cells": 14.0,
+      "arrivals": 2,
+      "trials": 2
+    },
+    {
+      "variant": "unchanged_U",
+      "mode": "with_trained_ram",
+      "distance_m": 23.9200431257486,
+      "difference_from_no_memory_m": -16.655269294977202,
+      "moving_seconds": 7.2,
+      "causal_ram_actions": 10,
+      "causal_memoria_actions": 0,
+      "revisited_end_cells": 3.0,
+      "arrivals": 2,
+      "trials": 2
+    },
+    {
+      "variant": "unchanged_U",
+      "mode": "after_restart_memoria",
+      "distance_m": 23.9200431257486,
+      "difference_from_no_memory_m": -16.655269294977202,
+      "moving_seconds": 7.2,
+      "causal_ram_actions": 0,
+      "causal_memoria_actions": 10,
+      "revisited_end_cells": 3.0,
+      "arrivals": 2,
+      "trials": 2
+    },
+    {
+      "variant": "opened_U",
+      "mode": "without_memory",
+      "distance_m": 6.0,
+      "difference_from_no_memory_m": 0.0,
+      "moving_seconds": 1.8,
+      "causal_ram_actions": 0,
+      "causal_memoria_actions": 0,
+      "revisited_end_cells": 0.0,
+      "arrivals": 2,
+      "trials": 2
+    },
+    {
+      "variant": "opened_U",
+      "mode": "with_trained_ram",
+      "distance_m": 6.0,
+      "difference_from_no_memory_m": 0.0,
+      "moving_seconds": 1.8,
+      "causal_ram_actions": 0,
+      "causal_memoria_actions": 0,
+      "revisited_end_cells": 0.0,
+      "arrivals": 2,
+      "trials": 2
+    },
+    {
+      "variant": "opened_U",
+      "mode": "after_restart_memoria",
+      "distance_m": 6.0,
+      "difference_from_no_memory_m": 0.0,
+      "moving_seconds": 1.8,
+      "causal_ram_actions": 0,
+      "causal_memoria_actions": 0,
+      "revisited_end_cells": 0.0,
+      "arrivals": 2,
+      "trials": 2
+    },
+    {
+      "variant": "remembered_step_blocked",
+      "mode": "without_memory",
+      "distance_m": 58.5927027910948,
+      "difference_from_no_memory_m": 0.0,
+      "moving_seconds": 17.6,
+      "causal_ram_actions": 0,
+      "causal_memoria_actions": 0,
+      "revisited_end_cells": 15.0,
+      "arrivals": 2,
+      "trials": 2
+    },
+    {
+      "variant": "remembered_step_blocked",
+      "mode": "with_trained_ram",
+      "distance_m": 30.7958537936211,
+      "difference_from_no_memory_m": -27.796848997473703,
+      "moving_seconds": 9.2,
+      "causal_ram_actions": 6,
+      "causal_memoria_actions": 0,
+      "revisited_end_cells": 4.0,
+      "arrivals": 2,
+      "trials": 2
+    },
+    {
+      "variant": "remembered_step_blocked",
+      "mode": "after_restart_memoria",
+      "distance_m": 30.7958537936211,
+      "difference_from_no_memory_m": -27.796848997473703,
+      "moving_seconds": 9.2,
+      "causal_ram_actions": 0,
+      "causal_memoria_actions": 6,
+      "revisited_end_cells": 4.0,
+      "arrivals": 2,
+      "trials": 2
+    }
+  ],
+  "validation_passed": true,
+  "limitations": [
+    "Synthetic U obstacle and flat terrain; not a controlled live measurement.",
+    "Transient navigation state is reset between training trials; only learned RAM and its evidence persist.",
+    "RAM recommendation at promotion is reconstructed from verified actions; latest evolving RAM can differ.",
+    "Changed obstacles are finite test cases, not proof of universal generalization.",
+    "Movement time uses fixed simulation ticks; planning ticks depend on CPU slicing and are reported separately."
+  ],
+  "full_evidence_archive": "LIVE_TRIAL_ERROR_EVIDENCE_008DF.json.gz",
+  "full_evidence_uncompressed_sha256": "647e5466db9a019365f930e0db5dfac3954d00d2b4a183db699cf5a1dc224a88",
+  "godot_checks": [
+    {
+      "test": "godot_world_map_traversal_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nov_locomotion_008bz_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nov_grounded_presentation_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_live_program_008cb_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_ground_surface_008cc_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_experience_008cd_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_camera_stabilization_008cf_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_anticipation_008cg_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_episodes_008ch_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_working_memory_008ci_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nature_residency_008ck_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_route_goal_008cn_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_ground_continuity_008co_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_goal_quality_008cs_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_observed_crossing_008ct_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_consistency_008cu_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nature_collision_008cv_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_camera_contact_008cw_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_frontier_routes_008cx_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_route_shortcuts_008cy_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_goal_approach_008da_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_changing_routes_008db_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_live_learning_008df_smoke.gd",
+      "passed": true
+    }
+  ],
+  "python_checks_passed": 104
+}

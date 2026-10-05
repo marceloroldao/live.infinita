@@ -849,6 +849,8 @@ func _follow_camera(snap_body: bool = true, delta: float = 1.0 / 60.0, reset_cam
     _camera.position = camera_position
     _camera.look_at(target, Vector3.UP)
 func _update_caption() -> void:
+    if _hud!=null and _local_motion!=null:
+        _hud.update_learning(_local_motion._experience,_local_motion._journey)
     var cx := _cell(_position.x)
     var cz := _cell(_position.z)
     if _live_authoritative and not _local_explore_enabled:
@@ -875,6 +877,8 @@ func _advance_live_walk(delta: float) -> void:
         _local_motion._experience.active = false
         _local_motion._experience.reset_route_plan()
     _local_motion.route_goal_id = _route_goal.identity()
+    _local_motion._experience.trial_error_enabled = true
+    _local_motion.commit_journey(_local_motion.route_goal_id,committed_target,_position)
     var previous := _position
     var current_flat := Vector2(_position.x, _position.z)
     var target_flat := Vector2(committed_target.x, committed_target.z)
