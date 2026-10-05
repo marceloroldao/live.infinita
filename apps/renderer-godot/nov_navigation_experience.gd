@@ -27,6 +27,9 @@ var working_memory = preload("res://nov_navigation_working_memory.gd").new()
 var _observed_route: Array[Vector2] = []
 var _route_search = preload("res://nov_observed_route.gd").new()
 var route_plan_builds := 0
+var explored_cells: Dictionary = {}
+var _exploration_heading := Vector2.ZERO
+var _exploration_returning := false
 var _route_search_origin := Vector2(INF, INF)
 var _route_search_at := -10000
 var working_memory_key := ""
@@ -44,6 +47,9 @@ func _init(path: String = "user://nov-navigation-008cd.cfg") -> void:
             failures.clear()
 
 func reset_route_plan() -> void:
+    explored_cells.clear()
+    _exploration_heading = Vector2.ZERO
+    _exploration_returning = false
     _observed_route.clear()
     _route_search.cancel()
     _route_search_origin = Vector2(INF,INF)
@@ -72,7 +78,13 @@ func target(current: Vector2, goal: Vector2, probe: Callable = Callable(), route
         _observed_route.clear()
         _route_search.cancel()
         _route_search_origin = Vector2(INF,INF)
+        explored_cells.clear()
+        _exploration_heading = Vector2.ZERO
+        _exploration_returning = false
         last_goal = goal
+    explored_cells[_route_search.coverage_key(current)] = true
+    while explored_cells.size()>LIMIT:
+        explored_cells.erase(explored_cells.keys()[0])
     if active:
         return pending
     decision_serial += 1
@@ -210,12 +222,12 @@ func _anticipated_target(current: Vector2, goal: Vector2, probe: Callable, route
     if _observed_route.is_empty() and route_probe.is_valid():
         var front: Dictionary = probe.call(direct)
         var retry := current.distance_to(_route_search_origin)>=12.0 or Time.get_ticks_msec()-_route_search_at>=5000
-        if _route_search.running or (retry and not bool(front.get("clear_ahead", false))):
+        if _route_search.running or (retry and (not bool(front.get("clear_ahead", false)) or _exploration_heading.length_squared()>0.1)):
             if not _route_search.running:
                 _route_search_origin = current
                 _route_search_at = Time.get_ticks_msec()
                 route_plan_builds += 1
-            _observed_route = _route_search.advance(current, goal, route_probe)
+            _observed_route = _route_search.advance(current, goal, route_probe, explored_cells, _exploration_heading, _exploration_returning)
             if _route_search.running:
                 pending = current
                 active = false
@@ -225,7 +237,10 @@ func _anticipated_target(current: Vector2, goal: Vector2, probe: Callable, route
                     "candidates": [{"point": [current.x,current.y], "allowed": true,
                         "clear_ahead": false, "reason": "route_search_in_progress"}]}
                 return current
-            print("NOV_OBSERVED_ROUTE nodes=%d probes=%d elapsed_ms=%d max_slice_ms=%d" % [_observed_route.size(), _route_search.sampled_edges, _route_search.elapsed_ms, _route_search.max_slice_ms])
+            if _route_search.mode.begins_with("frontier") and not _observed_route.is_empty():
+                _exploration_heading = (_observed_route[-1]-current).normalized()
+                _exploration_returning = _route_search.mode=="frontier-return"
+            print("NOV_OBSERVED_ROUTE mode=%s nodes=%d probes=%d elapsed_ms=%d max_slice_ms=%d" % [_route_search.mode, _observed_route.size(), _route_search.sampled_edges, _route_search.elapsed_ms, _route_search.max_slice_ms])
     if not _observed_route.is_empty():
         var next := current.move_toward(_observed_route[0], CELL_M)
         var sensed: Dictionary = probe.call(next)
@@ -234,7 +249,7 @@ func _anticipated_target(current: Vector2, goal: Vector2, probe: Callable, route
             active = true
             last_decision_source = "perception"
             last_observation_id = ""
-            decision_evidence = {"lookahead_m": 3.0, "observed_route_range_m": 32.0,
+            decision_evidence = {"lookahead_m": 3.0, "observed_route_range_m": 32.0, "observed_route_mode": _route_search.mode,
                 "without_memoria": [next.x,next.y],
                 "candidates": [{"point": [next.x,next.y], "allowed": true,
                     "clear_ahead": bool(sensed.get("clear_ahead", false)),

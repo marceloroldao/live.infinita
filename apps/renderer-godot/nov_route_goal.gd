@@ -2,6 +2,9 @@ extends RefCounted
 # Commit to an observed feed destination locally. No authoritative world writes.
 const MAX_SECONDS := 180.0
 const REACHED_M := 0.1
+const HARD_LIMIT_SECONDS := 900.0
+var total_elapsed := 0.0
+var _seen_cells: Dictionary = {}
 var active := false
 var goal := Vector3.ZERO
 var world_id := ""
@@ -18,6 +21,8 @@ var _rejected_at := -10000
 func reset() -> void:
     active = false
     elapsed = 0.0
+    total_elapsed = 0.0
+    _seen_cells.clear()
     _rejected_latest = Vector3(INF,INF,INF)
 
 func identity() -> String:
@@ -29,12 +34,19 @@ func choose(current: Vector3, latest: Vector3, delta: float, world: String, reso
         world_id = world
     if active:
         elapsed += clampf(delta, 0.0, 0.1)
+        total_elapsed += clampf(delta,0.0,0.1)
+        var cell := Vector2i(floori(current.x/8.0),floori(current.z/8.0))
+        if not _seen_cells.has(cell):
+            _seen_cells[cell] = true
+            elapsed = 0.0
+        while _seen_cells.size()>4096:
+            _seen_cells.erase(_seen_cells.keys()[0])
         if Vector2(current.x, current.z).distance_to(Vector2(goal.x, goal.z)) < REACHED_M:
             completed += 1
             reset()
-        elif elapsed >= MAX_SECONDS:
+        elif elapsed >= MAX_SECONDS or total_elapsed>=HARD_LIMIT_SECONDS:
             expired += 1
-            print("NOV_ROUTE_REASSESS route=%s elapsed=%.1f" % [identity(), elapsed])
+            print("NOV_ROUTE_REASSESS route=%s idle=%.1f total=%.1f" % [identity(), elapsed,total_elapsed])
             reset()
     if not active and current.is_finite() and latest.is_finite():
         if Vector2(current.x, current.z).distance_to(Vector2(latest.x, latest.z)) < REACHED_M:
@@ -57,6 +69,7 @@ func choose(current: Vector3, latest: Vector3, delta: float, world: String, reso
         goal = destination
         if Vector2(current.x,current.z).distance_to(Vector2(goal.x,goal.z))<REACHED_M:
             return current
+        _seen_cells[Vector2i(floori(current.x/8.0),floori(current.z/8.0))] = true
         active = true
         serial += 1
         print("NOV_ROUTE_COMMIT route=%s goal=(%.1f,%.1f)" % [identity(), goal.x, goal.z])

@@ -11,6 +11,17 @@ var sampled_edges := 0
 var elapsed_ms := 0
 var max_slice_ms := 0
 var running := false
+const COVERAGE_CELL_M := 8.0
+var mode := "progress"
+var _coverage: Dictionary = {}
+var _heading := Vector2.ZERO
+var _frontier := Vector2i.ZERO
+var _frontier_score := INF
+var _ahead := Vector2i.ZERO
+var _reverse := Vector2i.ZERO
+var _ahead_score := INF
+var _reverse_score := INF
+var _returning := false
 var _origin := Vector2.ZERO
 var _goal := Vector2.ZERO
 var _queue: Array[Vector2i] = []
@@ -24,10 +35,20 @@ func cancel() -> void:
     _queue.clear()
     _parents.clear()
 
-func advance(current: Vector2, goal: Vector2, probe: Callable) -> Array[Vector2]:
+func advance(current: Vector2, goal: Vector2, probe: Callable, coverage: Dictionary = {}, heading: Vector2 = Vector2.ZERO, returning: bool = false) -> Array[Vector2]:
     var result: Array[Vector2] = []
     if not probe.is_valid(): return result
     if not running:
+        _coverage = coverage
+        _heading = heading
+        _returning = returning
+        _ahead = Vector2i.ZERO
+        _reverse = Vector2i.ZERO
+        _ahead_score = INF
+        _reverse_score = INF
+        _frontier = Vector2i.ZERO
+        _frontier_score = INF
+        mode = "progress"
         _origin = current
         _goal = goal
         _queue = [Vector2i.ZERO]
@@ -56,6 +77,25 @@ func advance(current: Vector2, goal: Vector2, probe: Callable) -> Array[Vector2]
             if not bool(probe.call(start,point)): continue
             _parents[next] = cell
             _queue.append(next)
+            var boundary := absi(next.x)==EXTENT or absi(next.y)==EXTENT
+            var direction_to_edge := (point-_origin).normalized()
+            if boundary and _heading.length_squared()>0.1:
+                var alignment := direction_to_edge.dot(_heading)
+                if alignment>0.9:
+                    var score := -alignment*1000.0+point.distance_to(_goal)*0.01
+                    if score<_ahead_score:
+                        _ahead = next
+                        _ahead_score = score
+                if alignment< -0.9:
+                    var score := alignment*1000.0+point.distance_to(_goal)*0.01
+                    if score<_reverse_score:
+                        _reverse = next
+                        _reverse_score = score
+            if boundary and not _coverage.has(coverage_key(point)):
+                var frontier_score := point.distance_to(_goal)*0.05-direction_to_edge.dot(_heading)*16.0
+                if frontier_score<_frontier_score:
+                    _frontier = next
+                    _frontier_score = frontier_score
             var distance := point.distance_to(_goal)
             if distance<_best_distance-0.01:
                 _best = next
@@ -66,16 +106,37 @@ func advance(current: Vector2, goal: Vector2, probe: Callable) -> Array[Vector2]
     max_slice_ms = maxi(max_slice_ms,spent)
     if _head<_queue.size() and _head<MAX_NODES: return result
     running = false
-    if _best_distance<_origin.distance_to(_goal)-0.5:
+    var endpoint := _origin+Vector2(_best)*CELL_M
+    var progress := _best_distance<_origin.distance_to(_goal)-0.5
+    # A known endpoint back toward the goal must not undo an exploratory leg.
+    var fresh := not _coverage.has(coverage_key(endpoint)) or endpoint.distance_to(_goal)<3.0
+    if _returning and _ahead!=Vector2i.ZERO:
+        _best = _ahead
+        mode = "frontier" if not _coverage.has(coverage_key(_origin+Vector2(_best)*CELL_M)) else "frontier-return"
+    elif progress and fresh:
+        mode = "progress"
+    elif _heading.length_squared()>0.1 and _ahead==Vector2i.ZERO and _reverse!=Vector2i.ZERO:
+        # An observed dead end reverses exploration through the known corridor.
+        _best = _reverse
+        mode = "frontier-return"
+    elif _frontier!=Vector2i.ZERO:
+        _best = _frontier
+        mode = "frontier"
+    else:
+        mode = "none"
+    if mode!="none":
         var cursor := _best
         while cursor!=Vector2i.ZERO:
             result.push_front(_origin + Vector2(cursor)*CELL_M)
             cursor = _parents[cursor]
     return result
 
-func build(current: Vector2, goal: Vector2, probe: Callable) -> Array[Vector2]:
+func build(current: Vector2, goal: Vector2, probe: Callable, coverage: Dictionary = {}, heading: Vector2 = Vector2.ZERO, returning: bool = false) -> Array[Vector2]:
     cancel()
-    var result := advance(current,goal,probe)
+    var result := advance(current,goal,probe,coverage,heading,returning)
     while running:
-        result = advance(current,goal,probe)
+        result = advance(current,goal,probe,coverage,heading,returning)
     return result
+
+static func coverage_key(point: Vector2) -> Vector2i:
+    return Vector2i(floori(point.x/COVERAGE_CELL_M),floori(point.y/COVERAGE_CELL_M))
