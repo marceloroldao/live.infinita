@@ -25,10 +25,39 @@ def metrics(rows):
     return {"actions":len(rows),"completed_steps":len(completed),
         "goals_reached":sum(a["outcome"]=="goal_reached" for a in rows),
         "collisions":sum(a["collisions"] for a in rows),
+        "completed_shortcut_steps":sum(int(a.get("perception",{}).get("observed_route_shortcut_waypoints",0))>0 for a in completed),
         "outcomes":dict(Counter(a["outcome"] for a in rows)),
         "interruption_reasons":dict(Counter(a["reason"] for a in rows if a["outcome"]=="interrupted")),
         "observed_distance_m":round(sum(distance(a["start"],a["end"]) for a in rows),4),
         "recorded_action_duration_seconds":round(sum(a["duration_ms"] for a in rows)/1000,4)}
+
+def path_quality(rows,consistent):
+    # Quantized repeated passages are a revisit indicator, not proof of waste.
+    passages=Counter()
+    repeats=0
+    for row in rows:
+        if distance(row["start"],row["end"])<=0.05:
+            continue
+        start=tuple(round(v) for v in row["start"])
+        end=tuple(round(v) for v in row["end"])
+        if start==end:
+            continue
+        passage=(start,end)
+        repeats += int(passages[passage]>0)
+        passages[passage]+=1
+    contiguous=all(distance(a["end"],b["start"])<=0.05 for a,b in zip(rows,rows[1:]))
+    travel=sum(distance(a["start"],a["end"]) for a in rows)
+    first=distance(rows[0]["start"],rows[0]["goal"]) if consistent else None
+    last=distance(rows[-1]["end"],rows[0]["goal"]) if consistent else None
+    approach=first-last if consistent else None
+    return {"observed_path_contiguous":contiguous,
+        "first_observed_remaining_goal_m":first,
+        "last_observed_remaining_goal_m":last,
+        "net_goal_approach_m":approach,
+        "goal_approach_per_observed_m":approach/travel if contiguous and consistent and travel>0.05 else None,
+        "repeated_directed_passage_actions":repeats,
+        "passage_quantization_m":1,
+        "shortest_route_proven":False}
 
 def route_metrics(actions):
     # A retained window may start midway through a route; reaching its goal
@@ -40,14 +69,15 @@ def route_metrics(actions):
         if not route_id:
             missing+=1
             continue
-        key=(action["context_start"]["world_id"],route_id)
+        key=(action.get("_audit_session_id",""),action["context_start"]["world_id"],route_id)
         groups.setdefault(key,[]).append(action)
     result=[]
-    for (world,route_id),rows in sorted(groups.items()):
+    for (session,world,route_id),rows in sorted(groups.items()):
         ordered=sorted(rows,key=lambda a:(a["started_at_unix"],a["decision_serial"]))
         goals={tuple(a["goal"]) for a in rows}
         consistent=all(distance(ordered[0]["goal"],goal)<=0.001 for goal in goals)
-        result.append({"world_id":world,"route_goal_id":route_id,
+        result.append({"session_id":session,"world_id":world,"route_goal_id":route_id,
+            "path_quality":path_quality(ordered,consistent),
             "goal_consistent":consistent,
             "goal":ordered[0]["goal"] if consistent else None,
             "first_observed_at_unix":ordered[0]["started_at_unix"],
@@ -62,11 +92,23 @@ def route_metrics(actions):
                 and changed(a,"without_memoria") for a in rows)})
     return {"routes":result,"actions_without_route_identity":missing}
 
-def audit(data):
+def audit(data,session=None,latest_session=False):
+    if session is not None and latest_session:
+        raise ValueError("Choose either a session or the latest session")
+    sessions={}
+    for episode in data["episodes"]:
+        stamp=max((a["started_at_unix"] for a in episode["actions"]),default=0)
+        sid=episode["session_id"]
+        sessions[sid]=max(sessions.get(sid,0),stamp)
+    if latest_session and sessions:
+        session=max(sessions,key=lambda sid:(sessions[sid],sid))
+    if session is not None and session not in sessions:
+        raise ValueError("Requested session is absent from the retained window")
+    selected_episodes=[e for e in data["episodes"] if session is None or e["session_id"]==session]
     actions=[]
     identities={}
     duplicates=0
-    for episode in data["episodes"]:
+    for episode in selected_episodes:
         for action in episode["actions"]:
             identity=episode["session_id"]+":"+str(action["decision_serial"])
             if identity in identities:
@@ -75,7 +117,7 @@ def audit(data):
                 duplicates+=1
                 continue
             identities[identity]=action
-            actions.append(action)
+            actions.append(dict(action,_audit_session_id=episode["session_id"]))
     ram=[a for a in actions if a.get("working_memory_changed_choice") is True and changed(a,"without_working_memory")]
     persistent=[a for a in actions if a["decision_source"]=="memoria.ia" and changed(a,"without_memoria")]
     claimed_ram=[a for a in actions if a.get("working_memory_changed_choice") is True]
@@ -92,7 +134,8 @@ def audit(data):
         "scope":"observed_live_native_episode_window",
         "generated_at_unix":time.time(),"source_snapshot_sha256":sha256(_canonical(data)).hexdigest(),
         "world_write_authority":False,"production_memory_written":False,
-        "episode_ids":[e["episode_id"] for e in data["episodes"]],
+        "episode_ids":[e["episode_id"] for e in selected_episodes],
+        "selected_session_id":session,"available_session_ids":sorted(sessions),
         "source_retention_dropped":data["dropped_episodes"],"duplicate_actions_ignored":duplicates,
         "window_started_at_unix":min((a["started_at_unix"] for a in actions),default=None),
         "window_ended_at_unix":max((a["ended_at_unix"] for a in actions),default=None),
@@ -107,20 +150,25 @@ def audit(data):
             "Completed steps do not prove completed routes or shorter routes.",
             "Baseline records an alternative choice; its physical outcome was not executed.",
             "Distances and durations describe different observed situations and are not a controlled comparison.",
-            "Repeated quantized addresses do not guarantee identical terrain, start, goal or conditions."]}
+            "Repeated quantized addresses do not guarantee identical terrain, start, goal or conditions.",
+            "A repeated passage or negative goal approach can be necessary to find a crossing.",
+            "Session selection does not prove that the full session survived retention."]}
 
 def main():
     parser=argparse.ArgumentParser()
     parser.add_argument("--source",type=Path,default=SOURCE)
     parser.add_argument("--report",type=Path)
+    selection=parser.add_mutually_exclusive_group()
+    selection.add_argument("--session")
+    selection.add_argument("--latest-session",action="store_true")
     args=parser.parse_args()
-    report=audit(read_source(args.source))
+    report=audit(read_source(args.source),session=args.session,latest_session=args.latest_session)
     output=json.dumps(report,indent=2)+"\n"
     if args.report:
         if args.report.resolve()==args.source.resolve():
             raise ValueError("Audit cannot overwrite native source")
         args.report.write_text(output)
-    print(json.dumps({"all":report["all"],"ram":report["verified_causal_ram"],
+    print(json.dumps({"selected_session_id":report["selected_session_id"],"all":report["all"],"ram":report["verified_causal_ram"],
         "memoria":report["verified_causal_memoria"],"committed_routes":report["committed_routes"],
         "repeated_addresses":len(report["repeated_ram_addresses"]),
         "controlled_live_gain_measured":False},indent=2))
