@@ -1,0 +1,109 @@
+{
+  "schema": "live-infinita-animal-search-audit/v1",
+  "generated_at_unix": 1791381712.6276782,
+  "world_id": "nov-live-autonomous-001",
+  "source_age_seconds": {
+    "live-infinita-nov-animal-search-intent/v1": 0.113,
+    "live-infinita-nov-animal-memory/v1": 8.322,
+    "live-infinita-nov-animal-search/v1": 0.83
+  },
+  "read_only": true,
+  "search_readiness": {
+    "logical_time_ms": 640844500,
+    "forecast_time_eligibility": {
+      "listed": 1,
+      "expired": 0,
+      "less_than_20_seconds_remaining": 0,
+      "eligible_by_time": 1
+    },
+    "next_strategy": "last_seen",
+    "remaining_conditions_not_measured": [
+      "normal_journey_finished",
+      "target_not_currently_seen",
+      "target_within_40m",
+      "destination_physically_allowed",
+      "cycle_quota_available",
+      "cooldown_elapsed"
+    ],
+    "status": "time_eligible_forecast_other_conditions_not_measured"
+  },
+  "bounded_search": {
+    "arms": {
+      "memory": {
+        "started": 2,
+        "confirmed": 2,
+        "not_observed": 0,
+        "aborted": 0,
+        "completed": 2,
+        "pending": 0,
+        "confirmed_per_completed": 1.0
+      },
+      "last_seen": {
+        "started": 1,
+        "confirmed": 1,
+        "not_observed": 0,
+        "aborted": 0,
+        "completed": 1,
+        "pending": 0,
+        "confirmed_per_completed": 1.0
+      }
+    },
+    "recent_results": [
+      {
+        "id": "nov-live-autonomous-001:animal-search:1",
+        "arm": "memory",
+        "result": "animal_seen",
+        "duration_logical_ms": 5992,
+        "confirmed_by_eye_sensor": true,
+        "matching_recovered_encounter_ids": [
+          "structural-event:0e3e154806d6748204c73791f645ef71f18e7506"
+        ],
+        "recovery_check": "matched"
+      },
+      {
+        "id": "nov-live-autonomous-001:animal-search:2",
+        "arm": "last_seen",
+        "result": "animal_seen",
+        "duration_logical_ms": 1633,
+        "confirmed_by_eye_sensor": true,
+        "matching_recovered_encounter_ids": [
+          "structural-event:a8428dfe282ed5640975757e2ce13d6d1f16ab35"
+        ],
+        "recovery_check": "matched"
+      },
+      {
+        "id": "nov-live-autonomous-001:animal-search:3",
+        "arm": "memory",
+        "result": "animal_seen",
+        "duration_logical_ms": 3857,
+        "confirmed_by_eye_sensor": true,
+        "matching_recovered_encounter_ids": [],
+        "recovery_check": "not_in_current_history_window"
+      }
+    ],
+    "duration_scope": "recent_results_only_max_16",
+    "comparison_state": "both_strategies_observed",
+    "allocation": "persisted_alternation_not_randomized"
+  },
+  "stored_and_recovered_encounters": 101,
+  "shadow_prediction": {
+    "counters": {
+      "expired_without_observation": 229,
+      "issued": 256,
+      "last_seen_distance_sum_m": 26.488638152267647,
+      "last_seen_hits": 24,
+      "memory_distance_sum_m": 120.48850035159106,
+      "memory_hits": 24,
+      "paired": 26
+    },
+    "paired_metrics": {
+      "last_seen_hit_rate": 0.9230769230769231,
+      "last_seen_mean_distance_m": 1.0187937750872171,
+      "memory_hit_rate": 0.9230769230769231,
+      "memory_mean_distance_m": 4.63417309044581
+    },
+    "observation_selection_affected_by_active_search": true
+  },
+  "memory_advantage_demonstrated": false,
+  "general_learning_improvement_demonstrated": false
+}

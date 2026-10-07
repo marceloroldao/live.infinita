@@ -1,0 +1,5 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+NOV_STUCK_DETECTED reason=repeated_area_no_goal_progress confined_s=0.2 no_progress_s=90.1 observed_cells=12 remaining_m=95.0
+NOV_STUCK_DETECTED reason=confined confined_s=30.0 no_progress_s=29.5 observed_cells=2 remaining_m=100.0
+Detour recovery smoke: 0 failures
