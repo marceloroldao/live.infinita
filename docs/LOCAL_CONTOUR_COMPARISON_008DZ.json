@@ -1,0 +1,322 @@
+{
+  "schema": "live-infinita-local-contour-production-comparison/v1",
+  "generated_at_utc": "2026-10-07T16:19:39.683425+00:00",
+  "read_only_runtime_observation": true,
+  "windows": [
+    {
+      "version": "008DY",
+      "start_utc": "2026-10-07T14:08:44+00:00",
+      "end_utc": "2026-10-07T15:02:44+00:00",
+      "duration_minutes": 54,
+      "completed_journeys": 12,
+      "quality_eligible_journeys": 12,
+      "recovery_events": 2,
+      "completed_journey_distance_sum_m": 2260.441,
+      "completed_journey_distance_mean_m": 188.37,
+      "script_errors": [],
+      "events": [
+        {
+          "time_utc": "2026-10-07T14:09:03.557374+00:00",
+          "message": "NOV_JOURNEY_COMPLETE goal=52d6ffcbae696aeb167b731a77dccb22:1 distance_m=39.245 quality_eligible=true"
+        },
+        {
+          "time_utc": "2026-10-07T14:09:32.238512+00:00",
+          "message": "NOV_JOURNEY_COMPLETE goal=52d6ffcbae696aeb167b731a77dccb22:2 distance_m=120.375 quality_eligible=true"
+        },
+        {
+          "time_utc": "2026-10-07T14:09:58.191430+00:00",
+          "message": "NOV_JOURNEY_COMPLETE goal=52d6ffcbae696aeb167b731a77dccb22:3 distance_m=109.977 quality_eligible=true"
+        },
+        {
+          "time_utc": "2026-10-07T14:10:06.341427+00:00",
+          "message": "NOV_JOURNEY_COMPLETE goal=52d6ffcbae696aeb167b731a77dccb22:4 distance_m=28.763 quality_eligible=true"
+        },
+        {
+          "time_utc": "2026-10-07T14:10:11.503535+00:00",
+          "message": "NOV_JOURNEY_COMPLETE goal=52d6ffcbae696aeb167b731a77dccb22:5 distance_m=21.190 quality_eligible=true"
+        },
+        {
+          "time_utc": "2026-10-07T14:10:22.737036+00:00",
+          "message": "NOV_JOURNEY_COMPLETE goal=52d6ffcbae696aeb167b731a77dccb22:6 distance_m=48.000 quality_eligible=true"
+        },
+        {
+          "time_utc": "2026-10-07T14:13:48.872583+00:00",
+          "message": "NOV_JOURNEY_COMPLETE goal=52d6ffcbae696aeb167b731a77dccb22:7 distance_m=794.784 quality_eligible=true"
+        },
+        {
+          "time_utc": "2026-10-07T14:26:16.986854+00:00",
+          "message": "NOV_STUCK_DETECTED reason=repeated_area_no_goal_progress confined_s=0.1 no_progress_s=90.0 observed_cells=628 remaining_m=603.1"
+        },
+        {
+          "time_utc": "2026-10-07T14:26:17.266905+00:00",
+          "message": "NOV_STUCK_RECOVERY from=(19.3,-322.0) to=(-352.0,-32.0)"
+        },
+        {
+          "time_utc": "2026-10-07T14:26:20.595153+00:00",
+          "message": "NOV_JOURNEY_COMPLETE goal=52d6ffcbae696aeb167b731a77dccb22:9 distance_m=10.371 quality_eligible=true"
+        },
+        {
+          "time_utc": "2026-10-07T14:26:28.597658+00:00",
+          "message": "NOV_JOURNEY_COMPLETE goal=52d6ffcbae696aeb167b731a77dccb22:10 distance_m=30.849 quality_eligible=true"
+        },
+        {
+          "time_utc": "2026-10-07T14:44:14.435755+00:00",
+          "message": "NOV_STUCK_DETECTED reason=repeated_area_no_goal_progress confined_s=0.5 no_progress_s=90.1 observed_cells=201 remaining_m=13.2"
+        },
+        {
+          "time_utc": "2026-10-07T14:44:14.675902+00:00",
+          "message": "NOV_STUCK_RECOVERY from=(-268.4,-51.0) to=(-352.0,-32.0)"
+        },
+        {
+          "time_utc": "2026-10-07T14:45:12.610909+00:00",
+          "message": "NOV_JOURNEY_COMPLETE goal=52d6ffcbae696aeb167b731a77dccb22:12 distance_m=217.496 quality_eligible=true"
+        },
+        {
+          "time_utc": "2026-10-07T14:46:06.696593+00:00",
+          "message": "NOV_JOURNEY_COMPLETE goal=52d6ffcbae696aeb167b731a77dccb22:13 distance_m=232.948 quality_eligible=true"
+        },
+        {
+          "time_utc": "2026-10-07T14:49:09.652788+00:00",
+          "message": "NOV_JOURNEY_COMPLETE goal=52d6ffcbae696aeb167b731a77dccb22:14 distance_m=606.443 quality_eligible=true"
+        }
+      ]
+    },
+    {
+      "version": "008DZ",
+      "start_utc": "2026-10-07T15:04:56+00:00",
+      "end_utc": "2026-10-07T15:58:56+00:00",
+      "duration_minutes": 54,
+      "completed_journeys": 21,
+      "quality_eligible_journeys": 20,
+      "recovery_events": 3,
+      "completed_journey_distance_sum_m": 7951.385,
+      "completed_journey_distance_mean_m": 378.637,
+      "script_errors": [],
+      "events": [
+        {
+          "time_utc": "2026-10-07T15:05:12.896499+00:00",
+          "message": "NOV_JOURNEY_COMPLETE goal=0cb15220d68196eb5876c0b8ef5f6e5f:1 distance_m=27.360 quality_eligible=true"
+        },
+        {
+          "time_utc": "2026-10-07T15:06:10.661948+00:00",
+          "message": "NOV_JOURNEY_COMPLETE goal=0cb15220d68196eb5876c0b8ef5f6e5f:2 distance_m=194.168 quality_eligible=true"
+        },
+        {
+          "time_utc": "2026-10-07T15:22:42.508541+00:00",
+          "message": "NOV_JOURNEY_COMPLETE goal=0cb15220d68196eb5876c0b8ef5f6e5f:4 distance_m=830.879 quality_eligible=true"
+        },
+        {
+          "time_utc": "2026-10-07T15:23:06.229794+00:00",
+          "message": "NOV_JOURNEY_COMPLETE goal=0cb15220d68196eb5876c0b8ef5f6e5f:5 distance_m=87.931 quality_eligible=true"
+        },
+        {
+          "time_utc": "2026-10-07T15:24:13.265963+00:00",
+          "message": "NOV_JOURNEY_COMPLETE goal=0cb15220d68196eb5876c0b8ef5f6e5f:6 distance_m=213.679 quality_eligible=true"
+        },
+        {
+          "time_utc": "2026-10-07T15:24:51.749827+00:00",
+          "message": "NOV_STUCK_DETECTED reason=confined confined_s=30.0 no_progress_s=30.0 observed_cells=7 remaining_m=807.2"
+        },
+        {
+          "time_utc": "2026-10-07T15:24:54.964519+00:00",
+          "message": "NOV_STUCK_RECOVERY from=(-132.2,-27.5) to=(-352.0,-32.0)"
+        },
+        {
+          "time_utc": "2026-10-07T15:27:10.198425+00:00",
+          "message": "NOV_STUCK_DETECTED reason=confined confined_s=30.0 no_progress_s=29.5 observed_cells=116 remaining_m=471.6"
+        },
+        {
+          "time_utc": "2026-10-07T15:27:10.494506+00:00",
+          "message": "NOV_STUCK_RECOVERY from=(-213.3,-232.4) to=(-352.0,-32.0)"
+        },
+        {
+          "time_utc": "2026-10-07T15:27:14.729199+00:00",
+          "message": "NOV_JOURNEY_COMPLETE goal=0cb15220d68196eb5876c0b8ef5f6e5f:9 distance_m=11.323 quality_eligible=true"
+        },
+        {
+          "time_utc": "2026-10-07T15:27:23.376181+00:00",
+          "message": "NOV_JOURNEY_COMPLETE goal=0cb15220d68196eb5876c0b8ef5f6e5f:10 distance_m=16.221 quality_eligible=true"
+        },
+        {
+          "time_utc": "2026-10-07T15:30:23.049604+00:00",
+          "message": "NOV_JOURNEY_COMPLETE goal=0cb15220d68196eb5876c0b8ef5f6e5f:11 distance_m=672.327 quality_eligible=true"
+        },
+        {
+          "time_utc": "2026-10-07T15:34:01.361372+00:00",
+          "message": "NOV_JOURNEY_COMPLETE goal=0cb15220d68196eb5876c0b8ef5f6e5f:12 distance_m=820.085 quality_eligible=true"
+        },
+        {
+          "time_utc": "2026-10-07T15:34:58.252186+00:00",
+          "message": "NOV_JOURNEY_COMPLETE goal=0cb15220d68196eb5876c0b8ef5f6e5f:13 distance_m=205.778 quality_eligible=true"
+        },
+        {
+          "time_utc": "2026-10-07T15:35:55.413065+00:00",
+          "message": "NOV_JOURNEY_COMPLETE goal=0cb15220d68196eb5876c0b8ef5f6e5f:14 distance_m=216.226 quality_eligible=true"
+        },
+        {
+          "time_utc": "2026-10-07T15:36:50.990796+00:00",
+          "message": "NOV_JOURNEY_COMPLETE goal=0cb15220d68196eb5876c0b8ef5f6e5f:15 distance_m=202.877 quality_eligible=true"
+        },
+        {
+          "time_utc": "2026-10-07T15:39:44.052531+00:00",
+          "message": "NOV_JOURNEY_COMPLETE goal=0cb15220d68196eb5876c0b8ef5f6e5f:16 distance_m=638.265 quality_eligible=true"
+        },
+        {
+          "time_utc": "2026-10-07T15:43:02.886380+00:00",
+          "message": "NOV_JOURNEY_COMPLETE goal=0cb15220d68196eb5876c0b8ef5f6e5f:17 distance_m=733.156 quality_eligible=false"
+        },
+        {
+          "time_utc": "2026-10-07T15:44:29.188578+00:00",
+          "message": "NOV_STUCK_DETECTED reason=confined confined_s=30.0 no_progress_s=30.0 observed_cells=62 remaining_m=748.7"
+        },
+        {
+          "time_utc": "2026-10-07T15:44:29.412243+00:00",
+          "message": "NOV_STUCK_RECOVERY from=(-84.4,33.4) to=(-352.0,-32.0)"
+        },
+        {
+          "time_utc": "2026-10-07T15:44:36.906123+00:00",
+          "message": "NOV_JOURNEY_COMPLETE goal=0cb15220d68196eb5876c0b8ef5f6e5f:19 distance_m=16.000 quality_eligible=true"
+        },
+        {
+          "time_utc": "2026-10-07T15:47:43.019653+00:00",
+          "message": "NOV_JOURNEY_COMPLETE goal=0cb15220d68196eb5876c0b8ef5f6e5f:20 distance_m=664.176 quality_eligible=true"
+        },
+        {
+          "time_utc": "2026-10-07T15:51:15.064031+00:00",
+          "message": "NOV_JOURNEY_COMPLETE goal=0cb15220d68196eb5876c0b8ef5f6e5f:21 distance_m=810.967 quality_eligible=true"
+        },
+        {
+          "time_utc": "2026-10-07T15:54:29.042775+00:00",
+          "message": "NOV_JOURNEY_COMPLETE goal=0cb15220d68196eb5876c0b8ef5f6e5f:22 distance_m=810.732 quality_eligible=true"
+        },
+        {
+          "time_utc": "2026-10-07T15:57:22.281101+00:00",
+          "message": "NOV_JOURNEY_COMPLETE goal=0cb15220d68196eb5876c0b8ef5f6e5f:23 distance_m=693.478 quality_eligible=true"
+        },
+        {
+          "time_utc": "2026-10-07T15:57:27.684218+00:00",
+          "message": "NOV_JOURNEY_COMPLETE goal=0cb15220d68196eb5876c0b8ef5f6e5f:24 distance_m=31.822 quality_eligible=true"
+        },
+        {
+          "time_utc": "2026-10-07T15:57:39.789543+00:00",
+          "message": "NOV_JOURNEY_COMPLETE goal=0cb15220d68196eb5876c0b8ef5f6e5f:25 distance_m=53.935 quality_eligible=true"
+        }
+      ]
+    }
+  ],
+  "animal_search_snapshot": {
+    "schema": "live-infinita-animal-search-audit/v1",
+    "generated_at_unix": 1791389979.6658812,
+    "world_id": "nov-live-autonomous-001",
+    "source_age_seconds": {
+      "live-infinita-nov-animal-search-intent/v1": 0.444,
+      "live-infinita-nov-animal-memory/v1": 2.212,
+      "live-infinita-nov-animal-search/v1": 1.901
+    },
+    "read_only": true,
+    "search_readiness": {
+      "logical_time_ms": 648330500,
+      "forecast_time_eligibility": {
+        "listed": 3,
+        "expired": 3,
+        "less_than_20_seconds_remaining": 0,
+        "eligible_by_time": 0
+      },
+      "next_strategy": "last_seen",
+      "remaining_conditions_not_measured": [
+        "normal_journey_finished",
+        "target_not_currently_seen",
+        "target_within_40m",
+        "destination_physically_allowed",
+        "cycle_quota_available",
+        "cooldown_elapsed"
+      ],
+      "status": "no_forecast_with_sufficient_time"
+    },
+    "bounded_search": {
+      "arms": {
+        "memory": {
+          "started": 2,
+          "confirmed": 2,
+          "not_observed": 0,
+          "aborted": 0,
+          "completed": 2,
+          "pending": 0,
+          "confirmed_per_completed": 1.0
+        },
+        "last_seen": {
+          "started": 1,
+          "confirmed": 1,
+          "not_observed": 0,
+          "aborted": 0,
+          "completed": 1,
+          "pending": 0,
+          "confirmed_per_completed": 1.0
+        }
+      },
+      "recent_results": [
+        {
+          "id": "nov-live-autonomous-001:animal-search:1",
+          "arm": "memory",
+          "result": "animal_seen",
+          "duration_logical_ms": 5992,
+          "confirmed_by_eye_sensor": true,
+          "matching_recovered_encounter_ids": [],
+          "recovery_check": "not_in_current_history_window"
+        },
+        {
+          "id": "nov-live-autonomous-001:animal-search:2",
+          "arm": "last_seen",
+          "result": "animal_seen",
+          "duration_logical_ms": 1633,
+          "confirmed_by_eye_sensor": true,
+          "matching_recovered_encounter_ids": [],
+          "recovery_check": "not_in_current_history_window"
+        },
+        {
+          "id": "nov-live-autonomous-001:animal-search:3",
+          "arm": "memory",
+          "result": "animal_seen",
+          "duration_logical_ms": 3857,
+          "confirmed_by_eye_sensor": true,
+          "matching_recovered_encounter_ids": [],
+          "recovery_check": "not_in_current_history_window"
+        }
+      ],
+      "duration_scope": "recent_results_only_max_16",
+      "comparison_state": "both_strategies_observed",
+      "allocation": "persisted_alternation_not_randomized"
+    },
+    "stored_and_recovered_encounters": 118,
+    "shadow_prediction": {
+      "counters": {
+        "expired_without_observation": 298,
+        "issued": 330,
+        "last_seen_distance_sum_m": 26.488638152267647,
+        "last_seen_hits": 27,
+        "memory_distance_sum_m": 131.821533659575,
+        "memory_hits": 27,
+        "paired": 29
+      },
+      "paired_metrics": {
+        "last_seen_hit_rate": 0.9310344827586207,
+        "last_seen_mean_distance_m": 0.9134013155954361,
+        "memory_hit_rate": 0.9310344827586207,
+        "memory_mean_distance_m": 4.545570126192242
+      },
+      "observation_selection_affected_by_active_search": true
+    },
+    "memory_advantage_demonstrated": false,
+    "general_learning_improvement_demonstrated": false
+  },
+  "causal_improvement_demonstrated": false,
+  "limitations": [
+    "Different goals, terrain and starting positions; allocation not randomized.",
+    "Completed distance excludes ongoing and interrupted journeys.",
+    "Journey duration cannot be inferred from completion timestamps alone.",
+    "Quality eligibility is an application gate, not an independent success measure.",
+    "Recovery events and goal expiration are different interruption mechanisms.",
+    "Zero errors here covers script and parse messages in the selected journal windows."
+  ],
+  "next_measurement": "Record start and end timestamps, termination reason, goal distance and actual distance for every journey before comparing navigation policies."
+}
