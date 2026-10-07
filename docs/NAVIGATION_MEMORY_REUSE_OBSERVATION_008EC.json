@@ -1,0 +1,591 @@
+{
+  "navigation": {
+    "schema": "live-infinita-journey-attempt-audit/v1",
+    "generated_at_unix": 1791394703.95463,
+    "read_only": true,
+    "counts": {
+      "started": 12,
+      "ended": 11,
+      "paired": 11,
+      "arrived": 7,
+      "interrupted": 4,
+      "open_or_censored": 1,
+      "end_without_start_in_window": 0,
+      "identical_duplicates_ignored": 0
+    },
+    "termination_counts": {
+      "arrived": 7,
+      "stuck_recovery": 3,
+      "search_intent_changed": 1
+    },
+    "all_paired_attempts": {
+      "count": 11,
+      "duration_mean_seconds": 146.668,
+      "duration_median_seconds": 79.152,
+      "distance_sum_m": 6452.704,
+      "distance_mean_m": 586.609
+    },
+    "arrivals": {
+      "count": 7,
+      "duration_mean_seconds": 99.034,
+      "duration_median_seconds": 66.82,
+      "distance_sum_m": 2693.43,
+      "distance_mean_m": 384.776
+    },
+    "interruptions": {
+      "count": 4,
+      "duration_mean_seconds": 230.028,
+      "duration_median_seconds": 212.305,
+      "distance_sum_m": 3759.275,
+      "distance_mean_m": 939.819
+    },
+    "observed_arrival_fraction_among_paired": 0.6363636363636364,
+    "quality_eligible_arrivals": 7,
+    "paired_attempts": [
+      {
+        "blocked_attempts": 0,
+        "causal_memoria_steps": 0,
+        "causal_ram_steps": 0,
+        "completed_steps": 634,
+        "current": [
+          467.260437011719,
+          539.580993652344
+        ],
+        "distance_m": 633.368761189282,
+        "duration_monotonic_ms": 151821,
+        "ended_at_unix": 1791393221.52226,
+        "ended_monotonic_ms": 157657,
+        "event": "ended",
+        "goal": [
+          467.260437011719,
+          539.580993652344
+        ],
+        "goal_id": "d39106b16c36e201117ed8fbbe4b272a:1",
+        "initial_remaining_m": 526.344604492188,
+        "learning_evidence": false,
+        "quality_eligible": true,
+        "remaining_m": 0.0,
+        "schema": "live-infinita-nov-journey-attempt/v1",
+        "start": [
+          210.760284423828,
+          79.9656066894531
+        ],
+        "started_at_unix": 1791393069.70192,
+        "started_monotonic_ms": 5836,
+        "termination": "arrived",
+        "world_id": "nov-live-autonomous-001",
+        "world_write_authority": false
+      },
+      {
+        "blocked_attempts": 0,
+        "causal_memoria_steps": 0,
+        "causal_ram_steps": 0,
+        "completed_steps": 871,
+        "current": [
+          288.002410888672,
+          -223.993087768555
+        ],
+        "distance_m": 870.197053523734,
+        "duration_monotonic_ms": 231478,
+        "ended_at_unix": 1791393453.63523,
+        "ended_monotonic_ms": 389770,
+        "event": "ended",
+        "goal": [
+          288.000030517578,
+          -224.0
+        ],
+        "goal_id": "d39106b16c36e201117ed8fbbe4b272a:2",
+        "initial_remaining_m": 784.340637207031,
+        "learning_evidence": false,
+        "quality_eligible": true,
+        "remaining_m": 0.00731061631813645,
+        "schema": "live-infinita-nov-journey-attempt/v1",
+        "start": [
+          467.260437011719,
+          539.580993652344
+        ],
+        "started_at_unix": 1791393222.15785,
+        "started_monotonic_ms": 158292,
+        "termination": "arrived",
+        "world_id": "nov-live-autonomous-001",
+        "world_write_authority": false
+      },
+      {
+        "blocked_attempts": 0,
+        "causal_memoria_steps": 0,
+        "causal_ram_steps": 0,
+        "completed_steps": 1575,
+        "current": [
+          44.7071762084961,
+          -474.300323486328
+        ],
+        "distance_m": 1574.37707041204,
+        "duration_monotonic_ms": 345459,
+        "ended_at_unix": 1791393800.18024,
+        "ended_monotonic_ms": 736315,
+        "event": "ended",
+        "goal": [
+          -683.202758789062,
+          -365.567535400391
+        ],
+        "goal_id": "d39106b16c36e201117ed8fbbe4b272a:3",
+        "initial_remaining_m": 981.4697265625,
+        "learning_evidence": false,
+        "quality_eligible": false,
+        "remaining_m": 735.986145019531,
+        "schema": "live-infinita-nov-journey-attempt/v1",
+        "start": [
+          288.002410888672,
+          -223.993087768555
+        ],
+        "started_at_unix": 1791393454.72184,
+        "started_monotonic_ms": 390856,
+        "termination": "stuck_recovery",
+        "world_id": "nov-live-autonomous-001",
+        "world_write_authority": false
+      },
+      {
+        "blocked_attempts": 0,
+        "causal_memoria_steps": 0,
+        "causal_ram_steps": 0,
+        "completed_steps": 26,
+        "current": [
+          -329.683685302734,
+          -28.4199905395508
+        ],
+        "distance_m": 25.9799018166959,
+        "duration_monotonic_ms": 5874,
+        "ended_at_unix": 1791393806.89572,
+        "ended_monotonic_ms": 743030,
+        "event": "ended",
+        "goal": [
+          -329.673950195312,
+          -28.4520244598389
+        ],
+        "goal_id": "d39106b16c36e201117ed8fbbe4b272a:4",
+        "initial_remaining_m": 22.6062088012695,
+        "learning_evidence": false,
+        "quality_eligible": true,
+        "remaining_m": 0.0334805063903332,
+        "schema": "live-infinita-nov-journey-attempt/v1",
+        "start": [
+          -352.0,
+          -32.0
+        ],
+        "started_at_unix": 1791393801.02138,
+        "started_monotonic_ms": 737156,
+        "termination": "arrived",
+        "world_id": "nov-live-autonomous-001",
+        "world_write_authority": false
+      },
+      {
+        "blocked_attempts": 0,
+        "causal_memoria_steps": 0,
+        "causal_ram_steps": 0,
+        "completed_steps": 68,
+        "current": [
+          -263.218017578125,
+          -17.6280307769775
+        ],
+        "distance_m": 67.9689499735832,
+        "duration_monotonic_ms": 14687,
+        "ended_at_unix": 1791393821.88641,
+        "ended_monotonic_ms": 758021,
+        "event": "ended",
+        "goal": [
+          -263.121307373047,
+          -17.6198177337646
+        ],
+        "goal_id": "d39106b16c36e201117ed8fbbe4b272a:5",
+        "initial_remaining_m": 67.4328842163086,
+        "learning_evidence": false,
+        "quality_eligible": true,
+        "remaining_m": 0.0970583185553551,
+        "schema": "live-infinita-nov-journey-attempt/v1",
+        "start": [
+          -329.683685302734,
+          -28.4199905395508
+        ],
+        "started_at_unix": 1791393807.19998,
+        "started_monotonic_ms": 743334,
+        "termination": "arrived",
+        "world_id": "nov-live-autonomous-001",
+        "world_write_authority": false
+      },
+      {
+        "blocked_attempts": 0,
+        "causal_memoria_steps": 0,
+        "causal_ram_steps": 0,
+        "completed_steps": 751,
+        "current": [
+          -702.756286621094,
+          -349.348602294922
+        ],
+        "distance_m": 750.597415715456,
+        "duration_monotonic_ms": 188860,
+        "ended_at_unix": 1791394011.27498,
+        "ended_monotonic_ms": 947409,
+        "event": "ended",
+        "goal": [
+          -702.756286621094,
+          -349.348602294922
+        ],
+        "goal_id": "d39106b16c36e201117ed8fbbe4b272a:6",
+        "initial_remaining_m": 550.665466308594,
+        "learning_evidence": false,
+        "quality_eligible": true,
+        "remaining_m": 0.0,
+        "schema": "live-infinita-nov-journey-attempt/v1",
+        "start": [
+          -263.218017578125,
+          -17.6280307769775
+        ],
+        "started_at_unix": 1791393822.41498,
+        "started_monotonic_ms": 758549,
+        "termination": "arrived",
+        "world_id": "nov-live-autonomous-001",
+        "world_write_authority": false
+      },
+      {
+        "blocked_attempts": 0,
+        "causal_memoria_steps": 0,
+        "causal_ram_steps": 0,
+        "completed_steps": 1951,
+        "current": [
+          18.2868347167969,
+          -98.6713256835938
+        ],
+        "distance_m": 1951.31670533866,
+        "duration_monotonic_ms": 491460,
+        "ended_at_unix": 1791394503.00473,
+        "ended_monotonic_ms": 1439139,
+        "event": "ended",
+        "goal": [
+          271.519195556641,
+          -212.073883056641
+        ],
+        "goal_id": "d39106b16c36e201117ed8fbbe4b272a:7",
+        "initial_remaining_m": 983.89892578125,
+        "learning_evidence": false,
+        "quality_eligible": false,
+        "remaining_m": 277.464904785156,
+        "schema": "live-infinita-nov-journey-attempt/v1",
+        "start": [
+          -702.756286621094,
+          -349.348602294922
+        ],
+        "started_at_unix": 1791394011.54454,
+        "started_monotonic_ms": 947679,
+        "termination": "stuck_recovery",
+        "world_id": "nov-live-autonomous-001",
+        "world_write_authority": false
+      },
+      {
+        "blocked_attempts": 0,
+        "causal_memoria_steps": 0,
+        "causal_ram_steps": 0,
+        "completed_steps": 17,
+        "current": [
+          -356.382232666016,
+          -16.0551795959473
+        ],
+        "distance_m": 17.7800790034235,
+        "duration_monotonic_ms": 4040,
+        "ended_at_unix": 1791394507.62872,
+        "ended_monotonic_ms": 1443763,
+        "event": "ended",
+        "goal": [
+          -354.961761474609,
+          -15.3932685852051
+        ],
+        "goal_id": "d39106b16c36e201117ed8fbbe4b272a:8",
+        "initial_remaining_m": 16.8687744140625,
+        "learning_evidence": false,
+        "quality_eligible": false,
+        "remaining_m": 1.56711983680725,
+        "schema": "live-infinita-nov-journey-attempt/v1",
+        "start": [
+          -352.0,
+          -32.0
+        ],
+        "started_at_unix": 1791394503.58815,
+        "started_monotonic_ms": 1439723,
+        "termination": "search_intent_changed",
+        "world_id": "nov-live-autonomous-001",
+        "world_write_authority": false
+      },
+      {
+        "blocked_attempts": 0,
+        "causal_memoria_steps": 0,
+        "causal_ram_steps": 0,
+        "completed_steps": 220,
+        "current": [
+          -171.266967773438,
+          -12.3873510360718
+        ],
+        "distance_m": 219.395008411258,
+        "duration_monotonic_ms": 66820,
+        "ended_at_unix": 1791394576.46084,
+        "ended_monotonic_ms": 1512595,
+        "event": "ended",
+        "goal": [
+          -171.224548339844,
+          -12.3152084350586
+        ],
+        "goal_id": "d39106b16c36e201117ed8fbbe4b272a:9",
+        "initial_remaining_m": 185.195449829102,
+        "learning_evidence": false,
+        "quality_eligible": true,
+        "remaining_m": 0.0836896821856499,
+        "schema": "live-infinita-nov-journey-attempt/v1",
+        "start": [
+          -356.382232666016,
+          -16.0551795959473
+        ],
+        "started_at_unix": 1791394509.6403,
+        "started_monotonic_ms": 1445775,
+        "termination": "arrived",
+        "world_id": "nov-live-autonomous-001",
+        "world_write_authority": false
+      },
+      {
+        "blocked_attempts": 0,
+        "causal_memoria_steps": 0,
+        "causal_ram_steps": 6,
+        "completed_steps": 216,
+        "current": [
+          -113.203636169434,
+          11.98912525177
+        ],
+        "distance_m": 215.800819605589,
+        "duration_monotonic_ms": 79152,
+        "ended_at_unix": 1791394655.79065,
+        "ended_monotonic_ms": 1591925,
+        "event": "ended",
+        "goal": [
+          248.558624267578,
+          99.9027709960938
+        ],
+        "goal_id": "d39106b16c36e201117ed8fbbe4b272a:10",
+        "initial_remaining_m": 434.583251953125,
+        "learning_evidence": false,
+        "quality_eligible": false,
+        "remaining_m": 372.291229248047,
+        "schema": "live-infinita-nov-journey-attempt/v1",
+        "start": [
+          -171.266967773438,
+          -12.3873510360718
+        ],
+        "started_at_unix": 1791394576.63851,
+        "started_monotonic_ms": 1512773,
+        "termination": "stuck_recovery",
+        "world_id": "nov-live-autonomous-001",
+        "world_write_authority": false
+      },
+      {
+        "blocked_attempts": 0,
+        "causal_memoria_steps": 0,
+        "causal_ram_steps": 0,
+        "completed_steps": 126,
+        "current": [
+          -226.375091552734,
+          -32.9075202941895
+        ],
+        "distance_m": 125.92264040187,
+        "duration_monotonic_ms": 33700,
+        "ended_at_unix": 1791394690.46973,
+        "ended_monotonic_ms": 1626604,
+        "event": "ended",
+        "goal": [
+          -226.285034179688,
+          -32.9064636230469
+        ],
+        "goal_id": "d39106b16c36e201117ed8fbbe4b272a:11",
+        "initial_remaining_m": 125.718231201172,
+        "learning_evidence": false,
+        "quality_eligible": true,
+        "remaining_m": 0.0900635719299316,
+        "schema": "live-infinita-nov-journey-attempt/v1",
+        "start": [
+          -352.0,
+          -32.0
+        ],
+        "started_at_unix": 1791394656.76913,
+        "started_monotonic_ms": 1592904,
+        "termination": "arrived",
+        "world_id": "nov-live-autonomous-001",
+        "world_write_authority": false
+      }
+    ],
+    "open_or_censored_ids": [
+      {
+        "world_id": "nov-live-autonomous-001",
+        "goal_id": "d39106b16c36e201117ed8fbbe4b272a:12"
+      }
+    ],
+    "end_without_start_ids": [],
+    "limitations": [
+      "Window boundaries or abrupt restart can leave unmatched records.",
+      "Unmatched starts are not failures; unmatched ends are excluded from paired metrics.",
+      "Arrival fraction describes paired records, not all starts or a survival estimate.",
+      "Distances are planar physical travel; duration is process monotonic real time.",
+      "Different goals and terrain prevent a causal policy comparison.",
+      "Recorded causal steps do not prove outcome improvement."
+    ],
+    "memory_advantage_demonstrated": false,
+    "source_scope": {
+      "type": "native_renderer_journal",
+      "since": "2026-10-07 17:11:03 UTC",
+      "max_journal_lines": 10000
+    }
+  },
+  "animals": {
+    "schema": "live-infinita-animal-search-audit/v1",
+    "generated_at_unix": 1791394704.123248,
+    "world_id": "nov-live-autonomous-001",
+    "source_age_seconds": {
+      "live-infinita-nov-animal-search-intent/v1": 0.081,
+      "live-infinita-nov-animal-memory/v1": 3.406,
+      "live-infinita-nov-animal-search/v1": 2.894
+    },
+    "read_only": true,
+    "search_readiness": {
+      "logical_time_ms": 652627233,
+      "forecast_time_eligibility": {
+        "listed": 3,
+        "expired": 2,
+        "less_than_20_seconds_remaining": 0,
+        "eligible_by_time": 1
+      },
+      "next_strategy": "memory",
+      "remaining_conditions_not_measured": [
+        "normal_journey_finished",
+        "target_not_currently_seen",
+        "target_within_40m",
+        "destination_physically_allowed",
+        "cycle_quota_available",
+        "cooldown_elapsed"
+      ],
+      "status": "time_eligible_forecast_other_conditions_not_measured"
+    },
+    "bounded_search": {
+      "arms": {
+        "memory": {
+          "started": 3,
+          "confirmed": 2,
+          "not_observed": 1,
+          "aborted": 0,
+          "completed": 3,
+          "pending": 0,
+          "confirmed_per_completed": 0.6666666666666666
+        },
+        "last_seen": {
+          "started": 3,
+          "confirmed": 3,
+          "not_observed": 0,
+          "aborted": 0,
+          "completed": 3,
+          "pending": 0,
+          "confirmed_per_completed": 1.0
+        }
+      },
+      "recent_results": [
+        {
+          "id": "nov-live-autonomous-001:animal-search:1",
+          "arm": "memory",
+          "result": "animal_seen",
+          "duration_logical_ms": 5992,
+          "confirmed_by_eye_sensor": true,
+          "matching_recovered_encounter_ids": [],
+          "recovery_check": "not_in_current_history_window"
+        },
+        {
+          "id": "nov-live-autonomous-001:animal-search:2",
+          "arm": "last_seen",
+          "result": "animal_seen",
+          "duration_logical_ms": 1633,
+          "confirmed_by_eye_sensor": true,
+          "matching_recovered_encounter_ids": [],
+          "recovery_check": "not_in_current_history_window"
+        },
+        {
+          "id": "nov-live-autonomous-001:animal-search:3",
+          "arm": "memory",
+          "result": "animal_seen",
+          "duration_logical_ms": 3857,
+          "confirmed_by_eye_sensor": true,
+          "matching_recovered_encounter_ids": [],
+          "recovery_check": "not_in_current_history_window"
+        },
+        {
+          "id": "nov-live-autonomous-001:animal-search:4",
+          "arm": "last_seen",
+          "result": "animal_seen",
+          "duration_logical_ms": 359,
+          "confirmed_by_eye_sensor": true,
+          "matching_recovered_encounter_ids": [
+            "structural-event:69a65b0c3e5a91aae6c54a12a897a2fde5b889ff"
+          ],
+          "recovery_check": "matched"
+        },
+        {
+          "id": "nov-live-autonomous-001:animal-search:5",
+          "arm": "memory",
+          "result": "not_observed_within_budget",
+          "duration_logical_ms": 11392,
+          "confirmed_by_eye_sensor": false,
+          "matching_recovered_encounter_ids": [],
+          "recovery_check": "not_applicable"
+        },
+        {
+          "id": "nov-live-autonomous-001:animal-search:6",
+          "arm": "last_seen",
+          "result": "animal_seen",
+          "duration_logical_ms": 6583,
+          "confirmed_by_eye_sensor": true,
+          "matching_recovered_encounter_ids": [
+            "structural-event:33a9f3ae6b1bb5f7a963f9451a16a19ee965f71d"
+          ],
+          "recovery_check": "matched"
+        }
+      ],
+      "duration_scope": "recent_results_only_max_16",
+      "comparison_state": "both_strategies_observed",
+      "allocation": "persisted_alternation_not_randomized"
+    },
+    "stored_and_recovered_encounters": 134,
+    "shadow_prediction": {
+      "counters": {
+        "expired_without_observation": 350,
+        "issued": 385,
+        "last_seen_distance_sum_m": 26.488638152267647,
+        "last_seen_hits": 30,
+        "memory_distance_sum_m": 143.15456696755896,
+        "memory_hits": 30,
+        "paired": 32
+      },
+      "paired_metrics": {
+        "last_seen_hit_rate": 0.9375,
+        "last_seen_mean_distance_m": 0.827769942258364,
+        "memory_hit_rate": 0.9375,
+        "memory_mean_distance_m": 4.473580217736218
+      },
+      "observation_selection_affected_by_active_search": true
+    },
+    "memory_advantage_demonstrated": false,
+    "general_learning_improvement_demonstrated": false
+  },
+  "last_working_memory_status": "NOV_WORKING_MEMORY_STATUS entries=512 causal_reuses=6 promoted=176",
+  "completed_attempt_causal_steps": {
+    "causal_ram_steps": 6,
+    "causal_memoria_steps": 0
+  },
+  "script_errors": [],
+  "generated_at_utc": "2026-10-07T17:38:24.193005+00:00",
+  "interpretation": {
+    "exact_goal_position_keys_and_cache_limit_confirmed_in_component_fixture": true,
+    "cause_of_zero_production_reuse_proven": false,
+    "learning_advantage_demonstrated": false,
+    "note": "Synthetic isolated fixtures are not physical production observations or real Memoria.ia core evidence."
+  }
+}
