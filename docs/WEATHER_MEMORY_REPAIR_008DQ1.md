@@ -27,3 +27,7 @@ sudo bash /home/etbra/live.infinita/deploy/apply-weather-memory-008dq1-root.sh
 ```
 
 Sucesso esperado: `008DQ1_OK`. Log: `/home/etbra/008dq1-weather-memory-rollout.log`. O instalador mantém o rollback da versão anterior e preserva previsões, controle e memórias confirmadas.
+
+## Confirmação de produção
+
+Rollout retornou `008DQ1_OK` com fonte `9f7ab53`. Timer, serviço de controle/experimento e API local ativos. Entrega HTTPS recente confirmada: 30 registros recuperados, 2 pares avaliados, 0 alvos perdidos pelo experimento. Nenhuma falha de API atual; o contador histórico preserva a falha da instalação anterior. A última previsão avaliada foi emitida antes do alvo, usando três IDs recuperados cujos resultados já existiam no horário inicial. A influência sobre a física continua desligada. Registro integral em `WEATHER_MEMORY_PRODUCTION_008DQ1.json`.
