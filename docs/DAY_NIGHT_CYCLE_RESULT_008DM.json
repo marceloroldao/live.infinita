@@ -1,0 +1,146 @@
+{
+  "release": "008DM",
+  "base_commit": "86d55c8",
+  "production_installed": false,
+  "implemented": "server-clock-driven day/night illumination",
+  "celestial_memory_linked": false,
+  "cloud_wind_inference_implemented": false,
+  "python_tests_passed": 132,
+  "python_suites": {
+    "test_world_sky_clock.py": 1,
+    "test_nov_navigation*.py": 117,
+    "test_simulation_clock_world_tick.py": 6,
+    "test_spatial_session.py": 8
+  },
+  "godot_tests": [
+    {
+      "test": "godot_world_map_traversal_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nov_locomotion_008bz_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nov_grounded_presentation_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_live_program_008cb_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_ground_surface_008cc_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_experience_008cd_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_camera_stabilization_008cf_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_anticipation_008cg_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_episodes_008ch_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_working_memory_008ci_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nature_residency_008ck_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_route_goal_008cn_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_ground_continuity_008co_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_goal_quality_008cs_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_observed_crossing_008ct_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_consistency_008cu_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nature_collision_008cv_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_camera_contact_008cw_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_frontier_routes_008cx_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_route_shortcuts_008cy_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_goal_approach_008da_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_changing_routes_008db_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_live_learning_008df_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_journey_samples_008dg_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_water_egress_008dh_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_panel_delivery_008di_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_stuck_recovery_008dk_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_ground_blending_008dl_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_day_cycle_008dm_smoke.gd",
+      "passed": true
+    }
+  ],
+  "source_sha256": {
+    "apps/world-runtime/world_sky_clock.py": "a0ce4da40c4e0c08bef519d4fff99eaf9631cbab927c1936a38e2f36885b33e0",
+    "apps/world-runtime/main_spatial.py": "6179c044acd4089b8371f4674183b321595b64bdba190b4394665f7d5fe46e43",
+    "apps/renderer-godot/world_map_day_cycle.gd": "54261d2b5efe5b9b4e8ca2dc75ffb1747838206c0eb7a885921753e2ba33158e",
+    "apps/renderer-godot/world_map_live_feed.gd": "7f84ca25d5d06b74f31d780a1f2ee848f28c8fea00a3e7f6609dd48075500b6b",
+    "apps/renderer-godot/world_map_preview.gd": "2ea7c24678ed62afe30b9c6af47830970cd1ba6f6d8570b7dd43cf7a6506ed2f",
+    "deploy/apply-day-night-cycle-008dm-root.sh": "6f117aa027039a58c5f562f713b894e419bef43aea5efce1401b7d58bdd57f58",
+    "deploy/export-world-map-preview-web.sh": "cc2f77218ee68316be468cb70f7b232f557ca69c793a574c931367d5490f53ae",
+    "tests/test_world_sky_clock.py": "bbc08d7ad3c7cf53a5ab1799aa9f52c16ac36f8eff2767906456ac9b30bc7a1e",
+    "tests/godot_day_cycle_008dm_smoke.gd": "30cae5d3c8e06fee45d44cf16fa53af39b7c75d8d254d28fadaf9bfe19305674"
+  },
+  "actual_persisted_clock_read_valid": true,
+  "visual_web_native_check_pending_install": true
+}

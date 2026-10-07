@@ -90,6 +90,9 @@ var _route: Array = []
 var _leg := 1
 var _position := Vector3.ZERO
 var _clock := 0.0
+var _day_cycle = preload("res://world_map_day_cycle.gd").new()
+var _day_environment: Environment
+var _day_light: DirectionalLight3D
 var _live_feed: Node
 var _live_authoritative := false
 var _live_last_update_ms := 0
@@ -126,6 +129,8 @@ func _ready() -> void:
     _live_feed = get_node_or_null("LiveFeed")
     if _live_feed != null and _live_feed.has_signal("world_slice_received"):
         _live_feed.connect("world_slice_received", Callable(self, "_on_world_slice"))
+    if _live_feed != null and _live_feed.has_signal("sky_clock_received"):
+        _live_feed.sky_clock_received.connect(Callable(_day_cycle, "apply_clock"))
     _route = _map.get("route", [])
     if _route.size() < 2:
         push_error("WORLD_MAP_PREVIEW_NO_ROUTE")
@@ -203,12 +208,14 @@ func _poll_native_fps_governor() -> void:
         Engine.max_fps = target_fps
 func _build_stage() -> void:
     var light := DirectionalLight3D.new()
+    _day_light = light
     light.rotation_degrees = Vector3(-53, 27, 0)
     light.light_energy = 1.25
     light.shadow_enabled = false
     add_child(light)
     var atmosphere := WorldEnvironment.new()
     var env := Environment.new()
+    _day_environment = env
     env.background_mode = Environment.BG_COLOR
     env.background_color = Color("#90b9c4")
     env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
@@ -966,6 +973,9 @@ func _attempt_stuck_recovery() -> void:
     _recovery_pending = false
 
 func _process(delta: float) -> void:
+    if _day_environment != null and _day_light != null:
+        _day_cycle.advance(delta)
+        _day_cycle.present(_day_environment, _day_light)
     _poll_native_fps_governor()
     if _recovery_pending:
         return

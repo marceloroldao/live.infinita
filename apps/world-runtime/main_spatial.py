@@ -14,6 +14,7 @@ import main as core
 from cold_engine import ColdAuthoritativeWorldEngine
 from cognitive_terrain_projection import CognitiveTerrainError, CognitiveTerrainProjectionReader
 from environmental_rules import EnvironmentalRulesError, derive_environmental_state
+from world_sky_clock import sky_clock
 from mutation_gate_service import GuardedMutationService
 from packages.spatial import FileRegionColdStore, MutationPrincipal
 from proposal_ledger_runtime import install_runtime_proposal_ledger
@@ -407,6 +408,12 @@ def _client_world_payload(message: dict[str, Any], view: dict[str, Any]) -> dict
         projection = cognitive_terrain_reader.read(world_id)
     except (CognitiveTerrainError, OSError, ValueError):
         projection = None
+    delivery = payload.get("delivery")
+    if isinstance(delivery, dict):
+        clock_path = Path(os.getenv("LIVE_INFINITA_WORLD_DATA_DIR", "/var/lib/live-infinita/autonomous-world")) / "simulation-clock.json"
+        clock = sky_clock(clock_path, world_id)
+        if clock is not None:
+            delivery["sky_clock"] = clock
     if projection is not None:
         delivery = payload.get("delivery")
         if isinstance(delivery, dict):
