@@ -168,6 +168,26 @@ class PublishTest(unittest.TestCase):
         self.assertNotEqual(self.args['base_state'].read_bytes(),base)
         self.assertEqual(self.read('base_state')['evaluated'],1)
 
+    def test_failure_phase_is_safe_and_control_survives_timeout(self):
+        def unavailable():raise TimeoutError('sensitive diagnostic text')
+        self.args['fetch']=unavailable
+        self.observation(180000,3);self.publish()
+        failure=self.read('public')['last_api_failure']
+        self.assertEqual(failure['phase'],'fetch_recent')
+        self.assertEqual(failure['code'],'weather_memory_api_timeout')
+        self.assertNotIn('sensitive',json.dumps(self.read('public')))
+        self.assertEqual(self.read('base_state')['pending']['origin']['time_ms'],180000)
+        self.publish();self.assertEqual(self.read('public')['last_api_failure'],failure)
+
+    def test_legacy_checkpoint_without_failure_field_is_preserved(self):
+        self.observation(180000,3);self.publish()
+        state=self.read('state');state.pop('last_api_failure');state['checksum']=memory.checksum(state)
+        self.args['state'].write_text(json.dumps(state))
+        pending=copy.deepcopy(state['pending'])
+        self.publish()
+        self.assertEqual(self.read('state')['pending'],pending)
+        self.assertEqual(self.read('state')['paired'],0)
+
     def test_real_frozen_core_ack_retrieval_restart_and_forecast(self):
         sys.path.insert(0,SDK)
         from fastapi import FastAPI
@@ -215,3 +235,38 @@ class PublishTest(unittest.TestCase):
         self.assertEqual(service3.store.count,4)
         self.publish();self.assertEqual(self.read('state')['paired'],1)
         client3.close()
+
+
+class ConnectorBudgetTest(unittest.TestCase):
+    def test_post_and_get_use_established_time_budgets(self):
+        from unittest.mock import patch
+        recorded=[]
+        class Response:
+            def __init__(self,status):self.status=status
+            def __enter__(self):return self
+            def __exit__(self,*args):pass
+            def read(self,n):return b'{"ok":true}'
+        class Opener:
+            def open(self,req,timeout):
+                recorded.append(timeout)
+                # Simulate a request requiring more than the old five seconds.
+                if timeout<7:raise TimeoutError('old budget too small')
+                return Response(201 if req.data is not None else 200)
+        with patch.dict(memory.os.environ,{'MEMORIA_API_KEY':'isolated-'+('x'*40)}):
+            with patch.object(memory,'build_opener',return_value=Opener()):
+                self.assertEqual(memory.request_api('/test',{'event':{}}),{'ok':True})
+                self.assertEqual(memory.request_api('/test'),{'ok':True})
+        self.assertEqual(recorded,[30,15])
+
+    def test_http_and_wrapped_timeout_do_not_expose_response_or_key(self):
+        from unittest.mock import patch
+        from urllib.error import HTTPError,URLError
+        class Opener:
+            def __init__(self,exc):self.exc=exc
+            def open(self,*args,**kwargs):raise self.exc
+        for exc,expected in [(HTTPError('http://127.0.0.1:8788/test',401,'sensitive text',{},None),'weather_memory_api_http_401'),(URLError(TimeoutError('sensitive text')),'weather_memory_api_timeout')]:
+            with patch.dict(memory.os.environ,{'MEMORIA_API_KEY':'isolated-'+('x'*40)}):
+                with patch.object(memory,'build_opener',return_value=Opener(exc)):
+                    with self.assertRaises(memory.WeatherMemoryAPIError) as result:memory.request_api('/test')
+            self.assertEqual(str(result.exception),expected)
+            self.assertNotIn('sensitive',str(result.exception))

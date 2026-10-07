@@ -12,7 +12,7 @@ Environment="PYTHONDONTWRITEBYTECODE=1"
 Environment="PYTHONPATH=/opt/live.infinita:/opt/live.infinita/apps/world-runtime"
 EnvironmentFile=/etc/live-infinita/memoria-local.env
 ExecStart=/opt/live.infinita/.venv/bin/python /opt/live.infinita/apps/world-runtime/world_weather_memory_experiment.py
-TimeoutStartSec=40
+TimeoutStartSec=65
 UMask=0077
 Nice=15
 CPUWeight=10

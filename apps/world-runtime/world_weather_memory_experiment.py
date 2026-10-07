@@ -11,6 +11,7 @@ import os
 from pathlib import Path
 import time
 from urllib.request import Request, ProxyHandler, build_opener
+from urllib.error import HTTPError, URLError
 from cognitive_terrain_projection import _read_json, _canonical
 from nov_navigation_memory_sync import write_checkpoint
 from nov_spatial_memory_sync import _observation_id, _validate_ack
@@ -64,16 +65,46 @@ def transition_payload(world_id, duration, origin, observed):
             "contains_prediction": False, "chronological_episode": False}}
 
 
+class WeatherMemoryAPIError(RuntimeError):
+    def __init__(self, code):
+        self.code = code
+        super().__init__(code)
+
+
+def failure_code(exc):
+    if isinstance(exc, WeatherMemoryAPIError): return exc.code
+    if isinstance(exc, TimeoutError): return "weather_memory_api_timeout"
+    if isinstance(exc, ValueError):
+        code = str(exc)
+        if code.startswith("weather_memory_") and code.replace("_", "").isalnum() and len(code) < 100: return code
+    return "weather_memory_contract_or_transport_failure"
+
+
 def request_api(path, payload=None):
     key = os.environ.get("MEMORIA_API_KEY", "")
     if len(key) < 32: raise ValueError("weather_memory_key_unconfigured")
     req = Request("http://127.0.0.1:8788" + path,
                   data=_canonical(payload) if payload is not None else None,
                   headers={"X-Memoria-Key": key, "Content-Type": "application/json", "Accept": "application/json"})
-    with build_opener(ProxyHandler({})).open(req, timeout=5) as response:
-        raw = response.read(2000001)
-        if response.status != (201 if payload is not None else 200) or len(raw) > 2000000:
-            raise ValueError("weather_memory_api_response")
+    # Match established bridge budgets; a timed-out POST may already be durable.
+    # Replay uses the same event identity and is acknowledged as a duplicate.
+    timeout = 30 if payload is not None else 15
+    try:
+        with build_opener(ProxyHandler({})).open(req, timeout=timeout) as response:
+            raw = response.read(2000001)
+            if response.status != (201 if payload is not None else 200) or len(raw) > 2000000:
+                raise ValueError("weather_memory_api_response")
+    except HTTPError as exc:
+        code = "weather_memory_api_http_" + str(exc.code)
+        exc.close()
+        raise WeatherMemoryAPIError(code) from None
+    except TimeoutError:
+        raise WeatherMemoryAPIError("weather_memory_api_timeout") from None
+    except URLError as exc:
+        code = "weather_memory_api_timeout" if isinstance(exc.reason, TimeoutError) else "weather_memory_api_transport"
+        raise WeatherMemoryAPIError(code) from None
+    except OSError:
+        raise WeatherMemoryAPIError("weather_memory_api_transport") from None
     value = json.loads(raw)
     if not isinstance(value, dict): raise ValueError("weather_memory_api_contract")
     return value
@@ -142,7 +173,7 @@ def initial(world_id, duration):
     return {"schema": SCHEMA, "world_id": world_id, "tick_duration_ms": duration,
             "last_archived_end_ms": -1, "last_considered_control_id": None,
             "last_time_ms": -1, "cache": [], "pending": None, "paired": 0,
-            "unavailable": 0, "missed": 0, "api_failures": 0, "last_reason": "starting",
+            "unavailable": 0, "missed": 0, "api_failures": 0, "last_reason": "starting", "last_api_failure": None,
             "error_sums": {method: {**{k: 0.0 for k in control.FIELDS}, "wind_vector_mps": 0.0} for method in ("control", "memory")},
             "memory_wins": {k: 0 for k in [*control.FIELDS, "wind_vector_mps"]}, "history": []}
 
@@ -215,7 +246,7 @@ def summary(s, now):
     return {"schema": SCHEMA, "world_id": s["world_id"], "generated_at_unix": now,
             "source": "prospective_paired_weather_memory_experiment", "paired": n,
             "unavailable": s["unavailable"], "missed": s["missed"], "api_failures": s["api_failures"],
-            "last_reason": s["last_reason"], "recalled_memories": len(s["cache"]),
+            "last_reason": s["last_reason"], "last_api_failure": s.get("last_api_failure"), "recalled_memories": len(s["cache"]),
             "mean_absolute_error": means, "memory_wins": s["memory_wins"],
             "pending": s["pending"], "last_evaluation": s["history"][-1] if s["history"] else None,
             "inference_location": "application_bounded_analog_predictor",
@@ -245,6 +276,8 @@ def publish(world=WORLD, weather=WEATHER, base_state=control.STATE, base_public=
         s["missed"] += 1
         s["pending"] = None
     considering = False
+    api_succeeded = False
+    phase = "archive_observed_transition"
     try:
         # At most one confirmed physical transition submitted per invocation.
         row = next((r for r in baseline["history"] if r["observed"]["time_ms"] > s["last_archived_end_ms"]), None)
@@ -253,11 +286,17 @@ def publish(world=WORLD, weather=WEATHER, base_state=control.STATE, base_public=
             response = send(payload)
             _validate_ack(response, payload)
             if response["stored"] == response["duplicate"]: raise ValueError("weather_memory_ack_status")
+            api_succeeded = True
             s["last_archived_end_ms"] = row["observed"]["time_ms"]
         if s["last_considered_control_id"] != trial["prediction_id"]:
             considering = True
             s["last_considered_control_id"] = trial["prediction_id"]
-            s["cache"] = merge_recalled(s["cache"], fetch(), world_id, duration)
+            phase = "fetch_recent"
+            response = fetch()
+            phase = "validate_recalled_transition"
+            s["cache"] = merge_recalled(s["cache"], response, world_id, duration)
+            api_succeeded = True
+            phase = "issue_prediction"
             forecast = predict(trial["origin"], s["cache"])
             c = sky_clock(clock, world_id)
             logical = c["logical_time_ms"] if c is not None else None
@@ -269,7 +308,9 @@ def publish(world=WORLD, weather=WEATHER, base_state=control.STATE, base_public=
                 s["pending"] = {"control": deepcopy(trial), "forecast": forecast,
                                 "issued_at_unix": now(), "issued_logical_time_ms": logical}
                 s["last_reason"] = "memory_prediction_committed"
-    except (OSError, ValueError, RuntimeError, TimeoutError):
+        if api_succeeded: s["last_api_failure"] = None
+    except (OSError, ValueError, RuntimeError, TimeoutError, KeyError, TypeError) as exc:
+        s["last_api_failure"] = {"phase": phase, "code": failure_code(exc), "observed_at_unix": now()}
         s["api_failures"] += 1
         s["last_reason"] = "memory_api_or_contract_unavailable"
         if considering and s["pending"] is None:
