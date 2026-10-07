@@ -1,0 +1,29 @@
+[Unit]
+Description=Live Infinita prospective weather control and memory experiment
+After=live-infinita-physical-weather.service live-infinita-memoria-local.service
+Wants=live-infinita-memoria-local.service
+
+[Service]
+Type=oneshot
+User=liveinfinita
+Group=liveinfinita
+WorkingDirectory=/opt/live.infinita
+Environment="PYTHONDONTWRITEBYTECODE=1"
+Environment="PYTHONPATH=/opt/live.infinita:/opt/live.infinita/apps/world-runtime"
+EnvironmentFile=/etc/live-infinita/memoria-local.env
+ExecStart=/opt/live.infinita/.venv/bin/python /opt/live.infinita/apps/world-runtime/world_weather_memory_experiment.py
+TimeoutStartSec=40
+UMask=0077
+Nice=15
+CPUWeight=10
+MemoryMax=256M
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadOnlyPaths=/var/lib/live-infinita/autonomous-world
+ReadOnlyPaths=/var/lib/live-infinita/cognitive-terrain
+ReadWritePaths=/var/lib/live-infinita/weather
+ReadWritePaths=/var/www/live-infinita-godot/navigation-memory
+IPAddressDeny=any
+IPAddressAllow=localhost

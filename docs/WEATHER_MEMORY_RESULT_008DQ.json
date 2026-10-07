@@ -1,0 +1,32 @@
+{
+  "release": "008DQ",
+  "installed": false,
+  "python_tests": 29,
+  "specific_tests": 13,
+  "control_regressions": 8,
+  "physical_regressions": 8,
+  "frozen_core_roundtrip_restart_crash_replay": true,
+  "real_live_shadow_pairs": 1,
+  "real_live_shadow_production_memory": false,
+  "real_live_shadow_errors": {
+    "control": {
+      "cloud_coverage": 0.005612102441460737,
+      "humidity": 5.210547340483984e-06,
+      "temperature_c": 0.022602050538814922,
+      "wind_vector_mps": 0.14356311413263942,
+      "wind_x_mps": 0.042789374072019104,
+      "wind_z_mps": 0.1370380866985017
+    },
+    "memory": {
+      "cloud_coverage": 0.0006089791216229434,
+      "humidity": 0.004652503551039966,
+      "temperature_c": 0.10859087023042946,
+      "wind_vector_mps": 0.20627591283452068,
+      "wind_x_mps": 0.15729220597260785,
+      "wind_z_mps": 0.13345004367172564
+    }
+  },
+  "physical_influence": false,
+  "cache_limit": 384,
+  "audit_pairs_limit": 128
+}
