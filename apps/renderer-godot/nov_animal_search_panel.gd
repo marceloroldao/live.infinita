@@ -9,6 +9,7 @@ var enabled := true
 var world_id := ""
 var _search: Dictionary = {}
 var _memory: Dictionary = {}
+var _intent: Dictionary = {}
 var _requests: Dictionary = {}
 var _busy: Dictionary = {}
 var _next_poll := 0
@@ -18,7 +19,7 @@ func _ready() -> void:
         if str(argument) == "--offline-tour":
             enabled = false
     if OS.has_feature("web"):
-        for kind in ["search", "memory"]:
+        for kind in ["search", "memory", "intent"]:
             var request := HTTPRequest.new()
             request.timeout = 4.0
             request.body_size_limit = MAX_BYTES
@@ -33,6 +34,7 @@ func set_world(value: String) -> void:
     world_id = value
     _search.clear()
     _memory.clear()
+    _intent.clear()
     _next_poll = 0
 
 func web_url(path: String, origin: String = "") -> String:
@@ -46,8 +48,8 @@ func _process(_delta: float) -> void:
     if not enabled or world_id.is_empty() or Time.get_ticks_msec() < _next_poll:
         return
     _next_poll = Time.get_ticks_msec()+5000
-    for kind in ["search", "memory"]:
-        var filename := "search-predictions.json" if kind == "search" else "encounter-memory.json"
+    for kind in ["search", "memory", "intent"]:
+        var filename := "search-predictions.json" if kind == "search" else ("encounter-memory.json" if kind == "memory" else "search-intent.json")
         if OS.has_feature("web"):
             if bool(_busy.get(kind,false)):
                 continue
@@ -81,8 +83,31 @@ func _accept(raw: String, kind: String) -> bool:
     var data = JSON.parse_string(raw)
     if typeof(data) != TYPE_DICTIONARY or not _fresh(data,Time.get_unix_time_from_system()):
         return false
-    if data.get("world_id","") != world_id or data.get("world_write_authority",true) != false or data.get("decision_use",true) != false or data.get("last_error") != null:
+    if data.get("world_id","") != world_id or data.get("world_write_authority",true) != false or data.get("decision_use") != (true if kind == "intent" else false) or data.get("last_error") != null:
         return false
+    if kind == "intent":
+        if data.get("schema") != "live-infinita-nov-animal-search-intent/v1" or data.get("source") != "native_bounded_animal_search" or data.get("absence_claim") != false or typeof(data.get("active")) != TYPE_BOOL or not _integer(data.get("logical_time_ms")):
+            return false
+        if float(data.generated_at_unix) < float(_intent.get("generated_at_unix",0)):
+            return false
+        var selected = data.get("intent")
+        if typeof(selected) != TYPE_DICTIONARY:
+            return false
+        if bool(data.active):
+            if selected.get("arm") not in ["memory","last_seen"] or selected.get("phase") not in ["approach","scan"] or typeof(selected.get("id")) != TYPE_STRING or not str(selected.id).begins_with(world_id+":animal-search:") or not _integer(selected.get("started_ms")) or not _integer(selected.get("deadline_ms")) or selected.started_ms>data.logical_time_ms or selected.deadline_ms<=selected.started_ms or selected.deadline_ms>selected.started_ms+45000:
+                return false
+            if not _integer(selected.get("scan_started_ms")) or typeof(selected.get("base_heading")) not in [TYPE_INT,TYPE_FLOAT] or not is_finite(float(selected.base_heading)):
+                return false
+            if selected.phase=="scan" and (selected.scan_started_ms<selected.started_ms or selected.scan_started_ms>data.logical_time_ms):
+                return false
+            var goal = selected.get("goal")
+            if typeof(goal)!=TYPE_ARRAY or goal.size()!=3 or typeof(selected.get("heading")) not in [TYPE_INT,TYPE_FLOAT] or not is_finite(float(selected.heading)):
+                return false
+            for coordinate in goal:
+                if typeof(coordinate) not in [TYPE_INT,TYPE_FLOAT] or not is_finite(float(coordinate)) or absf(float(coordinate))>100000:
+                    return false
+        _intent={"generated_at_unix":data.generated_at_unix,"active":data.active,"intent":selected.duplicate(true)}
+        return true
     if kind == "memory":
         if data.get("schema","") != MEMORY_SCHEMA or not _integer(data.get("stored_and_recovered_encounters")):
             return false
@@ -126,6 +151,9 @@ func lines(now: float = -1.0) -> String:
     if not search_fresh:
         return first+"\nBusca: aguardando dados do servidor"
     first += " | %d regiões" % int(_search.active)
+    var selected := intent(now)
+    if not selected.is_empty():
+        return first+"\nBusca: %s (%s)" % [("observando" if selected.phase=="scan" else "indo à região"),("memória" if selected.arm=="memory" else "último local")]
     if int(_search.paired) > 0:
         return first+"\nAcertos: memória %d/%d | último %d/%d" % [int(_search.memory_hits),int(_search.paired),int(_search.last_seen_hits),int(_search.paired)]
     if int(_search.active) > 0:
@@ -133,3 +161,15 @@ func lines(now: float = -1.0) -> String:
     if int(_search.pending) > 0:
         return first+"\nBusca: aguardando confirmação"
     return first+"\nBusca: aguardando novos encontros"
+
+func intent(now: float = -1.0, logical_ms: int = -1) -> Dictionary:
+    if now<0.0:now=Time.get_unix_time_from_system()
+    if not enabled or not bool(_intent.get("active",false)) or not _fresh(_intent,now) or now-float(_intent.get("generated_at_unix",0))>15.0:
+        return {}
+    var value: Dictionary = _intent.get("intent",{})
+    if logical_ms>=0 and (logical_ms>=int(value.get("deadline_ms",0)) or logical_ms+1000<int(value.get("started_ms",0))):
+        return {}
+    value=value.duplicate(true)
+    if logical_ms>=0 and value.get("phase")=="scan":
+        value["heading"]=float(value.base_heading)+TAU*clampf(float(logical_ms-int(value.scan_started_ms))/8000.0,0.0,1.0)
+    return value

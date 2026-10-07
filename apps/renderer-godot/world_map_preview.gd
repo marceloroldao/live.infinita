@@ -96,6 +96,9 @@ var _day_light: DirectionalLight3D
 var _memory_sky: Node3D
 var _visual_perception = preload("res://nov_visual_perception.gd").new()
 var _encounters = preload("res://nov_animal_encounters.gd").new()
+var _animal_search_intent = preload("res://nov_animal_search_intent.gd").new()
+var _animal_search_selection: Dictionary = {}
+var _animal_search_route := ""
 var _wildlife: Node3D
 var _perception_elapsed := 0.0
 var _perception_announced := false
@@ -147,6 +150,9 @@ func _ready() -> void:
     if wildlife_authority:
         _encounters.configure(OS.get_environment("LIVE_INFINITA_ENCOUNTERS_STATE"),OS.get_environment("LIVE_INFINITA_ENCOUNTERS_ACK"))
         _visual_perception.observation_ready.connect(Callable(_encounters,"observe"))
+        if OS.get_environment("LIVE_INFINITA_ANIMAL_SEARCH_ENABLED")=="1":
+            _animal_search_intent.configure(OS.get_environment("LIVE_INFINITA_ANIMAL_SEARCH_POLICY"),OS.get_environment("LIVE_INFINITA_ANIMAL_SEARCH_PUBLIC"),OS.get_environment("LIVE_INFINITA_ANIMAL_SEARCH_SOURCE"),_encounters._session)
+            _visual_perception.observation_ready.connect(Callable(_animal_search_intent,"observe"))
     _wildlife._habitat_allowed = Callable(self,"_midground_allowed")
     _physical_weather = preload("res://world_map_weather.gd").new()
     add_child(_physical_weather)
@@ -858,7 +864,7 @@ func _update_camera_heading(previous: Vector3, current: Vector3, delta: float = 
 func _orient_nov_visual() -> void:
     if _walker == null or _camera_forward.length_squared() < 0.001:
         return
-    _walker.rotation.y = atan2(_camera_forward.x, _camera_forward.z)
+    _walker.rotation.y = float(_animal_search_selection.get("heading",0.0)) if _animal_search_selection.get("phase","")=="scan" else atan2(_camera_forward.x, _camera_forward.z)
 func _follow_camera(snap_body: bool = true, delta: float = 1.0 / 60.0, reset_camera: bool = false) -> void:
     if snap_body:
         _local_motion.snap_body(_walker, _position)
@@ -934,7 +940,27 @@ func _advance_live_walk(delta: float) -> void:
     _local_motion._episodes.enabled = not OS.has_feature("web") and not OS.get_cmdline_user_args().has("--offline-tour")
     _local_motion._experience.working_memory.enabled = _local_motion._episodes.enabled and not _local_motion._experience.working_memory.world_id.is_empty()
     var dt := clampf(delta, 0.0, 0.1)
-    var committed_target: Vector3 = _route_goal.choose(_position, _last_live_position, dt, str(_local_motion._episodes.context.get("world_id", "")), Callable(_local_motion,"resolve_destination"))
+    var world := str(_local_motion._episodes.context.get("world_id", ""))
+    var logical_ms := floori(_day_cycle._logical_ms+_day_cycle._elapsed*1000.0)
+    _animal_search_selection = {}
+    if OS.has_feature("web") and _hud!=null and bool(_day_cycle.sample().get("synced",false)) and not _day_cycle._paused:
+        _animal_search_selection = _hud._animal_search.intent(-1.0,logical_ms)
+    elif _animal_search_intent.enabled:
+        if not bool(_day_cycle.sample().get("synced",false)) or _day_cycle._paused or _day_cycle._world_id!=world:
+            _animal_search_intent.suspend("clock_unavailable")
+        else:
+            _animal_search_selection = _animal_search_intent.choose(_position,world,logical_ms,
+                not _route_goal.active and _local_motion._journey.closed,Callable(_local_motion,"resolve_destination"),
+                _visual_perception.latest(),atan2(_camera_forward.x,_camera_forward.z))
+    var search_key := str(_animal_search_selection.get("id",""))+":"+str(_animal_search_selection.get("phase","")) if not _animal_search_selection.is_empty() else ""
+    if search_key!=_animal_search_route:
+        _route_goal.reset()
+        _animal_search_route=search_key
+    var desired_target := _last_live_position
+    if not _animal_search_selection.is_empty():
+        var point: Array = _animal_search_selection.goal
+        desired_target=Vector3(point[0],point[1],point[2])
+    var committed_target: Vector3 = _route_goal.choose(_position, desired_target, dt, world, Callable(_local_motion,"resolve_destination"))
     if _local_motion.route_goal_id != _route_goal.identity():
         _local_motion._experience.active = false
         _local_motion._experience.reset_route_plan()
@@ -987,6 +1013,8 @@ func _advance_live_walk(delta: float) -> void:
     _animate_nov_movement(previous, dt)
 
 func _attempt_stuck_recovery() -> void:
+    _animal_search_intent.finish("navigation_recovery")
+    _animal_search_selection.clear()
     _recovery_pending = true
     var trapped := _position
     # Load actual start-area colliders before accepting the reset destination.
@@ -1042,6 +1070,8 @@ func _process(delta: float) -> void:
                 _clock = 0.0
                 _update_caption()
             return
+        _animal_search_intent.suspend("feed_unavailable")
+        _animal_search_selection.clear()
         _live_authoritative = false
         _route_goal.reset()
         _live_region_id = ""
