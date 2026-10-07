@@ -1,0 +1,226 @@
+{
+  "release": "008DS1",
+  "verified_at_utc": "2026-10-07T04:57:36.203311+00:00",
+  "installed": true,
+  "source_commit": "7c6baf7",
+  "activation_markers": [
+    "Oct 07 04:54:41 liveinfinita python[52081]: WILDLIFE_ACTIVE world=nov-live-autonomous-001 count=3 authority=true"
+  ],
+  "errors_since_renderer_restart": [],
+  "native_source_matches": {
+    "nov_rabbit.gd": true,
+    "world_map_wildlife.gd": true,
+    "nov_visual_perception.gd": true,
+    "world_map_preview.gd": true
+  },
+  "services": {
+    "live-infinita-renderer.service": "active",
+    "live-infinita.service": "active",
+    "live-infinita-weather-control.timer": "active"
+  },
+  "public_build": {
+    "source_commit": "7c6baf7",
+    "project": "Live Infinita - Vale de Nov world-map preview",
+    "scene": "res://world_map_preview.tscn",
+    "renderer": "godot-web",
+    "map_schema": "live-infinita-visual-world-map/v1",
+    "world_size_m": 2048,
+    "logical_sectors": 1024,
+    "active_sector_cap": 9,
+    "traversability": "local-physics-read-only",
+    "touch_controls": true,
+    "nov_smooth_locomotion": true,
+    "nov_procedural_gait": true,
+    "audience_overlay": true,
+    "live_infinita_brand": true,
+    "live_infinita_brand_position": "top",
+    "narrator_caption": true,
+    "narrator_caption_position": "center",
+    "program_audio": true,
+    "live_exploration_controls": false,
+    "ground_surface_alignment": true,
+    "live_physical_collision": true,
+    "nature_collision_cpu_transforms": true,
+    "nature_solid_layer_collision": true,
+    "camera_stabilization": true,
+    "camera_collision_release_delay_seconds": 0.6,
+    "camera_collision_release_mps": 2,
+    "navigation_live_trial_error": true,
+    "navigation_live_route_search": false,
+    "navigation_complete_journey_quality": true,
+    "navigation_learning_panel": true,
+    "navigation_one_quality_sample_per_journey": true,
+    "navigation_panel_current_distance": true,
+    "navigation_cognitive_water_egress": true,
+    "navigation_blocked_status_heartbeat": true,
+    "navigation_absolute_web_requests": true,
+    "navigation_independent_panel_refresh": true,
+    "navigation_server_recall_metrics": true,
+    "navigation_stuck_recovery": true,
+    "day_night_cycle": true,
+    "day_night_clock_source": "persisted_simulation_clock",
+    "day_night_cycle_logical_minutes": 60,
+    "memory_linked_celestial_bodies": true,
+    "memory_sky_unit": "persisted_aggregate_memory",
+    "memory_sky_time_basis": "experience_logical_tick",
+    "memory_sky_primitive_catalog": false,
+    "memory_sky_display_budget": 256,
+    "physical_weather": true,
+    "physical_wildlife": true,
+    "resident_terrain_collision": true,
+    "resident_terrain_collision_layer": 2,
+    "wildlife_species": "rabbit",
+    "wildlife_population": 3,
+    "wildlife_authority": "native_renderer_physics",
+    "wildlife_learning": false,
+    "nov_visual_perception": true,
+    "nov_sight_day_range_m": 24,
+    "nov_sight_night_range_m": 12,
+    "nov_sight_horizontal_fov_deg": 120,
+    "nov_sight_obstacle_occlusion": true,
+    "physical_weather_fixed_step_ms": 1000,
+    "physical_cloud_advection": true,
+    "physical_wind_grass_response": true,
+    "weather_inference_influence": false,
+    "ground_new_sample_blending": true,
+    "ground_new_sample_grade_limit": 0.65,
+    "ground_smooth_highland_transition": true,
+    "navigation_confined_recovery_seconds": 30,
+    "navigation_no_progress_recovery_seconds": 90,
+    "navigation_anticipation": true,
+    "navigation_visible_goal_priority": true,
+    "navigation_observed_routes": true,
+    "navigation_frontier_exploration": true,
+    "navigation_observed_shortcuts": true,
+    "navigation_verified_goal_connection": true,
+    "navigation_changed_passage_replanning": true,
+    "navigation_ram_candidate_revalidation": true,
+    "navigation_destination_body_clearance": true,
+    "navigation_shortcut_range_m": 6,
+    "navigation_shortcut_max_probes": 3,
+    "navigation_coverage_cell_m": 8,
+    "navigation_goal_hard_limit_seconds": 900,
+    "navigation_step_perception_consistency": true,
+    "navigation_walkable_destinations": true,
+    "navigation_observed_window_side_m": 64,
+    "navigation_goal_visibility_range_m": 3,
+    "navigation_memoria_recall": true,
+    "navigation_experience": "renderer-local",
+    "navigation_chronological_episodes": true,
+    "navigation_working_memory": true,
+    "ground_shared_inference_samples": true,
+    "ground_consolidation_lifetime": "renderer-session",
+    "navigation_committed_goal": true,
+    "navigation_goal_reassessment_seconds": 180,
+    "navigation_promotion_successful_reuses": 3,
+    "local_object_residency": true,
+    "local_object_protected_radius_m": 45,
+    "cognitive_visual_inertia": true,
+    "visual_refresh_hint_seconds": 120,
+    "ecological_continuous_transitions": true,
+    "ecological_affinities": [
+      "forest",
+      "meadow",
+      "shrub",
+      "wetland",
+      "alpine"
+    ]
+  },
+  "public_wildlife": {
+    "animals": [
+      {
+        "blocked_steps": 0,
+        "consumed_food": 0,
+        "consumed_water": 0,
+        "heading": [
+          0.334108054637909,
+          -0.942534744739532
+        ],
+        "hunger": 0.450125,
+        "id": "nov-live-autonomous-001:rabbit:0",
+        "mode": "wander",
+        "phase": 4.82,
+        "position": [
+          -357.740295410156,
+          2.75147271156311,
+          -10.9535713195801
+        ],
+        "thirst": 0.520166666666667
+      },
+      {
+        "blocked_steps": 0,
+        "consumed_food": 0,
+        "consumed_water": 0,
+        "heading": [
+          -0.225556120276451,
+          -0.974230229854584
+        ],
+        "hunger": 0.570125,
+        "id": "nov-live-autonomous-001:rabbit:1",
+        "mode": "seek_water",
+        "phase": 11.82,
+        "position": [
+          -346.5126953125,
+          2.64533662796021,
+          -14.8951921463013
+        ],
+        "thirst": 0.620166666666667
+      },
+      {
+        "blocked_steps": 0,
+        "consumed_food": 0,
+        "consumed_water": 1,
+        "heading": [
+          -0.996049344539642,
+          -0.088801808655262
+        ],
+        "hunger": 0.690125,
+        "id": "nov-live-autonomous-001:rabbit:2",
+        "mode": "seek_food",
+        "phase": 18.82,
+        "position": [
+          -349.988555908203,
+          2.65577960014343,
+          -16.3749027252197
+        ],
+        "thirst": 0.198166666666667
+      }
+    ],
+    "authority": "native_renderer_physics",
+    "food": [
+      -357.0,
+      2.27777194976807,
+      -17.0
+    ],
+    "generated_at_unix": 1791349055.58617,
+    "home": [
+      -352.0,
+      2.2357120513916,
+      -17.0
+    ],
+    "learning": false,
+    "logical_time_ms": 611223500,
+    "memory_writes": false,
+    "schema": "live-infinita-physical-wildlife/v1",
+    "sequence": 277,
+    "species": "rabbit",
+    "water": [
+      -347.0,
+      2.19707298278809,
+      -17.0
+    ],
+    "world_id": "nov-live-autonomous-001"
+  },
+  "completed_consumption": {
+    "food": 0,
+    "water": 1
+  },
+  "horizontal_displacement_from_spawn_m": {
+    "nov-live-autonomous-001:rabbit:0": 5.510298977456572,
+    "nov-live-autonomous-001:rabbit:1": 5.488305514423955,
+    "nov-live-autonomous-001:rabbit:2": 1.3749503522140791
+  },
+  "learning_demonstrated": false,
+  "memory_writes": false,
+  "note": "Real production agents moved and a completed water consumption was recorded. Programmed animal behavior; no Nov animal encounter memory yet."
+}
