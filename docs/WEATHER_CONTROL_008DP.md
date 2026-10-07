@@ -35,3 +35,7 @@ sudo bash /home/etbra/live.infinita/deploy/apply-weather-control-008dp-root.sh
 Sucesso: `008DP_OK`. Log: `/home/etbra/008dp-weather-control-rollout.log`. O instalador guarda a versão anterior dos arquivos e unidades e executa rollback se uma etapa falhar. Preserva o checkpoint privado para não apagar previsões já emitidas. O build visual continua sendo o de 008DO; este rollout acrescenta somente o controle de teste no servidor, sem nova exportação Godot.
 
 Status acessível em `https://live.etbra.com.br/godot/navigation-memory/weather-control.json`. A primeira avaliação exige pelo menos 60 segundos lógicos avançados. Na próxima etapa, previsões com memórias realmente recuperadas deverão ser emitidas antes do resultado e comparadas ao controle no mesmo alvo e com a mesma observação. Ganho só poderá ser medido depois desse teste pareado; métricas deste controle não são aprendizagem da Memoria.ia.
+
+## Confirmação de produção — 7 de outubro de 2026
+
+Instalador retornou `008DP_OK` com fonte `e7a2a47`; timers de clima/controle e runtime/renderer ativos. O serviço de controle concluiu com `Result=success`, `ExecMainStatus=0`. Primeira previsão persistida em 606210000 ms, alvo 606270000 ms, observação recebida em 606271000 ms: uma avaliação e nenhuma janela perdida. Entrega HTTPS do status confirmada, com dados recentes. Erro vetorial do vento: 0.614690 m/s. O controle continua sem memória e sem autoridade física; esta confirmação verifica o protocolo e a instalação, não aprendizagem. Registro completo em `WEATHER_CONTROL_PRODUCTION_008DP.json`.
