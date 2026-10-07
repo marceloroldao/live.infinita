@@ -89,8 +89,29 @@ def audit(intent, memory, prediction, now=None):
         for category, count in window_counts[arm].items():
             if count > arms[arm][category]:
                 raise ValueError("result window exceeds cumulative counters")
+    logical_now = integer(intent["logical_time_ms"])
+    forecasts = prediction.get("forecasts", [])
+    if not isinstance(forecasts, list) or len(forecasts) > 16:
+        raise ValueError("invalid forecast window")
+    eligibility = {"listed": len(forecasts), "expired": 0, "less_than_20_seconds_remaining": 0, "eligible_by_time": 0}
+    for forecast in forecasts:
+        issued, expires = integer(forecast["issued_ms"]), integer(forecast["expires_ms"])
+        if expires != issued + 60000 or issued > logical_now + 1000:
+            raise ValueError("invalid forecast time")
+        remaining = expires - logical_now
+        if remaining <= 0:
+            eligibility["expired"] += 1
+        elif remaining < 20000 or issued > logical_now:
+            eligibility["less_than_20_seconds_remaining"] += 1
+        else:
+            eligibility["eligible_by_time"] += 1
+    readiness = {"logical_time_ms": logical_now, "forecast_time_eligibility": eligibility,
+                 "next_strategy": ARMS[sum(arms[a]["started"] for a in ARMS) % 2],
+                 "remaining_conditions_not_measured": ["normal_journey_finished", "target_not_currently_seen", "target_within_40m", "destination_physically_allowed", "cycle_quota_available", "cooldown_elapsed"],
+                 "status": "active_search" if active else ("no_forecast_with_sufficient_time" if not eligibility["eligible_by_time"] else "time_eligible_forecast_other_conditions_not_measured")}
     return {"schema": "live-infinita-animal-search-audit/v1", "generated_at_unix": now,
             "world_id": world, "source_age_seconds": ages, "read_only": True,
+            "search_readiness": readiness,
             "bounded_search": {"arms": arms, "recent_results": recent,
                                "duration_scope": "recent_results_only_max_16",
                                "comparison_state": "both_strategies_observed" if all(arms[a]["completed"] for a in ARMS) else "waiting_for_both_strategies",

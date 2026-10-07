@@ -15,7 +15,7 @@ class AuditTests(unittest.TestCase):
                       last_error=None, generated_at_unix=100)
         self.intent = dict(common, schema="live-infinita-nov-animal-search-intent/v1",
                            source="native_bounded_animal_search", decision_use=True,
-                           active=False, intent={}, results=[],
+                           active=False, intent={}, results=[],logical_time_ms=100000,
                            counts={a:dict(started=0,confirmed=0,not_observed=0,aborted=0) for a in mod.ARMS})
         self.memory = dict(common, schema="live-infinita-nov-animal-memory/v1",
                            decision_use=False, verified_history=[], stored_and_recovered_encounters=0)
@@ -24,6 +24,18 @@ class AuditTests(unittest.TestCase):
                                counters={},paired_metrics={})
     def run_audit(self):
         return mod.audit(self.intent,self.memory,self.prediction,now=101)
+    def test_expired_ack_grace_forecast_is_not_search_ready(self):
+        self.prediction["forecasts"]=[dict(issued_ms=1000,expires_ms=61000)]
+        result=self.run_audit()["search_readiness"]
+        self.assertEqual(result["forecast_time_eligibility"]["expired"],1)
+        self.assertEqual(result["status"],"no_forecast_with_sufficient_time")
+    def test_minimum_remaining_time_and_next_strategy(self):
+        self.prediction["forecasts"]=[dict(issued_ms=50000,expires_ms=110000),dict(issued_ms=70000,expires_ms=130000)]
+        self.intent["counts"]["memory"].update(started=1,confirmed=1)
+        result=self.run_audit()["search_readiness"]
+        self.assertEqual(result["next_strategy"],"last_seen")
+        self.assertEqual(result["forecast_time_eligibility"]["eligible_by_time"],1)
+        self.assertEqual(result["forecast_time_eligibility"]["less_than_20_seconds_remaining"],1)
     def test_zero_trials_is_unknown_not_zero_precision(self):
         del self.memory["absence_claim"]
         r=self.run_audit()

@@ -1,0 +1,16 @@
+{
+  "verified_at_utc": "2026-10-07T13:20:05.052734+00:00",
+  "window_start_utc": "2026-10-07T12:51:00Z",
+  "window_end_utc": "2026-10-07T13:18:45Z",
+  "recovery_count": 6,
+  "recovery_logs": [
+    "Oct 07 12:51:33 liveinfinita python[208812]: NOV_STUCK_RECOVERY from=(20.5,-308.8) to=(-352.0,-32.0)",
+    "Oct 07 13:02:41 liveinfinita python[208812]: NOV_STUCK_RECOVERY from=(-333.1,-17.0) to=(-352.0,-32.0)",
+    "Oct 07 13:06:49 liveinfinita python[208812]: NOV_STUCK_RECOVERY from=(-73.1,-29.3) to=(-352.0,-32.0)",
+    "Oct 07 13:10:57 liveinfinita python[208812]: NOV_STUCK_RECOVERY from=(19.4,-76.8) to=(-352.0,-32.0)",
+    "Oct 07 13:14:47 liveinfinita python[208812]: NOV_STUCK_RECOVERY from=(19.2,-289.7) to=(-352.0,-32.0)",
+    "Oct 07 13:18:10 liveinfinita python[208812]: NOV_STUCK_RECOVERY from=(-242.2,-40.8) to=(-352.0,-32.0)"
+  ],
+  "script_errors": [],
+  "interpretation": "Recovery works, but repeated recovery is evidence of navigation limitations. It is not evidence of improved navigation. Exact causes require inspection of local geometry and movement episodes."
+}
