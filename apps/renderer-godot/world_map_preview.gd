@@ -95,6 +95,7 @@ var _day_environment: Environment
 var _day_light: DirectionalLight3D
 var _memory_sky: Node3D
 var _visual_perception = preload("res://nov_visual_perception.gd").new()
+var _encounters = preload("res://nov_animal_encounters.gd").new()
 var _wildlife: Node3D
 var _perception_elapsed := 0.0
 var _perception_announced := false
@@ -143,6 +144,9 @@ func _ready() -> void:
     var wildlife_public := OS.get_environment("LIVE_INFINITA_WILDLIFE_PUBLIC")
     var wildlife_authority := not OS.has_feature("web") and not OS.get_cmdline_user_args().has("--offline-tour") and not wildlife_state.is_empty() and not wildlife_public.is_empty()
     _wildlife.configure(wildlife_authority,wildlife_state,wildlife_public)
+    if wildlife_authority:
+        _encounters.configure(OS.get_environment("LIVE_INFINITA_ENCOUNTERS_STATE"),OS.get_environment("LIVE_INFINITA_ENCOUNTERS_ACK"))
+        _visual_perception.observation_ready.connect(Callable(_encounters,"observe"))
     _wildlife._habitat_allowed = Callable(self,"_midground_allowed")
     _physical_weather = preload("res://world_map_weather.gd").new()
     add_child(_physical_weather)

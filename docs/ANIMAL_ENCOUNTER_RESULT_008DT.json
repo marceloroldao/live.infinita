@@ -1,0 +1,211 @@
+{
+  "release": "008DT",
+  "validated_at_utc": "2026-10-07T05:11:14.280896+00:00",
+  "installed": false,
+  "godot_tests": [
+    {
+      "test": "godot_world_map_traversal_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nov_locomotion_008bz_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nov_grounded_presentation_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_live_program_008cb_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_ground_surface_008cc_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_experience_008cd_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_camera_stabilization_008cf_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_anticipation_008cg_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_episodes_008ch_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_working_memory_008ci_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nature_residency_008ck_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_route_goal_008cn_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_ground_continuity_008co_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_goal_quality_008cs_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_observed_crossing_008ct_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_consistency_008cu_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nature_collision_008cv_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_camera_contact_008cw_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_frontier_routes_008cx_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_route_shortcuts_008cy_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_goal_approach_008da_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_changing_routes_008db_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_live_learning_008df_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_journey_samples_008dg_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_water_egress_008dh_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_panel_delivery_008di_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_stuck_recovery_008dk_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_ground_blending_008dl_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_day_cycle_008dm_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_memory_sky_008dn_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_weather_008do_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_visual_perception_008dr_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_wildlife_008ds_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_wildlife_ground_008ds1_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_animal_encounters_008dt_smoke.gd",
+      "passed": true
+    }
+  ],
+  "python_tests": 15,
+  "real_frozen_core_test": "Godot eye encounter stored and recovered through actual API in isolated SQLite; reopen after crash before bridge checkpoint keeps one record.",
+  "actual_eye_sensor_test_outbox": {
+    "absence_claim": false,
+    "acknowledged_sequence": 0,
+    "active": {},
+    "contains_prediction": false,
+    "dropped_samples": 0,
+    "generated_at_unix": 1791349810.67089,
+    "logical_time_ms": 4500,
+    "next_sequence": 2,
+    "pending": [
+      {
+        "closed_reason": "lost_visual_contact",
+        "entity_id": "test:rabbit:0",
+        "first_observer_eye_m": [
+          0.0,
+          1.54999995231628,
+          0.0
+        ],
+        "first_range_m": 24.0,
+        "first_seen_ms": 1000,
+        "first_target_m": [
+          0.0,
+          0.550000011920929,
+          8.0
+        ],
+        "kind": "rabbit",
+        "last_observer_eye_m": [
+          0.0,
+          1.54999995231628,
+          0.0
+        ],
+        "last_range_m": 24.0,
+        "last_seen_ms": 1250,
+        "last_target_m": [
+          0.0,
+          0.550000011920929,
+          8.0
+        ],
+        "max_distance_m": 8.06225776672363,
+        "min_distance_m": 8.06225776672363,
+        "sample_count": 2,
+        "sequence": 1
+      }
+    ],
+    "schema": "live-infinita-nov-animal-encounters/v1",
+    "session_id": "26f9a80a0d979ad047e6fcb294a52d49",
+    "source": "local_physics_eye_sensor",
+    "world_id": "test",
+    "world_write_authority": false
+  },
+  "production_memory_test_injection": false,
+  "native_recording_source": "local_physics_eye_sensor",
+  "global_wildlife_projection_read": false,
+  "decision_use": false,
+  "learning_improvement_measured": false,
+  "pending_limit": 128,
+  "active_limit": 16,
+  "encounter_window_ms": 30000,
+  "lost_contact_ms": 3000,
+  "bridge_events_per_run": 1,
+  "api_recent_retrieval_limit": 100,
+  "regression_note": "Full 35-test suite passed; encounter sensor smoke repeated after final numeric/geometry validation changes and 15 Python tests passed."
+}
