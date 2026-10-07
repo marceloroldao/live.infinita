@@ -13,6 +13,7 @@ import tempfile
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SDK_COMMIT = "dfd87c995b50c49b45a9d5dd4c43cce456983d4f"
 SDK = pathlib.Path("/opt/live-infinita-memoria-core") / SDK_COMMIT / "src"
+SCRIPT = ROOT / "tests/godot_physical_memory_comparison_008ed.gd"
 ENGINE = "/opt/live-infinita-godot/engine/Godot_v4.7.2-stable_linux.x86_64"
 
 def canonical(value):
@@ -29,7 +30,7 @@ def run_godot(project, fixture, recall=None):
     if recall is not None:
         env["LIVE_INFINITA_PHYSICAL_MEMORY_RECALL"] = str(recall)
     result = subprocess.run([ENGINE, "--headless", "--audio-driver", "Dummy", "--path", str(project),
-                             "--script", str(ROOT / "tests/godot_physical_memory_comparison_008ed.gd"),
+                             "--script", str(SCRIPT),
                              "--", "--offline-tour"], capture_output=True, text=True, timeout=60, env=env)
     log = result.stdout + result.stderr
     if result.returncode or re.search(r"SCRIPT ERROR:|Parse Error:|Failed to load script|^ERROR:", log, re.M):
@@ -111,8 +112,8 @@ def compare(project):
                   "physical_rows_recovered": len(rows), "fixture_sha256": hashlib.sha256(encoded).hexdigest(),
                   "promotion_gate_bypassed_for_isolated_transport_test": True,
                   "cold_run": first, "comparison": second,
-                  "core_minus_perception_distance_m": core_run["distance_m"] - baseline["distance_m"],
-                  "core_minus_perception_simulated_seconds": core_run["simulated_seconds"] - baseline["simulated_seconds"],
+                  "core_minus_perception_distance_m": core_run["distance_m"] - baseline["distance_m"] if core_run["arrived"] and baseline["arrived"] else None,
+                  "core_minus_perception_simulated_seconds": core_run["simulated_seconds"] - baseline["simulated_seconds"] if core_run["arrived"] and baseline["arrived"] else None,
                   "production_learning_demonstrated": False,
                   "limitations": ["One deterministic fixed wall/gap; not statistical generalization.",
                                   "Simulation time is fixed dt multiplied by ticks, not live wall time.",

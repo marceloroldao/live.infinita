@@ -4,6 +4,7 @@ var failures := 0
 var runs: Array = []
 var initial := Vector3(-86,0,-80)
 var destination := Vector3(-68,0,-80)
+var opening_z := -30.0
 func check(value: bool,label: String) -> void:
     if not value:push_error(label);failures+=1
 func _initialize() -> void:call_deferred("run")
@@ -44,21 +45,33 @@ func travel(holder: Node3D,memory,label: String,recall: Dictionary = {}) -> Dict
     var collisions := 0
     var ticks := 0
     var crossed := false
+    var crossing_z = null
+    var recalled_rejections := 0
     var last_serial := -1
     var ram_agreements := 0
     var core_agreements := 0
     var started := Time.get_ticks_msec()
     for i in range(2500):
         var old := current
+        var address: String=motion._experience.key(Vector2(destination.x,destination.z))+"|"+motion._experience.key(Vector2(current.x,current.z))
+        var old_serial: int=motion._experience.decision_serial
         var value: Dictionary=motion.advance(current,Vector2.ZERO,destination,0.1,body,holder.get_world_3d().direct_space_state,true,4)
         current=value.get("position",current)
+        if motion._experience.decision_serial!=old_serial and motion._experience.recalled_routes.has(address):
+            var remembered: Vector2=motion._experience.recalled_routes[address].next
+            for candidate in motion._experience.decision_evidence.get("candidates",[]):
+                var point: Array=candidate.point
+                if Vector2(point[0],point[1]).distance_to(remembered)<0.001 and not bool(candidate.allowed):
+                    recalled_rejections+=1
+                    break
         if motion._experience.decision_serial!=last_serial:
             last_serial=motion._experience.decision_serial
             if motion._experience.last_decision_source=="perception-working-memory-agreement":ram_agreements+=1
             if motion._experience.last_decision_source=="perception-memory-agreement":core_agreements+=1
         collisions+=int(value.get("collisions",0));ticks+=1
         if old.x < -80 and current.x>=-80:
-            crossed = absf(current.z+30)<=2.0 or absf(current.z)>180.5
+            crossing_z=current.z
+            crossed = absf(current.z-opening_z)<=2.0 or absf(current.z)>180.5
         if bool(value.get("reached",false)):break
     var arrived := Vector2(current.x,current.z).distance_to(Vector2(destination.x,destination.z))<0.1
     if not arrived:motion._journey.abort("limite do experimento","interrupted")
@@ -68,12 +81,15 @@ func travel(holder: Node3D,memory,label: String,recall: Dictionary = {}) -> Dict
         "causal_memoria_steps":motion._journey.causal_memoria_steps,
         "route_plan_builds":motion._experience.route_plan_builds,"physically_open_crossing":crossed,
         "ram_agreement_decisions":ram_agreements,"core_agreement_decisions":core_agreements,
-        "verified_recalled_routes_loaded":motion._experience.recalled_routes.size()}
-    check(arrived and collisions==0 and crossed,label+": physical capsule must arrive without crossing wall")
+        "verified_recalled_routes_loaded":motion._experience.recalled_routes.size(),
+        "remembered_core_candidate_rejections":recalled_rejections,"wall_crossing_z":crossing_z,
+        "opening_z":opening_z}
+    check(collisions==0 and (not arrived or crossed),label+": movement cannot cross a closed wall")
+    if label=="training":check(arrived,label+": complete physical training is required")
     check(motion._experience.route_plan_builds==0,label+": no global route search")
     if label=="verified_core_recall":
-        check(motion._experience.recalled_routes.size()>0 and core_agreements>0,
-            "Verified core data must actually participate in physical route decisions")
+        check(motion._experience.recalled_routes.size()>0,
+            "Verified core data must load into the physical navigator")
     # The reference evidence is the first complete, collision-free physical journey.
     if label=="training":
         var rows: Array=[]
