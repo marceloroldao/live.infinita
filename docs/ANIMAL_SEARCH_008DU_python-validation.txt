@@ -1,0 +1,46 @@
+test_actual_frozen_core_and_godot_eye_fixture (test_nov_animal_memory_008dt.SyncTest.test_actual_frozen_core_and_godot_eye_fixture) ... /opt/live.infinita/.venv/lib/python3.14/site-packages/starlette/testclient.py:51: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+  _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+/opt/live.infinita/.venv/lib/python3.14/site-packages/fastapi/routing.py:234: DeprecationWarning: 'asyncio.iscoroutinefunction' is deprecated and slated for removal in Python 3.16; use inspect.iscoroutinefunction() instead
+  is_coroutine = asyncio.iscoroutinefunction(dependant.call)
+ok
+test_checksum_source_and_ack_corruption_rejected (test_nov_animal_memory_008dt.SyncTest.test_checksum_source_and_ack_corruption_rejected) ... ok
+test_cursor_requires_contiguous_pending_and_one_per_run (test_nov_animal_memory_008dt.SyncTest.test_cursor_requires_contiguous_pending_and_one_per_run) ... ok
+test_fetch_failure_does_not_ack_stored_event (test_nov_animal_memory_008dt.SyncTest.test_fetch_failure_does_not_ack_stored_event) ... ok
+test_float_json_reload_keeps_event_identity (test_nov_animal_memory_008dt.SyncTest.test_float_json_reload_keeps_event_identity) ... ok
+test_geometry_future_time_sequence_and_nan_rejected (test_nov_animal_memory_008dt.SyncTest.test_geometry_future_time_sequence_and_nan_rejected) ... ok
+test_missing_recent_recall_preserves_unacknowledged_encounter (test_nov_animal_memory_008dt.SyncTest.test_missing_recent_recall_preserves_unacknowledged_encounter) ... ok
+test_pending_budget_is_bounded (test_nov_animal_memory_008dt.SyncTest.test_pending_budget_is_bounded) ... ok
+test_post_timeout_retry_uses_same_event (test_nov_animal_memory_008dt.SyncTest.test_post_timeout_retry_uses_same_event) ... ok
+test_recall_content_must_match_record (test_nov_animal_memory_008dt.SyncTest.test_recall_content_must_match_record) ... ok
+test_stale_source_and_damaged_session_rejected (test_nov_animal_memory_008dt.SyncTest.test_stale_source_and_damaged_session_rejected) ... ok
+test_store_recover_ack_and_no_repost_on_idle (test_nov_animal_memory_008dt.SyncTest.test_store_recover_ack_and_no_repost_on_idle) ... ok
+test_unstored_ack_is_rejected (test_nov_animal_memory_008dt.SyncTest.test_unstored_ack_is_rejected) ... ok
+test_world_predictions_absence_and_global_source_rejected (test_nov_animal_memory_008dt.SyncTest.test_world_predictions_absence_and_global_source_rejected) ... ok
+test_wrong_ack_never_releases_source (test_nov_animal_memory_008dt.SyncTest.test_wrong_ack_never_releases_source) ... ok
+test_comparison_can_record_memory_win_and_memory_loss (test_nov_animal_search_008du.PredictionTest.test_comparison_can_record_memory_win_and_memory_loss) ... ok
+test_continuous_window_splits_never_become_independent_visits (test_nov_animal_search_008du.PredictionTest.test_continuous_window_splits_never_become_independent_visits) ... ok
+test_corrupt_state_preserves_previous_file (test_nov_animal_search_008du.PredictionTest.test_corrupt_state_preserves_previous_file) ... ok
+test_day_phase_wrap_is_continuous (test_nov_animal_search_008du.PredictionTest.test_day_phase_wrap_is_continuous) ... ok
+test_delayed_ack_of_already_seen_encounter_is_not_future_evidence (test_nov_animal_search_008du.PredictionTest.test_delayed_ack_of_already_seen_encounter_is_not_future_evidence) ... ok
+test_forecast_geometry_tamper_even_with_resealed_state_is_rejected (test_nov_animal_search_008du.PredictionTest.test_forecast_geometry_tamper_even_with_resealed_state_is_rejected) ... ok
+test_future_sighting_evaluates_paired_before_any_new_forecast (test_nov_animal_search_008du.PredictionTest.test_future_sighting_evaluates_paired_before_any_new_forecast) ... ok
+test_no_pooling_different_animals_or_cells (test_nov_animal_search_008du.PredictionTest.test_no_pooling_different_animals_or_cells) ... ok
+test_no_sighting_expires_without_counting_a_miss (test_nov_animal_search_008du.PredictionTest.test_no_sighting_expires_without_counting_a_miss) ... ok
+test_other_animal_sighting_does_not_evaluate_forecast (test_nov_animal_search_008du.PredictionTest.test_other_animal_sighting_does_not_evaluate_forecast) ... ok
+test_predictor_writes_only_separate_state_and_publication (test_nov_animal_search_008du.PredictionTest.test_predictor_writes_only_separate_state_and_publication) ... ok
+test_private_state_permissions_and_public_separate_prediction_flag (test_nov_animal_search_008du.PredictionTest.test_private_state_permissions_and_public_separate_prediction_flag) ... ok
+test_real_frozen_structural_api_recall_feeds_forecast (test_nov_animal_search_008du.PredictionTest.test_real_frozen_structural_api_recall_feeds_forecast) ... ok
+test_restart_and_same_tick_do_not_duplicate_forecast_or_evaluation (test_nov_animal_search_008du.PredictionTest.test_restart_and_same_tick_do_not_duplicate_forecast_or_evaluation) ... ok
+test_rewind_world_and_session_switch_are_blocked (test_nov_animal_search_008du.PredictionTest.test_rewind_world_and_session_switch_are_blocked) ... ok
+test_same_pass_contact_flicker_is_not_recurrence (test_nov_animal_search_008du.PredictionTest.test_same_pass_contact_flicker_is_not_recurrence) ... ok
+test_sampling_more_frames_does_not_add_visits (test_nov_animal_search_008du.PredictionTest.test_sampling_more_frames_does_not_add_visits) ... ok
+test_stale_evidence_cannot_issue_forecast (test_nov_animal_search_008du.PredictionTest.test_stale_evidence_cannot_issue_forecast) ... ok
+test_stale_sensor_and_future_recalled_event_are_blocked (test_nov_animal_search_008du.PredictionTest.test_stale_sensor_and_future_recalled_event_are_blocked) ... ok
+test_three_independent_recalled_encounters_make_region_not_probability (test_nov_animal_search_008du.PredictionTest.test_three_independent_recalled_encounters_make_region_not_probability) ... ok
+test_two_encounters_are_not_enough (test_nov_animal_search_008du.PredictionTest.test_two_encounters_are_not_enough) ... ok
+test_unverified_or_forged_history_never_enters_predictor (test_nov_animal_search_008du.PredictionTest.test_unverified_or_forged_history_never_enters_predictor) ... ok
+
+----------------------------------------------------------------------
+Ran 37 tests in 1.662s
+
+OK

@@ -1,0 +1,9 @@
+[Unit]
+Description=Evaluate Nov animal search forecasts without driving navigation
+[Timer]
+OnBootSec=30s
+OnUnitInactiveSec=5s
+AccuracySec=1s
+Unit=live-infinita-animal-search.service
+[Install]
+WantedBy=timers.target

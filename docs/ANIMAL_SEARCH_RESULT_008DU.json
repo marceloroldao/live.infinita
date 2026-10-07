@@ -1,0 +1,73 @@
+{
+  "update": "008DU",
+  "validated_at_utc": "2026-10-07T05:44:04.023424+00:00",
+  "installed": false,
+  "frozen_release_preserved": "v0.1.0",
+  "python_tests_passed": 37,
+  "prediction_tests": 22,
+  "existing_bridge_tests": 15,
+  "godot_eye_encounter_smoke_passed": true,
+  "real_frozen_core_integration_passed": true,
+  "memoria_core_commit": "dfd87c995b50c49b45a9d5dd4c43cce456983d4f",
+  "model": "application_spatial_recurrence_over_verified_recalled_encounters",
+  "decision_use": false,
+  "world_write_authority": false,
+  "forecast_ingestion_into_memory": false,
+  "learning_improvement_measured": false,
+  "production_observation_review": {
+    "snapshot_generated_at_unix": 1791351840.999983,
+    "stored_and_recovered_encounters": 12,
+    "verified_history_count": 12,
+    "eligible_regions_from_snapshot": {
+      "nov-live-autonomous-001:rabbit:0": [
+        {
+          "center_xz_m": [
+            -356.0,
+            -20.0
+          ],
+          "radius_m": 8,
+          "independent_encounters": 3,
+          "recurrence_score": 2.188381,
+          "evidence_ids": [
+            "structural-event:9c85c9034a917865e7c9cc262e2382abb2f152c4",
+            "structural-event:dc04f51fc95dc608e617453697429de509f56e7f",
+            "structural-event:8fd75f362a40fae91b102df4b13300483e90a0b6"
+          ]
+        }
+      ],
+      "nov-live-autonomous-001:rabbit:1": [
+        {
+          "center_xz_m": [
+            -356.0,
+            -20.0
+          ],
+          "radius_m": 8,
+          "independent_encounters": 3,
+          "recurrence_score": 2.188489,
+          "evidence_ids": [
+            "structural-event:71bdd8998de0f0fa4555b655562e34a65219bce6",
+            "structural-event:a31c807bc6bac4df9f34675b53274bfd4bd5211b",
+            "structural-event:2b486abdc8bba666beb6fdf28b039a73231ca894"
+          ]
+        }
+      ],
+      "nov-live-autonomous-001:rabbit:2": [
+        {
+          "center_xz_m": [
+            -356.0,
+            -12.0
+          ],
+          "radius_m": 8,
+          "independent_encounters": 3,
+          "recurrence_score": 2.189518,
+          "evidence_ids": [
+            "structural-event:73164995d9f2b328be2c098b3e53841d72df171e",
+            "structural-event:682fc05875b32b6db3407176c76cd2431f79ca7c",
+            "structural-event:4796bc842e32ad0f1894069f37c46911ee483fb3"
+          ]
+        }
+      ]
+    },
+    "note": "Read-only review of already public verified encounter history; not a deployed predictor run. Continuous contacts require independent revisits before a forecast."
+  }
+}
