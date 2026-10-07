@@ -48,14 +48,19 @@ func observe_attempt(row: Dictionary) -> bool:
         _identities.erase(str(records[0].attempt_id));records.pop_front()
     return true
 func recommend(key: String) -> Dictionary:
-    if not enabled:return {}
+    return evaluate(key).recommendation
+func evaluate(key: String) -> Dictionary:
+    var evaluation: Dictionary={"context":key,"reason":"disabled","alternatives":{},"recommendation":{}}
+    if not enabled:return evaluation
     var sides: Dictionary={}
     for side in [-1,1]:
         var recent: Array[Dictionary]=[]
         for row in records:
             if row.context==key and int(row.side)==side:recent.append(row)
         while recent.size()>SAMPLE_LIMIT:recent.pop_front()
-        if recent.size()<MIN_SAMPLES:return {}
+        if recent.is_empty():
+            sides[side]={"samples":0,"errors":0,"observation_ids":[]}
+            continue
         var cost := 0.0
         var errors := 0
         var ids: Array=[]
@@ -66,13 +71,22 @@ func recommend(key: String) -> Dictionary:
             if not row.outcome in ["arrived","contour_completed"]:errors+=1
             var id := str(row.get("observation_id",""))
             if not id.is_empty() and not ids.has(id):ids.append(id)
-        if errors==recent.size():return {}
         var score := cost/recent.size()+20.0*float(errors)/recent.size()
         sides[side]={"score":score,"samples":recent.size(),"errors":errors,"observation_ids":ids}
+    evaluation.alternatives=sides
+    if int(sides[-1].samples)<MIN_SAMPLES or int(sides[1].samples)<MIN_SAMPLES:
+        evaluation.reason="insufficient_samples";return evaluation
+    if int(sides[-1].errors)==int(sides[-1].samples) or int(sides[1].errors)==int(sides[1].samples):
+        evaluation.reason="side_without_success";return evaluation
     var best := -1 if float(sides[-1].score)<float(sides[1].score) else 1
     var other := -best
     # Abstain on weak/equal evidence; no permanent ban or fabricated certainty.
-    if float(sides[other].score)-float(sides[best].score)<0.2*maxf(1.0,float(sides[other].score)):return {}
-    return {"side":best,"context":key,"alternatives":sides,
+    evaluation.score_gap=float(sides[other].score)-float(sides[best].score)
+    evaluation.required_gap=0.2*maxf(1.0,float(sides[other].score))
+    if float(evaluation.score_gap)<float(evaluation.required_gap):
+        evaluation.reason="insufficient_margin";return evaluation
+    evaluation.reason="preferred_side"
+    evaluation.recommendation={"side":best,"context":key,"alternatives":sides,
         "source":"recovered-pattern-evidence" if not sides[best].observation_ids.is_empty() else "ram-pattern-evidence",
         "observation_ids":sides[best].observation_ids.duplicate(),"contains_prediction":true}
+    return evaluation

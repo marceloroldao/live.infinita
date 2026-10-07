@@ -19,6 +19,8 @@ var changed_decisions := 0
 var core_changed_decisions := 0
 var exploration_decisions := 0
 var exclusions: Dictionary = {}
+var last_evaluation: Dictionary = {}
+var decision_reasons: Dictionary = {}
 var closed_contacts: Array[String] = []
 func _init(value: RefCounted=null, path: String="user://nov-navigation-patterns-008ej.json") -> void:
     journey=value;storage=path
@@ -57,7 +59,8 @@ func context(current: Vector2, goal: Vector2, rows: Array[Dictionary]) -> String
     return PROFILE+"|"+world_id+"|"+patterns.context(current,goal,rows)
 func recommend(key: String) -> Dictionary:
     if not enabled:return {}
-    var result: Dictionary=patterns.recommend(key)
+    last_evaluation=patterns.evaluate(key)
+    var result: Dictionary=last_evaluation.recommendation
     if not result.is_empty():return result
     var counts: Dictionary={-1:0,1:0}
     for row in patterns.records:
@@ -69,6 +72,8 @@ func recommend(key: String) -> Dictionary:
     var side := -1 if int(counts[-1])<int(counts[1]) else 1
     return {"side":side,"context":key,"source":"pattern-exploration",
         "observation_ids":[],"contains_prediction":true}
+func decision_diagnostics() -> Dictionary:
+    return last_evaluation.duplicate(true)
 func _exclude(reason: String, id: String) -> void:
     var metadata: Dictionary=pending.get(id,{})
     pending.erase(id)
@@ -115,6 +120,9 @@ func observe_action(action: Dictionary) -> void:
             if start.size()!=2 or goal.size()!=2:return
             var remaining:=Vector2(start[0],start[1]).distance_to(Vector2(goal[0],goal[1]))
             var recommendation: Dictionary=frame.get("pattern_recommendation",{})
+            var evaluation: Dictionary=frame.get("pattern_evaluation",{})
+            var reason: String=str(evaluation.get("reason","unavailable"))
+            decision_reasons[reason]=int(decision_reasons.get(reason,0))+1
             pending[id]={"goal_id":str(journey.identity),"context":key,"side":int(frame.initial_side),
                 "contact_serial":serial,"waiting_exit":false,
                 "distance_base":maxf(0.0,journey.distance_m-journey.pending_m),"initial_remaining_m":remaining,
@@ -126,7 +134,7 @@ func observe_action(action: Dictionary) -> void:
             print("NOV_PATTERN_DECISION "+JSON.stringify({"world_id":world_id,"goal_id":journey.identity,
                 "contact_id":id,"context":key,"side":frame.initial_side,"default_side":frame.get("default_side",0),
                 "source":recommendation.get("source","perception"),"observation_ids":recommendation.get("observation_ids",[]),
-                "changed_initial_side":frame.get("pattern_changed_initial_side",false),"contains_prediction":true}))
+                "changed_initial_side":frame.get("pattern_changed_initial_side",false),"evaluation":evaluation,"contains_prediction":true}))
     var proposal: Dictionary=frame.get("exit_proposal",{})
     if not proposal.is_empty():
         var exit_id: String=session+":"+str(journey.identity)+":"+str(proposal.get("contact_serial",0))
@@ -210,4 +218,5 @@ func status() -> Dictionary:
     return {"observed_outcomes":observed,"ram_records":local_rows.size(),"recovered_records":recovered_rows.size(),
         "changed_initial_decisions":changed_decisions,"core_changed_initial_decisions":core_changed_decisions,
         "exploration_decisions":exploration_decisions,"enabled":enabled,
-        "pending_contacts":pending.size(),"exclusions":exclusions.duplicate()}
+        "pending_contacts":pending.size(),"exclusions":exclusions.duplicate(),
+        "decision_reasons":decision_reasons.duplicate(),"last_evaluation":last_evaluation.duplicate(true)}

@@ -6,6 +6,7 @@ var exploration_side := 0
 var exit_proposal: Dictionary = {}
 var pattern_context := ""
 var pattern_recommendation: Dictionary = {}
+var pattern_evaluation: Dictionary = {}
 var initial_side := 0
 var default_side := 0
 var active := false
@@ -26,7 +27,7 @@ func reset() -> void:
     normal=Vector2.ZERO
     _turn_pending=false
     excursion_limit=INITIAL_EXCURSION_M
-    pattern_context="";pattern_recommendation={};initial_side=0;default_side=0
+    pattern_context="";pattern_recommendation={};pattern_evaluation={};initial_side=0;default_side=0
 func filter(current: Vector2, goal: Vector2, rows: Array[Dictionary], direct_clear: bool) -> Array[Dictionary]:
     exit_proposal={}
     # A clear ray after retreat alone is insufficient: it can immediately lead
@@ -58,10 +59,12 @@ func filter(current: Vector2, goal: Vector2, rows: Array[Dictionary], direct_cle
         initial_side=default_side
         pattern_context=""
         pattern_recommendation={}
+        pattern_evaluation={}
         var requested := exploration_side
         if pattern_memory!=null:
             pattern_context=pattern_memory.context(current,goal,rows)
             pattern_recommendation=pattern_memory.recommend(pattern_context)
+            if pattern_memory.has_method("decision_diagnostics"):pattern_evaluation=pattern_memory.decision_diagnostics()
             if requested==0:requested=int(pattern_recommendation.get("side",0))
         if requested in [-1,1] and requested!=default_side:
             var alternative := -heading
@@ -98,7 +101,7 @@ func evidence() -> Dictionary:
     return {"source":"local_observed_contour","active":active,"heading":[heading.x,heading.y],
         "normal":[normal.x,normal.y],"origin":[origin.x,origin.y],
         "exit_proposal":exit_proposal.duplicate(true),"contact_serial":starts,"pattern_context":pattern_context,"pattern_recommendation":pattern_recommendation.duplicate(true),
-        "initial_side":initial_side,"default_side":default_side,
+        "initial_side":initial_side,"default_side":default_side,"pattern_evaluation":pattern_evaluation.duplicate(true),
         "initial_side_changed":initial_side!=default_side,
         "pattern_changed_initial_side":exploration_side==0 and not pattern_recommendation.is_empty() and initial_side!=default_side,
         "side_switches":side_switches,"excursion_limit":excursion_limit,
