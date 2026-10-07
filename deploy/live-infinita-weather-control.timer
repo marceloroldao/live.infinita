@@ -1,0 +1,11 @@
+[Unit]
+Description=Evaluate prospective weather control
+
+[Timer]
+OnBootSec=20
+OnUnitInactiveSec=2
+AccuracySec=500ms
+Unit=live-infinita-weather-control.service
+
+[Install]
+WantedBy=timers.target

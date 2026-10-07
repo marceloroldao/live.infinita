@@ -1,0 +1,97 @@
+{
+  "release": "008DP",
+  "installed": false,
+  "python_tests": 16,
+  "prior_release_008do_confirmed": true,
+  "real_websocket_isolated_probe": {
+    "evaluated": 1,
+    "generated_at_unix": 1791343436.612553,
+    "horizon_ms": 60000,
+    "inference_influence": false,
+    "last_evaluation": {
+      "observed": {
+        "time_ms": 606116000,
+        "values": {
+          "cloud_coverage": 0.24474565243845633,
+          "humidity": 0.7233498401362379,
+          "temperature_c": 20.36841717598505,
+          "wind_x_mps": 1.0781661268025102,
+          "wind_z_mps": -0.2761606119141018
+        }
+      },
+      "trial": {
+        "issued_at_unix": 1791343372.7086809,
+        "memory_used": false,
+        "method": "persistence_control",
+        "origin": {
+          "time_ms": 606056000,
+          "values": {
+            "cloud_coverage": 0.2517944860991296,
+            "humidity": 0.7330563518153831,
+            "temperature_c": 20.14505910297703,
+            "wind_x_mps": 1.0079473136229047,
+            "wind_z_mps": 0.14348253774418407
+          }
+        },
+        "prediction": {
+          "cloud_coverage": 0.2517944860991296,
+          "humidity": 0.7330563518153831,
+          "temperature_c": 20.14505910297703,
+          "wind_x_mps": 1.0079473136229047,
+          "wind_z_mps": 0.14348253774418407
+        },
+        "prediction_id": "469174ec579b22ab48edd0539dc21f0199629a059044b10c131a159c9f65b508",
+        "target_time_ms": 606116000,
+        "tick_duration_ms": 500,
+        "world_id": "nov-live-autonomous-001"
+      }
+    },
+    "last_time_ms": 606116000,
+    "late_tolerance_ms": 5000,
+    "mean_absolute_error": {
+      "cloud_coverage": 0.007048833660673243,
+      "humidity": 0.009706511679145158,
+      "temperature_c": 0.22335807300802202,
+      "wind_x_mps": 0.07021881317960554,
+      "wind_z_mps": 0.41964314965828586
+    },
+    "mean_wind_vector_error_mps": 0.425477443326293,
+    "memory_used": false,
+    "method": "persistence_control",
+    "missed": 0,
+    "nov_prediction": false,
+    "pending": {
+      "issued_at_unix": 1791343436.612553,
+      "memory_used": false,
+      "method": "persistence_control",
+      "origin": {
+        "time_ms": 606116000,
+        "values": {
+          "cloud_coverage": 0.24474565243845633,
+          "humidity": 0.7233498401362379,
+          "temperature_c": 20.36841717598505,
+          "wind_x_mps": 1.0781661268025102,
+          "wind_z_mps": -0.2761606119141018
+        }
+      },
+      "prediction": {
+        "cloud_coverage": 0.24474565243845633,
+        "humidity": 0.7233498401362379,
+        "temperature_c": 20.36841717598505,
+        "wind_x_mps": 1.0781661268025102,
+        "wind_z_mps": -0.2761606119141018
+      },
+      "prediction_id": "ab887ad86be025f32ccc6b2bca42e6b1e1472a78f103a15bb7e04d2b02362658",
+      "target_time_ms": 606176000,
+      "tick_duration_ms": 500,
+      "world_id": "nov-live-autonomous-001"
+    },
+    "retained_evaluations": 1,
+    "schema": "live-infinita-weather-control/v1",
+    "source": "prospective_physical_weather_control",
+    "world_id": "nov-live-autonomous-001",
+    "world_write_authority": false
+  },
+  "memory_prediction": false,
+  "physical_influence": false
+}
