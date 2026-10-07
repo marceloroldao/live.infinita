@@ -1,0 +1,183 @@
+{
+  "update": "008DY",
+  "verified_at_utc": "2026-10-07T14:37:35.127221+00:00",
+  "world_id": "nov-live-autonomous-001",
+  "application_commit": "525b89f4236c58e12b915be5394e3d3dec1b52f2",
+  "windows": [
+    {
+      "label": "before",
+      "start_utc": "2026-10-07 13:39:44 UTC",
+      "end_utc": "2026-10-07 14:06:44 UTC",
+      "duration_wall_seconds": 1620,
+      "recoveries": 4,
+      "completed_journeys": 5,
+      "completed_journey_distance_sum_m": 2032.39,
+      "recovery_logs": [
+        "Oct 07 13:40:39 liveinfinita python[208812]: NOV_STUCK_RECOVERY from=(19.4,-42.9) to=(-352.0,-32.0)",
+        "Oct 07 13:43:00 liveinfinita python[208812]: NOV_STUCK_RECOVERY from=(-283.6,-33.2) to=(-352.0,-32.0)",
+        "Oct 07 13:51:07 liveinfinita python[208812]: NOV_STUCK_RECOVERY from=(17.0,-657.1) to=(-352.0,-32.0)",
+        "Oct 07 14:01:29 liveinfinita python[208812]: NOV_STUCK_RECOVERY from=(18.3,-39.9) to=(-352.0,-32.0)"
+      ],
+      "detection_logs": [],
+      "completed_journey_logs": [
+        "Oct 07 13:51:13 liveinfinita python[208812]: NOV_JOURNEY_COMPLETE goal=aa5adcfb1cd21fae3e5203ca83c44a9d:37 distance_m=21.343 quality_eligible=true",
+        "Oct 07 13:51:36 liveinfinita python[208812]: NOV_JOURNEY_COMPLETE goal=aa5adcfb1cd21fae3e5203ca83c44a9d:38 distance_m=76.364 quality_eligible=true",
+        "Oct 07 13:54:31 liveinfinita python[208812]: NOV_JOURNEY_COMPLETE goal=aa5adcfb1cd21fae3e5203ca83c44a9d:39 distance_m=691.294 quality_eligible=true",
+        "Oct 07 13:57:32 liveinfinita python[208812]: NOV_JOURNEY_COMPLETE goal=aa5adcfb1cd21fae3e5203ca83c44a9d:40 distance_m=602.644 quality_eligible=true",
+        "Oct 07 14:04:32 liveinfinita python[208812]: NOV_JOURNEY_COMPLETE goal=aa5adcfb1cd21fae3e5203ca83c44a9d:43 distance_m=640.745 quality_eligible=true"
+      ],
+      "script_errors": []
+    },
+    {
+      "label": "after",
+      "start_utc": "2026-10-07 14:08:44 UTC",
+      "end_utc": "2026-10-07 14:35:44 UTC",
+      "duration_wall_seconds": 1620,
+      "recoveries": 1,
+      "completed_journeys": 9,
+      "completed_journey_distance_sum_m": 1203.554,
+      "recovery_logs": [
+        "Oct 07 14:26:17 liveinfinita python[240942]: NOV_STUCK_RECOVERY from=(19.3,-322.0) to=(-352.0,-32.0)"
+      ],
+      "detection_logs": [
+        "Oct 07 14:26:16 liveinfinita python[240942]: NOV_STUCK_DETECTED reason=repeated_area_no_goal_progress confined_s=0.1 no_progress_s=90.0 observed_cells=628 remaining_m=603.1"
+      ],
+      "completed_journey_logs": [
+        "Oct 07 14:09:03 liveinfinita python[240942]: NOV_JOURNEY_COMPLETE goal=52d6ffcbae696aeb167b731a77dccb22:1 distance_m=39.245 quality_eligible=true",
+        "Oct 07 14:09:32 liveinfinita python[240942]: NOV_JOURNEY_COMPLETE goal=52d6ffcbae696aeb167b731a77dccb22:2 distance_m=120.375 quality_eligible=true",
+        "Oct 07 14:09:58 liveinfinita python[240942]: NOV_JOURNEY_COMPLETE goal=52d6ffcbae696aeb167b731a77dccb22:3 distance_m=109.977 quality_eligible=true",
+        "Oct 07 14:10:06 liveinfinita python[240942]: NOV_JOURNEY_COMPLETE goal=52d6ffcbae696aeb167b731a77dccb22:4 distance_m=28.763 quality_eligible=true",
+        "Oct 07 14:10:11 liveinfinita python[240942]: NOV_JOURNEY_COMPLETE goal=52d6ffcbae696aeb167b731a77dccb22:5 distance_m=21.190 quality_eligible=true",
+        "Oct 07 14:10:22 liveinfinita python[240942]: NOV_JOURNEY_COMPLETE goal=52d6ffcbae696aeb167b731a77dccb22:6 distance_m=48.000 quality_eligible=true",
+        "Oct 07 14:13:48 liveinfinita python[240942]: NOV_JOURNEY_COMPLETE goal=52d6ffcbae696aeb167b731a77dccb22:7 distance_m=794.784 quality_eligible=true",
+        "Oct 07 14:26:20 liveinfinita python[240942]: NOV_JOURNEY_COMPLETE goal=52d6ffcbae696aeb167b731a77dccb22:9 distance_m=10.371 quality_eligible=true",
+        "Oct 07 14:26:28 liveinfinita python[240942]: NOV_JOURNEY_COMPLETE goal=52d6ffcbae696aeb167b731a77dccb22:10 distance_m=30.849 quality_eligible=true"
+      ],
+      "script_errors": []
+    }
+  ],
+  "observed_recovery_count_reduction_fraction": 0.75,
+  "same_duration": true,
+  "same_destinations": false,
+  "renderer_restarted_between_windows": true,
+  "causal_improvement_demonstrated": false,
+  "memory_learning_advantage_demonstrated": false,
+  "limitations": [
+    "Different goals and path lengths; nine after-update completions include short journeys near startup.",
+    "Wall-clock windows do not guarantee equal logical simulation advancement.",
+    "Incomplete and interrupted journeys are absent from completed distance totals."
+  ],
+  "remaining_recovery_interpretation": "The watchdog recorded repeated_area_no_goal_progress with 628 occupied cells. Recovery point x=19.3 is west of the static river strip x=22..42, at z=-322 far from bridge z=-32. This spatial relationship suggests river-margin exploration; the exact blocking step or object was not captured and is not proven.",
+  "next_investigation": "Capture local step rejection reasons and attempted direction near the river margin; reproduce local trial/error oscillation using physically validated observations before changing navigation. Do not add unobserved bridge coordinates to the navigator.",
+  "animal_search_audit": {
+    "schema": "live-infinita-animal-search-audit/v1",
+    "generated_at_unix": 1791383855.112427,
+    "world_id": "nov-live-autonomous-001",
+    "source_age_seconds": {
+      "live-infinita-nov-animal-search-intent/v1": 0.972,
+      "live-infinita-nov-animal-memory/v1": 1.681,
+      "live-infinita-nov-animal-search/v1": 5.095
+    },
+    "read_only": true,
+    "search_readiness": {
+      "logical_time_ms": 642784500,
+      "forecast_time_eligibility": {
+        "listed": 2,
+        "expired": 2,
+        "less_than_20_seconds_remaining": 0,
+        "eligible_by_time": 0
+      },
+      "next_strategy": "last_seen",
+      "remaining_conditions_not_measured": [
+        "normal_journey_finished",
+        "target_not_currently_seen",
+        "target_within_40m",
+        "destination_physically_allowed",
+        "cycle_quota_available",
+        "cooldown_elapsed"
+      ],
+      "status": "no_forecast_with_sufficient_time"
+    },
+    "bounded_search": {
+      "arms": {
+        "memory": {
+          "started": 2,
+          "confirmed": 2,
+          "not_observed": 0,
+          "aborted": 0,
+          "completed": 2,
+          "pending": 0,
+          "confirmed_per_completed": 1.0
+        },
+        "last_seen": {
+          "started": 1,
+          "confirmed": 1,
+          "not_observed": 0,
+          "aborted": 0,
+          "completed": 1,
+          "pending": 0,
+          "confirmed_per_completed": 1.0
+        }
+      },
+      "recent_results": [
+        {
+          "id": "nov-live-autonomous-001:animal-search:1",
+          "arm": "memory",
+          "result": "animal_seen",
+          "duration_logical_ms": 5992,
+          "confirmed_by_eye_sensor": true,
+          "matching_recovered_encounter_ids": [
+            "structural-event:0e3e154806d6748204c73791f645ef71f18e7506"
+          ],
+          "recovery_check": "matched"
+        },
+        {
+          "id": "nov-live-autonomous-001:animal-search:2",
+          "arm": "last_seen",
+          "result": "animal_seen",
+          "duration_logical_ms": 1633,
+          "confirmed_by_eye_sensor": true,
+          "matching_recovered_encounter_ids": [
+            "structural-event:a8428dfe282ed5640975757e2ce13d6d1f16ab35"
+          ],
+          "recovery_check": "matched"
+        },
+        {
+          "id": "nov-live-autonomous-001:animal-search:3",
+          "arm": "memory",
+          "result": "animal_seen",
+          "duration_logical_ms": 3857,
+          "confirmed_by_eye_sensor": true,
+          "matching_recovered_encounter_ids": [
+            "structural-event:fefe93c3fb8dd8731ff20cb9aa271eece72630db"
+          ],
+          "recovery_check": "matched"
+        }
+      ],
+      "duration_scope": "recent_results_only_max_16",
+      "comparison_state": "both_strategies_observed",
+      "allocation": "persisted_alternation_not_randomized"
+    },
+    "stored_and_recovered_encounters": 105,
+    "shadow_prediction": {
+      "counters": {
+        "expired_without_observation": 243,
+        "issued": 272,
+        "last_seen_distance_sum_m": 26.488638152267647,
+        "last_seen_hits": 25,
+        "memory_distance_sum_m": 124.24169242422397,
+        "memory_hits": 25,
+        "paired": 27
+      },
+      "paired_metrics": {
+        "last_seen_hit_rate": 0.9259259259259259,
+        "last_seen_mean_distance_m": 0.9810606723062092,
+        "memory_hit_rate": 0.9259259259259259,
+        "memory_mean_distance_m": 4.601544163860147
+      },
+      "observation_selection_affected_by_active_search": true
+    },
+    "memory_advantage_demonstrated": false,
+    "general_learning_improvement_demonstrated": false
+  }
+}
