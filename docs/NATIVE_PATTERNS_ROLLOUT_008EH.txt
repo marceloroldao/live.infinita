@@ -1,0 +1,19 @@
+008EH_START source=6907dbf
+[world-map-preview] Importando recursos em cópia isolada.
+[world-map-preview] Validando travessabilidade física e modo local.
+[world-map-preview] Validando caminhada e câmera de NOV.
+[world-map-preview] Exportando Web em diretório temporário.
+[world-map-preview] Publicação concluída: /var/www/live-infinita-godot/world-map-preview
+[world-map-preview] Abra https://live.etbra.com.br/godot/world-map-preview/
+[world-map-preview] A live 2D /godot/, /nov-preview/ e o mundo persistente não foram alterados.
+008EH_NATIVE_OK {'last_seen': {'aborted': 0.0, 'confirmed': 4.0, 'not_observed': 0.0, 'started': 4.0}, 'memory': {'aborted': 0.0, 'confirmed': 3.0, 'not_observed': 2.0, 'started': 5.0}}
+008EH_COLLECTOR_READY {'changed_initial_decisions': 0, 'core_changed_initial_decisions': 0, 'enabled': True, 'exploration_decisions': 0, 'observed_outcomes': 0, 'ram_records': 0, 'recovered_records': 0}
+Created symlink '/etc/systemd/system/timers.target.wants/live-infinita-navigation-pattern.timer' → '/etc/systemd/system/live-infinita-navigation-pattern.timer'.
+008CA_START
+008CA_READY_WORLD 6907dbf
+008CA_PUBLIC_OK 6907dbf /godot/world-map-preview/
+008CA_OK backup=/opt/live.infinita/.rollouts/008ca-20261007T200709Z
+Recarregue a fonte de navegador/monitor em https://live.etbra.com.br/godot/
+008EH_PUBLIC_OK 6907dbf
+008EH_OK source=6907dbf backup=/opt/live.infinita/.rollouts/008eh-20261007T200449Z
+Recarregue a live. Nov registra padrões físicos; a ponte confirma armazenamento e recuperação no núcleo local.

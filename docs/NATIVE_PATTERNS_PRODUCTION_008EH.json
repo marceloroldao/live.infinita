@@ -1,0 +1,162 @@
+{
+  "schema": "live-infinita-native-pattern-production-check/v1",
+  "checked_at_unix": 1791404458.434344,
+  "production_installed": true,
+  "application_commit": "6907dbfe969a2f89414daa315dd7f982488c2e27",
+  "services": {
+    "live-infinita-renderer.service": {
+      "ActiveState": "active",
+      "SubState": "running",
+      "Result": "success",
+      "NRestarts": "0"
+    },
+    "live-infinita-navigation-pattern.service": {
+      "ActiveState": "inactive",
+      "SubState": "dead",
+      "Result": "success",
+      "NRestarts": "0"
+    },
+    "live-infinita-navigation-pattern.timer": {
+      "ActiveState": "active",
+      "SubState": "waiting",
+      "Result": "success"
+    }
+  },
+  "native_hashes": {
+    "nov_navigation_contour.gd": "d9b9055b19ba81ae0ba595b23c00b9cc77af71051a699b7569957702d796e3a2",
+    "nov_navigation_patterns.gd": "e6f0fb56938a4d3bea21611df077418a2df5e463036a7da2d2cee27098d513ba",
+    "nov_navigation_pattern_collector.gd": "91bb9763a0b2d64c647e8bf08ebd26d354027fe8a1f8154c2c54e0e48c47c453",
+    "nov_navigation_journey.gd": "e3b5e76b44aa73e12336928243bb489e122570586634db7b931ddd768bea50cb",
+    "world_map_local_motion.gd": "5544091ad61458a6510843edd3fdb4c375d5a27b28326a4225a889a85003b5d9",
+    "world_map_preview.gd": "ed19450d0bf42c884b6188bbbd5dee338e5006162e707a9010d305ba5f617125"
+  },
+  "bridge_sha256": "fd187acb6a1c7859f79ca8db0366eac319a4094c74686589bb237b6aebd7d0a3",
+  "public_build": {
+    "source_commit": "6907dbf",
+    "navigation_native_pattern_outcomes": true,
+    "navigation_pattern_core_bridge": true
+  },
+  "native_pattern_status": {
+    "changed_initial_decisions": 0,
+    "core_changed_initial_decisions": 0,
+    "enabled": true,
+    "exploration_decisions": 0,
+    "observed_outcomes": 0,
+    "ram_records": 0,
+    "recovered_records": 0
+  },
+  "source_outcomes": 0,
+  "decision_count": 4,
+  "outcome_count": 0,
+  "ended_attempts": [
+    {
+      "blocked_attempts": 0,
+      "causal_memoria_steps": 0,
+      "causal_ram_steps": 0,
+      "completed_steps": 636,
+      "current": [
+        -352.031433105469,
+        -32.0397338867188
+      ],
+      "distance_m": 635.312629565597,
+      "duration_monotonic_ms": 180844,
+      "ended_at_unix": 1791403807.80907,
+      "ended_monotonic_ms": 187183,
+      "event": "ended",
+      "goal": [
+        -352.0,
+        -32.0
+      ],
+      "goal_id": "f5f50605505b1d78aace8da8483df793:1",
+      "initial_remaining_m": 464.032012939453,
+      "learning_evidence": false,
+      "quality_eligible": true,
+      "remaining_m": 0.0506638139486313,
+      "schema": "live-infinita-nov-journey-attempt/v1",
+      "start": [
+        -695.528442382812,
+        -343.951812744141
+      ],
+      "started_at_unix": 1791403626.96478,
+      "started_monotonic_ms": 6339,
+      "termination": "arrived",
+      "world_id": "nov-live-autonomous-001",
+      "world_write_authority": false
+    },
+    {
+      "blocked_attempts": 0,
+      "causal_memoria_steps": 0,
+      "causal_ram_steps": 0,
+      "completed_steps": 2130,
+      "current": [
+        20.4424591064453,
+        -407.242767333984
+      ],
+      "distance_m": 2129.39534808695,
+      "duration_monotonic_ms": 504849,
+      "ended_at_unix": 1791404313.27369,
+      "ended_monotonic_ms": 692648,
+      "event": "ended",
+      "goal": [
+        317.047576904297,
+        -674.504150390625
+      ],
+      "goal_id": "f5f50605505b1d78aace8da8483df793:2",
+      "initial_remaining_m": 927.592163085938,
+      "learning_evidence": false,
+      "quality_eligible": false,
+      "remaining_m": 399.253356933594,
+      "schema": "live-infinita-nov-journey-attempt/v1",
+      "start": [
+        -352.031433105469,
+        -32.0397338867188
+      ],
+      "started_at_unix": 1791403808.42475,
+      "started_monotonic_ms": 187799,
+      "termination": "stuck_recovery",
+      "world_id": "nov-live-autonomous-001",
+      "world_write_authority": false
+    },
+    {
+      "blocked_attempts": 0,
+      "causal_memoria_steps": 0,
+      "causal_ram_steps": 0,
+      "completed_steps": 163,
+      "current": [
+        -191.628570556641,
+        -37.0263023376465
+      ],
+      "distance_m": 162.663104057312,
+      "duration_monotonic_ms": 48379,
+      "ended_at_unix": 1791404362.42818,
+      "ended_monotonic_ms": 741803,
+      "event": "ended",
+      "goal": [
+        -191.628570556641,
+        -37.0263023376465
+      ],
+      "goal_id": "f5f50605505b1d78aace8da8483df793:3",
+      "initial_remaining_m": 160.450180053711,
+      "learning_evidence": false,
+      "quality_eligible": true,
+      "remaining_m": 0.0,
+      "schema": "live-infinita-nov-journey-attempt/v1",
+      "start": [
+        -352.0,
+        -32.0
+      ],
+      "started_at_unix": 1791404314.04999,
+      "started_monotonic_ms": 693424,
+      "termination": "arrived",
+      "world_id": "nov-live-autonomous-001",
+      "world_write_authority": false
+    }
+  ],
+  "script_parse_errors": [],
+  "learning_improvement_demonstrated": false,
+  "limitations": [
+    "No native eligible outcomes or recovered pattern events yet at this observation.",
+    "Completed route 3 has multiple observed contour serials 43,44,45 and is excluded from whole-journey initial-side credit.",
+    "The bounded episode ring does not preserve all earlier contacts of completed routes 1 and 2."
+  ]
+}
