@@ -8,11 +8,15 @@ var hit_distance := 0.0
 var starts := 0
 var forced_turns := 0
 var _turn_pending := false
+const INITIAL_EXCURSION_M := 64.0
+var excursion_limit := INITIAL_EXCURSION_M
+var side_switches := 0
 func reset() -> void:
     active=false
     heading=Vector2.ZERO
     normal=Vector2.ZERO
     _turn_pending=false
+    excursion_limit=INITIAL_EXCURSION_M
 func filter(current: Vector2, goal: Vector2, rows: Array[Dictionary], direct_clear: bool) -> Array[Dictionary]:
     # A clear ray after retreat alone is insufficient: it can immediately lead
     # back to the same wall. Release after actual forward progress or a shorter
@@ -38,7 +42,14 @@ func filter(current: Vector2, goal: Vector2, rows: Array[Dictionary], direct_cle
         heading=(side-normal*side.dot(normal)).normalized()
         if heading.length_squared()<0.5:return rows
         origin=current;hit_distance=current.distance_to(goal)
+        excursion_limit=INITIAL_EXCURSION_M
         active=true;starts+=1
+    # Expand alternating excursions from the actual contact point. Distance is
+    # measured from committed physical positions; no gap coordinates are used.
+    if (current-origin).dot(heading)>=excursion_limit:
+        heading=-heading
+        excursion_limit*=2.0
+        side_switches+=1
     var forward: Array[Dictionary] = []
     for row in clear:
         var direction: Vector2=(Vector2(row.point)-current).normalized()
@@ -56,4 +67,5 @@ func committed(current: Vector2, point: Vector2) -> void:
 func evidence() -> Dictionary:
     return {"source":"local_observed_contour","active":active,"heading":[heading.x,heading.y],
         "normal":[normal.x,normal.y],"origin":[origin.x,origin.y],
+        "side_switches":side_switches,"excursion_limit":excursion_limit,
         "global_route_search":false,"durable_learning":false}

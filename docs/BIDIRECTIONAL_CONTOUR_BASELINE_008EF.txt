@@ -1,0 +1,12 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+Contour fixture first opening reached=true steps=315 collisions=0 final=(-68.0, 0.0, -80.0)
+Contour fixture offset=20.0 reached=true steps=140 collisions=0 final=(-68.0414, 0.0, -79.92705)
+Contour fixture offset=-20.0 reached=true steps=1584 collisions=0 final=(-68.0, 0.0, -80.0)
+Contour fixture offset=50.0 reached=true steps=315 collisions=0 final=(-68.0, 0.0, -80.0)
+Contour fixture offset=-50.0 reached=true steps=1584 collisions=0 final=(-68.0, 0.0, -80.0)
+Contour fixture offset=80.0 reached=true steps=494 collisions=0 final=(-68.0, 0.0, -80.0)
+Contour fixture offset=-80.0 reached=true steps=1584 collisions=0 final=(-68.0, 0.0, -80.0)
+Contour fixture opening moved reached=true steps=1584 collisions=0 final=(-68.0, 0.0, -80.0)
+Contour river final=(52.0, 0.0, -80.0) crossed_bridge=true collisions=0
+Contour trial smoke: 0 failures
