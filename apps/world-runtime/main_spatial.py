@@ -16,6 +16,7 @@ from cognitive_terrain_projection import CognitiveTerrainError, CognitiveTerrain
 from environmental_rules import EnvironmentalRulesError, derive_environmental_state
 from world_sky_clock import sky_clock
 from world_memory_sky import read_sky
+from world_physical_weather import read_weather
 from mutation_gate_service import GuardedMutationService
 from packages.spatial import FileRegionColdStore, MutationPrincipal
 from proposal_ledger_runtime import install_runtime_proposal_ledger
@@ -379,6 +380,7 @@ session_views: dict[WebSocket, dict[str, Any]] = {}
 _external_world_sync_task: asyncio.Task[None] | None = None
 _last_world_marker: tuple[int, str] | None = None
 _last_sky_marker: tuple[int, int] | None = None
+_last_weather_marker: tuple[int, int] | None = None
 
 
 def _world_marker(world: dict[str, Any]) -> tuple[int, str]:
@@ -419,6 +421,9 @@ def _client_world_payload(message: dict[str, Any], view: dict[str, Any]) -> dict
         memory_sky = read_sky(Path("/var/lib/live-infinita/cognitive-terrain/sky.json"), world_id)
         if memory_sky is not None:
             delivery["memory_sky"] = memory_sky
+        weather = read_weather(Path("/var/lib/live-infinita/cognitive-terrain/weather.json"),world_id)
+        if weather is not None:
+            delivery["physical_weather"] = weather
     if projection is not None:
         delivery = payload.get("delivery")
         if isinstance(delivery, dict):
@@ -461,7 +466,7 @@ async def spatial_broadcast(message: dict[str, Any]) -> None:
 
 async def _external_world_sync_loop() -> None:
     """Project commits made by the autonomous writer into every live WebSocket."""
-    global _last_world_marker, _last_sky_marker
+    global _last_world_marker, _last_sky_marker, _last_weather_marker
     interval = _external_world_sync_seconds()
     while True:
         try:
@@ -474,6 +479,13 @@ async def _external_world_sync_loop() -> None:
                 sky_marker = None
             sky_changed = sky_marker != _last_sky_marker
             _last_sky_marker = sky_marker
+            try:
+                info = Path("/var/lib/live-infinita/cognitive-terrain/weather.json").stat()
+                weather_marker = (info.st_mtime_ns,info.st_size)
+            except OSError:
+                weather_marker = None
+            weather_changed = weather_marker != _last_weather_marker
+            _last_weather_marker = weather_marker
             if _last_world_marker is None:
                 _last_world_marker = marker
             elif marker != _last_world_marker:
@@ -481,8 +493,8 @@ async def _external_world_sync_loop() -> None:
                 if callable(refresh):
                     refresh()
                 await spatial_broadcast({"type": "world_state", "world": world})
-            elif sky_changed and session_views:
-                # A paused world still receives refreshed celestial metadata.
+            elif (sky_changed or weather_changed) and session_views:
+                # A paused world still receives refreshed sky and weather metadata.
                 await spatial_broadcast({"type": "world_state", "world": world})
         except asyncio.CancelledError:
             raise

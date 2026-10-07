@@ -1,0 +1,11 @@
+[Unit]
+Description=Update physical weather presentation
+
+[Timer]
+OnBootSec=10
+OnUnitInactiveSec=2
+AccuracySec=500ms
+Unit=live-infinita-physical-weather.service
+
+[Install]
+WantedBy=timers.target

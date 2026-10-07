@@ -94,6 +94,7 @@ var _day_cycle = preload("res://world_map_day_cycle.gd").new()
 var _day_environment: Environment
 var _day_light: DirectionalLight3D
 var _memory_sky: Node3D
+var _physical_weather: Node3D
 var _live_feed: Node
 var _live_authoritative := false
 var _live_last_update_ms := 0
@@ -132,6 +133,11 @@ func _ready() -> void:
         _live_feed.connect("world_slice_received", Callable(self, "_on_world_slice"))
     if _live_feed != null and _live_feed.has_signal("sky_clock_received"):
         _live_feed.sky_clock_received.connect(Callable(_day_cycle, "apply_clock"))
+    _physical_weather = preload("res://world_map_weather.gd").new()
+    add_child(_physical_weather)
+    _physical_weather.build()
+    if _live_feed != null and _live_feed.has_signal("physical_weather_received"):
+        _live_feed.physical_weather_received.connect(Callable(_physical_weather,"apply_weather"))
     _memory_sky = preload("res://world_map_memory_sky.gd").new()
     add_child(_memory_sky)
     _memory_sky.build()
@@ -358,6 +364,8 @@ func _new_vegetation_batch(
     instance.name = name
     instance.multimesh = multimesh
     instance.material_override = _distant_material(color)
+    if _physical_weather != null and (name.contains("Undergrowth") or name == "MidgroundVegetation"):
+        instance.material_override = _physical_weather.grass_material(color,float(mesh.height)*0.5 if mesh is CylinderMesh else 0.7)
     add_child(instance)
     return instance
 func _build_distant_vegetation() -> void:
@@ -984,6 +992,8 @@ func _process(delta: float) -> void:
         _day_cycle.present(_day_environment, _day_light)
     if _memory_sky != null and _camera != null:
         _memory_sky.update_view(_camera, _day_cycle, delta)
+    if _physical_weather != null and _camera != null:
+        _physical_weather.update_view(_camera,_day_cycle,delta,_day_environment,_day_light)
     _poll_native_fps_governor()
     if _recovery_pending:
         return

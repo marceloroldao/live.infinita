@@ -4,6 +4,7 @@ signal world_slice_received(observer: Dictionary, current_region_id: String, hot
 
 signal sky_clock_received(clock: Dictionary)
 signal memory_sky_received(projection: Dictionary)
+signal physical_weather_received(weather: Dictionary)
 
 signal navigation_context_received(context: Dictionary)
 
@@ -111,6 +112,9 @@ func _accept_packet(raw: String) -> void:
     var environmental_state = delivery.get("environmental_state", {})
     if typeof(environmental_state) != TYPE_DICTIONARY:
         environmental_state = {}
+    var weather = delivery.get("physical_weather", {})
+    if typeof(weather) == TYPE_DICTIONARY and str(weather.get("world_id","")) == str(world.get("world_id","")):
+        physical_weather_received.emit(Dictionary(weather).duplicate(true))
     var memory_sky = delivery.get("memory_sky", {})
     if typeof(memory_sky) == TYPE_DICTIONARY and str(memory_sky.get("world_id", "")) == str(world.get("world_id", "")):
         memory_sky_received.emit(Dictionary(memory_sky).duplicate(true))

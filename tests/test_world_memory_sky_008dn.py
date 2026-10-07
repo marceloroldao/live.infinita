@@ -120,7 +120,7 @@ class MemorySkyTest(unittest.TestCase):
         class FakePath:
             def __init__(self,*args):pass
             def stat(self):return types.SimpleNamespace(st_mtime_ns=123,st_size=100)
-        ns={"_last_world_marker":(1,""),"_last_sky_marker":None,"_external_world_sync_seconds":lambda:0.5,
+        ns={"_last_world_marker":(1,""),"_last_sky_marker":None,"_last_weather_marker":None,"_external_world_sync_seconds":lambda:0.5,
             "core":types.SimpleNamespace(engine=types.SimpleNamespace(load_world=lambda:world)),
             "_world_marker":lambda w:(w["sequence"],""),"Path":FakePath,"session_views":{"client":{}},
             "spatial_broadcast":broadcast,"cold_store":None,

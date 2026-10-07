@@ -1,0 +1,21 @@
+........
+----------------------------------------------------------------------
+Ran 8 tests in 0.085s
+
+OK
+/opt/live-infinita-memoria-core/dfd87c995b50c49b45a9d5dd4c43cce456983d4f/src/memoria_resolutiva/external_episode_contract.py:68: UserWarning: Field name "schema" in "ExternalEpisodeRequest" shadows an attribute in parent "BaseModel"
+  class ExternalEpisodeRequest(BaseModel):
+...../opt/live.infinita/.venv/lib/python3.14/site-packages/starlette/testclient.py:51: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+  _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+/opt/live.infinita/.venv/lib/python3.14/site-packages/fastapi/routing.py:234: DeprecationWarning: 'asyncio.iscoroutinefunction' is deprecated and slated for removal in Python 3.16; use inspect.iscoroutinefunction() instead
+  is_coroutine = asyncio.iscoroutinefunction(dependant.call)
+.
+----------------------------------------------------------------------
+Ran 6 tests in 0.855s
+
+OK
+.....................................................................................................................
+----------------------------------------------------------------------
+Ran 117 tests in 0.157s
+
+OK
