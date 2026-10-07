@@ -1,0 +1,304 @@
+{
+  "schema": "live-infinita-animal-search-evidence/v1",
+  "verified_at_utc": "2026-10-07T12:58:53.929663+00:00",
+  "application_commit": "adcb60df2c2e857a68521e713b182f7951b9376f",
+  "production": true,
+  "injected_data": false,
+  "first_memory_search": {
+    "absence_claim": false,
+    "arm": "memory",
+    "base_heading": -1.80711476427715,
+    "best_remaining": 0.0,
+    "confirmed_by_eye_sensor": true,
+    "deadline_ms": 637055366,
+    "ended_ms": 637032342,
+    "entity_id": "nov-live-autonomous-001:rabbit:0",
+    "evidence_ids": [
+      "structural-event:7d6cc93c3ae4be451397cb4f4a7a2a44134c8791",
+      "structural-event:df31eb004e9a06404e33caec26279d5d86799a0e",
+      "structural-event:e02f11b905442a2cf0cf764b1f842004ce8ad9ca",
+      "structural-event:f5ce86737237750f9b868abc814c47ae8333cd4e",
+      "structural-event:31b4ba1f0596184c0d75be23f5ac85596dc5e92c"
+    ],
+    "forecast_id": "02fd56583f45498edf475cb8597ef4b4393baf854f1e7bc4fb9f8349feec256a",
+    "goal": [
+      -355.185546875,
+      2.22355222702026,
+      -21.7374935150146
+    ],
+    "heading": -0.072170221332184,
+    "id": "nov-live-autonomous-001:animal-search:1",
+    "phase": "scan",
+    "progress_ms": 637030250,
+    "result": "animal_seen",
+    "scan_started_ms": 637030133,
+    "started_ms": 637026350
+  },
+  "duration_logical_ms": 5992,
+  "verified_prior_memory_evidence": [
+    {
+      "encounter": {
+        "closed_reason": "lost_visual_contact",
+        "entity_id": "nov-live-autonomous-001:rabbit:0",
+        "first_observer_eye_m": [
+          -348.961364746094,
+          3.71162462234497,
+          -21.8605632781982
+        ],
+        "first_range_m": 12.6893916711752,
+        "first_seen_ms": 630838246,
+        "first_target_m": [
+          -354.961761474609,
+          2.81598949432373,
+          -16.3932685852051
+        ],
+        "kind": "rabbit",
+        "last_observer_eye_m": [
+          -349.961303710938,
+          3.72176551818848,
+          -21.8719024658203
+        ],
+        "last_range_m": 12.7003900683225,
+        "last_seen_ms": 630838500,
+        "last_target_m": [
+          -354.961761474609,
+          2.81598949432373,
+          -16.3932685852051
+        ],
+        "max_distance_m": 8.16689872741699,
+        "min_distance_m": 7.47264623641968,
+        "sample_count": 2,
+        "sequence": 80
+      },
+      "observation_id": "structural-event:7d6cc93c3ae4be451397cb4f4a7a2a44134c8791",
+      "verified_at_unix": 1791370718.5646536
+    },
+    {
+      "encounter": {
+        "closed_reason": "lost_visual_contact",
+        "entity_id": "nov-live-autonomous-001:rabbit:0",
+        "first_observer_eye_m": [
+          -352.0,
+          3.65416383743286,
+          -32.0
+        ],
+        "first_range_m": 24.0,
+        "first_seen_ms": 634964254,
+        "first_target_m": [
+          -354.961761474609,
+          2.81598949432373,
+          -16.3932685852051
+        ],
+        "kind": "rabbit",
+        "last_observer_eye_m": [
+          -348.332336425781,
+          3.59349918365479,
+          -32.9940948486328
+        ],
+        "last_range_m": 24.0,
+        "last_seen_ms": 634966104,
+        "last_target_m": [
+          -354.961761474609,
+          2.81598949432373,
+          -16.3932685852051
+        ],
+        "max_distance_m": 17.8924903869629,
+        "min_distance_m": 15.9073762893677,
+        "sample_count": 3,
+        "sequence": 83
+      },
+      "observation_id": "structural-event:df31eb004e9a06404e33caec26279d5d86799a0e",
+      "verified_at_unix": 1791375242.3317924
+    },
+    {
+      "encounter": {
+        "closed_reason": "lost_visual_contact",
+        "entity_id": "nov-live-autonomous-001:rabbit:0",
+        "first_observer_eye_m": [
+          -352.0,
+          3.65416383743286,
+          -32.0
+        ],
+        "first_range_m": 24.0,
+        "first_seen_ms": 635258637,
+        "first_target_m": [
+          -354.961761474609,
+          2.81598949432373,
+          -16.3932685852051
+        ],
+        "kind": "rabbit",
+        "last_observer_eye_m": [
+          -352.693328857422,
+          3.64131307601929,
+          -34.7206230163574
+        ],
+        "last_range_m": 24.0,
+        "last_seen_ms": 635260144,
+        "last_target_m": [
+          -354.961761474609,
+          2.81598949432373,
+          -16.3932685852051
+        ],
+        "max_distance_m": 18.4856395721436,
+        "min_distance_m": 15.9073762893677,
+        "sample_count": 4,
+        "sequence": 86
+      },
+      "observation_id": "structural-event:e02f11b905442a2cf0cf764b1f842004ce8ad9ca",
+      "verified_at_unix": 1791375573.7726636
+    },
+    {
+      "encounter": {
+        "closed_reason": "lost_visual_contact",
+        "entity_id": "nov-live-autonomous-001:rabbit:0",
+        "first_observer_eye_m": [
+          -372.478820800781,
+          3.96901941299438,
+          -32.6297645568848
+        ],
+        "first_range_m": 24.0,
+        "first_seen_ms": 635518927,
+        "first_target_m": [
+          -354.961761474609,
+          2.81598949432373,
+          -16.3932685852051
+        ],
+        "kind": "rabbit",
+        "last_observer_eye_m": [
+          -361.526641845703,
+          3.80163383483887,
+          -30.1128959655762
+        ],
+        "last_range_m": 24.0,
+        "last_seen_ms": 635526268,
+        "last_target_m": [
+          -354.961761474609,
+          2.81598949432373,
+          -16.3932685852051
+        ],
+        "max_distance_m": 23.912353515625,
+        "min_distance_m": 11.4204902648926,
+        "sample_count": 16,
+        "sequence": 87
+      },
+      "observation_id": "structural-event:f5ce86737237750f9b868abc814c47ae8333cd4e",
+      "verified_at_unix": 1791375859.362982
+    },
+    {
+      "encounter": {
+        "closed_reason": "lost_visual_contact",
+        "entity_id": "nov-live-autonomous-001:rabbit:0",
+        "first_observer_eye_m": [
+          -337.5478515625,
+          3.45858573913574,
+          -32.7531700134277
+        ],
+        "first_range_m": 24.0,
+        "first_seen_ms": 635664000,
+        "first_target_m": [
+          -354.961761474609,
+          2.81598949432373,
+          -16.3932685852051
+        ],
+        "kind": "rabbit",
+        "last_observer_eye_m": [
+          -341.5478515625,
+          3.50646591186523,
+          -32.7531700134277
+        ],
+        "last_range_m": 24.0,
+        "last_seen_ms": 635665000,
+        "last_target_m": [
+          -354.961761474609,
+          2.81598949432373,
+          -16.3932685852051
+        ],
+        "max_distance_m": 23.9019584655762,
+        "min_distance_m": 21.1673355102539,
+        "sample_count": 4,
+        "sequence": 89
+      },
+      "observation_id": "structural-event:31b4ba1f0596184c0d75be23f5ac85596dc5e92c",
+      "verified_at_unix": 1791376016.1454349
+    }
+  ],
+  "confirmed_new_encounter_stored_and_recovered": {
+    "encounter": {
+      "closed_reason": "lost_visual_contact",
+      "entity_id": "nov-live-autonomous-001:rabbit:0",
+      "first_observer_eye_m": [
+        -355.185546875,
+        3.77355241775513,
+        -21.7374935150146
+      ],
+      "first_range_m": 12.0,
+      "first_seen_ms": 637032342,
+      "first_target_m": [
+        -354.961761474609,
+        2.81598949432373,
+        -16.3932685852051
+      ],
+      "kind": "rabbit",
+      "last_observer_eye_m": [
+        -355.185546875,
+        3.77355241775513,
+        -21.7374935150146
+      ],
+      "last_range_m": 12.0,
+      "last_seen_ms": 637032342,
+      "last_target_m": [
+        -354.961761474609,
+        2.81598949432373,
+        -16.3932685852051
+      ],
+      "max_distance_m": 5.43394374847412,
+      "min_distance_m": 5.43394374847412,
+      "sample_count": 1,
+      "sequence": 91
+    },
+    "observation_id": "structural-event:0e3e154806d6748204c73791f645ef71f18e7506",
+    "verified_at_unix": 1791377515.9729197
+  },
+  "renderer_journal": [
+    "Oct 07 12:51:34 liveinfinita python[208812]: NOV_ANIMAL_SEARCH_START arm=memory entity=nov-live-autonomous-001:rabbit:0 region=(-356.0,-20.0)",
+    "Oct 07 12:51:42 liveinfinita python[208812]: NOV_ANIMAL_SEARCH_END arm=memory result=animal_seen confirmed=true"
+  ],
+  "renderer_script_errors": [],
+  "bounded_search_counts": {
+    "last_seen": {
+      "aborted": 0,
+      "confirmed": 0,
+      "not_observed": 0,
+      "started": 0
+    },
+    "memory": {
+      "aborted": 0,
+      "confirmed": 1,
+      "not_observed": 0,
+      "started": 1
+    }
+  },
+  "stored_and_recovered_encounters": 92,
+  "shadow_comparison": {
+    "counters": {
+      "expired_without_observation": 201,
+      "issued": 224,
+      "last_seen_distance_sum_m": 26.488638152267647,
+      "last_seen_hits": 19,
+      "memory_distance_sum_m": 101.50216871817085,
+      "memory_hits": 19,
+      "paired": 21
+    },
+    "paired_metrics": {
+      "last_seen_hit_rate": 0.9047619047619048,
+      "last_seen_mean_distance_m": 1.2613637215365547,
+      "memory_hit_rate": 0.9047619047619048,
+      "memory_mean_distance_m": 4.833436605627183
+    },
+    "affected_by_active_search": true
+  },
+  "memory_influenced_search_destination": true,
+  "new_physical_sighting_confirmed": true,
+  "memory_advantage_demonstrated": false,
+  "general_learning_improvement_demonstrated": false
+}
