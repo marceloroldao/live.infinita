@@ -115,6 +115,9 @@ class PatternBridgeTests(unittest.TestCase):
         legacy["provenance"]["outcome"].pop("completion_basis")
         legacy["provenance"]["outcome"].pop("exit_progress_m")
         self.items.append(legacy)
+        previous_local=deepcopy(legacy)
+        previous_local["provenance"]["profile"]="capsule044-height18-lookahead3-contour64-localexit-v2"
+        self.items.append(previous_local)
         self.recall.unlink()
         result=self.run_sync()
         self.assertEqual(result["acked"],0)

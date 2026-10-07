@@ -10,13 +10,13 @@ from nov_spatial_memory_sync import _canonical, _post_local, _validate_ack, _obs
 from nov_navigation_memory_sync import write_checkpoint
 from nov_navigation_recall_export import fetch_recent
 
-PROFILE = "capsule044-height18-lookahead3-contour64-localexit-v2"
+PROFILE = "capsule044-height18-lookahead3-contour64-localexit-v3"
 SCHEMA = "live-infinita-native-pattern-outcomes/v2"
 RECALL_SCHEMA = "live-infinita-native-pattern-recall/v2"
-SOURCE = Path("/opt/live.infinita/.local/share/godot/app_userdata/Live Infinita Showcase/nov-navigation-patterns-008ei.json")
+SOURCE = Path("/opt/live.infinita/.local/share/godot/app_userdata/Live Infinita Showcase/nov-navigation-patterns-008ej.json")
 WORLD = Path("/var/lib/live-infinita/autonomous-world/world.json")
-CHECKPOINT = Path("/var/lib/live-infinita/memoria-local/navigation-pattern-checkpoint-008ei.json")
-RECALL = Path("/var/lib/live-infinita/memoria-local/navigation-pattern-recall-008ei.json")
+CHECKPOINT = Path("/var/lib/live-infinita/memoria-local/navigation-pattern-checkpoint-008ej.json")
+RECALL = Path("/var/lib/live-infinita/memoria-local/navigation-pattern-recall-008ej.json")
 LIMIT = 512
 FIELDS = {"attempt_id", "world_id", "observer", "profile", "context", "side", "outcome",
           "distance_m", "initial_remaining_m", "physical_attempt", "contains_prediction",

@@ -1,10 +1,10 @@
 extends RefCounted
 const Patterns = preload("res://nov_navigation_patterns.gd")
 const SCHEMA := "live-infinita-native-pattern-outcomes/v2"
-const PROFILE := "capsule044-height18-lookahead3-contour64-localexit-v2"
-const RECALL_PATH := "/var/lib/live-infinita/memoria-local/navigation-pattern-recall-008ei.json"
+const PROFILE := "capsule044-height18-lookahead3-contour64-localexit-v3"
+const RECALL_PATH := "/var/lib/live-infinita/memoria-local/navigation-pattern-recall-008ej.json"
 var patterns = Patterns.new()
-var storage := "user://nov-navigation-patterns-008ei.json"
+var storage := "user://nov-navigation-patterns-008ej.json"
 var world_id := ""
 var enabled := false
 var session := Crypto.new().generate_random_bytes(16).hex_encode()
@@ -20,7 +20,7 @@ var core_changed_decisions := 0
 var exploration_decisions := 0
 var exclusions: Dictionary = {}
 var closed_contacts: Array[String] = []
-func _init(value: RefCounted=null, path: String="user://nov-navigation-patterns-008ei.json") -> void:
+func _init(value: RefCounted=null, path: String="user://nov-navigation-patterns-008ej.json") -> void:
     journey=value;storage=path
     if storage.is_empty() or OS.has_feature("web") or OS.get_cmdline_user_args().has("--offline-tour"):return
     load_state()

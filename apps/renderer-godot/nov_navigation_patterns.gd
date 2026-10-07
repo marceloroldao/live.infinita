@@ -3,6 +3,7 @@ extends RefCounted
 const LIMIT := 512
 const SAMPLE_LIMIT := 32
 const MIN_SAMPLES := 2
+const LOCAL_COST_SCALE_M := 3.0
 var enabled := false
 var records: Array[Dictionary] = []
 var _identities: Dictionary = {}
@@ -37,7 +38,10 @@ func observe_attempt(row: Dictionary) -> bool:
     if outcome=="interrupted":return false # No failure attribution for shutdown/goal changes.
     if _identities.has(identity):return false
     var stored := row.duplicate(true)
-    stored["cost_ratio"]=distance/initial
+    # Local exits compare executed travel on a fixed sensor-scale denominator.
+    # Goal distance remains telemetry and cannot make the same detour cheaper.
+    var local_cost: bool=str(row.get("profile","")).ends_with("-localexit-v3")
+    stored["cost_ratio"]=distance/LOCAL_COST_SCALE_M if local_cost else distance/initial
     _identities[identity]=true
     records.append(stored)
     while records.size()>LIMIT:
