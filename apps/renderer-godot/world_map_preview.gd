@@ -178,6 +178,7 @@ func _ready() -> void:
     if _live_feed != null and _live_feed.has_signal("navigation_context_received"):
         _live_feed.navigation_context_received.connect(Callable(_local_motion._episodes, "set_context"))
         _live_feed.navigation_context_received.connect(Callable(_local_motion._experience.working_memory, "set_context"))
+        _live_feed.navigation_context_received.connect(Callable(_local_motion._pattern_collector, "set_context"))
     var navigation_recall = preload("res://nov_navigation_recall.gd").new()
     navigation_recall.name = "NavigationRecall"
     navigation_recall.snapshot_ready.connect(Callable(_local_motion._experience, "apply_recall"))
@@ -939,6 +940,7 @@ func _animate_nov_movement(previous: Vector3, delta: float) -> void:
 func _advance_live_walk(delta: float) -> void:
     _local_motion._episodes.enabled = not OS.has_feature("web") and not OS.get_cmdline_user_args().has("--offline-tour")
     _local_motion._experience.working_memory.enabled = _local_motion._episodes.enabled and not _local_motion._experience.working_memory.world_id.is_empty()
+    _local_motion._pattern_collector.set_enabled(_local_motion._episodes.enabled)
     var dt := clampf(delta, 0.0, 0.1)
     var world := str(_local_motion._episodes.context.get("world_id", ""))
     var logical_ms := floori(_day_cycle._logical_ms+_day_cycle._elapsed*1000.0)

@@ -1,4 +1,6 @@
 extends RefCounted
+signal attempt_finished(attempt: Dictionary)
+var pattern_status: Callable
 # Complete physical journeys, independent of recorder flush windows.
 const LIMIT := 4096
 var memory: RefCounted
@@ -120,6 +122,7 @@ func status() -> Dictionary:
     return {"recoveries":recoveries,"arrivals":arrivals,"interruptions":interruptions,"blocked_attempts":blocked_attempts,
         "completed_steps":completed_steps,"causal_ram_steps":causal_ram_steps,"causal_memoria_steps":causal_memoria_steps,
         "distance_m":distance_m,"result":last_result,"active":not closed,"motion_state":motion_state,"last_reason":last_reason,
+        "patterns":pattern_status.call() if pattern_status.is_valid() else {},
         "active_attempt":_attempt_snapshot() if not closed else {},"recent_attempts":recent_attempts.duplicate(true)}
 
 func abort(reason: String, termination: String = "interrupted") -> void:
@@ -175,6 +178,7 @@ func _finish_attempt(reason: String) -> void:
     recent_attempts.append(row)
     if recent_attempts.size()>ATTEMPT_HISTORY_LIMIT:recent_attempts.pop_front()
     _publish_attempt("ended",row)
+    attempt_finished.emit(row.duplicate(true))
 
 func _publish_attempt(event: String, row: Dictionary) -> void:
     if OS.has_feature("web") or OS.get_cmdline_user_args().has("--offline-tour"):return

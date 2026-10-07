@@ -1,0 +1,9 @@
+[Unit]
+Description=Live Infinita — bounded navigation pattern synchronization
+[Timer]
+OnBootSec=25s
+OnUnitInactiveSec=30s
+AccuracySec=1s
+Unit=live-infinita-navigation-pattern.service
+[Install]
+WantedBy=timers.target

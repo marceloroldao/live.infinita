@@ -9,6 +9,7 @@ var _experience = preload("res://nov_navigation_experience.gd").new()
 var _traversability: RefCounted
 var route_goal_id := ""
 var _journey = preload("res://nov_navigation_journey.gd").new(_experience.working_memory)
+var _pattern_collector = preload("res://nov_navigation_pattern_collector.gd").new(_journey)
 var _inference_log_at := 0
 var _working_memory_log_at := 0
 var _body_ref: WeakRef
@@ -17,7 +18,11 @@ var _episodes = preload("res://nov_navigation_episodes.gd").new()
 func _init(walk_height: Callable, half_m: float = 512.0, dynamic_surface: Callable = Callable()) -> void:
     _traversability = Traversability.new(walk_height, half_m, dynamic_surface)
     _episodes.action_completed.connect(Callable(_experience.working_memory, "observe_completed"))
+    _experience.contour.pattern_memory=_pattern_collector
+    _episodes.action_completed.connect(Callable(_pattern_collector,"observe_action"))
     _episodes.action_completed.connect(Callable(_journey,"observe_completed"))
+    _journey.attempt_finished.connect(Callable(_pattern_collector,"finish_attempt"))
+    _journey.pattern_status=Callable(_pattern_collector,"status")
     _experience.working_memory.promotion_ready.connect(Callable(_episodes, "flush"))
 
 func create_body(parent: Node3D, _material: Material) -> CharacterBody3D:
@@ -55,6 +60,7 @@ func advance(
     auto_route: bool = true,
     speed_mps: float = SPEED_MPS
 ) -> Dictionary:
+    _pattern_collector.poll(Time.get_unix_time_from_system())
     if _experience.working_memory.enabled and Time.get_ticks_msec() >= _working_memory_log_at:
         _working_memory_log_at = Time.get_ticks_msec() + 30000
         print("NOV_WORKING_MEMORY_STATUS entries=%d causal_reuses=%d promoted=%d" % [_experience.working_memory.entries.size(), _experience.working_memory.causal_reuses, _experience.working_memory.promoted.size()])

@@ -24,6 +24,7 @@ func reset() -> void:
     normal=Vector2.ZERO
     _turn_pending=false
     excursion_limit=INITIAL_EXCURSION_M
+    pattern_context="";pattern_recommendation={};initial_side=0;default_side=0
 func filter(current: Vector2, goal: Vector2, rows: Array[Dictionary], direct_clear: bool) -> Array[Dictionary]:
     # A clear ray after retreat alone is insufficient: it can immediately lead
     # back to the same wall. Release after actual forward progress or a shorter
@@ -91,7 +92,7 @@ func committed(current: Vector2, point: Vector2) -> void:
 func evidence() -> Dictionary:
     return {"source":"local_observed_contour","active":active,"heading":[heading.x,heading.y],
         "normal":[normal.x,normal.y],"origin":[origin.x,origin.y],
-        "pattern_context":pattern_context,"pattern_recommendation":pattern_recommendation.duplicate(true),
+        "contact_serial":starts,"pattern_context":pattern_context,"pattern_recommendation":pattern_recommendation.duplicate(true),
         "initial_side":initial_side,"default_side":default_side,
         "initial_side_changed":initial_side!=default_side,
         "pattern_changed_initial_side":exploration_side==0 and not pattern_recommendation.is_empty() and initial_side!=default_side,
