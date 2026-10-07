@@ -1,5 +1,12 @@
 extends RefCounted
 # Transient contour frame from physically checked local candidates, not map coordinates.
+var pattern_memory: RefCounted = null
+# Explicit experiment control, never set by production.
+var exploration_side := 0
+var pattern_context := ""
+var pattern_recommendation: Dictionary = {}
+var initial_side := 0
+var default_side := 0
 var active := false
 var heading := Vector2.ZERO
 var normal := Vector2.ZERO
@@ -41,6 +48,23 @@ func filter(current: Vector2, goal: Vector2, rows: Array[Dictionary], direct_cle
         var side: Vector2=Vector2(chosen.point)-current
         heading=(side-normal*side.dot(normal)).normalized()
         if heading.length_squared()<0.5:return rows
+        default_side=1 if normal.cross(heading)>0 else -1
+        initial_side=default_side
+        pattern_context=""
+        pattern_recommendation={}
+        var requested := exploration_side
+        if pattern_memory!=null:
+            pattern_context=pattern_memory.context(current,goal,rows)
+            pattern_recommendation=pattern_memory.recommend(pattern_context)
+            if requested==0:requested=int(pattern_recommendation.get("side",0))
+        if requested in [-1,1] and requested!=default_side:
+            var alternative := -heading
+            var available := false
+            for row in clear:
+                var direction: Vector2=(Vector2(row.point)-current).normalized()
+                if row.get("source")=="perception" and direction.dot(alternative)>0.5 and direction.dot(normal)>=-0.25:
+                    available=true
+            if available:heading=alternative;initial_side=requested
         origin=current;hit_distance=current.distance_to(goal)
         excursion_limit=INITIAL_EXCURSION_M
         active=true;starts+=1
@@ -67,5 +91,9 @@ func committed(current: Vector2, point: Vector2) -> void:
 func evidence() -> Dictionary:
     return {"source":"local_observed_contour","active":active,"heading":[heading.x,heading.y],
         "normal":[normal.x,normal.y],"origin":[origin.x,origin.y],
+        "pattern_context":pattern_context,"pattern_recommendation":pattern_recommendation.duplicate(true),
+        "initial_side":initial_side,"default_side":default_side,
+        "initial_side_changed":initial_side!=default_side,
+        "pattern_changed_initial_side":exploration_side==0 and not pattern_recommendation.is_empty() and initial_side!=default_side,
         "side_switches":side_switches,"excursion_limit":excursion_limit,
         "global_route_search":false,"durable_learning":false}

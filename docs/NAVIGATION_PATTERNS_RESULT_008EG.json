@@ -1,0 +1,1416 @@
+{
+  "schema": "live-infinita-navigation-pattern-comparison/v1",
+  "scope": "isolated_actual_journeys_pattern_evidence_with_real_core",
+  "sdk_commit": "dfd87c995b50c49b45a9d5dd4c43cce456983d4f",
+  "backend": "sqlite",
+  "core_reopened": true,
+  "stored_and_recovered_observation_ids": [
+    "structural-event:c6c7aa506f37416ea978d08d8833068122f3cb1c",
+    "structural-event:025c4ce0a299d49cea9caca7f353e9802e6ee359",
+    "structural-event:6ef4b5bac35ad19bc891c4859b63707b8f961553",
+    "structural-event:c2a162929113b7a9ec0a4e5ef85eef52b67216c3"
+  ],
+  "cold_run": {
+    "failures": 0,
+    "production_learning_demonstrated": false,
+    "runs": [
+      {
+        "arm": "train_0",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 235.314719185233,
+        "goal": [
+          -68.0,
+          -80.0
+        ],
+        "pattern_changed_initial_side": false,
+        "recommendation": {},
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 70.6,
+        "start": [
+          -86.0,
+          -80.0
+        ],
+        "ticks": 706
+      },
+      {
+        "arm": "train_1",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 104.999119088054,
+        "goal": [
+          -68.0,
+          -80.0
+        ],
+        "pattern_changed_initial_side": false,
+        "recommendation": {},
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 31.5,
+        "start": [
+          -86.0,
+          -80.0
+        ],
+        "ticks": 315
+      },
+      {
+        "arm": "train_2",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 235.314719185233,
+        "goal": [
+          -68.0,
+          -80.0
+        ],
+        "pattern_changed_initial_side": false,
+        "recommendation": {},
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 70.6,
+        "start": [
+          -86.0,
+          -80.0
+        ],
+        "ticks": 706
+      },
+      {
+        "arm": "train_3",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 104.999119088054,
+        "goal": [
+          -68.0,
+          -80.0
+        ],
+        "pattern_changed_initial_side": false,
+        "recommendation": {},
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 31.5,
+        "start": [
+          -86.0,
+          -80.0
+        ],
+        "ticks": 315
+      },
+      {
+        "arm": "perception",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 234.572304785252,
+        "goal": [
+          -64.0,
+          -60.0
+        ],
+        "pattern_changed_initial_side": false,
+        "recommendation": {},
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 70.4,
+        "start": [
+          -86.0,
+          -60.0
+        ],
+        "ticks": 704
+      },
+      {
+        "arm": "ram_patterns",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 106.605529054999,
+        "goal": [
+          -64.0,
+          -60.0
+        ],
+        "pattern_changed_initial_side": true,
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 5.83328439378076
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 13.0730399547352
+            }
+          },
+          "contains_prediction": true,
+          "context": "local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": -1,
+          "source": "ram-pattern-evidence"
+        },
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 32.0,
+        "start": [
+          -86.0,
+          -60.0
+        ],
+        "ticks": 320
+      },
+      {
+        "arm": "mirror_perception",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 106.605529204011,
+        "goal": [
+          -64.0,
+          -60.0
+        ],
+        "pattern_changed_initial_side": false,
+        "recommendation": {},
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 32.0,
+        "start": [
+          -86.0,
+          -60.0
+        ],
+        "ticks": 320
+      },
+      {
+        "arm": "mirror_stale_patterns",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 234.572318896651,
+        "goal": [
+          -64.0,
+          -60.0
+        ],
+        "pattern_changed_initial_side": true,
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 5.83328439378076
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 13.0730399547352
+            }
+          },
+          "contains_prediction": true,
+          "context": "local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": -1,
+          "source": "ram-pattern-evidence"
+        },
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 70.4,
+        "start": [
+          -86.0,
+          -60.0
+        ],
+        "ticks": 704
+      },
+      {
+        "arm": "changed_training_4",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 106.605529204011,
+        "goal": [
+          -64.0,
+          -60.0
+        ],
+        "pattern_changed_initial_side": false,
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 5.83328439378076
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 13.0730399547352
+            }
+          },
+          "contains_prediction": true,
+          "context": "local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": -1,
+          "source": "ram-pattern-evidence"
+        },
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 32.0,
+        "start": [
+          -86.0,
+          -60.0
+        ],
+        "ticks": 320
+      },
+      {
+        "arm": "changed_training_5",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 234.572318896651,
+        "goal": [
+          -64.0,
+          -60.0
+        ],
+        "pattern_changed_initial_side": false,
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 5.83328439378076
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 3,
+              "score": 10.3305952607933
+            }
+          },
+          "contains_prediction": true,
+          "context": "local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": -1,
+          "source": "ram-pattern-evidence"
+        },
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 70.4,
+        "start": [
+          -86.0,
+          -60.0
+        ],
+        "ticks": 704
+      },
+      {
+        "arm": "changed_training_6",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 106.605529204011,
+        "goal": [
+          -64.0,
+          -60.0
+        ],
+        "pattern_changed_initial_side": false,
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 3,
+              "score": 7.44298230640916
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 3,
+              "score": 10.3305952607933
+            }
+          },
+          "contains_prediction": true,
+          "context": "local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": -1,
+          "source": "ram-pattern-evidence"
+        },
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 32.0,
+        "start": [
+          -86.0,
+          -60.0
+        ],
+        "ticks": 320
+      },
+      {
+        "arm": "changed_training_7",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 234.572318896651,
+        "goal": [
+          -64.0,
+          -60.0
+        ],
+        "pattern_changed_initial_side": false,
+        "recommendation": {},
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 70.4,
+        "start": [
+          -86.0,
+          -60.0
+        ],
+        "ticks": 704
+      },
+      {
+        "arm": "changed_training_8",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 106.605529204011,
+        "goal": [
+          -64.0,
+          -60.0
+        ],
+        "pattern_changed_initial_side": false,
+        "recommendation": {},
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 32.0,
+        "start": [
+          -86.0,
+          -60.0
+        ],
+        "ticks": 320
+      },
+      {
+        "arm": "changed_training_9",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 234.572318896651,
+        "goal": [
+          -64.0,
+          -60.0
+        ],
+        "pattern_changed_initial_side": false,
+        "recommendation": {},
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 70.4,
+        "start": [
+          -86.0,
+          -60.0
+        ],
+        "ticks": 704
+      },
+      {
+        "arm": "changed_training_10",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 106.605529204011,
+        "goal": [
+          -64.0,
+          -60.0
+        ],
+        "pattern_changed_initial_side": false,
+        "recommendation": {},
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 32.0,
+        "start": [
+          -86.0,
+          -60.0
+        ],
+        "ticks": 320
+      },
+      {
+        "arm": "changed_training_11",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 234.572318896651,
+        "goal": [
+          -64.0,
+          -60.0
+        ],
+        "pattern_changed_initial_side": false,
+        "recommendation": {},
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 70.4,
+        "start": [
+          -86.0,
+          -60.0
+        ],
+        "ticks": 704
+      },
+      {
+        "arm": "changed_training_12",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 106.605529204011,
+        "goal": [
+          -64.0,
+          -60.0
+        ],
+        "pattern_changed_initial_side": false,
+        "recommendation": {},
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 32.0,
+        "start": [
+          -86.0,
+          -60.0
+        ],
+        "ticks": 320
+      },
+      {
+        "arm": "changed_training_13",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 234.572318896651,
+        "goal": [
+          -64.0,
+          -60.0
+        ],
+        "pattern_changed_initial_side": false,
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 6,
+              "score": 9.05268021903757
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 7,
+              "score": 7.19637275343119
+            }
+          },
+          "contains_prediction": true,
+          "context": "local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": 1,
+          "source": "ram-pattern-evidence"
+        },
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 70.4,
+        "start": [
+          -86.0,
+          -60.0
+        ],
+        "ticks": 704
+      },
+      {
+        "arm": "changed_training_14",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 106.605529204011,
+        "goal": [
+          -64.0,
+          -60.0
+        ],
+        "pattern_changed_initial_side": false,
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 7,
+              "score": 9.28263706369877
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 7,
+              "score": 7.19637275343119
+            }
+          },
+          "contains_prediction": true,
+          "context": "local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": 1,
+          "source": "ram-pattern-evidence"
+        },
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 32.0,
+        "start": [
+          -86.0,
+          -60.0
+        ],
+        "ticks": 320
+      },
+      {
+        "arm": "changed_training_15",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 234.572318896651,
+        "goal": [
+          -64.0,
+          -60.0
+        ],
+        "pattern_changed_initial_side": false,
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 7,
+              "score": 9.28263706369877
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 8,
+              "score": 6.90253939336599
+            }
+          },
+          "contains_prediction": true,
+          "context": "local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": 1,
+          "source": "ram-pattern-evidence"
+        },
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 70.4,
+        "start": [
+          -86.0,
+          -60.0
+        ],
+        "ticks": 704
+      },
+      {
+        "arm": "mirror_updated_patterns",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 106.605529204011,
+        "goal": [
+          -64.0,
+          -60.0
+        ],
+        "pattern_changed_initial_side": false,
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 8,
+              "score": 9.45510469719467
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 8,
+              "score": 6.90253939336599
+            }
+          },
+          "contains_prediction": true,
+          "context": "local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": 1,
+          "source": "ram-pattern-evidence"
+        },
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 32.0,
+        "start": [
+          -86.0,
+          -60.0
+        ],
+        "ticks": 320
+      }
+    ],
+    "scope": "isolated_actual_journeys_pattern_evidence"
+  },
+  "comparison": {
+    "failures": 0,
+    "production_learning_demonstrated": false,
+    "runs": [
+      {
+        "arm": "train_0",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 235.314719185233,
+        "goal": [
+          -68.0,
+          -80.0
+        ],
+        "pattern_changed_initial_side": false,
+        "recommendation": {},
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 70.6,
+        "start": [
+          -86.0,
+          -80.0
+        ],
+        "ticks": 706
+      },
+      {
+        "arm": "train_1",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 104.999119088054,
+        "goal": [
+          -68.0,
+          -80.0
+        ],
+        "pattern_changed_initial_side": false,
+        "recommendation": {},
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 31.5,
+        "start": [
+          -86.0,
+          -80.0
+        ],
+        "ticks": 315
+      },
+      {
+        "arm": "train_2",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 235.314719185233,
+        "goal": [
+          -68.0,
+          -80.0
+        ],
+        "pattern_changed_initial_side": false,
+        "recommendation": {},
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 70.6,
+        "start": [
+          -86.0,
+          -80.0
+        ],
+        "ticks": 706
+      },
+      {
+        "arm": "train_3",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 104.999119088054,
+        "goal": [
+          -68.0,
+          -80.0
+        ],
+        "pattern_changed_initial_side": false,
+        "recommendation": {},
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 31.5,
+        "start": [
+          -86.0,
+          -80.0
+        ],
+        "ticks": 315
+      },
+      {
+        "arm": "perception",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 234.572304785252,
+        "goal": [
+          -64.0,
+          -60.0
+        ],
+        "pattern_changed_initial_side": false,
+        "recommendation": {},
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 70.4,
+        "start": [
+          -86.0,
+          -60.0
+        ],
+        "ticks": 704
+      },
+      {
+        "arm": "ram_patterns",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 106.605529054999,
+        "goal": [
+          -64.0,
+          -60.0
+        ],
+        "pattern_changed_initial_side": true,
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 5.83328439378076
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 13.0730399547352
+            }
+          },
+          "contains_prediction": true,
+          "context": "local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": -1,
+          "source": "ram-pattern-evidence"
+        },
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 32.0,
+        "start": [
+          -86.0,
+          -60.0
+        ],
+        "ticks": 320
+      },
+      {
+        "arm": "verified_core_patterns",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 106.605529054999,
+        "goal": [
+          -64.0,
+          -60.0
+        ],
+        "pattern_changed_initial_side": true,
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:025c4ce0a299d49cea9caca7f353e9802e6ee359",
+                "structural-event:c2a162929113b7a9ec0a4e5ef85eef52b67216c3"
+              ],
+              "samples": 2,
+              "score": 5.83328439378078
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:c6c7aa506f37416ea978d08d8833068122f3cb1c",
+                "structural-event:6ef4b5bac35ad19bc891c4859b63707b8f961553"
+              ],
+              "samples": 2,
+              "score": 13.0730399547352
+            }
+          },
+          "contains_prediction": true,
+          "context": "local-clear-v1:255:254",
+          "observation_ids": [
+            "structural-event:025c4ce0a299d49cea9caca7f353e9802e6ee359",
+            "structural-event:c2a162929113b7a9ec0a4e5ef85eef52b67216c3"
+          ],
+          "side": -1,
+          "source": "recovered-pattern-evidence"
+        },
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 32.0,
+        "start": [
+          -86.0,
+          -60.0
+        ],
+        "ticks": 320
+      },
+      {
+        "arm": "mirror_perception",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 106.605529204011,
+        "goal": [
+          -64.0,
+          -60.0
+        ],
+        "pattern_changed_initial_side": false,
+        "recommendation": {},
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 32.0,
+        "start": [
+          -86.0,
+          -60.0
+        ],
+        "ticks": 320
+      },
+      {
+        "arm": "mirror_stale_patterns",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 234.572318896651,
+        "goal": [
+          -64.0,
+          -60.0
+        ],
+        "pattern_changed_initial_side": true,
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 5.83328439378076
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 13.0730399547352
+            }
+          },
+          "contains_prediction": true,
+          "context": "local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": -1,
+          "source": "ram-pattern-evidence"
+        },
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 70.4,
+        "start": [
+          -86.0,
+          -60.0
+        ],
+        "ticks": 704
+      },
+      {
+        "arm": "changed_training_4",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 106.605529204011,
+        "goal": [
+          -64.0,
+          -60.0
+        ],
+        "pattern_changed_initial_side": false,
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 5.83328439378076
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 13.0730399547352
+            }
+          },
+          "contains_prediction": true,
+          "context": "local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": -1,
+          "source": "ram-pattern-evidence"
+        },
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 32.0,
+        "start": [
+          -86.0,
+          -60.0
+        ],
+        "ticks": 320
+      },
+      {
+        "arm": "changed_training_5",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 234.572318896651,
+        "goal": [
+          -64.0,
+          -60.0
+        ],
+        "pattern_changed_initial_side": false,
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 5.83328439378076
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 3,
+              "score": 10.3305952607933
+            }
+          },
+          "contains_prediction": true,
+          "context": "local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": -1,
+          "source": "ram-pattern-evidence"
+        },
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 70.4,
+        "start": [
+          -86.0,
+          -60.0
+        ],
+        "ticks": 704
+      },
+      {
+        "arm": "changed_training_6",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 106.605529204011,
+        "goal": [
+          -64.0,
+          -60.0
+        ],
+        "pattern_changed_initial_side": false,
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 3,
+              "score": 7.44298230640916
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 3,
+              "score": 10.3305952607933
+            }
+          },
+          "contains_prediction": true,
+          "context": "local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": -1,
+          "source": "ram-pattern-evidence"
+        },
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 32.0,
+        "start": [
+          -86.0,
+          -60.0
+        ],
+        "ticks": 320
+      },
+      {
+        "arm": "changed_training_7",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 234.572318896651,
+        "goal": [
+          -64.0,
+          -60.0
+        ],
+        "pattern_changed_initial_side": false,
+        "recommendation": {},
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 70.4,
+        "start": [
+          -86.0,
+          -60.0
+        ],
+        "ticks": 704
+      },
+      {
+        "arm": "changed_training_8",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 106.605529204011,
+        "goal": [
+          -64.0,
+          -60.0
+        ],
+        "pattern_changed_initial_side": false,
+        "recommendation": {},
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 32.0,
+        "start": [
+          -86.0,
+          -60.0
+        ],
+        "ticks": 320
+      },
+      {
+        "arm": "changed_training_9",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 234.572318896651,
+        "goal": [
+          -64.0,
+          -60.0
+        ],
+        "pattern_changed_initial_side": false,
+        "recommendation": {},
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 70.4,
+        "start": [
+          -86.0,
+          -60.0
+        ],
+        "ticks": 704
+      },
+      {
+        "arm": "changed_training_10",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 106.605529204011,
+        "goal": [
+          -64.0,
+          -60.0
+        ],
+        "pattern_changed_initial_side": false,
+        "recommendation": {},
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 32.0,
+        "start": [
+          -86.0,
+          -60.0
+        ],
+        "ticks": 320
+      },
+      {
+        "arm": "changed_training_11",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 234.572318896651,
+        "goal": [
+          -64.0,
+          -60.0
+        ],
+        "pattern_changed_initial_side": false,
+        "recommendation": {},
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 70.4,
+        "start": [
+          -86.0,
+          -60.0
+        ],
+        "ticks": 704
+      },
+      {
+        "arm": "changed_training_12",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 106.605529204011,
+        "goal": [
+          -64.0,
+          -60.0
+        ],
+        "pattern_changed_initial_side": false,
+        "recommendation": {},
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 32.0,
+        "start": [
+          -86.0,
+          -60.0
+        ],
+        "ticks": 320
+      },
+      {
+        "arm": "changed_training_13",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 234.572318896651,
+        "goal": [
+          -64.0,
+          -60.0
+        ],
+        "pattern_changed_initial_side": false,
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 6,
+              "score": 9.05268021903757
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 7,
+              "score": 7.19637275343119
+            }
+          },
+          "contains_prediction": true,
+          "context": "local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": 1,
+          "source": "ram-pattern-evidence"
+        },
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 70.4,
+        "start": [
+          -86.0,
+          -60.0
+        ],
+        "ticks": 704
+      },
+      {
+        "arm": "changed_training_14",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 106.605529204011,
+        "goal": [
+          -64.0,
+          -60.0
+        ],
+        "pattern_changed_initial_side": false,
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 7,
+              "score": 9.28263706369877
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 7,
+              "score": 7.19637275343119
+            }
+          },
+          "contains_prediction": true,
+          "context": "local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": 1,
+          "source": "ram-pattern-evidence"
+        },
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 32.0,
+        "start": [
+          -86.0,
+          -60.0
+        ],
+        "ticks": 320
+      },
+      {
+        "arm": "changed_training_15",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 234.572318896651,
+        "goal": [
+          -64.0,
+          -60.0
+        ],
+        "pattern_changed_initial_side": false,
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 7,
+              "score": 9.28263706369877
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 8,
+              "score": 6.90253939336599
+            }
+          },
+          "contains_prediction": true,
+          "context": "local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": 1,
+          "source": "ram-pattern-evidence"
+        },
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 70.4,
+        "start": [
+          -86.0,
+          -60.0
+        ],
+        "ticks": 704
+      },
+      {
+        "arm": "mirror_updated_patterns",
+        "arrived": true,
+        "collisions": 0,
+        "context": "local-clear-v1:255:254",
+        "default_side": 1,
+        "distance_m": 106.605529204011,
+        "goal": [
+          -64.0,
+          -60.0
+        ],
+        "pattern_changed_initial_side": false,
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 8,
+              "score": 9.45510469719467
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 8,
+              "score": 6.90253939336599
+            }
+          },
+          "contains_prediction": true,
+          "context": "local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": 1,
+          "source": "ram-pattern-evidence"
+        },
+        "rescues": 0,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 32.0,
+        "start": [
+          -86.0,
+          -60.0
+        ],
+        "ticks": 320
+      }
+    ],
+    "scope": "isolated_actual_journeys_pattern_evidence"
+  },
+  "core_minus_perception_distance_m": -127.96677573025299,
+  "core_minus_perception_simulated_seconds": -38.400000000000006,
+  "production_learning_demonstrated": false,
+  "promotion_gate_bypassed_for_isolated_transport_test": true,
+  "limitations": [
+    "Application encodes relative sensor signatures and scores actual outcome samples.",
+    "Core stores/retrieves observations; this does not prove core autonomously learns navigation patterns.",
+    "Only translated deterministic wall fixtures and changed destination; not broad generalization.",
+    "Same local observation can hide different distant openings; mirrored case tests this aliasing.",
+    "No live services or production memory state modified."
+  ]
+}
