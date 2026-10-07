@@ -94,6 +94,9 @@ var _day_cycle = preload("res://world_map_day_cycle.gd").new()
 var _day_environment: Environment
 var _day_light: DirectionalLight3D
 var _memory_sky: Node3D
+var _visual_perception = preload("res://nov_visual_perception.gd").new()
+var _perception_elapsed := 0.0
+var _perception_announced := false
 var _physical_weather: Node3D
 var _live_feed: Node
 var _live_authoritative := false
@@ -1042,3 +1045,27 @@ func _process(delta: float) -> void:
     if _clock > 0.3:
         _clock = 0.0
         _update_caption()
+
+
+func register_perception_target(node: Node3D, identity: String, kind: String, world: String, aim_offset: Vector3 = Vector3(0,0.6,0)) -> bool:
+    return _visual_perception.register_target(node,identity,kind,world,aim_offset)
+
+func _physics_process(delta: float) -> void:
+    if _walker == null or _local_motion == null or _recovery_pending or not _live_authoritative or Time.get_ticks_msec()-_live_last_update_ms>LIVE_STALE_MS:
+        _visual_perception.clear_observation()
+        return
+    _perception_elapsed += clampf(delta,0,0.25)
+    if _perception_elapsed < 0.25:
+        return
+    _perception_elapsed = 0.0
+    var clock: Dictionary = _day_cycle.sample()
+    var world := str(_local_motion._episodes.context.get("world_id",""))
+    if not bool(clock.get("synced",false)) or world.is_empty() or world != _day_cycle._world_id:
+        _visual_perception.clear_observation()
+        return
+    var logical_ms := floori(float(_day_cycle._logical_ms)+float(_day_cycle._elapsed)*1000.0)
+    var observation: Dictionary = _visual_perception.scan(_walker,_walker.global_basis.z,get_world_3d().direct_space_state,
+        world,logical_ms,float(clock.get("daylight",1.0)))
+    if not observation.is_empty() and not _perception_announced:
+        _perception_announced = true
+        print("NOV_VISUAL_PERCEPTION_ACTIVE world=%s day_range_m=24 night_range_m=12 fov_deg=120 occlusion=physical_eye_ray" % world)

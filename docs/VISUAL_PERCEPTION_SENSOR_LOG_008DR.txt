@@ -1,0 +1,4 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+NOV_VISUAL_PERCEPTION_ACTIVE world=test day_range_m=24 night_range_m=12 fov_deg=120 occlusion=physical_eye_ray
+008DR_VISUAL_PERCEPTION_SMOKE failures=0
