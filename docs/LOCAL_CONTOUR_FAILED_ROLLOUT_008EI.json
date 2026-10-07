@@ -1,0 +1,22 @@
+{
+  "observed_at_utc": "2026-10-07T22:48:18Z",
+  "install_result": "rolled_back",
+  "public_source": "6907dbf",
+  "services": {
+    "live-infinita-renderer.service": "ActiveState=active\nSubState=running\nResult=success\nNRestarts=0\nExecMainStartTimestamp=Wed 2026-10-07 22:16:18 UTC",
+    "live-infinita-navigation-pattern.timer": "ActiveState=active\nSubState=waiting\nResult=success",
+    "live-infinita-navigation-pattern.service": "ActiveState=inactive\nSubState=dead\nResult=success\nNRestarts=0\nExecMainStartTimestamp=Wed 2026-10-07 22:48:14 UTC"
+  },
+  "active_renderer_patterns": {
+    "changed_initial_decisions": 0,
+    "core_changed_initial_decisions": 0,
+    "enabled": true,
+    "exploration_decisions": 1,
+    "observed_outcomes": 0,
+    "ram_records": 9,
+    "recovered_records": 9
+  },
+  "active_renderer_arrivals": 17,
+  "active_renderer_recoveries": 1,
+  "private_bridge_files_read": false
+}

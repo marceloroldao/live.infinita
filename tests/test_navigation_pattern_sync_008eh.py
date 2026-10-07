@@ -108,4 +108,20 @@ class PatternBridgeTests(unittest.TestCase):
                 with self.assertRaises(PatternSyncError):self.run_sync()
         self.assertFalse(self.items)
 
+    def test_previous_profile_in_same_world_is_ignored(self):
+        self.run_sync()
+        legacy=deepcopy(self.items[0])
+        legacy["provenance"]["profile"]="capsule044-height18-lookahead3-contour64-v1"
+        legacy["provenance"]["outcome"].pop("completion_basis")
+        legacy["provenance"]["outcome"].pop("exit_progress_m")
+        self.items.append(legacy)
+        self.recall.unlink()
+        result=self.run_sync()
+        self.assertEqual(result["acked"],0)
+        self.assertEqual(result["cached_recovered"],4)
+    def test_current_profile_with_invalid_outcome_still_fails(self):
+        self.run_sync()
+        self.items[0]["provenance"]["outcome"].pop("completion_basis")
+        with self.assertRaises(PatternSyncError):self.run_sync()
+
 if __name__=="__main__":unittest.main()

@@ -1,0 +1,20 @@
+.........E...
+======================================================================
+ERROR: test_previous_profile_in_same_world_is_ignored (test_navigation_pattern_sync_008eh.PatternBridgeTests.test_previous_profile_in_same_world_is_ignored)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/etbra/live.infinita/tests/test_navigation_pattern_sync_008eh.py", line 119, in test_previous_profile_in_same_world_is_ignored
+    result=self.run_sync()
+  File "/home/etbra/live.infinita/tests/test_navigation_pattern_sync_008eh.py", line 35, in run_sync
+    return sync_once(self.source,self.world,self.checkpoint,self.recall,
+                     send=kwargs.get("send",self.send),fetch=kwargs.get("fetch",self.fetch),now=lambda:2000)
+  File "/home/etbra/live.infinita/apps/world-runtime/nov_navigation_pattern_sync.py", line 147, in sync_once
+    fact = validate(provenance.get("outcome"))
+  File "/home/etbra/live.infinita/apps/world-runtime/nov_navigation_pattern_sync.py", line 38, in validate
+    raise PatternSyncError("invalid_outcome_fields")
+nov_navigation_pattern_sync.PatternSyncError: invalid_outcome_fields
+
+----------------------------------------------------------------------
+Ran 13 tests in 0.061s
+
+FAILED (errors=1)

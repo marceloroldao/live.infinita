@@ -142,7 +142,7 @@ def sync_once(source=SOURCE, world=WORLD, checkpoint=CHECKPOINT, recall=RECALL,
         if not isinstance(envelope, dict):
             raise PatternSyncError("invalid_envelope")
         provenance = envelope.get("provenance", {})
-        if provenance.get("source_kind") != "native_physical_pattern_outcome" or provenance.get("world_id") != world_id:
+        if provenance.get("source_kind") != "native_physical_pattern_outcome" or provenance.get("world_id") != world_id or provenance.get("profile") != PROFILE:
             continue
         fact = validate(provenance.get("outcome"))
         expected = payload(fact)

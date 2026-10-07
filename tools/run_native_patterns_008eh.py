@@ -11,7 +11,9 @@ import tempfile
 from run_physical_memory_comparison_008ed import SDK, SDK_COMMIT, ENGINE
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT/"apps/world-runtime"))
-from nov_navigation_pattern_sync import sync_once
+from nov_navigation_pattern_sync import sync_once, payload
+from nov_spatial_memory_sync import _canonical
+from hashlib import blake2b, sha256
 SCRIPT = ROOT/"tests/godot_native_patterns_008eh.gd"
 
 def godot(project, fixture, state, recall=None):
@@ -31,7 +33,24 @@ def godot(project, fixture, state, recall=None):
     assert len(results)==1 and results[0]["failures"]==0
     return results[0],log
 
-def compare(project):
+def legacy_contract_fixture(row):
+    # Synthetic previous-version envelope for migration testing in the isolated core only.
+    fact=dict(row)
+    fact.pop("completion_basis");fact.pop("exit_progress_m")
+    previous="capsule044-height18-lookahead3-contour64-v1"
+    fact["context"]=fact["context"].replace(fact["profile"],previous)
+    fact.update(profile=previous,attempt_id="synthetic-legacy-migration-contract",outcome="arrived")
+    encoded=_canonical(fact);digest=sha256(encoded).hexdigest()
+    request=payload(row)
+    request["event"].update(source_id="live.infinita:native-pattern-v1:"+digest,
+        byte_length=len(encoded),signature=blake2b(encoded,digest_size=8).hexdigest(),
+        trail=[int.from_bytes(blake2b(str(fact[k]).encode(),digest_size=8).digest(),"big") & ((1<<63)-1)
+               for k in ("context","side","outcome")])
+    request["provenance"].update(profile=previous,outcome=fact,outcome_sha256=digest,
+        hierarchy_id="live:patterns:"+fact["world_id"]+":nov:"+previous)
+    return request
+
+def compare(project, include_legacy_fixture=False):
     assert SDK.is_dir(), "Pinned real core required"
     sys.path.insert(0,str(SDK))
     from fastapi import FastAPI
@@ -59,8 +78,12 @@ def compare(project):
             response=client.get("/api/v1/structural/observations/recent?limit=64",headers={"X-Memoria-Key":key})
             assert response.status_code==200,response.text
             return response.json()
+        expected_count=4
+        if include_legacy_fixture:
+            send(legacy_contract_fixture(actual["rows"][0]))
+            expected_count+=1
         intake=sync_once(fixture,world,checkpoint,recall,send=send,fetch=fetch)
-        assert intake["acked"]==4 and intake["cached_recovered"]==4 and service.store.count==4
+        assert intake["acked"]==4 and intake["cached_recovered"]==4 and service.store.count==expected_count
         first_recovered=json.loads(recall.read_text())["entries"]
         client.close()
         del service
@@ -71,7 +94,7 @@ def compare(project):
         recovery=sync_once(fixture,world,checkpoint,recall,send=forbidden_send,fetch=fetch)
         assert recovery["acked"]==0 and recovery["cached_recovered"]==4
         assert json.loads(recall.read_text())["entries"]==first_recovered
-        assert service.store.count==4
+        assert service.store.count==expected_count
         client.close()
         second,second_log=godot(project,fixture,state,recall)
         baseline=next(r for r in second["runs"] if r["arm"]=="perception")
@@ -80,6 +103,9 @@ def compare(project):
         result={"schema":"live-infinita-native-pattern-validation/v1","sdk_commit":SDK_COMMIT,
                 "core_reopened":True,"bridge_idempotent":True,"backend":"sqlite",
                 "stored_recovered_events":4,
+                "legacy_fixture_is_synthetic":include_legacy_fixture,
+                "legacy_profile_ignored":include_legacy_fixture,
+                "total_isolated_core_events":expected_count,
                 "observation_ids":[r["observation_id"] for r in first_recovered],
                 "intake":intake,"recovery_after_reopen_without_cache":recovery,
                 "cold":first,"comparison":second,
@@ -93,8 +119,9 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--project",type=pathlib.Path,default=pathlib.Path("/home/etbra/008bz-godot-test"))
     parser.add_argument("--output-dir",type=pathlib.Path,required=True)
+    parser.add_argument("--include-legacy-fixture",action="store_true")
     args=parser.parse_args()
-    result,cold,core=compare(args.project)
+    result,cold,core=compare(args.project,args.include_legacy_fixture)
     args.output_dir.mkdir(parents=True,exist_ok=True)
     for name,value in [("NATIVE_PATTERNS_RESULT_008EH.json",json.dumps(result,indent=2)+"\n"),
                        ("NATIVE_PATTERNS_COLD_008EH.txt",cold),("NATIVE_PATTERNS_CORE_008EH.txt",core)]:

@@ -29,3 +29,13 @@ Após aplicar, verificar `008EI_OK` em `/home/etbra/008ei-local-contour-feedback
 ## Evidências
 
 `LOCAL_CONTOUR_MULTI_RESULT_008EI.json`, `LOCAL_CONTOUR_OUTCOMES_008EI.json`, `LOCAL_CONTOUR_MULTI_008EI.txt`, `LOCAL_CONTOUR_UNIT_008EI.txt`, `LOCAL_CONTOUR_BRIDGE_TESTS_008EI.txt`, `LOCAL_CONTOUR_REGRESSIONS_008EI.json` e `LOCAL_CONTOUR_REGRESSIONS_008EI.txt` contêm as verificações. `NATIVE_PATTERNS_RESULT_008EI.json`, `NATIVE_PATTERNS_COLD_008EI.txt` e `NATIVE_PATTERNS_CORE_008EI.txt` preservam a comparação real. O runner reutilizado mantém o identificador de cenário `native-pattern-008eh`; o perfil e os resultados dentro das evidências são v2.
+
+## Correção após o primeiro rollout — isolamento do perfil na recuperação
+
+A instalação de 07/10/2026 chegou a iniciar o coletor v2, mas a ponte falhou às 22:16:15 UTC com `PatternSyncError`. O rollback restaurou código, unidades e Web; a versão pública permaneceu `6907dbf` e o renderer voltou às 22:16:18 UTC, ativo sem reinícios automáticos. O log preservado não expõe o detalhe interno da exceção. A inspeção encontrou uma falha compatível e reproduzível: a recuperação filtrava origem e mundo, mas validava registros v1 do mesmo mundo como v2, rejeitando seus campos antigos.
+
+A ponte agora verifica também `provenance.profile` antes de validar o resultado. Registros do perfil atual continuam sujeitos às mesmas verificações de integridade; registros de outros perfis ficam preservados no núcleo e não são misturados ao aprendizado local v2. O teste de regressão reproduziu `invalid_outcome_fields` antes da correção e passou depois. Os 13 testes da ponte passaram, incluindo coexistência de perfis e rejeição de resultado inválido do perfil atual.
+
+O runner oferece `--include-legacy-fixture`: insere um envelope v1 sintético apenas no núcleo isolado de teste. Com esse envelope e quatro resultados nativos reais v2, a ingestão e a recuperação após reabrir o SQLite passaram. O núcleo manteve cinco eventos, mas o cache novo recuperou somente os quatro v2. A comparação física permaneceu 70,4 s na percepção versus 32 s com dados recuperados. O envelope legado é uma fixture de migração, não uma experiência de produção nem prova de aprendizado. Nenhum dado sintético entra no núcleo da live.
+
+Evidências adicionais: `LOCAL_CONTOUR_PROFILE_REPRODUCTION_008EI.txt`, `LOCAL_CONTOUR_PROFILE_TESTS_008EI.txt`, `LOCAL_CONTOUR_FAILED_ROLLOUT_008EI.{txt,json}` e `LOCAL_CONTOUR_MIXED_CORE_008EI.json`. Os 43 testes anteriores cobrem o renderer, que não mudou nesta correção. Repita o mesmo instalador após esta correção; a segunda instalação ainda não foi executada pelo Codex.
