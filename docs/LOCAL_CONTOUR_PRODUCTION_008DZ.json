@@ -1,0 +1,263 @@
+{
+  "update": "008DZ",
+  "installed": true,
+  "verified_at_utc": "2026-10-07T15:08:05.168229+00:00",
+  "application_commit": "17bc9749cd2f126ae18cc3eabbb47aa73a7e8c36",
+  "rollout_marker": "008DZ_OK source=17bc974",
+  "native_match": true,
+  "native_sha256": {
+    "nov_navigation_contour.gd": "f2212ee22963db46c6bcf98b27ac5caf87422433289bdd4a3ac096d2a7130765",
+    "nov_navigation_experience.gd": "adda5888cccf1488a2c468f249533aacae14e91c141cfea26d9c3a1ea8438c94"
+  },
+  "units": {
+    "live-infinita.service": "ActiveState=active\nSubState=running\nResult=success\nExecMainStatus=0",
+    "live-infinita-renderer.service": "ActiveState=active\nSubState=running\nResult=success\nExecMainStatus=0",
+    "live-infinita-animal-memory.timer": "ActiveState=active\nSubState=waiting\nResult=success",
+    "live-infinita-animal-search.timer": "ActiveState=active\nSubState=waiting\nResult=success"
+  },
+  "public_build": {
+    "source_commit": "17bc974",
+    "project": "Live Infinita - Vale de Nov world-map preview",
+    "scene": "res://world_map_preview.tscn",
+    "renderer": "godot-web",
+    "map_schema": "live-infinita-visual-world-map/v1",
+    "world_size_m": 2048,
+    "logical_sectors": 1024,
+    "active_sector_cap": 9,
+    "traversability": "local-physics-read-only",
+    "touch_controls": true,
+    "nov_smooth_locomotion": true,
+    "nov_procedural_gait": true,
+    "audience_overlay": true,
+    "live_infinita_brand": true,
+    "live_infinita_brand_position": "top",
+    "narrator_caption": true,
+    "narrator_caption_position": "center",
+    "program_audio": true,
+    "live_exploration_controls": false,
+    "ground_surface_alignment": true,
+    "live_physical_collision": true,
+    "nature_collision_cpu_transforms": true,
+    "nature_solid_layer_collision": true,
+    "camera_stabilization": true,
+    "camera_collision_release_delay_seconds": 0.6,
+    "camera_collision_release_mps": 2,
+    "navigation_live_trial_error": true,
+    "navigation_live_route_search": false,
+    "navigation_complete_journey_quality": true,
+    "navigation_learning_panel": true,
+    "navigation_one_quality_sample_per_journey": true,
+    "navigation_panel_current_distance": true,
+    "navigation_cognitive_water_egress": true,
+    "navigation_blocked_status_heartbeat": true,
+    "navigation_absolute_web_requests": true,
+    "navigation_independent_panel_refresh": true,
+    "navigation_server_recall_metrics": true,
+    "navigation_stuck_recovery": true,
+    "navigation_detour_progress_observed_cells": true,
+    "navigation_local_observed_contour": true,
+    "day_night_cycle": true,
+    "day_night_clock_source": "persisted_simulation_clock",
+    "day_night_cycle_logical_minutes": 60,
+    "memory_linked_celestial_bodies": true,
+    "memory_sky_unit": "persisted_aggregate_memory",
+    "memory_sky_time_basis": "experience_logical_tick",
+    "memory_sky_primitive_catalog": false,
+    "memory_sky_display_budget": 256,
+    "physical_weather": true,
+    "nov_eye_encounter_recording": true,
+    "nov_animal_search_panel": true,
+    "nov_animal_search_bounded_intent": true,
+    "nov_animal_search_native_authority": true,
+    "nov_animal_search_attempt_budget_ms": 45000,
+    "nov_animal_search_cycle_limit": 4,
+    "nov_animal_search_shadow_evaluation": true,
+    "nov_animal_memory_decision_use": true,
+    "nov_animal_encounter_bridge_decision_use": false,
+    "physical_wildlife": true,
+    "resident_terrain_collision": true,
+    "resident_terrain_collision_layer": 2,
+    "wildlife_species": "rabbit",
+    "wildlife_population": 3,
+    "wildlife_authority": "native_renderer_physics",
+    "wildlife_learning": false,
+    "nov_visual_perception": true,
+    "nov_sight_day_range_m": 24,
+    "nov_sight_night_range_m": 12,
+    "nov_sight_horizontal_fov_deg": 120,
+    "nov_sight_obstacle_occlusion": true,
+    "physical_weather_fixed_step_ms": 1000,
+    "physical_cloud_advection": true,
+    "physical_wind_grass_response": true,
+    "weather_inference_influence": false,
+    "ground_new_sample_blending": true,
+    "ground_new_sample_grade_limit": 0.65,
+    "ground_smooth_highland_transition": true,
+    "navigation_confined_recovery_seconds": 30,
+    "navigation_no_progress_recovery_seconds": 90,
+    "navigation_anticipation": true,
+    "navigation_visible_goal_priority": true,
+    "navigation_observed_routes": true,
+    "navigation_frontier_exploration": true,
+    "navigation_observed_shortcuts": true,
+    "navigation_verified_goal_connection": true,
+    "navigation_changed_passage_replanning": true,
+    "navigation_ram_candidate_revalidation": true,
+    "navigation_destination_body_clearance": true,
+    "navigation_shortcut_range_m": 6,
+    "navigation_shortcut_max_probes": 3,
+    "navigation_coverage_cell_m": 8,
+    "navigation_goal_hard_limit_seconds": 900,
+    "navigation_step_perception_consistency": true,
+    "navigation_walkable_destinations": true,
+    "navigation_observed_window_side_m": 64,
+    "navigation_goal_visibility_range_m": 3,
+    "navigation_memoria_recall": true,
+    "navigation_experience": "renderer-local",
+    "navigation_chronological_episodes": true,
+    "navigation_working_memory": true,
+    "ground_shared_inference_samples": true,
+    "ground_consolidation_lifetime": "renderer-session",
+    "navigation_committed_goal": true,
+    "navigation_goal_reassessment_seconds": 180,
+    "navigation_promotion_successful_reuses": 3,
+    "local_object_residency": true,
+    "local_object_protected_radius_m": 45,
+    "cognitive_visual_inertia": true,
+    "visual_refresh_hint_seconds": 120,
+    "ecological_continuous_transitions": true,
+    "ecological_affinities": [
+      "forest",
+      "meadow",
+      "shrub",
+      "wetland",
+      "alpine"
+    ]
+  },
+  "observation_start_renderer_restart": "Wed 2026-10-07 15:04:56 UTC",
+  "script_errors": [],
+  "startup_environment_messages": [
+    "Oct 07 15:04:57 liveinfinita python[260110]: _XSERVTransmkdir: ERROR: euid != 0,directory /tmp/.X11-unix will not be created.",
+    "Oct 07 15:04:58 liveinfinita python[260118]: ERROR: Condition \"status < 0\" is true. Returning: ERR_CANT_OPEN",
+    "Oct 07 15:04:58 liveinfinita python[260118]: WARNING: All audio drivers failed, falling back to the dummy driver."
+  ],
+  "completed_journeys": [
+    "Oct 07 15:05:12 liveinfinita python[260118]: NOV_JOURNEY_COMPLETE goal=0cb15220d68196eb5876c0b8ef5f6e5f:1 distance_m=27.360 quality_eligible=true",
+    "Oct 07 15:06:10 liveinfinita python[260118]: NOV_JOURNEY_COMPLETE goal=0cb15220d68196eb5876c0b8ef5f6e5f:2 distance_m=194.168 quality_eligible=true"
+  ],
+  "recoveries": [],
+  "recovery_detections": [],
+  "animal_search_audit": {
+    "schema": "live-infinita-animal-search-audit/v1",
+    "generated_at_unix": 1791385685.1479905,
+    "world_id": "nov-live-autonomous-001",
+    "source_age_seconds": {
+      "live-infinita-nov-animal-search-intent/v1": 0.233,
+      "live-infinita-nov-animal-memory/v1": 1.86,
+      "live-infinita-nov-animal-search/v1": 1.059
+    },
+    "read_only": true,
+    "search_readiness": {
+      "logical_time_ms": 644444444,
+      "forecast_time_eligibility": {
+        "listed": 2,
+        "expired": 2,
+        "less_than_20_seconds_remaining": 0,
+        "eligible_by_time": 0
+      },
+      "next_strategy": "last_seen",
+      "remaining_conditions_not_measured": [
+        "normal_journey_finished",
+        "target_not_currently_seen",
+        "target_within_40m",
+        "destination_physically_allowed",
+        "cycle_quota_available",
+        "cooldown_elapsed"
+      ],
+      "status": "no_forecast_with_sufficient_time"
+    },
+    "bounded_search": {
+      "arms": {
+        "memory": {
+          "started": 2,
+          "confirmed": 2,
+          "not_observed": 0,
+          "aborted": 0,
+          "completed": 2,
+          "pending": 0,
+          "confirmed_per_completed": 1.0
+        },
+        "last_seen": {
+          "started": 1,
+          "confirmed": 1,
+          "not_observed": 0,
+          "aborted": 0,
+          "completed": 1,
+          "pending": 0,
+          "confirmed_per_completed": 1.0
+        }
+      },
+      "recent_results": [
+        {
+          "id": "nov-live-autonomous-001:animal-search:1",
+          "arm": "memory",
+          "result": "animal_seen",
+          "duration_logical_ms": 5992,
+          "confirmed_by_eye_sensor": true,
+          "matching_recovered_encounter_ids": [],
+          "recovery_check": "not_in_current_history_window"
+        },
+        {
+          "id": "nov-live-autonomous-001:animal-search:2",
+          "arm": "last_seen",
+          "result": "animal_seen",
+          "duration_logical_ms": 1633,
+          "confirmed_by_eye_sensor": true,
+          "matching_recovered_encounter_ids": [
+            "structural-event:a8428dfe282ed5640975757e2ce13d6d1f16ab35"
+          ],
+          "recovery_check": "matched"
+        },
+        {
+          "id": "nov-live-autonomous-001:animal-search:3",
+          "arm": "memory",
+          "result": "animal_seen",
+          "duration_logical_ms": 3857,
+          "confirmed_by_eye_sensor": true,
+          "matching_recovered_encounter_ids": [
+            "structural-event:fefe93c3fb8dd8731ff20cb9aa271eece72630db"
+          ],
+          "recovery_check": "matched"
+        }
+      ],
+      "duration_scope": "recent_results_only_max_16",
+      "comparison_state": "both_strategies_observed",
+      "allocation": "persisted_alternation_not_randomized"
+    },
+    "stored_and_recovered_encounters": 108,
+    "shadow_prediction": {
+      "counters": {
+        "expired_without_observation": 257,
+        "issued": 286,
+        "last_seen_distance_sum_m": 26.488638152267647,
+        "last_seen_hits": 25,
+        "memory_distance_sum_m": 124.24169242422397,
+        "memory_hits": 25,
+        "paired": 27
+      },
+      "paired_metrics": {
+        "last_seen_hit_rate": 0.9259259259259259,
+        "last_seen_mean_distance_m": 0.9810606723062092,
+        "memory_hit_rate": 0.9259259259259259,
+        "memory_mean_distance_m": 4.601544163860147
+      },
+      "observation_selection_affected_by_active_search": true
+    },
+    "memory_advantage_demonstrated": false,
+    "general_learning_improvement_demonstrated": false
+  },
+  "production_contour_navigation_improvement_measured": false,
+  "memory_learning_advantage_demonstrated": false,
+  "interpretation": "Installation, public build and native code verified. Initial observation is too short to establish reduced looping or recovery frequency. Older matched animal encounters can leave the recent history window; previously committed first-success evidence remains available. Startup Xvfb/ALSA messages are retained separately from script errors; audio was not checked.",
+  "frozen_release_commit": "ca41c24fbb6613421fadaa649d751155d12c9da2"
+}
