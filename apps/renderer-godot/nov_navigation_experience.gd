@@ -13,6 +13,7 @@ var pending := Vector2.ZERO
 var source := Vector2.ZERO
 var active := false
 var trial_error_enabled := false
+var contour = preload("res://nov_navigation_contour.gd").new()
 var server_learning_status: Dictionary = {}
 var recovery := false
 var attempts := 0
@@ -54,6 +55,7 @@ func _init(path: String = "user://nov-navigation-008cd.cfg") -> void:
             failures.clear()
 
 func reset_route_plan() -> void:
+    contour.reset()
     _route_revision.clear()
     explored_cells.clear()
     _exploration_heading = Vector2.ZERO
@@ -81,6 +83,7 @@ func save() -> void:
 func target(current: Vector2, goal: Vector2, probe: Callable = Callable(), route_probe: Callable = Callable()) -> Vector2:
     if trial_error_enabled:route_probe = Callable()
     if last_goal.distance_to(goal) > 2.0:
+        contour.reset()
         active = false
         visits.clear()
         trace.clear()
@@ -228,6 +231,7 @@ func _anticipated_target(current: Vector2, goal: Vector2, probe: Callable, route
     if current.distance_to(goal) <= 3.0:
         var corridor: Dictionary = probe.call(goal)
         if bool(corridor.get("allowed", false)) and bool(corridor.get("clear_ahead", false)):
+            contour.reset()
             _observed_route.clear()
             _route_search.cancel()
             pending = direct
@@ -334,6 +338,10 @@ func _anticipated_target(current: Vector2, goal: Vector2, probe: Callable, route
         candidate["clear_ahead"] = bool(sensed.get("clear_ahead", false))
         clear_available = clear_available or candidate["clear_ahead"]
         viable.append(candidate)
+    if trial_error_enabled:
+        viable = contour.filter(current,goal,viable,direct_clear)
+    else:
+        contour.reset()
     var best := INF
     var baseline_best := INF
     var baseline: Dictionary = {}
@@ -388,6 +396,8 @@ func _anticipated_target(current: Vector2, goal: Vector2, probe: Callable, route
         var point: Vector2 = candidate["point"]
         sensed_rows.append({"point": [point.x, point.y], "allowed": candidate.get("allowed", false), "clear_ahead": candidate.get("clear_ahead", false), "reason": candidate.get("reason", "")})
     decision_evidence = {"lookahead_m": 3.0, "candidates": sensed_rows}
+    if trial_error_enabled:
+        decision_evidence["contour"] = contour.evidence()
     if not baseline.is_empty():
         var base_point: Vector2 = baseline["point"]
         decision_evidence["without_memoria"] = [base_point.x, base_point.y]
@@ -401,6 +411,8 @@ func _anticipated_target(current: Vector2, goal: Vector2, probe: Callable, route
         pending = current
         return current
     pending = chosen["point"]
+    if trial_error_enabled:
+        contour.committed(current,pending)
     if str(chosen["source"]) == "working-memory":
         working_memory_key = address
         working_memory_changed_choice = without_working.is_empty() or pending.distance_to(without_working["point"]) > 0.05

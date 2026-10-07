@@ -1,0 +1,59 @@
+extends RefCounted
+# Transient contour frame from physically checked local candidates, not map coordinates.
+var active := false
+var heading := Vector2.ZERO
+var normal := Vector2.ZERO
+var origin := Vector2.ZERO
+var hit_distance := 0.0
+var starts := 0
+var forced_turns := 0
+var _turn_pending := false
+func reset() -> void:
+    active=false
+    heading=Vector2.ZERO
+    normal=Vector2.ZERO
+    _turn_pending=false
+func filter(current: Vector2, goal: Vector2, rows: Array[Dictionary], direct_clear: bool) -> Array[Dictionary]:
+    # A clear ray after retreat alone is insufficient: it can immediately lead
+    # back to the same wall. Release after actual forward progress or a shorter
+    # distance than at contact, with the direct corridor checked again.
+    if active and direct_clear and (current.distance_to(goal)<hit_distance-0.75 or (current-origin).dot(normal)>=3.0):
+        reset()
+        return rows
+    if not active and direct_clear:return rows
+    var clear: Array[Dictionary] = []
+    for row in rows:
+        if bool(row.get("clear_ahead",false)):clear.append(row)
+    if clear.is_empty():return rows
+    if not active:
+        var chosen: Dictionary = {}
+        var best := INF
+        for row in clear:
+            if row.get("source")!="perception":continue
+            var cost: float=Vector2(row.point).distance_to(goal)
+            if cost<best:best=cost;chosen=row
+        if chosen.is_empty():return rows
+        normal=(goal-current).normalized()
+        var side: Vector2=Vector2(chosen.point)-current
+        heading=(side-normal*side.dot(normal)).normalized()
+        if heading.length_squared()<0.5:return rows
+        origin=current;hit_distance=current.distance_to(goal)
+        active=true;starts+=1
+    var forward: Array[Dictionary] = []
+    for row in clear:
+        var direction: Vector2=(Vector2(row.point)-current).normalized()
+        if direction.dot(heading)>=-0.1 and direction.dot(normal)>=-0.25:forward.append(row)
+    _turn_pending=forward.is_empty()
+    if _turn_pending:
+        forced_turns+=1
+        return clear
+    return forward
+func committed(current: Vector2, point: Vector2) -> void:
+    if active and _turn_pending and current.distance_to(point)>0.05:
+        # The sensed end of this side permits trying another frame; never force
+        # a candidate rejected by physics, and never create failure knowledge.
+        reset()
+func evidence() -> Dictionary:
+    return {"source":"local_observed_contour","active":active,"heading":[heading.x,heading.y],
+        "normal":[normal.x,normal.y],"origin":[origin.x,origin.y],
+        "global_route_search":false,"durable_learning":false}
