@@ -15,6 +15,7 @@ from cold_engine import ColdAuthoritativeWorldEngine
 from cognitive_terrain_projection import CognitiveTerrainError, CognitiveTerrainProjectionReader
 from environmental_rules import EnvironmentalRulesError, derive_environmental_state
 from world_sky_clock import sky_clock
+from world_memory_sky import read_sky
 from mutation_gate_service import GuardedMutationService
 from packages.spatial import FileRegionColdStore, MutationPrincipal
 from proposal_ledger_runtime import install_runtime_proposal_ledger
@@ -377,6 +378,7 @@ cognitive_terrain_reader = CognitiveTerrainProjectionReader(
 session_views: dict[WebSocket, dict[str, Any]] = {}
 _external_world_sync_task: asyncio.Task[None] | None = None
 _last_world_marker: tuple[int, str] | None = None
+_last_sky_marker: tuple[int, int] | None = None
 
 
 def _world_marker(world: dict[str, Any]) -> tuple[int, str]:
@@ -414,6 +416,9 @@ def _client_world_payload(message: dict[str, Any], view: dict[str, Any]) -> dict
         clock = sky_clock(clock_path, world_id)
         if clock is not None:
             delivery["sky_clock"] = clock
+        memory_sky = read_sky(Path("/var/lib/live-infinita/cognitive-terrain/sky.json"), world_id)
+        if memory_sky is not None:
+            delivery["memory_sky"] = memory_sky
     if projection is not None:
         delivery = payload.get("delivery")
         if isinstance(delivery, dict):
@@ -456,18 +461,28 @@ async def spatial_broadcast(message: dict[str, Any]) -> None:
 
 async def _external_world_sync_loop() -> None:
     """Project commits made by the autonomous writer into every live WebSocket."""
-    global _last_world_marker
+    global _last_world_marker, _last_sky_marker
     interval = _external_world_sync_seconds()
     while True:
         try:
             world = core.engine.load_world()
             marker = _world_marker(world)
+            try:
+                info = Path("/var/lib/live-infinita/cognitive-terrain/sky.json").stat()
+                sky_marker = (info.st_mtime_ns, info.st_size)
+            except OSError:
+                sky_marker = None
+            sky_changed = sky_marker != _last_sky_marker
+            _last_sky_marker = sky_marker
             if _last_world_marker is None:
                 _last_world_marker = marker
             elif marker != _last_world_marker:
                 refresh = getattr(cold_store, "refresh_manifest", None)
                 if callable(refresh):
                     refresh()
+                await spatial_broadcast({"type": "world_state", "world": world})
+            elif sky_changed and session_views:
+                # A paused world still receives refreshed celestial metadata.
                 await spatial_broadcast({"type": "world_state", "world": world})
         except asyncio.CancelledError:
             raise

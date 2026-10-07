@@ -3,6 +3,7 @@ extends Node
 signal world_slice_received(observer: Dictionary, current_region_id: String, hot_entities: Array, warm_entities: Array, region_descriptors: Array, sequence: int, cognitive_terrain: Dictionary, environmental_state: Dictionary)
 
 signal sky_clock_received(clock: Dictionary)
+signal memory_sky_received(projection: Dictionary)
 
 signal navigation_context_received(context: Dictionary)
 
@@ -110,6 +111,9 @@ func _accept_packet(raw: String) -> void:
     var environmental_state = delivery.get("environmental_state", {})
     if typeof(environmental_state) != TYPE_DICTIONARY:
         environmental_state = {}
+    var memory_sky = delivery.get("memory_sky", {})
+    if typeof(memory_sky) == TYPE_DICTIONARY and str(memory_sky.get("world_id", "")) == str(world.get("world_id", "")):
+        memory_sky_received.emit(Dictionary(memory_sky).duplicate(true))
     var sky_clock = delivery.get("sky_clock", {})
     if typeof(sky_clock) == TYPE_DICTIONARY and str(sky_clock.get("world_id", "")) == str(world.get("world_id", "")):
         sky_clock_received.emit(Dictionary(sky_clock).duplicate(true))

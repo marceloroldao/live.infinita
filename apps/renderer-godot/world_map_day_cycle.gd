@@ -69,4 +69,8 @@ func present(env: Environment, light: DirectionalLight3D) -> void:
     light.light_energy = lerpf(0.13, 1.25, day)
     light.light_color = Color("#a5b9e0").lerp(Color.WHITE, day).lerp(Color("#ffc18c"), twilight * 0.4)
     # Use a gentle moonlike fill at night; no claim of a memory-linked Moon yet.
-    light.rotation_degrees = Vector3(-lerpf(15.0, 65.0, maxf(0.0, elevation)), 27.0 + float(state["phase"]) * 180.0, 0.0)
+    var angle := float(state["phase"]) * TAU - PI * 0.5
+    var source_direction := Vector3(cos(angle), sin(angle), 0.25).normalized()
+    if elevation < 0.0:
+        source_direction = -source_direction
+    light.basis = Basis.looking_at(-source_direction, Vector3.UP)

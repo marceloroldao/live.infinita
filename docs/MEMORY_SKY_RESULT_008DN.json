@@ -1,0 +1,163 @@
+{
+  "release": "008DN",
+  "base_commit": "4f913f6",
+  "production_installed": false,
+  "star_unit": "persisted_aggregate_memory",
+  "star_time_basis": "experience_logical_tick",
+  "primitive_node_catalog": false,
+  "display_budget": 256,
+  "python_tests_passed": 124,
+  "python_suites": {
+    "test_world_sky_clock.py": 1,
+    "test_world_memory_sky_008dn.py": 6,
+    "test_nov_navigation*.py": 117
+  },
+  "godot_tests": [
+    {
+      "test": "godot_world_map_traversal_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nov_locomotion_008bz_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nov_grounded_presentation_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_live_program_008cb_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_ground_surface_008cc_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_experience_008cd_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_camera_stabilization_008cf_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_anticipation_008cg_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_episodes_008ch_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_working_memory_008ci_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nature_residency_008ck_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_route_goal_008cn_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_ground_continuity_008co_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_goal_quality_008cs_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_observed_crossing_008ct_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_consistency_008cu_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nature_collision_008cv_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_camera_contact_008cw_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_frontier_routes_008cx_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_route_shortcuts_008cy_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_goal_approach_008da_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_changing_routes_008db_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_live_learning_008df_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_journey_samples_008dg_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_water_egress_008dh_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_panel_delivery_008di_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_stuck_recovery_008dk_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_ground_blending_008dl_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_day_cycle_008dm_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_memory_sky_008dn_smoke.gd",
+      "passed": true
+    }
+  ],
+  "real_v2_sdk_isolated_proofs": {
+    "sun_moon_durable_identities": 2,
+    "repeat_count_after_retry": 2,
+    "count_after_reopen": 2,
+    "retrieved_same_two_ids": true,
+    "genuine_external_episode_ack": true,
+    "external_episode_retry_deduplicated": true,
+    "external_episode_reopen_count": 1,
+    "star_matches_receipt_identity_hash_and_payload_size": true
+  },
+  "source_sha256": {
+    "apps/world-runtime/world_memory_sky.py": "395e792bf9174629c5e5f0ad6a1277d47d2568b54da70efd4fd37b815fe265bb",
+    "apps/world-runtime/main_spatial.py": "0d6d5450269af3b161dbf971beb582e83642bae800b5274ba1967a3f7aa2f6ea",
+    "apps/renderer-godot/world_map_memory_sky.gd": "2a2e55f6efcd7c7f539d75f2419e37a733a8181c5bbe55ef2627b37680e030ea",
+    "apps/renderer-godot/world_map_day_cycle.gd": "aa959e13db001b104f3b8e109845b6c22e019ffeab31ab8d8522a81abd906418",
+    "apps/renderer-godot/world_map_preview.gd": "17188c47954c88edd2de01c25c0b5413cc8780488a0448cc96de82c851fa72e7",
+    "apps/renderer-godot/world_map_live_feed.gd": "5fe1eb57a9e0dec3d6322c1cc163994ca44bc3042ffc97447a6e2ac3421756d3",
+    "deploy/apply-memory-sky-008dn-root.sh": "773b8fa0e1cc5696bb186a12ee07c8e473fd0201388cb3c82ceb2e4be31ee380",
+    "deploy/live-infinita-memory-sky.service": "abfc3e0820a913c6777f5bc2783922f05aae22c81fb2d85c905e0a848685698a",
+    "deploy/live-infinita-memory-sky.timer": "f390b134181021c301dc41e49e0431686c04c6e252d52932d80a0dc5cf7896af",
+    "deploy/export-world-map-preview-web.sh": "58274843d951f82be45cc61d3052fec4523a91180bf7a752bf6277091c797af8",
+    "tests/test_world_memory_sky_008dn.py": "67f7652394ac15c5b6ea93cc4ce30cfdff6a00172d5b0c3c44deadf5a466e63d",
+    "tests/godot_memory_sky_008dn_smoke.gd": "29fa3be051129f563670982e297af08ceaeb5c0084db075fcbfdaad0c785053a"
+  },
+  "native_and_web_visual_inspection_pending_install": true,
+  "cloud_wind_inference_implemented": false
+}
