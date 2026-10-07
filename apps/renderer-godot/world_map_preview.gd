@@ -95,6 +95,7 @@ var _day_environment: Environment
 var _day_light: DirectionalLight3D
 var _memory_sky: Node3D
 var _visual_perception = preload("res://nov_visual_perception.gd").new()
+var _wildlife: Node3D
 var _perception_elapsed := 0.0
 var _perception_announced := false
 var _physical_weather: Node3D
@@ -136,6 +137,12 @@ func _ready() -> void:
         _live_feed.connect("world_slice_received", Callable(self, "_on_world_slice"))
     if _live_feed != null and _live_feed.has_signal("sky_clock_received"):
         _live_feed.sky_clock_received.connect(Callable(_day_cycle, "apply_clock"))
+    _wildlife = preload("res://world_map_wildlife.gd").new()
+    add_child(_wildlife)
+    var wildlife_state := OS.get_environment("LIVE_INFINITA_WILDLIFE_STATE")
+    var wildlife_public := OS.get_environment("LIVE_INFINITA_WILDLIFE_PUBLIC")
+    var wildlife_authority := not OS.has_feature("web") and not OS.get_cmdline_user_args().has("--offline-tour") and not wildlife_state.is_empty() and not wildlife_public.is_empty()
+    _wildlife.configure(wildlife_authority,wildlife_state,wildlife_public)
     _physical_weather = preload("res://world_map_weather.gd").new()
     add_child(_physical_weather)
     _physical_weather.build()
@@ -1054,6 +1061,9 @@ func _physics_process(delta: float) -> void:
     if _walker == null or _local_motion == null or _recovery_pending or not _live_authoritative or Time.get_ticks_msec()-_live_last_update_ms>LIVE_STALE_MS:
         _visual_perception.clear_observation()
         return
+    if _wildlife != null:
+        _wildlife.update(_day_cycle,_walker,_visual_perception,get_world_3d().direct_space_state,
+            str(_local_motion._episodes.context.get("world_id","")),true)
     _perception_elapsed += clampf(delta,0,0.25)
     if _perception_elapsed < 0.25:
         return

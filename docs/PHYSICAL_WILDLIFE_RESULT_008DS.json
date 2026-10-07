@@ -1,0 +1,162 @@
+{
+  "release": "008DS",
+  "validated_at_utc": "2026-10-07T04:35:43.939849+00:00",
+  "installed": false,
+  "tests": [
+    {
+      "test": "godot_world_map_traversal_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nov_locomotion_008bz_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nov_grounded_presentation_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_live_program_008cb_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_ground_surface_008cc_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_experience_008cd_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_camera_stabilization_008cf_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_anticipation_008cg_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_episodes_008ch_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_working_memory_008ci_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nature_residency_008ck_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_route_goal_008cn_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_ground_continuity_008co_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_goal_quality_008cs_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_observed_crossing_008ct_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_consistency_008cu_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nature_collision_008cv_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_camera_contact_008cw_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_frontier_routes_008cx_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_route_shortcuts_008cy_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_goal_approach_008da_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_changing_routes_008db_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_live_learning_008df_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_journey_samples_008dg_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_water_egress_008dh_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_panel_delivery_008di_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_stuck_recovery_008dk_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_ground_blending_008dl_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_day_cycle_008dm_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_memory_sky_008dn_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_weather_008do_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_visual_perception_008dr_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_wildlife_008ds_smoke.gd",
+      "passed": true
+    }
+  ],
+  "final_wildlife_smoke_passed": true,
+  "validation_note": "33-test full suite passed; wildlife smoke repeated with explicit water-directed wall approach after exact heading restoration and heading validation adjustments.",
+  "visual_frame": {
+    "path": "docs/physical-wildlife-008ds.png",
+    "sha256": "34ccc0bb020d2c0cba789eb610b811fc65dd7209fbb512022c1022509a60c004",
+    "width": 270,
+    "height": 480,
+    "renderer": "native Mesa llvmpipe GL compatibility",
+    "inspection": "Three rabbit models visible with ears eyes tail and articulated legs."
+  },
+  "species": "rabbit",
+  "population": 3,
+  "authority": "native_renderer_physics",
+  "server_checkpoint": true,
+  "web_runs_animal_simulation": false,
+  "habitat_follows_nov": false,
+  "obstacle_occlusion_for_threat": true,
+  "actual_consumption_tested": true,
+  "learning": false,
+  "memory_writes": false,
+  "hunting": false,
+  "outside_loaded_area": "suspended; no offline catch-up",
+  "resource_depletion": false
+}
