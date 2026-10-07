@@ -1,0 +1,61 @@
+name: Publish frozen release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify frozen source and evidence
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib, subprocess
+          tag = os.environ['RELEASE_TAG']
+          manifest = json.loads(pathlib.Path(f'docs/releases/{tag}-manifest.json').read_text())
+          assert manifest['version'] == tag
+          assert pathlib.Path(f'docs/releases/{tag}.md').is_file()
+          for name, expected in manifest['sha256'].items():
+              assert hashlib.sha256(pathlib.Path(name).read_bytes()).hexdigest() == expected, name
+          source = manifest['application_source_commit']
+          changed = subprocess.check_output(['git', 'diff', '--name-only', source, 'HEAD'], text=True).splitlines()
+          assert all(p.startswith('docs/releases/') or p == '.github/workflows/release.yml' for p in changed), changed
+          evidence = json.loads(pathlib.Path('docs/ANIMAL_ENCOUNTER_RESULT_008DT.json').read_text())
+          assert len(evidence['godot_tests']) == 35
+          assert all(row['passed'] for row in evidence['godot_tests'])
+          assert evidence['python_tests'] == 15
+          print(f'Validated frozen application source {source} for {tag}')
+          PY
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release view "$RELEASE_TAG" --json url --jq .url
+          else
+            gh release create "$RELEASE_TAG" \
+              --verify-tag \
+              --title "Live Infinita $RELEASE_TAG — base congelada de Nov" \
+              --notes-file "docs/releases/$RELEASE_TAG.md" \
+              "docs/releases/$RELEASE_TAG-manifest.json" \
+              docs/ANIMAL_ENCOUNTER_RESULT_008DT.json \
+              docs/ANIMAL_ENCOUNTER_008DT_validation.txt
+          fi
