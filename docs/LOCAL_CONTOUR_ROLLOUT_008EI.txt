@@ -1,0 +1,34 @@
+008EI_START source=b809b71
+[world-map-preview] Importando recursos em cópia isolada.
+[world-map-preview] Validando travessabilidade física e modo local.
+[world-map-preview] Validando caminhada e câmera de NOV.
+[world-map-preview] Exportando Web em diretório temporário.
+[world-map-preview] Publicação concluída: /var/www/live-infinita-godot/world-map-preview
+[world-map-preview] Abra https://live.etbra.com.br/godot/world-map-preview/
+[world-map-preview] A live 2D /godot/, /nov-preview/ e o mundo persistente não foram alterados.
+008EI_NATIVE_OK {'last_seen': {'aborted': 0.0, 'confirmed': 6.0, 'not_observed': 0.0, 'started': 6.0}, 'memory': {'aborted': 0.0, 'confirmed': 4.0, 'not_observed': 2.0, 'started': 6.0}}
+008EI_COLLECTOR_READY {'changed_initial_decisions': 0, 'core_changed_initial_decisions': 0, 'enabled': True, 'exclusions': {}, 'exploration_decisions': 0, 'observed_outcomes': 0, 'pending_contacts': 0, 'ram_records': 0, 'recovered_records': 0}
+Job for live-infinita-navigation-pattern.service failed because the control process exited with error code.
+See "systemctl status live-infinita-navigation-pattern.service" and "journalctl -xeu live-infinita-navigation-pattern.service" for details.
+008EI_ROLLBACK rc=1
+Removed '/etc/systemd/system/timers.target.wants/live-infinita-navigation-pattern.timer'.
+Created symlink '/etc/systemd/system/timers.target.wants/live-infinita-navigation-pattern.timer' → '/etc/systemd/system/live-infinita-navigation-pattern.timer'.
+Memórias, encontros, animais e histórico de buscas preservados.
+008EI_START source=36e4d95
+[world-map-preview] Importando recursos em cópia isolada.
+[world-map-preview] Validando travessabilidade física e modo local.
+[world-map-preview] Validando caminhada e câmera de NOV.
+[world-map-preview] Exportando Web em diretório temporário.
+[world-map-preview] Publicação concluída: /var/www/live-infinita-godot/world-map-preview
+[world-map-preview] Abra https://live.etbra.com.br/godot/world-map-preview/
+[world-map-preview] A live 2D /godot/, /nov-preview/ e o mundo persistente não foram alterados.
+008EI_NATIVE_OK {'last_seen': {'aborted': 0.0, 'confirmed': 7.0, 'not_observed': 0.0, 'started': 7.0}, 'memory': {'aborted': 0.0, 'confirmed': 5.0, 'not_observed': 2.0, 'started': 7.0}}
+008EI_COLLECTOR_READY {'changed_initial_decisions': 0, 'core_changed_initial_decisions': 0, 'enabled': True, 'exclusions': {}, 'exploration_decisions': 0, 'observed_outcomes': 0, 'pending_contacts': 0, 'ram_records': 0, 'recovered_records': 0}
+008CA_START
+008CA_READY_WORLD 36e4d95
+008CA_PUBLIC_OK 36e4d95 /godot/world-map-preview/
+008CA_OK backup=/opt/live.infinita/.rollouts/008ca-20261007T230452Z
+Recarregue a fonte de navegador/monitor em https://live.etbra.com.br/godot/
+008EI_PUBLIC_OK 36e4d95
+008EI_OK source=36e4d95 backup=/opt/live.infinita/.rollouts/008ei-20261007T230236Z
+Recarregue a live. Nov avalia cada contorno após executar a saída física; a ponte confirma armazenamento e recuperação no núcleo local.
