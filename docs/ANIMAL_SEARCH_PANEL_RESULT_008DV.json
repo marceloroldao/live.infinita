@@ -1,0 +1,312 @@
+{
+  "update": "008DV",
+  "installed": false,
+  "validated_at_utc": "2026-10-07T05:59:04.749522+00:00",
+  "godot_tests": [
+    {
+      "test": "godot_world_map_traversal_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nov_locomotion_008bz_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nov_grounded_presentation_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_live_program_008cb_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_ground_surface_008cc_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_experience_008cd_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_camera_stabilization_008cf_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_anticipation_008cg_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_episodes_008ch_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_working_memory_008ci_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nature_residency_008ck_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_route_goal_008cn_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_ground_continuity_008co_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_goal_quality_008cs_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_observed_crossing_008ct_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_navigation_consistency_008cu_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_nature_collision_008cv_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_camera_contact_008cw_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_frontier_routes_008cx_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_route_shortcuts_008cy_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_goal_approach_008da_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_changing_routes_008db_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_live_learning_008df_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_journey_samples_008dg_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_water_egress_008dh_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_panel_delivery_008di_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_stuck_recovery_008dk_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_ground_blending_008dl_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_day_cycle_008dm_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_memory_sky_008dn_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_weather_008do_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_visual_perception_008dr_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_wildlife_008ds_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_wildlife_ground_008ds1_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_animal_encounters_008dt_smoke.gd",
+      "passed": true
+    },
+    {
+      "test": "godot_animal_search_panel_008dv_smoke.gd",
+      "passed": true
+    }
+  ],
+  "real_http_fixture_test_passed": true,
+  "visual_review_sizes": [
+    [
+      720,
+      1280
+    ],
+    [
+      1280,
+      720
+    ]
+  ],
+  "visual_capture_note": "Isolated paused presentation scene, real public animal metrics, example narration; not an installed 008DV production capture.",
+  "panel_bounds_px": {
+    "width": 312,
+    "height": 222
+  },
+  "production_predictor_snapshot": {
+    "search": {
+      "absence_claim": false,
+      "contains_prediction": true,
+      "counters": {
+        "expired_without_observation": 3,
+        "issued": 9,
+        "last_seen_distance_sum_m": 13.143209516828286,
+        "last_seen_hits": 2,
+        "memory_distance_sum_m": 22.78870276790512,
+        "memory_hits": 2,
+        "paired": 3
+      },
+      "decision_use": false,
+      "evaluations": [
+        {
+          "forecast_id": "bcc986a935fca5dbbf4708c760d55b39b365ec51fc10bdd367ec351403b83ad0",
+          "issued_ms": 614160128,
+          "last_seen_distance_m": 13.143209516828286,
+          "last_seen_hit": false,
+          "memory_distance_m": 14.859197351903807,
+          "memory_hit": false,
+          "observation_id": "structural-event:e66e5ccf7d86ece03b1bdcb607e98f72d6ecd4dc",
+          "observed_ms": 614203800
+        },
+        {
+          "forecast_id": "384b8d585dcf30851d41acc6ffc411566f7a52f51d5e735b6b50244e2fe606c1",
+          "issued_ms": 614160128,
+          "last_seen_distance_m": 0.0,
+          "last_seen_hit": true,
+          "memory_distance_m": 3.753192072632914,
+          "memory_hit": true,
+          "observation_id": "structural-event:9eab5490cfe1a4680b67c005b64e2e05795ad07c",
+          "observed_ms": 614206999
+        },
+        {
+          "forecast_id": "f3a893723ec79bf5034af8fb0ae50f697c5818f3030c3ab65863c29c8e6d21c7",
+          "issued_ms": 614160128,
+          "last_seen_distance_m": 0.0,
+          "last_seen_hit": true,
+          "memory_distance_m": 4.176313343368401,
+          "memory_hit": true,
+          "observation_id": "structural-event:bd1a77cb2a97e89df49e131aae36c863ab7dad88",
+          "observed_ms": 614206999
+        }
+      ],
+      "forecast_horizon_ms": 60000,
+      "forecasts": [
+        {
+          "center_xz_m": [
+            -356.0,
+            -20.0
+          ],
+          "contains_prediction": true,
+          "entity_id": "nov-live-autonomous-001:rabbit:0",
+          "evidence_ids": [
+            "structural-event:9c85c9034a917865e7c9cc262e2382abb2f152c4",
+            "structural-event:dc04f51fc95dc608e617453697429de509f56e7f",
+            "structural-event:8fd75f362a40fae91b102df4b13300483e90a0b6",
+            "structural-event:3d1de768203ebb6e4d61c134fa56e931c49926ad",
+            "structural-event:9eab5490cfe1a4680b67c005b64e2e05795ad07c"
+          ],
+          "expires_ms": 614284133,
+          "forecast_id": "e742ff6f9b967057170d5f0e5f8df0f408b2cf708ccfe48fbe918d9e9612d7c2",
+          "issued_ms": 614224133,
+          "last_seen_xz_m": [
+            -354.961761474609,
+            -16.3932685852051
+          ],
+          "radius_m": 8
+        },
+        {
+          "center_xz_m": [
+            -356.0,
+            -12.0
+          ],
+          "contains_prediction": true,
+          "entity_id": "nov-live-autonomous-001:rabbit:2",
+          "evidence_ids": [
+            "structural-event:73164995d9f2b328be2c098b3e53841d72df171e",
+            "structural-event:682fc05875b32b6db3407176c76cd2431f79ca7c",
+            "structural-event:4796bc842e32ad0f1894069f37c46911ee483fb3"
+          ],
+          "expires_ms": 614284133,
+          "forecast_id": "e45a40b1d2778db3f40b386497d7641b5caa9bd5ca6c0222539b6b0d17f67d73",
+          "issued_ms": 614224133,
+          "last_seen_xz_m": [
+            -346.547760009766,
+            -23.3902778625488
+          ],
+          "radius_m": 8
+        },
+        {
+          "center_xz_m": [
+            -356.0,
+            -20.0
+          ],
+          "contains_prediction": true,
+          "entity_id": "nov-live-autonomous-001:rabbit:1",
+          "evidence_ids": [
+            "structural-event:c995af5afb3b5f651a925cb02c75719cd65b4c06",
+            "structural-event:a31c807bc6bac4df9f34675b53274bfd4bd5211b",
+            "structural-event:2b486abdc8bba666beb6fdf28b039a73231ca894",
+            "structural-event:963bab839af00c4d50efbb606595566ad1f2b164",
+            "structural-event:bd1a77cb2a97e89df49e131aae36c863ab7dad88"
+          ],
+          "expires_ms": 614303367,
+          "forecast_id": "7830b0e0d94108535c5e912ca7620f759bb15da11010e25bf1cd2e5d9d1dc3ce",
+          "issued_ms": 614243367,
+          "last_seen_xz_m": [
+            -354.520477294922,
+            -16.0945415496826
+          ],
+          "radius_m": 8
+        }
+      ],
+      "generated_at_unix": 1791352623.9769163,
+      "history_window_limit": 16,
+      "independence_gap_ms": 30000,
+      "last_error": null,
+      "learning_improvement_measured": false,
+      "logical_time_ms": 614434250,
+      "max_evidence_age_ms": 21600000,
+      "minimum_independent_encounters": 3,
+      "model": "application_spatial_recurrence",
+      "observation_ack_grace_ms": 180000,
+      "paired_metrics": {
+        "last_seen_hit_rate": 0.6666666666666666,
+        "last_seen_mean_distance_m": 4.381069838942762,
+        "memory_hit_rate": 0.6666666666666666,
+        "memory_mean_distance_m": 7.5962342559683735
+      },
+      "reason": "forecast_ready",
+      "schema": "live-infinita-nov-animal-search/v1",
+      "score_is_probability": false,
+      "source": "verified_recalled_eye_encounters",
+      "verified_history_window": 16,
+      "world_id": "nov-live-autonomous-001",
+      "world_write_authority": false
+    },
+    "stored_and_recovered_encounters": 21
+  },
+  "decision_use": false,
+  "world_write_authority": false,
+  "frozen_release_preserved": "v0.1.0"
+}

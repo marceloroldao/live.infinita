@@ -911,6 +911,7 @@ func _follow_camera(snap_body: bool = true, delta: float = 1.0 / 60.0, reset_cam
     _camera.look_at(target, Vector3.UP)
 func _update_caption() -> void:
     if _hud!=null and _local_motion!=null:
+        _hud.set_animal_world(str(_local_motion._episodes.context.get("world_id","")))
         _hud.update_learning(_local_motion._experience,_local_motion._journey)
     var cx := _cell(_position.x)
     var cz := _cell(_position.z)

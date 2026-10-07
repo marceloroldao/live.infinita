@@ -2,6 +2,7 @@ extends CanvasLayer
 
 signal local_mode_changed(enabled: bool)
 
+var _animal_search: Node
 var _learning: Label
 var _status: Label
 var _toggle: Button
@@ -10,6 +11,9 @@ var _local_mode := false
 var _world_size_m := 1024
 
 func _ready() -> void:
+    _animal_search = preload("res://nov_animal_search_panel.gd").new()
+    _animal_search.name = "AnimalSearchPanelFeed"
+    add_child(_animal_search)
     _learning = Label.new()
     _learning.name = "NovLearningPanel"
     _learning.anchor_left = 1.0
@@ -18,7 +22,8 @@ func _ready() -> void:
     _learning.offset_right = -18
     _learning.offset_top = 104
     _learning.offset_bottom = 294
-    _learning.add_theme_font_size_override("font_size",16)
+    _learning.add_theme_font_size_override("font_size",15)
+    _learning.add_theme_constant_override("line_spacing",0)
     _learning.add_theme_color_override("font_color",Color.WHITE)
     var box := StyleBoxFlat.new()
     box.bg_color = Color(0.02,0.05,0.08,0.78)
@@ -169,6 +174,10 @@ Retornos ao início: %d
 Escolhas: RAM %d / Memoria.ia %d
 %s" % [source,memory.entries.size(),memory.promoted.size(),data.arrivals,data.interruptions,data.recoveries,data.causal_ram_steps,data.causal_memoria_steps,progress]
 
+    _learning.text += "\n" + _animal_search.lines()
+
+func set_animal_world(world: String) -> void:
+    _animal_search.set_world(world)
 
 func server_recall_line(data: Dictionary) -> String:
     var metrics: Dictionary = data.get("memoria_recall",{})
