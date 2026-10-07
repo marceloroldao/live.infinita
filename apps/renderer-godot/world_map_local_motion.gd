@@ -199,11 +199,11 @@ func commit_journey(identity: String, target: Vector3, current: Vector3) -> void
     if not _episodes.enabled:return
     if identity.is_empty():
         if not _journey.closed:
-            _journey.abort("objetivo encerrado")
+            _journey.abort("objetivo encerrado","goal_ended")
             if not _episodes.active.is_empty():
                 _episodes._finish("interrupted",current,Time.get_ticks_msec(),"journey_goal_ended")
         return
-    var changed: bool = _journey.begin(identity,Vector2(target.x,target.z),str(_episodes.context.get("world_id","")))
+    var changed: bool = _journey.begin(identity,Vector2(target.x,target.z),str(_episodes.context.get("world_id","")),Vector2(current.x,current.z))
     if changed and not _episodes.active.is_empty():
         _episodes._finish("interrupted",current,Time.get_ticks_msec(),"journey_goal_changed")
 
@@ -235,7 +235,7 @@ func recover_to(current: Vector3, destination: Vector3, body: CharacterBody3D, s
     if _episodes.enabled:
         if not _episodes.active.is_empty():
             _episodes._finish("interrupted",current,Time.get_ticks_msec(),"stuck_recovery")
-        _journey.abort("preso; retorno ao início")
+        _journey.abort("preso; retorno ao início","stuck_recovery")
         _journey.recoveries += 1
         _journey.save_status(true)
     _experience.active = false
@@ -245,3 +245,6 @@ func recover_to(current: Vector3, destination: Vector3, body: CharacterBody3D, s
     snap_body(body,destination)
     print("NOV_STUCK_RECOVERY from=(%.1f,%.1f) to=(%.1f,%.1f)" % [current.x,current.z,destination.x,destination.z])
     return true
+
+func abort_journey(reason: String, termination: String) -> void:
+    _journey.abort(reason,termination)

@@ -3,6 +3,8 @@ extends RefCounted
 const MAX_SECONDS := 180.0
 const REACHED_M := 0.1
 const HARD_LIMIT_SECONDS := 900.0
+var last_ended_id := ""
+var last_ended_reason := ""
 var total_elapsed := 0.0
 var _seen_cells: Dictionary = {}
 var active := false
@@ -29,7 +31,12 @@ func identity() -> String:
     return session + ":" + str(serial) if active else ""
 
 func choose(current: Vector3, latest: Vector3, delta: float, world: String, resolve: Callable = Callable()) -> Vector3:
+    last_ended_id = ""
+    last_ended_reason = ""
     if world != world_id:
+        if active:
+            last_ended_id = identity()
+            last_ended_reason = "world_changed"
         reset()
         world_id = world
     if active:
@@ -46,6 +53,8 @@ func choose(current: Vector3, latest: Vector3, delta: float, world: String, reso
             reset()
         elif elapsed >= MAX_SECONDS or total_elapsed>=HARD_LIMIT_SECONDS:
             expired += 1
+            last_ended_id = identity()
+            last_ended_reason = "goal_hard_timeout" if total_elapsed>=HARD_LIMIT_SECONDS else "goal_idle_timeout"
             print("NOV_ROUTE_REASSESS route=%s idle=%.1f total=%.1f" % [identity(), elapsed,total_elapsed])
             reset()
     if not active and current.is_finite() and latest.is_finite():

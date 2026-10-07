@@ -1,0 +1,9 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+NOV_JOURNEY_COMPLETE goal=second distance_m=2.000 quality_eligible=true
+NOV_ROUTE_COMMIT route=14713257011131418a6a38efb593cb55:1 goal=(100.0,0.0)
+NOV_ROUTE_REASSESS route=14713257011131418a6a38efb593cb55:1 idle=180.0 total=0.1
+NOV_ROUTE_COMMIT route=14713257011131418a6a38efb593cb55:2 goal=(100.0,0.0)
+NOV_ROUTE_REASSESS route=14713257011131418a6a38efb593cb55:2 idle=0.0 total=900.1
+NOV_ROUTE_COMMIT route=14713257011131418a6a38efb593cb55:3 goal=(100.0,0.0)
+Journey telemetry smoke: 0 failures

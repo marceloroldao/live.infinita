@@ -954,6 +954,7 @@ func _advance_live_walk(delta: float) -> void:
                 _visual_perception.latest(),atan2(_camera_forward.x,_camera_forward.z))
     var search_key := str(_animal_search_selection.get("id",""))+":"+str(_animal_search_selection.get("phase","")) if not _animal_search_selection.is_empty() else ""
     if search_key!=_animal_search_route:
+        _local_motion._journey.abort("intenção de busca mudou","search_intent_changed")
         _route_goal.reset()
         _animal_search_route=search_key
     var desired_target := _last_live_position
@@ -961,6 +962,8 @@ func _advance_live_walk(delta: float) -> void:
         var point: Array = _animal_search_selection.goal
         desired_target=Vector3(point[0],point[1],point[2])
     var committed_target: Vector3 = _route_goal.choose(_position, desired_target, dt, world, Callable(_local_motion,"resolve_destination"))
+    if _route_goal.last_ended_id==_local_motion._journey.identity and not _route_goal.last_ended_reason.is_empty():
+        _local_motion._journey.abort("objetivo reavaliado",_route_goal.last_ended_reason)
     if _local_motion.route_goal_id != _route_goal.identity():
         _local_motion._experience.active = false
         _local_motion._experience.reset_route_plan()
@@ -1070,6 +1073,7 @@ func _process(delta: float) -> void:
                 _clock = 0.0
                 _update_caption()
             return
+        _local_motion._journey.abort("servidor indisponível","feed_unavailable")
         _animal_search_intent.suspend("feed_unavailable")
         _animal_search_selection.clear()
         _live_authoritative = false
@@ -1133,3 +1137,7 @@ func _physics_process(delta: float) -> void:
     if not observation.is_empty() and not _perception_announced:
         _perception_announced = true
         print("NOV_VISUAL_PERCEPTION_ACTIVE world=%s day_range_m=24 night_range_m=12 fov_deg=120 occlusion=physical_eye_ray" % world)
+
+func _exit_tree() -> void:
+    if _local_motion!=null and _local_motion.has_method("abort_journey"):
+        _local_motion.abort_journey("renderizador encerrado","renderer_shutdown")
