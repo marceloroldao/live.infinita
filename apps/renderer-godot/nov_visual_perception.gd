@@ -86,7 +86,7 @@ func scan(observer: CharacterBody3D, forward: Vector3, space: PhysicsDirectSpace
     var count := mini(MAX_RAYS,eligible.size())
     for i in range(count):
         var candidate: Dictionary = eligible[(_cursor+i)%eligible.size()]
-        var query := PhysicsRayQueryParameters3D.create(eye,candidate["aim"],1,[observer.get_rid()])
+        var query := PhysicsRayQueryParameters3D.create(eye,candidate["aim"],3,[observer.get_rid()])
         query.collide_with_areas = false
         query.hit_from_inside = true
         var hit := space.intersect_ray(query)

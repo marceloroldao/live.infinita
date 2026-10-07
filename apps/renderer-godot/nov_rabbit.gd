@@ -12,17 +12,19 @@ var blocked_steps := 0
 var _legs: Array[Node3D] = []
 var _head: Node3D
 const RADIUS := 0.28
-const CENTER_Y := 0.38
+const CENTER_Y := 0.43
+const BODY_HEIGHT := 0.76
 
 func build(id: String, index: int) -> void:
     identity = id
     name = "Rabbit_"+str(index)
     collision_layer = 1
-    collision_mask = 1
+    collision_mask = 3
+    safe_margin = 0.005
     var collision := CollisionShape3D.new()
     var shape := CapsuleShape3D.new()
     shape.radius = RADIUS
-    shape.height = CENTER_Y*2.0
+    shape.height = BODY_HEIGHT
     collision.shape = shape
     add_child(collision)
     var fur := Color("#b6a08a").lerp(Color("#d7c7aa"),float(index)/3.0)
@@ -42,6 +44,8 @@ func build(id: String, index: int) -> void:
             _ellipsoid(leg,Vector3(0,-0.05,0.03),Vector3(0.09,0.12,0.15),fur)
             _legs.append(leg)
     _ellipsoid(self,Vector3(0,0.02,-0.45),Vector3(0.13,0.13,0.13),Color("#e5ddd0"))
+    for child in get_children():
+        if child is Node3D and not child is CollisionShape3D:child.position.y -= 0.05
 
 func _ellipsoid(parent: Node3D, location: Vector3, size: Vector3, color: Color) -> void:
     var visual := MeshInstance3D.new()
@@ -70,11 +74,11 @@ func sees_threat(observer: CharacterBody3D, space: PhysicsDirectSpaceState3D) ->
     if not is_instance_valid(observer):return false
     var aim := observer.global_position
     if aim.distance_to(global_position)>9.0:return false
-    var ray := PhysicsRayQueryParameters3D.create(global_position+Vector3.UP*0.18,aim,1,[get_rid()])
+    var ray := PhysicsRayQueryParameters3D.create(global_position+Vector3.UP*0.18,aim,3,[get_rid()])
     var hit := space.intersect_ray(ray)
     return hit.is_empty() or hit.get("collider")==observer
 
-func step(dt: float, water: Vector3, food: Vector3, home: Vector3, observer: CharacterBody3D, space: PhysicsDirectSpaceState3D) -> void:
+func step(dt: float, water: Vector3, food: Vector3, home: Vector3, observer: CharacterBody3D, space: PhysicsDirectSpaceState3D, allowed: Callable = Callable()) -> void:
     if dt<=0.0 or not is_finite(dt):return
     dt = minf(dt,0.1)
     hunger = minf(1.0,hunger+dt/160.0)
@@ -109,6 +113,7 @@ func step(dt: float, water: Vector3, food: Vector3, home: Vector3, observer: Cha
         var direction := wanted.rotated(Vector3.UP,angle)
         var next := global_position+direction*speed*dt
         if Vector2(next.x-home.x,next.z-home.z).length()>20.0:continue
+        if allowed.is_valid() and not bool(allowed.call(next.x,next.z)):continue
         var ground := support(next,space,[get_rid()])
         if ground.is_empty():continue
         var y := float(ground["position"].y)+CENTER_Y
@@ -126,7 +131,7 @@ func step(dt: float, water: Vector3, food: Vector3, home: Vector3, observer: Cha
 func support(location: Vector3, space: PhysicsDirectSpaceState3D, exclude: Array = []) -> Dictionary:
     var excluded: Array[RID] = []
     excluded.assign(exclude)
-    var ray := PhysicsRayQueryParameters3D.create(location+Vector3.UP*1.0,location-Vector3.UP*1.3,1,excluded)
+    var ray := PhysicsRayQueryParameters3D.create(location+Vector3.UP*1.0,location-Vector3.UP*1.3,2,excluded)
     var hit := space.intersect_ray(ray)
     if hit.is_empty() or hit["normal"].y<0.82:return {}
     return hit

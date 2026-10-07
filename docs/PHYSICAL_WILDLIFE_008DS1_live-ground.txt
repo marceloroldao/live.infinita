@@ -1,0 +1,30 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+WORLD_MAP_PERCEPTUAL_VEGETATION region= trees=10 undergrowth=84 env=
+WORLD_MAP_TILE_READY cell=9:14 biome=forest features=trail decor=1
+WORLD_MAP_DECOR_CULL tree=145 rock=110 plant=82 margin=12
+WORLD_MAP_TILE_READY cell=10:14 biome=forest features=trail decor=3
+WORLD_MAP_TILE_READY cell=11:14 biome=forest features=trail decor=1
+WORLD_MAP_TILE_READY cell=9:15 biome=forest features=trail decor=3
+WORLD_MAP_TILE_READY cell=10:15 biome=forest features=trail,landmark_shelter decor=6
+WORLD_MAP_TILE_READY cell=11:15 biome=forest features=trail decor=3
+WORLD_MAP_TILE_READY cell=9:16 biome=forest features=trail decor=1
+WORLD_MAP_TILE_READY cell=10:16 biome=forest features=trail decor=3
+WORLD_MAP_TILE_READY cell=11:16 biome=forest features=trail decor=1
+WORLD_MAP_PREVIEW_READY grid=32x32 m=2048 tiles=9 decor=22
+WORLD_MAP_TILE_READY cell=12:14 biome=clearing features=trail decor=1
+WORLD_MAP_TILE_READY cell=13:14 biome=clearing features=trail decor=3
+WORLD_MAP_TILE_READY cell=14:14 biome=clearing features=trail decor=1
+WORLD_MAP_TILE_READY cell=12:15 biome=clearing features=trail decor=3
+WORLD_MAP_TILE_READY cell=13:15 biome=clearing features=trail,landmark_old_grove decor=6
+WORLD_MAP_TILE_READY cell=14:15 biome=clearing features=trail decor=3
+WORLD_MAP_TILE_READY cell=12:16 biome=clearing features=trail decor=1
+WORLD_MAP_TILE_READY cell=13:16 biome=clearing features=trail decor=3
+WORLD_MAP_TILE_READY cell=14:16 biome=clearing features=trail decor=1
+WORLD_MAP_PERCEPTUAL_VEGETATION region=deep_forest trees=14 undergrowth=123 env=env_9605a42356fbd56eee6c0f6e
+WORLD_MAP_HERO_NATURE region=deep_forest trees=4 mid_trees=4 understory=18 rocks=1 tree_asset=CommonTree_1.gltf mid_asset=CommonTree_5.gltf under_asset=Grass_Common_Tall.gltf
+WORLD_MAP_MEMORY_TERRAIN projection=ctp_59e589356afa36b65366efc2 environment=env_9605a42356fbd56eee6c0f6e lakes=1 trails=3 trail_batches=1 massifs=2 snow_caps=1
+WORLD_MAP_LIVE_BOUND region=deep_forest sequence=401098 cell=13:15 hot=3 warm=5 regions=4
+WILDLIFE_ACTIVE world=nov-live-autonomous-001 count=3 authority=true
+008DS1_ACTUAL_PACKET_SPAWN count=3 world=nov-live-autonomous-001 position=(-149.4196, 11.99393, -19.18618)
+008DS1_ACTUAL_PACKET_STATE {"animals":[{"blocked_steps":0,"consumed_food":0,"consumed_water":0,"heading":[-0.980561375617981,0.196212977170944],"hunger":0.43875,"id":"nov-live-autonomous-001:rabbit:0","mode":"wander","phase":3.0,"position":[-153.884292602539,16.2166233062744,-0.0275080353021622],"thirst":0.505},{"blocked_steps":0,"consumed_food":0,"consumed_water":0,"heading":[0.994912564754486,-0.100742608308792],"hunger":0.558750000000003,"id":"nov-live-autonomous-001:rabbit:1","mode":"wander","phase":10.0,"position":[-145.85546875,14.8166933059692,-0.863440155982971],"thirst":0.604999999999997},{"blocked_steps":0,"consumed_food":0,"consumed_water":0,"heading":[0.832073032855988,-0.554666101932526],"hunger":0.678750000000003,"id":"nov-live-autonomous-001:rabbit:2","mode":"drink","phase":17.0,"position":[-145.635009765625,14.9517707824707,-3.37597846984863],"thirst":0.299999999999998}],"authority":"native_renderer_physics","food":[-154.419586181641,16.1795539855957,-4.18618392944336],"generated_at_unix":1791348415.40265,"home":[-149.419586181641,15.6576919555664,-4.18618392944336],"learning":false,"logical_time_ms":610455000,"memory_writes":false,"schema":"live-infinita-physical-wildlife/v1","sequence":1,"species":"rabbit","water":[-144.419586181641,14.2556858062744,-4.18618392944336],"world_id":"nov-live-autonomous-001"}

@@ -143,6 +143,7 @@ func _ready() -> void:
     var wildlife_public := OS.get_environment("LIVE_INFINITA_WILDLIFE_PUBLIC")
     var wildlife_authority := not OS.has_feature("web") and not OS.get_cmdline_user_args().has("--offline-tour") and not wildlife_state.is_empty() and not wildlife_public.is_empty()
     _wildlife.configure(wildlife_authority,wildlife_state,wildlife_public)
+    _wildlife._habitat_allowed = Callable(self,"_midground_allowed")
     _physical_weather = preload("res://world_map_weather.gd").new()
     add_child(_physical_weather)
     _physical_weather.build()
@@ -539,6 +540,24 @@ func _terrain(cx: int, cz: int, biome: String) -> MeshInstance3D:
             _vertex(st, x, z + step)
     var ground := MeshInstance3D.new()
     ground.mesh = st.commit()
+    # Physical ground uses the identical resident triangles. Layer 2 is for
+    # wildlife and sight; Nov retains its existing analytical walking floor.
+    var physics_ground := StaticBody3D.new()
+    physics_ground.name = "ResidentTerrainCollider"
+    physics_ground.collision_layer = 2
+    physics_ground.collision_mask = 0
+    var shape := ConcavePolygonShape3D.new()
+    var faces: PackedVector3Array = ground.mesh.surface_get_arrays(0)[Mesh.ARRAY_VERTEX].duplicate()
+    for i in range(0,faces.size(),3):
+        var swap := faces[i+1]
+        faces[i+1] = faces[i+2]
+        faces[i+2] = swap
+    shape.set_faces(faces)
+    shape.backface_collision = true
+    var collision := CollisionShape3D.new()
+    collision.shape = shape
+    physics_ground.add_child(collision)
+    ground.add_child(physics_ground)
     # Keep the actual rendered vertex heights with the resident tile.
     var heights := PackedFloat32Array()
     heights.resize(81)

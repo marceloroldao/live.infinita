@@ -1,5 +1,7 @@
 # Animais físicos — 008DS
 
+A instalação inicial foi revertida automaticamente. Use a correção 008DS1 descrita em `PHYSICAL_WILDLIFE_REPAIR_008DS1.md`, que adiciona os colliders do terreno real e corrige a cápsula em encostas.
+
 Primeiro habitat: três coelhos de baixa complexidade gráfica, uma pequena poça e uma área de alimento. O renderer nativo do servidor é o único simulador autorizado. Navegadores recebem a projeção dessa mesma população e não geram animais nem executam suas necessidades.
 
 ## Comportamento e limites

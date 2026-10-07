@@ -10,6 +10,7 @@ func box(parent: Node3D, position: Vector3, size: Vector3) -> StaticBody3D:
 func run() -> void:
     var holder := Node3D.new();root.add_child(holder)
     var ground := box(holder,Vector3(0,-0.5,0),Vector3(150,1,150))
+    ground.collision_layer = 2
     var observer := CharacterBody3D.new();observer.position = Vector3(0,0.9,0);holder.add_child(observer)
     var sensor = load("res://nov_visual_perception.gd").new()
     var clock = load("res://world_map_day_cycle.gd").new()
@@ -31,11 +32,11 @@ func run() -> void:
     check(seen["visible_entities"].size()==3,"Animals feed eye ray sensor, not a second omniscient Nov API")
     var rabbit = manager._animals[0]
     observer.position = Vector3(40,0.9,15)
-    rabbit.global_position = manager._water+Vector3.UP*0.38
+    rabbit.global_position = manager._water+Vector3.UP*0.43
     rabbit.thirst = 0.8;rabbit.hunger = 0.2
     for i in range(30):rabbit.step(0.1,manager._water,manager._food,manager._home,observer,space)
     check(rabbit.thirst<0.3 and rabbit.consumed_water==1,"Rabbit actually reaches water and completes one drink")
-    rabbit.global_position = manager._food+Vector3.UP*0.38;rabbit.hunger = 0.8;rabbit.thirst = 0.2
+    rabbit.global_position = manager._food+Vector3.UP*0.43;rabbit.hunger = 0.8;rabbit.thirst = 0.2
     for i in range(30):rabbit.step(0.1,manager._water,manager._food,manager._home,observer,space)
     check(rabbit.hunger<0.3 and rabbit.consumed_food==1,"Rabbit reaches food and completes one graze")
     observer.position = rabbit.global_position+Vector3(0,0.52,4)

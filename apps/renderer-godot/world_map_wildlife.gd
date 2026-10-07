@@ -3,6 +3,7 @@ const Rabbit = preload("res://nov_rabbit.gd")
 const SCHEMA := "live-infinita-physical-wildlife/v1"
 const COUNT := 3
 var _authority := false
+var _habitat_allowed: Callable
 var _checkpoint := ""
 var _projection := ""
 var _world := ""
@@ -106,9 +107,10 @@ func _build_resources() -> void:
     # Explicit resource patches for a first habitat; not a simulated hydrology system.
 
 func _floor(location: Vector3, space: PhysicsDirectSpaceState3D) -> Dictionary:
-    var ray := PhysicsRayQueryParameters3D.create(location+Vector3.UP*2.0,location-Vector3.UP*3.0,1)
+    if _habitat_allowed.is_valid() and not bool(_habitat_allowed.call(location.x,location.z)):return {}
+    var ray := PhysicsRayQueryParameters3D.create(location+Vector3.UP*12.0,location-Vector3.UP*24.0,2)
     var hit := space.intersect_ray(ray)
-    if hit.is_empty() or hit["normal"].y<0.90 or absf(hit["position"].y-location.y)>2.0:return {}
+    if hit.is_empty() or hit["normal"].y<0.90 or absf(hit["position"].y-location.y)>16.0:return {}
     return hit
 
 func _spawn(observer: CharacterBody3D, space: PhysicsDirectSpaceState3D, world: String, time_ms: int, sensor: RefCounted) -> bool:
@@ -126,8 +128,8 @@ func _spawn(observer: CharacterBody3D, space: PhysicsDirectSpaceState3D, world: 
             var point := _floor(home+Vector3(float(i-1)*2.0,0,2),space)
             if point.is_empty():break
             var pos: Vector3 = point["position"]+Vector3.UP*Rabbit.CENTER_Y
-            var shape := CapsuleShape3D.new();shape.radius = Rabbit.RADIUS;shape.height = Rabbit.CENTER_Y*2.0-0.04
-            var query := PhysicsShapeQueryParameters3D.new();query.shape = shape;query.transform = Transform3D(Basis.IDENTITY,pos);query.collision_mask = 1
+            var shape := CapsuleShape3D.new();shape.radius = Rabbit.RADIUS;shape.height = Rabbit.BODY_HEIGHT
+            var query := PhysicsShapeQueryParameters3D.new();query.shape = shape;query.transform = Transform3D(Basis.IDENTITY,pos);query.collision_mask = 3
             if not space.intersect_shape(query,1).is_empty():break
             rows.append({"id":world+":rabbit:"+str(i),"position":[pos.x,pos.y,pos.z],"heading":[0,1],"hunger":0.42+float(i)*0.12,"thirst":0.48+float(i)*0.10,"mode":"wander","phase":float(i)*7.0,"consumed_food":0,"consumed_water":0,"blocked_steps":0})
         if rows.size()!=COUNT:continue
@@ -193,7 +195,7 @@ func update(clock: RefCounted, observer: CharacterBody3D, sensor: RefCounted, sp
     var active := observer.global_position.distance_to(_home)<42.0
     for rabbit in _animals:
         if active and not rabbit.support(rabbit.global_position,space,[rabbit.get_rid()]).is_empty():
-            rabbit.step(dt,_water,_food,_home,observer,space)
+            rabbit.step(dt,_water,_food,_home,observer,space,_habitat_allowed)
     if Time.get_ticks_msec()-_last_publish_ms>=500:
         if not persist(time_ms):_failed = true;push_warning("WILDLIFE_SAVE_FAILED")
 
