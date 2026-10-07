@@ -32,7 +32,7 @@ func observe_attempt(row: Dictionary) -> bool:
     var initial := float(row.get("initial_remaining_m",-1))
     if key.is_empty() or identity.is_empty() or not side in [-1,1]:return false
     if not bool(row.get("physical_attempt",false)) or bool(row.get("contains_prediction",true)):return false
-    if not outcome in ["arrived","blocked","stuck_recovery","interrupted"]:return false
+    if not outcome in ["arrived","contour_completed","blocked","stuck_recovery","interrupted"]:return false
     if not is_finite(distance) or distance<0 or not is_finite(initial) or initial<=0:return false
     if outcome=="interrupted":return false # No failure attribution for shutdown/goal changes.
     if _identities.has(identity):return false
@@ -59,7 +59,7 @@ func recommend(key: String) -> Dictionary:
             # Errors add a bounded policy penalty; an arrival with a long detour
             # retains its measured cost. Contradictions remain as separate samples.
             cost+=minf(float(row.cost_ratio),100.0)
-            if row.outcome!="arrived":errors+=1
+            if not row.outcome in ["arrived","contour_completed"]:errors+=1
             var id := str(row.get("observation_id",""))
             if not id.is_empty() and not ids.has(id):ids.append(id)
         if errors==recent.size():return {}

@@ -119,6 +119,7 @@ func advance(
     var displacement := Vector3(target.x - current.x, 0, target.z - current.z)
     # Swept motion uses the requested dt even in presentation smoke calls.
     body.move_and_collide(displacement)
+    policy["executed_motion"] = true
 
     var resolved: Vector3 = _traversability.ground_position(body.position.x, body.position.z)
     body.position.y = resolved.y + BODY_CENTER_Y

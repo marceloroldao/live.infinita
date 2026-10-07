@@ -10,17 +10,17 @@ from nov_spatial_memory_sync import _canonical, _post_local, _validate_ack, _obs
 from nov_navigation_memory_sync import write_checkpoint
 from nov_navigation_recall_export import fetch_recent
 
-PROFILE = "capsule044-height18-lookahead3-contour64-v1"
-SCHEMA = "live-infinita-native-pattern-outcomes/v1"
-RECALL_SCHEMA = "live-infinita-native-pattern-recall/v1"
-SOURCE = Path("/opt/live.infinita/.local/share/godot/app_userdata/Live Infinita Showcase/nov-navigation-patterns-008eh.json")
+PROFILE = "capsule044-height18-lookahead3-contour64-localexit-v2"
+SCHEMA = "live-infinita-native-pattern-outcomes/v2"
+RECALL_SCHEMA = "live-infinita-native-pattern-recall/v2"
+SOURCE = Path("/opt/live.infinita/.local/share/godot/app_userdata/Live Infinita Showcase/nov-navigation-patterns-008ei.json")
 WORLD = Path("/var/lib/live-infinita/autonomous-world/world.json")
-CHECKPOINT = Path("/var/lib/live-infinita/memoria-local/navigation-pattern-checkpoint.json")
-RECALL = Path("/var/lib/live-infinita/memoria-local/navigation-pattern-recall.json")
+CHECKPOINT = Path("/var/lib/live-infinita/memoria-local/navigation-pattern-checkpoint-008ei.json")
+RECALL = Path("/var/lib/live-infinita/memoria-local/navigation-pattern-recall-008ei.json")
 LIMIT = 512
 FIELDS = {"attempt_id", "world_id", "observer", "profile", "context", "side", "outcome",
           "distance_m", "initial_remaining_m", "physical_attempt", "contains_prediction",
-          "ended_at_unix", "exploration"}
+          "ended_at_unix", "exploration", "completion_basis", "exit_progress_m"}
 
 class PatternSyncError(RuntimeError):
     pass
@@ -44,23 +44,29 @@ def validate(row):
     signature = re.fullmatch(re.escape(PROFILE+"|"+world+"|")+"local-clear-v1:(\\d+):(\\d+)", row["context"])
     if signature is None or any(not 0 <= int(v) <= 255 for v in signature.groups()):
         raise PatternSyncError("invalid_context")
-    if type(row["side"]) not in (int, float) or row["side"] not in (-1, 1) or row["outcome"] not in ("arrived", "stuck_recovery"):
+    if type(row["side"]) not in (int, float) or row["side"] not in (-1, 1) or row["outcome"] not in ("contour_completed", "blocked", "stuck_recovery"):
         raise PatternSyncError("invalid_action_outcome")
     if row["physical_attempt"] is not True or row["contains_prediction"] is not False or type(row["exploration"]) is not bool:
         raise PatternSyncError("invalid_fact_markers")
-    for field in ("distance_m", "initial_remaining_m", "ended_at_unix"):
+    for field in ("distance_m", "initial_remaining_m", "ended_at_unix", "exit_progress_m"):
         v = row[field]
         if type(v) not in (int, float) or not math.isfinite(v) or v < 0:
             raise PatternSyncError("invalid_measurement")
     if row["distance_m"] > 1e7 or not 0 < row["initial_remaining_m"] <= 1e7 or row["ended_at_unix"] <= 0:
         raise PatternSyncError("measurement_bound")
+    basis = row["completion_basis"]
+    if row["outcome"] == "contour_completed":
+        if basis not in ("executed_exit", "goal_reached") or (basis == "executed_exit" and row["exit_progress_m"] < 0.75):
+            raise PatternSyncError("unexecuted_exit")
+    elif basis != ("physical_collision" if row["outcome"] == "blocked" else "stuck_recovery"):
+        raise PatternSyncError("invalid_failure_basis")
     return dict(row, side=int(row["side"]))
 
 def payload(row):
     validate(row)
     encoded = _canonical(row)
     digest = sha256(encoded).hexdigest()
-    event = {"version": 1, "source_id": "live.infinita:native-pattern-v1:"+digest,
+    event = {"version": 1, "source_id": "live.infinita:native-pattern-v2:"+digest,
              "sequence": 1, "byte_offset": 0, "byte_length": len(encoded),
              "trail": [int.from_bytes(blake2b(str(row[k]).encode(), digest_size=8).digest(), "big") & ((1<<63)-1)
                        for k in ("context", "side", "outcome")],

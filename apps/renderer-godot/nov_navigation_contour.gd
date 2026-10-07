@@ -3,6 +3,7 @@ extends RefCounted
 var pattern_memory: RefCounted = null
 # Explicit experiment control, never set by production.
 var exploration_side := 0
+var exit_proposal: Dictionary = {}
 var pattern_context := ""
 var pattern_recommendation: Dictionary = {}
 var initial_side := 0
@@ -19,6 +20,7 @@ const INITIAL_EXCURSION_M := 64.0
 var excursion_limit := INITIAL_EXCURSION_M
 var side_switches := 0
 func reset() -> void:
+    exit_proposal={}
     active=false
     heading=Vector2.ZERO
     normal=Vector2.ZERO
@@ -26,11 +28,14 @@ func reset() -> void:
     excursion_limit=INITIAL_EXCURSION_M
     pattern_context="";pattern_recommendation={};initial_side=0;default_side=0
 func filter(current: Vector2, goal: Vector2, rows: Array[Dictionary], direct_clear: bool) -> Array[Dictionary]:
+    exit_proposal={}
     # A clear ray after retreat alone is insufficient: it can immediately lead
     # back to the same wall. Release after actual forward progress or a shorter
     # distance than at contact, with the direct corridor checked again.
     if active and direct_clear and (current.distance_to(goal)<hit_distance-0.75 or (current-origin).dot(normal)>=3.0):
+        var proposal: Dictionary={"contact_serial":starts,"start":[current.x,current.y],"normal":[normal.x,normal.y]}
         reset()
+        exit_proposal=proposal
         return rows
     if not active and direct_clear:return rows
     var clear: Array[Dictionary] = []
@@ -92,7 +97,7 @@ func committed(current: Vector2, point: Vector2) -> void:
 func evidence() -> Dictionary:
     return {"source":"local_observed_contour","active":active,"heading":[heading.x,heading.y],
         "normal":[normal.x,normal.y],"origin":[origin.x,origin.y],
-        "contact_serial":starts,"pattern_context":pattern_context,"pattern_recommendation":pattern_recommendation.duplicate(true),
+        "exit_proposal":exit_proposal.duplicate(true),"contact_serial":starts,"pattern_context":pattern_context,"pattern_recommendation":pattern_recommendation.duplicate(true),
         "initial_side":initial_side,"default_side":default_side,
         "initial_side_changed":initial_side!=default_side,
         "pattern_changed_initial_side":exploration_side==0 and not pattern_recommendation.is_empty() and initial_side!=default_side,

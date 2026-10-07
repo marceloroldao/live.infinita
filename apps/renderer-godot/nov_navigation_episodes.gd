@@ -61,6 +61,7 @@ func observe(serial: int, current: Vector3, goal: Vector3, selected: Vector2,
             "working_memory_key": policy.get("working_memory_key", ""),
             "working_memory_changed_choice": bool(policy.get("working_memory_changed_choice", false)),
         }
+    active["executed_motion"] = bool(active.get("executed_motion",false)) or bool(policy.get("executed_motion",false))
     active["collisions"] = int(policy.get("collisions", 0))
     active["surface"] = str(policy.get("surface", "terrain"))
     var resolved: Vector3 = policy.get("position", current)

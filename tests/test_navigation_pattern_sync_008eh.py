@@ -16,9 +16,9 @@ class PatternBridgeTests(unittest.TestCase):
         self.world.write_text(json.dumps({"world_id":"w"}))
         self.rows=[{"attempt_id":"attempt"+str(i),"world_id":"w","observer":"nov","profile":PROFILE,
                     "context":PROFILE+"|w|local-clear-v1:255:254","side":1 if i%2==0 else -1,
-                    "outcome":"arrived","distance_m":100+i,"initial_remaining_m":15,
+                    "outcome":"contour_completed","distance_m":100+i,"initial_remaining_m":15,
                     "physical_attempt":True,"contains_prediction":False,"ended_at_unix":1000+i,
-                    "exploration":i>0} for i in range(4)]
+                    "exploration":i>0,"completion_basis":"executed_exit","exit_progress_m":1.0} for i in range(4)]
         self.write()
         self.items=[]
     def write(self):
@@ -94,5 +94,18 @@ class PatternBridgeTests(unittest.TestCase):
         link=self.root/"link";link.symlink_to(self.source)
         with self.assertRaises(PatternSyncError):
             sync_once(link,self.world,self.checkpoint,self.recall,send=self.send,fetch=self.fetch)
+
+    def test_exit_requires_measured_forward_progress(self):
+        for value in [0.74, True, -1, float("nan")]:
+            with self.subTest(progress=value):
+                self.rows[0]["exit_progress_m"]=value;self.write()
+                with self.assertRaises((PatternSyncError,ValueError)):self.run_sync()
+        self.assertFalse(self.items)
+    def test_failure_requires_matching_physical_basis(self):
+        for outcome,basis in [("blocked","executed_exit"),("stuck_recovery","physical_collision")]:
+            with self.subTest(outcome=outcome):
+                self.rows[0].update(outcome=outcome,completion_basis=basis);self.write()
+                with self.assertRaises(PatternSyncError):self.run_sync()
+        self.assertFalse(self.items)
 
 if __name__=="__main__":unittest.main()

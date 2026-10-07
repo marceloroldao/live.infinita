@@ -2,7 +2,7 @@
 Description=Live Infinita — physical navigation patterns into local Memoria.ia
 After=live-infinita-memoria-local.service
 Requires=live-infinita-memoria-local.service
-ConditionPathExists=/opt/live.infinita/.local/share/godot/app_userdata/Live Infinita Showcase/nov-navigation-patterns-008eh.json
+ConditionPathExists=/opt/live.infinita/.local/share/godot/app_userdata/Live Infinita Showcase/nov-navigation-patterns-008ei.json
 
 [Service]
 Type=oneshot

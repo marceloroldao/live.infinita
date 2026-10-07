@@ -1,6 +1,6 @@
 extends "godot_physical_memory_comparison_008ed.gd"
 var state_path := ""
-func native_travel(holder: Node3D,label: String, enabled_patterns: bool=true, recall: Dictionary={}) -> Dictionary:
+func native_travel(holder: Node3D,label: String, enabled_patterns: bool=true, recall: Dictionary={},minimum_outcomes: int=1) -> Dictionary:
     var motion=load("res://world_map_local_motion.gd").new(Callable(self,"flat"),512)
     motion._experience.storage=""
     motion._experience.trial_error_enabled=true
@@ -38,7 +38,7 @@ func native_travel(holder: Node3D,label: String, enabled_patterns: bool=true, re
         "status":motion._pattern_collector.status(),"route_plan_builds":motion._experience.route_plan_builds}
     check(arrived and collisions==0 and not rescued and result.route_plan_builds==0,label+": physically valid native journey")
     if enabled_patterns:
-        check(motion._pattern_collector.observed==1,label+": actual native collector records exactly one outcome")
+        check(motion._pattern_collector.observed>=minimum_outcomes,label+": actual native collector records independent local outcomes")
     runs.append(result)
     body.queue_free()
     return result
