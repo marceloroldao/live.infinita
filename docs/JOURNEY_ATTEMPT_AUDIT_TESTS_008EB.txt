@@ -1,0 +1,12 @@
+test_arrival_and_interruption_are_separate (test_journey_attempt_audit_008eb.JourneyAuditTests.test_arrival_and_interruption_are_separate) ... ok
+test_bad_authority_numbers_missing_fields (test_journey_attempt_audit_008eb.JourneyAuditTests.test_bad_authority_numbers_missing_fields) ... ok
+test_clock_correction_does_not_change_duration (test_journey_attempt_audit_008eb.JourneyAuditTests.test_clock_correction_does_not_change_duration) ... ok
+test_duplicates_and_conflicts (test_journey_attempt_audit_008eb.JourneyAuditTests.test_duplicates_and_conflicts) ... ok
+test_empty_noise_and_limits (test_journey_attempt_audit_008eb.JourneyAuditTests.test_empty_noise_and_limits) ... ok
+test_metadata_quality_and_world_pairing (test_journey_attempt_audit_008eb.JourneyAuditTests.test_metadata_quality_and_world_pairing) ... ok
+test_unmatched_records_are_not_failures (test_journey_attempt_audit_008eb.JourneyAuditTests.test_unmatched_records_are_not_failures) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.035s
+
+OK

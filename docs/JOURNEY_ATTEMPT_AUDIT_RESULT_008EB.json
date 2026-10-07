@@ -1,0 +1,132 @@
+{
+  "schema": "live-infinita-journey-attempt-audit/v1",
+  "generated_at_unix": 1791393660.8970988,
+  "read_only": true,
+  "counts": {
+    "started": 3,
+    "ended": 2,
+    "paired": 2,
+    "arrived": 2,
+    "interrupted": 0,
+    "open_or_censored": 1,
+    "end_without_start_in_window": 0,
+    "identical_duplicates_ignored": 0
+  },
+  "termination_counts": {
+    "arrived": 2
+  },
+  "all_paired_attempts": {
+    "count": 2,
+    "duration_mean_seconds": 191.649,
+    "duration_median_seconds": 191.649,
+    "distance_sum_m": 1503.566,
+    "distance_mean_m": 751.783
+  },
+  "arrivals": {
+    "count": 2,
+    "duration_mean_seconds": 191.649,
+    "duration_median_seconds": 191.649,
+    "distance_sum_m": 1503.566,
+    "distance_mean_m": 751.783
+  },
+  "interruptions": {
+    "count": 0,
+    "duration_mean_seconds": null,
+    "duration_median_seconds": null,
+    "distance_sum_m": 0,
+    "distance_mean_m": null
+  },
+  "observed_arrival_fraction_among_paired": 1.0,
+  "quality_eligible_arrivals": 2,
+  "paired_attempts": [
+    {
+      "blocked_attempts": 0,
+      "causal_memoria_steps": 0,
+      "causal_ram_steps": 0,
+      "completed_steps": 634,
+      "current": [
+        467.260437011719,
+        539.580993652344
+      ],
+      "distance_m": 633.368761189282,
+      "duration_monotonic_ms": 151821,
+      "ended_at_unix": 1791393221.52226,
+      "ended_monotonic_ms": 157657,
+      "event": "ended",
+      "goal": [
+        467.260437011719,
+        539.580993652344
+      ],
+      "goal_id": "d39106b16c36e201117ed8fbbe4b272a:1",
+      "initial_remaining_m": 526.344604492188,
+      "learning_evidence": false,
+      "quality_eligible": true,
+      "remaining_m": 0.0,
+      "schema": "live-infinita-nov-journey-attempt/v1",
+      "start": [
+        210.760284423828,
+        79.9656066894531
+      ],
+      "started_at_unix": 1791393069.70192,
+      "started_monotonic_ms": 5836,
+      "termination": "arrived",
+      "world_id": "nov-live-autonomous-001",
+      "world_write_authority": false
+    },
+    {
+      "blocked_attempts": 0,
+      "causal_memoria_steps": 0,
+      "causal_ram_steps": 0,
+      "completed_steps": 871,
+      "current": [
+        288.002410888672,
+        -223.993087768555
+      ],
+      "distance_m": 870.197053523734,
+      "duration_monotonic_ms": 231478,
+      "ended_at_unix": 1791393453.63523,
+      "ended_monotonic_ms": 389770,
+      "event": "ended",
+      "goal": [
+        288.000030517578,
+        -224.0
+      ],
+      "goal_id": "d39106b16c36e201117ed8fbbe4b272a:2",
+      "initial_remaining_m": 784.340637207031,
+      "learning_evidence": false,
+      "quality_eligible": true,
+      "remaining_m": 0.00731061631813645,
+      "schema": "live-infinita-nov-journey-attempt/v1",
+      "start": [
+        467.260437011719,
+        539.580993652344
+      ],
+      "started_at_unix": 1791393222.15785,
+      "started_monotonic_ms": 158292,
+      "termination": "arrived",
+      "world_id": "nov-live-autonomous-001",
+      "world_write_authority": false
+    }
+  ],
+  "open_or_censored_ids": [
+    {
+      "world_id": "nov-live-autonomous-001",
+      "goal_id": "d39106b16c36e201117ed8fbbe4b272a:3"
+    }
+  ],
+  "end_without_start_ids": [],
+  "limitations": [
+    "Window boundaries or abrupt restart can leave unmatched records.",
+    "Unmatched starts are not failures; unmatched ends are excluded from paired metrics.",
+    "Arrival fraction describes paired records, not all starts or a survival estimate.",
+    "Distances are planar physical travel; duration is process monotonic real time.",
+    "Different goals and terrain prevent a causal policy comparison.",
+    "Recorded causal steps do not prove outcome improvement."
+  ],
+  "memory_advantage_demonstrated": false,
+  "source_scope": {
+    "type": "native_renderer_journal",
+    "since": "2026-10-07 17:11:03 UTC",
+    "max_journal_lines": 10000
+  }
+}
