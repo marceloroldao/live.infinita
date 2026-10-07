@@ -1,0 +1,118 @@
+{
+  "update": "008DU",
+  "installed": true,
+  "verified_at_utc": "2026-10-07T05:48:08.791977+00:00",
+  "installed_application_commit": "f7c77864a3ab7a725a76be76879158cb5c69f653",
+  "installation_marker": "008DU_OK source=f7c7786",
+  "installed_file_sha256": "a3a6568f23e378524363e96354ed9a5ae1e5a9202f989209d9a19680e547ccfa",
+  "frozen_release_commit": "ca41c24fbb6613421fadaa649d751155d12c9da2",
+  "public_endpoint_http_ok": true,
+  "timer_active": true,
+  "memory_bridge_timer_active": true,
+  "renderer_active": true,
+  "forecast_status": {
+    "absence_claim": false,
+    "contains_prediction": true,
+    "counters": {
+      "expired_without_observation": 0,
+      "issued": 3,
+      "last_seen_distance_sum_m": 0.0,
+      "last_seen_hits": 0,
+      "memory_distance_sum_m": 0.0,
+      "memory_hits": 0,
+      "paired": 0
+    },
+    "decision_use": false,
+    "evaluations": [],
+    "forecast_horizon_ms": 60000,
+    "forecasts": [
+      {
+        "center_xz_m": [
+          -356.0,
+          -20.0
+        ],
+        "contains_prediction": true,
+        "entity_id": "nov-live-autonomous-001:rabbit:0",
+        "evidence_ids": [
+          "structural-event:9c85c9034a917865e7c9cc262e2382abb2f152c4",
+          "structural-event:dc04f51fc95dc608e617453697429de509f56e7f",
+          "structural-event:8fd75f362a40fae91b102df4b13300483e90a0b6"
+        ],
+        "expires_ms": 613978143,
+        "forecast_id": "c49a6c4695a2b24d249189fb491660f54a6b5b7a99604b1c0204b67d7d6ad092",
+        "issued_ms": 613918143,
+        "last_seen_xz_m": [
+          -354.961761474609,
+          -16.3932685852051
+        ],
+        "radius_m": 8
+      },
+      {
+        "center_xz_m": [
+          -356.0,
+          -20.0
+        ],
+        "contains_prediction": true,
+        "entity_id": "nov-live-autonomous-001:rabbit:1",
+        "evidence_ids": [
+          "structural-event:71bdd8998de0f0fa4555b655562e34a65219bce6",
+          "structural-event:a31c807bc6bac4df9f34675b53274bfd4bd5211b",
+          "structural-event:2b486abdc8bba666beb6fdf28b039a73231ca894"
+        ],
+        "expires_ms": 613978143,
+        "forecast_id": "6b8c49fb23130c93adffc4a65031f40c6a2efb4a567acfb45e318492bd02a68c",
+        "issued_ms": 613918143,
+        "last_seen_xz_m": [
+          -354.520477294922,
+          -16.0945415496826
+        ],
+        "radius_m": 8
+      },
+      {
+        "center_xz_m": [
+          -356.0,
+          -12.0
+        ],
+        "contains_prediction": true,
+        "entity_id": "nov-live-autonomous-001:rabbit:2",
+        "evidence_ids": [
+          "structural-event:73164995d9f2b328be2c098b3e53841d72df171e",
+          "structural-event:682fc05875b32b6db3407176c76cd2431f79ca7c",
+          "structural-event:4796bc842e32ad0f1894069f37c46911ee483fb3"
+        ],
+        "expires_ms": 613978143,
+        "forecast_id": "73f3864bb3411db0bc27bafd160f8b79f1069faee12d2a94da8bf3e498f6de30",
+        "issued_ms": 613918143,
+        "last_seen_xz_m": [
+          -353.165222167969,
+          -11.8830099105835
+        ],
+        "radius_m": 8
+      }
+    ],
+    "generated_at_unix": 1791352084.3430352,
+    "history_window_limit": 16,
+    "independence_gap_ms": 30000,
+    "last_error": null,
+    "learning_improvement_measured": false,
+    "logical_time_ms": 613965811,
+    "max_evidence_age_ms": 21600000,
+    "minimum_independent_encounters": 3,
+    "model": "application_spatial_recurrence",
+    "observation_ack_grace_ms": 180000,
+    "paired_metrics": {
+      "last_seen_hit_rate": null,
+      "last_seen_mean_distance_m": null,
+      "memory_hit_rate": null,
+      "memory_mean_distance_m": null
+    },
+    "reason": "forecast_ready",
+    "schema": "live-infinita-nov-animal-search/v1",
+    "score_is_probability": false,
+    "source": "verified_recalled_eye_encounters",
+    "verified_history_window": 12,
+    "world_id": "nov-live-autonomous-001",
+    "world_write_authority": false
+  },
+  "learning_improvement_confirmed": false
+}
