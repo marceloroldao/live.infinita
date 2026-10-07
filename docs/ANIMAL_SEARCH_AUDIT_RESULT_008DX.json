@@ -1,0 +1,70 @@
+{
+  "schema": "live-infinita-animal-search-audit/v1",
+  "generated_at_unix": 1791378310.4086902,
+  "world_id": "nov-live-autonomous-001",
+  "source_age_seconds": {
+    "live-infinita-nov-animal-search-intent/v1": 5.469,
+    "live-infinita-nov-animal-memory/v1": 5.215,
+    "live-infinita-nov-animal-search/v1": 10.606
+  },
+  "read_only": true,
+  "bounded_search": {
+    "arms": {
+      "memory": {
+        "started": 1,
+        "confirmed": 1,
+        "not_observed": 0,
+        "aborted": 0,
+        "completed": 1,
+        "pending": 0,
+        "confirmed_per_completed": 1.0
+      },
+      "last_seen": {
+        "started": 0,
+        "confirmed": 0,
+        "not_observed": 0,
+        "aborted": 0,
+        "completed": 0,
+        "pending": 0,
+        "confirmed_per_completed": null
+      }
+    },
+    "recent_results": [
+      {
+        "id": "nov-live-autonomous-001:animal-search:1",
+        "arm": "memory",
+        "result": "animal_seen",
+        "duration_logical_ms": 5992,
+        "confirmed_by_eye_sensor": true,
+        "matching_recovered_encounter_ids": [
+          "structural-event:0e3e154806d6748204c73791f645ef71f18e7506"
+        ],
+        "recovery_check": "matched"
+      }
+    ],
+    "duration_scope": "recent_results_only_max_16",
+    "comparison_state": "waiting_for_both_strategies",
+    "allocation": "persisted_alternation_not_randomized"
+  },
+  "stored_and_recovered_encounters": 92,
+  "shadow_prediction": {
+    "counters": {
+      "expired_without_observation": 203,
+      "issued": 226,
+      "last_seen_distance_sum_m": 26.488638152267647,
+      "last_seen_hits": 19,
+      "memory_distance_sum_m": 101.50216871817085,
+      "memory_hits": 19,
+      "paired": 21
+    },
+    "paired_metrics": {
+      "last_seen_hit_rate": 0.9047619047619048,
+      "last_seen_mean_distance_m": 1.2613637215365547,
+      "memory_hit_rate": 0.9047619047619048,
+      "memory_mean_distance_m": 4.833436605627183
+    },
+    "observation_selection_affected_by_active_search": true
+  },
+  "memory_advantage_demonstrated": false,
+  "general_learning_improvement_demonstrated": false
+}
