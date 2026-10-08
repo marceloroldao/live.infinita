@@ -26,6 +26,7 @@ var _serial_goal := ""
 var _latest_serial := 0
 func _init(value: RefCounted=null, path: String="user://nov-navigation-patterns-008ej.json") -> void:
     journey=value;storage=path
+    patterns.cost_shift_enabled=OS.get_environment("LIVE_INFINITA_NAVIGATION_COST_SHIFT")=="1"
     if storage.is_empty() or OS.has_feature("web") or OS.get_cmdline_user_args().has("--offline-tour"):return
     load_state()
 func load_state() -> void:
@@ -231,6 +232,7 @@ func poll(now: float) -> void:
             if typeof(data)==TYPE_DICTIONARY:accept_recall(data,now)
 func status() -> Dictionary:
     return {"observed_outcomes":observed,"ram_records":local_rows.size(),"recovered_records":recovered_rows.size(),
+        "cost_shift_enabled":patterns.cost_shift_enabled,
         "changed_initial_decisions":changed_decisions,"core_changed_initial_decisions":core_changed_decisions,
         "exploration_decisions":exploration_decisions,"enabled":enabled,
         "pending_contacts":pending.size(),"exclusions":exclusions.duplicate(),

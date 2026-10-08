@@ -8,7 +8,7 @@ func native_travel(holder: Node3D,label: String, enabled_patterns: bool=true, re
     motion._episodes.storage=""
     motion._episodes.enabled=true
     motion._episodes.set_context({"world_id":"native-pattern-008eh","observer_entity_id":"nov"})
-    if OS.get_environment("LIVE_INFINITA_REPEATED_POLICY")!="baseline":
+    if not OS.get_environment("LIVE_INFINITA_REPEATED_POLICY") in ["baseline","integrated"]:
         var policy=OS.get_environment("LIVE_INFINITA_EXPERIMENTAL_POLICY_PATH")
         if policy.is_empty():policy="/home/etbra/live.infinita/tests/godot_cost_shift_policy_008ep.gd"
         motion._pattern_collector.patterns=load(policy).new()

@@ -26,7 +26,7 @@ def main():
     p.add_argument("--project",type=pathlib.Path,default=pathlib.Path("/home/etbra/008en-godot-test"))
     p.add_argument("--output-dir",type=pathlib.Path,required=True);a=p.parse_args()
     a.output_dir.mkdir(parents=True,exist_ok=True);summaries=[]
-    for policy in ("baseline","fixed_epoch","renewable_epoch"):
+    for policy in ("integrated",):
         with tempfile.TemporaryDirectory(prefix="008eq-"+policy+"-") as raw:
             tmp=pathlib.Path(raw);fixture=tmp/"fixture.json";state=tmp/"state.json"
             result,log=godot(a.project,fixture,state,policy)
@@ -46,7 +46,7 @@ def main():
                     "collisions":sum(r["collisions"] for r in trials),"rescues":sum(int(r["rescued"]) for r in trials)})
             summary={"policy":policy,"phases":phases,"physical_outcomes":len(facts["rows"])}
             summaries.append(summary);print(json.dumps(summary),flush=True)
-            if policy=="renewable_epoch":
+            if policy=="integrated":
                 sys.path.insert(0,str(native.SDK))
                 from fastapi import FastAPI
                 from fastapi.testclient import TestClient
@@ -79,8 +79,8 @@ def main():
                 cold,cold_log=godot(a.project,fixture,state,policy,recall);client.close()
                 summary["core"]={"intake":batches,"recovered":recovered,"cold":cold,"sdk_commit":native.SDK_COMMIT}
                 (a.output_dir/"COLD_CORE.txt").write_text(cold_log)
-    output={"schema":"live-infinita-repeated-changes/v1","planned_openings":[-20,-110,0,-20],
+    output={"schema":"live-infinita-integrated-cost-windows/v1","planned_openings":[-20,-110,0,-20],
         "trials_per_phase":12,"policies":summaries,"production_policy_changed":False,
         "scope":"isolated_actual_native_physics; repeated related flat-wall changes"}
-    (a.output_dir/"REPEATED_CHANGES_008EQ.json").write_text(json.dumps(output,indent=2)+"\n")
+    (a.output_dir/"INTEGRATED_COST_WINDOWS_008ER.json").write_text(json.dumps(output,indent=2)+"\n")
 if __name__=="__main__":main()

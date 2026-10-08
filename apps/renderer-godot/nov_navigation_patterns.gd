@@ -5,6 +5,7 @@ const SAMPLE_LIMIT := 32
 const MIN_SAMPLES := 2
 const LOCAL_COST_SCALE_M := 3.0
 var enabled := false
+var cost_shift_enabled := false
 var records: Array[Dictionary] = []
 var _identities: Dictionary = {}
 func context(current: Vector2, goal: Vector2, rows: Array[Dictionary]) -> String:
@@ -49,13 +50,13 @@ func observe_attempt(row: Dictionary) -> bool:
     return true
 func recommend(key: String) -> Dictionary:
     return evaluate(key).recommendation
-func evaluate(key: String) -> Dictionary:
+func _evaluate_rows(key: String, source_rows: Array[Dictionary]) -> Dictionary:
     var evaluation: Dictionary={"context":key,"reason":"disabled","alternatives":{},"recommendation":{}}
     if not enabled:return evaluation
     var sides: Dictionary={}
     for side in [-1,1]:
         var recent: Array[Dictionary]=[]
-        for row in records:
+        for row in source_rows:
             if row.context==key and int(row.side)==side:recent.append(row)
         while recent.size()>SAMPLE_LIMIT:recent.pop_front()
         if recent.is_empty():
@@ -89,4 +90,42 @@ func evaluate(key: String) -> Dictionary:
     evaluation.recommendation={"side":best,"context":key,"alternatives":sides,
         "source":"recovered-pattern-evidence" if not sides[best].observation_ids.is_empty() else "ram-pattern-evidence",
         "observation_ids":sides[best].observation_ids.duplicate(),"contains_prediction":true}
+    return evaluation
+
+const COST_SHIFT_RISE_FACTOR=1.5
+const COST_SHIFT_MIN_RISE=1.0 # Three measured metres. Not failure evidence.
+func evaluate(key: String) -> Dictionary:
+    var original: Dictionary=_evaluate_rows(key,records)
+    if not enabled or not cost_shift_enabled:return original
+    var rows: Array[Dictionary]=[]
+    for row in records:
+        if row.context==key and str(row.get("profile","")).ends_with("-localexit-v3"):rows.append(row)
+    rows.sort_custom(func(a,b):return float(a.get("ended_at_unix",0))<float(b.get("ended_at_unix",0)))
+    var baseline: Dictionary={-1:[],1:[]}
+    var onset := -1
+    for i in range(rows.size()):
+        var row: Dictionary=rows[i]
+        var side: int=int(row.side)
+        if baseline[side].size()<2:
+            baseline[side].append(float(row.cost_ratio))
+            continue
+        var mean: float=(baseline[side][0]+baseline[side][1])/2.0
+        if float(row.cost_ratio)>mean*COST_SHIFT_RISE_FACTOR and float(row.cost_ratio)>mean+COST_SHIFT_MIN_RISE:
+            onset=i
+            baseline={-1:[],1:[]}
+            baseline[side].append(float(row.cost_ratio))
+    if onset<0:return original
+    var fresh_rows: Array[Dictionary]=[]
+    var counts: Dictionary={-1:0,1:0}
+    for i in range(onset,rows.size()):
+        fresh_rows.append(rows[i]);counts[int(rows[i].side)]+=1
+    var evaluation: Dictionary=_evaluate_rows(key,fresh_rows)
+    evaluation["cost_shift"]={"basis":"measured_cost_increase","factor":COST_SHIFT_RISE_FACTOR,
+        "minimum_rise_cost_units":COST_SHIFT_MIN_RISE,"onset_attempt_id":rows[onset].attempt_id,
+        "retained_raw_samples":rows.size(),"fresh_samples":fresh_rows.size()}
+    if counts[-1]<2 or counts[1]<2:
+        var side := -1 if counts[-1]<counts[1] else 1
+        evaluation.reason="cost_shift_exploration"
+        evaluation.recommendation={"side":side,"context":key,"source":"pattern-exploration",
+            "observation_ids":[],"contains_prediction":true}
     return evaluation
