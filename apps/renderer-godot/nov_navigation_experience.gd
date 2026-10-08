@@ -55,7 +55,7 @@ func _init(path: String = "user://nov-navigation-008cd.cfg") -> void:
             failures.clear()
 
 func reset_route_plan() -> void:
-    contour.reset()
+    contour.reset("route_plan_reset")
     _route_revision.clear()
     explored_cells.clear()
     _exploration_heading = Vector2.ZERO
@@ -83,7 +83,7 @@ func save() -> void:
 func target(current: Vector2, goal: Vector2, probe: Callable = Callable(), route_probe: Callable = Callable()) -> Vector2:
     if trial_error_enabled:route_probe = Callable()
     if last_goal.distance_to(goal) > 2.0:
-        contour.reset()
+        contour.reset("goal_changed")
         active = false
         visits.clear()
         trace.clear()
@@ -231,7 +231,7 @@ func _anticipated_target(current: Vector2, goal: Vector2, probe: Callable, route
     if current.distance_to(goal) <= 3.0:
         var corridor: Dictionary = probe.call(goal)
         if bool(corridor.get("allowed", false)) and bool(corridor.get("clear_ahead", false)):
-            contour.reset()
+            contour.reset("near_goal_clear_corridor")
             _observed_route.clear()
             _route_search.cancel()
             pending = direct
@@ -341,7 +341,7 @@ func _anticipated_target(current: Vector2, goal: Vector2, probe: Callable, route
     if trial_error_enabled:
         viable = contour.filter(current,goal,viable,direct_clear)
     else:
-        contour.reset()
+        contour.reset("trial_error_disabled")
     var best := INF
     var baseline_best := INF
     var baseline: Dictionary = {}

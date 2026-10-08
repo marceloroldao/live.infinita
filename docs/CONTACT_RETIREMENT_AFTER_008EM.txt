@@ -1,0 +1,6 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+NOV_PATTERN_DECISION {"changed_initial_side":false,"contact_id":"283359f972dc3d3c27a1e00caa8dd737:goal:1","contains_prediction":true,"context":"capsule044-height18-lookahead3-contour64-localexit-v3|w|local-clear-v1:255:254","default_side":1,"evaluation":{},"goal_id":"goal","observation_ids":[],"side":1,"source":"perception","world_id":"w"}
+NOV_PATTERN_EXCLUDED {"contact_id":"283359f972dc3d3c27a1e00caa8dd737:goal:1","goal_id":"goal","reason":"new_contact_before_executed_exit","world_id":"w"}
+NOV_PATTERN_DECISION {"changed_initial_side":false,"contact_id":"283359f972dc3d3c27a1e00caa8dd737:goal:2","contains_prediction":true,"context":"capsule044-height18-lookahead3-contour64-localexit-v3|w|local-clear-v1:255:254","default_side":1,"evaluation":{},"goal_id":"goal","observation_ids":[],"side":1,"source":"perception","world_id":"w"}
+Contact retirement regression: 0 failures

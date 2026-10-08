@@ -4,6 +4,7 @@ var pattern_memory: RefCounted = null
 # Explicit experiment control, never set by production.
 var exploration_side := 0
 var exit_proposal: Dictionary = {}
+var reset_event: Dictionary = {}
 var pattern_context := ""
 var pattern_recommendation: Dictionary = {}
 var pattern_evaluation: Dictionary = {}
@@ -20,7 +21,8 @@ var _turn_pending := false
 const INITIAL_EXCURSION_M := 64.0
 var excursion_limit := INITIAL_EXCURSION_M
 var side_switches := 0
-func reset() -> void:
+func reset(reason: String="context_reset") -> void:
+    if active:reset_event={"contact_serial":starts,"reason":reason}
     exit_proposal={}
     active=false
     heading=Vector2.ZERO
@@ -35,7 +37,7 @@ func filter(current: Vector2, goal: Vector2, rows: Array[Dictionary], direct_cle
     # distance than at contact, with the direct corridor checked again.
     if active and direct_clear and (current.distance_to(goal)<hit_distance-0.75 or (current-origin).dot(normal)>=3.0):
         var proposal: Dictionary={"contact_serial":starts,"start":[current.x,current.y],"normal":[normal.x,normal.y]}
-        reset()
+        reset("clear_exit_proposed")
         exit_proposal=proposal
         return rows
     if not active and direct_clear:return rows
@@ -96,11 +98,12 @@ func committed(current: Vector2, point: Vector2) -> void:
     if active and _turn_pending and current.distance_to(point)>0.05:
         # The sensed end of this side permits trying another frame; never force
         # a candidate rejected by physics, and never create failure knowledge.
-        reset()
+        reset("observed_side_end")
 func evidence() -> Dictionary:
     return {"source":"local_observed_contour","active":active,"heading":[heading.x,heading.y],
         "normal":[normal.x,normal.y],"origin":[origin.x,origin.y],
-        "exit_proposal":exit_proposal.duplicate(true),"contact_serial":starts,"pattern_context":pattern_context,"pattern_recommendation":pattern_recommendation.duplicate(true),
+        "exit_proposal":exit_proposal.duplicate(true),"reset_event":reset_event.duplicate(true),
+        "turn_pending":_turn_pending,"forced_turns":forced_turns,"contact_serial":starts,"pattern_context":pattern_context,"pattern_recommendation":pattern_recommendation.duplicate(true),
         "initial_side":initial_side,"default_side":default_side,"pattern_evaluation":pattern_evaluation.duplicate(true),
         "initial_side_changed":initial_side!=default_side,
         "pattern_changed_initial_side":exploration_side==0 and not pattern_recommendation.is_empty() and initial_side!=default_side,

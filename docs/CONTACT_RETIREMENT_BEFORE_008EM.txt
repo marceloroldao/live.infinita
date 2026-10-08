@@ -1,0 +1,19 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+NOV_PATTERN_DECISION {"changed_initial_side":false,"contact_id":"a9108e75433673ec2411c599ca108689:goal:1","contains_prediction":true,"context":"capsule044-height18-lookahead3-contour64-localexit-v3|w|local-clear-v1:255:254","default_side":1,"evaluation":{},"goal_id":"goal","observation_ids":[],"side":1,"source":"perception","world_id":"w"}
+NOV_PATTERN_EXCLUDED {"contact_id":"a9108e75433673ec2411c599ca108689:goal:1","goal_id":"goal","reason":"new_contact_before_executed_exit","world_id":"w"}
+NOV_PATTERN_DECISION {"changed_initial_side":false,"contact_id":"a9108e75433673ec2411c599ca108689:goal:2","contains_prediction":true,"context":"capsule044-height18-lookahead3-contour64-localexit-v3|w|local-clear-v1:255:254","default_side":1,"evaluation":{},"goal_id":"goal","observation_ids":[],"side":1,"source":"perception","world_id":"w"}
+NOV_PATTERN_EXCLUDED {"contact_id":"a9108e75433673ec2411c599ca108689:goal:2","goal_id":"goal","reason":"new_contact_before_executed_exit","world_id":"w"}
+NOV_PATTERN_DECISION {"changed_initial_side":false,"contact_id":"a9108e75433673ec2411c599ca108689:goal:1","contains_prediction":true,"context":"capsule044-height18-lookahead3-contour64-localexit-v3|w|local-clear-v1:255:254","default_side":1,"evaluation":{},"goal_id":"goal","observation_ids":[],"side":1,"source":"perception","world_id":"w"}
+NOV_PATTERN_OUTCOME {"attempt_id":"a9108e75433673ec2411c599ca108689:goal:1","completion_basis":"physical_collision","contains_prediction":false,"context":"capsule044-height18-lookahead3-contour64-localexit-v3|w|local-clear-v1:255:254","distance_m":1.0,"ended_at_unix":1000.0,"exit_progress_m":0.0,"exploration":false,"initial_remaining_m":10.0,"observer":"nov","outcome":"blocked","physical_attempt":true,"profile":"capsule044-height18-lookahead3-contour64-localexit-v3","side":1,"world_id":"w"}
+Contact retirement regression: 2 failures
+ERROR: Delayed retired action cannot replace its newer contact
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (/home/etbra/live.infinita/tests/godot_local_contour_008ei_smoke.gd:9)
+       [1] _initialize (/home/etbra/live.infinita/tests/godot_contact_retirement_008em_repro.gd:8)
+ERROR: Retired collision cannot create new failure credit
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (/home/etbra/live.infinita/tests/godot_local_contour_008ei_smoke.gd:9)
+       [1] _initialize (/home/etbra/live.infinita/tests/godot_contact_retirement_008em_repro.gd:11)

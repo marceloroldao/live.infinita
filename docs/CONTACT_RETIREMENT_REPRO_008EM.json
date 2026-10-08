@@ -1,0 +1,12 @@
+[
+  {
+    "version": "before",
+    "exit_code": 1,
+    "expected": true
+  },
+  {
+    "version": "after",
+    "exit_code": 0,
+    "expected": true
+  }
+]

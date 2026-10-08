@@ -22,6 +22,8 @@ var exclusions: Dictionary = {}
 var last_evaluation: Dictionary = {}
 var decision_reasons: Dictionary = {}
 var closed_contacts: Array[String] = []
+var _serial_goal := ""
+var _latest_serial := 0
 func _init(value: RefCounted=null, path: String="user://nov-navigation-patterns-008ej.json") -> void:
     journey=value;storage=path
     if storage.is_empty() or OS.has_feature("web") or OS.get_cmdline_user_args().has("--offline-tour"):return
@@ -75,8 +77,9 @@ func recommend(key: String) -> Dictionary:
 func decision_diagnostics() -> Dictionary:
     return last_evaluation.duplicate(true)
 func _exclude(reason: String, id: String) -> void:
+    if not pending.has(id):return
     var metadata: Dictionary=pending.get(id,{})
-    pending.erase(id)
+    _close(id)
     exclusions[reason]=int(exclusions.get(reason,0))+1
     print("NOV_PATTERN_EXCLUDED "+JSON.stringify({"reason":reason,"contact_id":id,"world_id":world_id,
         "goal_id":metadata.get("goal_id","")}))
@@ -109,11 +112,21 @@ func observe_action(action: Dictionary) -> void:
     if not outcome in ["step_reached","goal_reached","blocked"]:return
     var frame: Dictionary=action.get("perception",{}).get("contour",{})
     var serial:=int(frame.get("contact_serial",0))
+    if _serial_goal!=str(journey.identity):
+        _serial_goal=str(journey.identity);_latest_serial=0
+    if serial>0 and serial<_latest_serial:return
     var id: String=session+":"+str(journey.identity)+":"+str(serial)
     var key:=str(frame.get("pattern_context",""))
     if bool(frame.get("active",false)) and not key.is_empty() and frame.get("initial_side",0) in [-1,1] and not closed_contacts.has(id):
+        _latest_serial=maxi(_latest_serial,serial)
         for previous in pending.keys():
-            if previous!=id:_exclude("new_contact_before_executed_exit",str(previous))
+            if previous!=id:
+                var reset_event: Dictionary=frame.get("reset_event",{})
+                var reason: String="new_contact_before_executed_exit"
+                if int(reset_event.get("contact_serial",0))==int(pending[previous].contact_serial):
+                    reason=str(reset_event.get("reason",reason))
+                    if reason=="clear_exit_proposed":reason="new_contact_before_executed_exit"
+                _exclude(reason,str(previous))
         if not pending.has(id):
             var start: Array=action.get("start",[])
             var goal: Array=action.get("goal",[])
@@ -148,6 +161,8 @@ func observe_action(action: Dictionary) -> void:
     for current_id in pending.keys():
         var metadata: Dictionary=pending[current_id]
         if metadata.goal_id!=str(journey.identity):continue
+        # Delayed callbacks from a retired frame cannot penalize or finish a new one.
+        if serial!=int(metadata.contact_serial) and int(proposal.get("contact_serial",0))!=int(metadata.contact_serial):continue
         if outcome=="blocked" and int(action.get("collisions",0))>0:
             _record(str(current_id),"blocked","physical_collision",journey.distance_m,float(action.ended_at_unix))
         elif outcome in ["step_reached","goal_reached"] and bool(metadata.waiting_exit) and int(action.get("collisions",0))==0:

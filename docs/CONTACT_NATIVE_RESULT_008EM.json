@@ -1,0 +1,774 @@
+{
+  "schema": "live-infinita-native-pattern-validation/v1",
+  "sdk_commit": "dfd87c995b50c49b45a9d5dd4c43cce456983d4f",
+  "core_reopened": true,
+  "bridge_idempotent": true,
+  "backend": "sqlite",
+  "stored_recovered_events": 4,
+  "legacy_fixture_is_synthetic": true,
+  "legacy_profile_ignored": true,
+  "total_isolated_core_events": 5,
+  "observation_ids": [
+    "structural-event:ae958fef395082479e9ba17417a369b8b85533eb",
+    "structural-event:ccc4bc0792db6f213d4f0aa93507f881fe40889e",
+    "structural-event:294a1bec1928d07d7ee70b57bf651b9d850671de",
+    "structural-event:15f47eed87f7cd63bbfd2d802005f8ddda768cae"
+  ],
+  "intake": {
+    "acked": 4,
+    "confirmed": 4,
+    "recovered_this_poll": 4,
+    "cached_recovered": 4,
+    "world_write_authority": false
+  },
+  "recovery_after_reopen_without_cache": {
+    "acked": 0,
+    "confirmed": 4,
+    "recovered_this_poll": 4,
+    "cached_recovered": 4,
+    "world_write_authority": false
+  },
+  "cold": {
+    "failures": 0,
+    "production_learning_demonstrated": false,
+    "runs": [
+      {
+        "arm": "native_training_0",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 235.314719185233,
+        "recommendation": {},
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 70.6,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "decision_reasons": {
+            "insufficient_samples": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exploration_decisions": 0,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 0
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 0
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "reason": "insufficient_samples",
+            "recommendation": {}
+          },
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 1,
+          "recovered_records": 0
+        },
+        "ticks": 706
+      },
+      {
+        "arm": "native_training_1",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 104.999119088054,
+        "recommendation": {
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": -1,
+          "source": "pattern-exploration"
+        },
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 31.5,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "decision_reasons": {
+            "insufficient_samples": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exploration_decisions": 1,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 0
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 1,
+                "score": 61.3333294540643
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "reason": "insufficient_samples",
+            "recommendation": {}
+          },
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 2,
+          "recovered_records": 0
+        },
+        "ticks": 315
+      },
+      {
+        "arm": "native_training_2",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 235.314719185233,
+        "recommendation": {
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": 1,
+          "source": "pattern-exploration"
+        },
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 70.6,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "decision_reasons": {
+            "insufficient_samples": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exploration_decisions": 1,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 1,
+                "score": 18.6666665375233
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 1,
+                "score": 61.3333294540643
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "reason": "insufficient_samples",
+            "recommendation": {}
+          },
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 3,
+          "recovered_records": 0
+        },
+        "ticks": 706
+      },
+      {
+        "arm": "native_training_3",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 104.999119088054,
+        "recommendation": {
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": -1,
+          "source": "pattern-exploration"
+        },
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 31.5,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "decision_reasons": {
+            "insufficient_samples": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exploration_decisions": 1,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 1,
+                "score": 18.6666665375233
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 61.3333294540643
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "reason": "insufficient_samples",
+            "recommendation": {}
+          },
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 4,
+          "recovered_records": 0
+        },
+        "ticks": 315
+      },
+      {
+        "arm": "perception",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 234.572304785252,
+        "recommendation": {},
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 70.4,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "decision_reasons": {},
+          "enabled": false,
+          "exclusions": {},
+          "exploration_decisions": 0,
+          "last_evaluation": {},
+          "observed_outcomes": 0,
+          "pending_contacts": 0,
+          "ram_records": 4,
+          "recovered_records": 0
+        },
+        "ticks": 704
+      },
+      {
+        "arm": "native_ram_patterns",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 106.605529054999,
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 18.6666665375233
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 61.3333294540643
+            }
+          },
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": -1,
+          "source": "ram-pattern-evidence"
+        },
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 32.0,
+        "status": {
+          "changed_initial_decisions": 1,
+          "core_changed_initial_decisions": 0,
+          "decision_reasons": {
+            "preferred_side": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exploration_decisions": 0,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 18.6666665375233
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 61.3333294540643
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "reason": "preferred_side",
+            "recommendation": {
+              "alternatives": {
+                "-1": {
+                  "errors": 0,
+                  "observation_ids": [],
+                  "samples": 2,
+                  "score": 18.6666665375233
+                },
+                "1": {
+                  "errors": 0,
+                  "observation_ids": [],
+                  "samples": 2,
+                  "score": 61.3333294540643
+                }
+              },
+              "contains_prediction": true,
+              "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+              "observation_ids": [],
+              "side": -1,
+              "source": "ram-pattern-evidence"
+            },
+            "required_gap": 12.2666658908129,
+            "score_gap": 42.6666629165411
+          },
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 5,
+          "recovered_records": 0
+        },
+        "ticks": 320
+      }
+    ],
+    "scope": "isolated_actual_native_collector"
+  },
+  "comparison": {
+    "failures": 0,
+    "production_learning_demonstrated": false,
+    "runs": [
+      {
+        "arm": "native_training_0",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 235.314719185233,
+        "recommendation": {},
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 70.6,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "decision_reasons": {
+            "insufficient_samples": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exploration_decisions": 0,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 0
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 0
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "reason": "insufficient_samples",
+            "recommendation": {}
+          },
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 1,
+          "recovered_records": 0
+        },
+        "ticks": 706
+      },
+      {
+        "arm": "native_training_1",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 104.999119088054,
+        "recommendation": {
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": -1,
+          "source": "pattern-exploration"
+        },
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 31.5,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "decision_reasons": {
+            "insufficient_samples": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exploration_decisions": 1,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 0
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 1,
+                "score": 61.3333294540643
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "reason": "insufficient_samples",
+            "recommendation": {}
+          },
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 2,
+          "recovered_records": 0
+        },
+        "ticks": 315
+      },
+      {
+        "arm": "native_training_2",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 235.314719185233,
+        "recommendation": {
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": 1,
+          "source": "pattern-exploration"
+        },
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 70.6,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "decision_reasons": {
+            "insufficient_samples": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exploration_decisions": 1,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 1,
+                "score": 18.6666665375233
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 1,
+                "score": 61.3333294540643
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "reason": "insufficient_samples",
+            "recommendation": {}
+          },
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 3,
+          "recovered_records": 0
+        },
+        "ticks": 706
+      },
+      {
+        "arm": "native_training_3",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 104.999119088054,
+        "recommendation": {
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": -1,
+          "source": "pattern-exploration"
+        },
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 31.5,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "decision_reasons": {
+            "insufficient_samples": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exploration_decisions": 1,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 1,
+                "score": 18.6666665375233
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 61.3333294540643
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "reason": "insufficient_samples",
+            "recommendation": {}
+          },
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 4,
+          "recovered_records": 0
+        },
+        "ticks": 315
+      },
+      {
+        "arm": "perception",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 234.572304785252,
+        "recommendation": {},
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 70.4,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "decision_reasons": {},
+          "enabled": false,
+          "exclusions": {},
+          "exploration_decisions": 0,
+          "last_evaluation": {},
+          "observed_outcomes": 0,
+          "pending_contacts": 0,
+          "ram_records": 4,
+          "recovered_records": 0
+        },
+        "ticks": 704
+      },
+      {
+        "arm": "native_ram_patterns",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 106.605529054999,
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 18.6666665375233
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 61.3333294540643
+            }
+          },
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": -1,
+          "source": "ram-pattern-evidence"
+        },
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 32.0,
+        "status": {
+          "changed_initial_decisions": 1,
+          "core_changed_initial_decisions": 0,
+          "decision_reasons": {
+            "preferred_side": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exploration_decisions": 0,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 18.6666665375233
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 61.3333294540643
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "reason": "preferred_side",
+            "recommendation": {
+              "alternatives": {
+                "-1": {
+                  "errors": 0,
+                  "observation_ids": [],
+                  "samples": 2,
+                  "score": 18.6666665375233
+                },
+                "1": {
+                  "errors": 0,
+                  "observation_ids": [],
+                  "samples": 2,
+                  "score": 61.3333294540643
+                }
+              },
+              "contains_prediction": true,
+              "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+              "observation_ids": [],
+              "side": -1,
+              "source": "ram-pattern-evidence"
+            },
+            "required_gap": 12.2666658908129,
+            "score_gap": 42.6666629165411
+          },
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 5,
+          "recovered_records": 0
+        },
+        "ticks": 320
+      },
+      {
+        "arm": "native_core_patterns",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 106.605529054999,
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:ccc4bc0792db6f213d4f0aa93507f881fe40889e",
+                "structural-event:15f47eed87f7cd63bbfd2d802005f8ddda768cae"
+              ],
+              "samples": 2,
+              "score": 18.6666665375233
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:ae958fef395082479e9ba17417a369b8b85533eb",
+                "structural-event:294a1bec1928d07d7ee70b57bf651b9d850671de"
+              ],
+              "samples": 2,
+              "score": 61.3333294540643
+            }
+          },
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "observation_ids": [
+            "structural-event:ccc4bc0792db6f213d4f0aa93507f881fe40889e",
+            "structural-event:15f47eed87f7cd63bbfd2d802005f8ddda768cae"
+          ],
+          "side": -1,
+          "source": "recovered-pattern-evidence"
+        },
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 32.0,
+        "status": {
+          "changed_initial_decisions": 1,
+          "core_changed_initial_decisions": 1,
+          "decision_reasons": {
+            "preferred_side": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exploration_decisions": 0,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [
+                  "structural-event:ccc4bc0792db6f213d4f0aa93507f881fe40889e",
+                  "structural-event:15f47eed87f7cd63bbfd2d802005f8ddda768cae"
+                ],
+                "samples": 2,
+                "score": 18.6666665375233
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [
+                  "structural-event:ae958fef395082479e9ba17417a369b8b85533eb",
+                  "structural-event:294a1bec1928d07d7ee70b57bf651b9d850671de"
+                ],
+                "samples": 2,
+                "score": 61.3333294540643
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "reason": "preferred_side",
+            "recommendation": {
+              "alternatives": {
+                "-1": {
+                  "errors": 0,
+                  "observation_ids": [
+                    "structural-event:ccc4bc0792db6f213d4f0aa93507f881fe40889e",
+                    "structural-event:15f47eed87f7cd63bbfd2d802005f8ddda768cae"
+                  ],
+                  "samples": 2,
+                  "score": 18.6666665375233
+                },
+                "1": {
+                  "errors": 0,
+                  "observation_ids": [
+                    "structural-event:ae958fef395082479e9ba17417a369b8b85533eb",
+                    "structural-event:294a1bec1928d07d7ee70b57bf651b9d850671de"
+                  ],
+                  "samples": 2,
+                  "score": 61.3333294540643
+                }
+              },
+              "contains_prediction": true,
+              "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+              "observation_ids": [
+                "structural-event:ccc4bc0792db6f213d4f0aa93507f881fe40889e",
+                "structural-event:15f47eed87f7cd63bbfd2d802005f8ddda768cae"
+              ],
+              "side": -1,
+              "source": "recovered-pattern-evidence"
+            },
+            "required_gap": 12.2666658908129,
+            "score_gap": 42.6666629165411
+          },
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 1,
+          "recovered_records": 4
+        },
+        "ticks": 320
+      }
+    ],
+    "scope": "isolated_actual_native_collector"
+  },
+  "core_minus_perception_distance_m": -127.96677573025299,
+  "core_minus_perception_simulated_seconds": -38.400000000000006,
+  "production_learning_demonstrated": false,
+  "scope": "isolated_native_collector_and_production_bridge_with_real_core"
+}
