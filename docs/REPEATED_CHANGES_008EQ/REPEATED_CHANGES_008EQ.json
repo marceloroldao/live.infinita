@@ -1,0 +1,811 @@
+{
+  "schema": "live-infinita-repeated-changes/v1",
+  "planned_openings": [
+    -20,
+    -110,
+    0,
+    -20
+  ],
+  "trials_per_phase": 12,
+  "policies": [
+    {
+      "policy": "baseline",
+      "phases": [
+        {
+          "opening_z": -20,
+          "distance_m": 2091.553729057315,
+          "simulated_seconds": 627.5999999999999,
+          "distance_delta_vs_perception_m": 983.7882244586976,
+          "sides": [
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "sources": [
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "",
+            "",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence"
+          ],
+          "last_distance_m": 92.3137920498848,
+          "collisions": 0,
+          "rescues": 0
+        },
+        {
+          "opening_z": -110,
+          "distance_m": 2814.867657423024,
+          "simulated_seconds": 844.8000000000001,
+          "distance_delta_vs_perception_m": 0.0,
+          "sides": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "sources": [
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "last_distance_m": 234.572304785252,
+          "collisions": 0,
+          "rescues": 0
+        },
+        {
+          "opening_z": 0,
+          "distance_m": 1556.63993185758,
+          "simulated_seconds": 466.79999999999995,
+          "distance_delta_vs_perception_m": 0.0,
+          "sides": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "sources": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "ram-pattern-evidence"
+          ],
+          "last_distance_m": 129.719994321465,
+          "collisions": 0,
+          "rescues": 0
+        },
+        {
+          "opening_z": -20,
+          "distance_m": 1107.7655045986176,
+          "simulated_seconds": 332.4,
+          "distance_delta_vs_perception_m": 0.0,
+          "sides": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "sources": [
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence"
+          ],
+          "last_distance_m": 92.3137920498848,
+          "collisions": 0,
+          "rescues": 0
+        }
+      ],
+      "physical_outcomes": 52
+    },
+    {
+      "policy": "fixed_epoch",
+      "phases": [
+        {
+          "opening_z": -20,
+          "distance_m": 1353.712560713292,
+          "simulated_seconds": 406.2,
+          "distance_delta_vs_perception_m": 245.9470561146744,
+          "sides": [
+            -1,
+            1,
+            1,
+            -1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "sources": [
+            "ram-pattern-evidence",
+            "pattern-exploration",
+            "pattern-exploration",
+            "pattern-exploration",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence"
+          ],
+          "last_distance_m": 92.3137920498848,
+          "collisions": 0,
+          "rescues": 0
+        },
+        {
+          "opening_z": -110,
+          "distance_m": 2814.867657423024,
+          "simulated_seconds": 844.8000000000001,
+          "distance_delta_vs_perception_m": 0.0,
+          "sides": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "sources": [
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence"
+          ],
+          "last_distance_m": 234.572304785252,
+          "collisions": 0,
+          "rescues": 0
+        },
+        {
+          "opening_z": 0,
+          "distance_m": 1556.63993185758,
+          "simulated_seconds": 466.79999999999995,
+          "distance_delta_vs_perception_m": 0.0,
+          "sides": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "sources": [
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence"
+          ],
+          "last_distance_m": 129.719994321465,
+          "collisions": 0,
+          "rescues": 0
+        },
+        {
+          "opening_z": -20,
+          "distance_m": 1107.7655045986176,
+          "simulated_seconds": 332.4,
+          "distance_delta_vs_perception_m": 0.0,
+          "sides": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "sources": [
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence"
+          ],
+          "last_distance_m": 92.3137920498848,
+          "collisions": 0,
+          "rescues": 0
+        }
+      ],
+      "physical_outcomes": 52
+    },
+    {
+      "policy": "renewable_epoch",
+      "phases": [
+        {
+          "opening_z": -20,
+          "distance_m": 1353.712560713292,
+          "simulated_seconds": 406.2,
+          "distance_delta_vs_perception_m": 245.9470561146744,
+          "sides": [
+            -1,
+            1,
+            1,
+            -1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "sources": [
+            "ram-pattern-evidence",
+            "pattern-exploration",
+            "pattern-exploration",
+            "pattern-exploration",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence"
+          ],
+          "last_distance_m": 92.3137920498848,
+          "collisions": 0,
+          "rescues": 0
+        },
+        {
+          "opening_z": -110,
+          "distance_m": 1535.199900120494,
+          "simulated_seconds": 460.8,
+          "distance_delta_vs_perception_m": -1279.66775730253,
+          "sides": [
+            1,
+            -1,
+            1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1,
+            -1
+          ],
+          "sources": [
+            "ram-pattern-evidence",
+            "pattern-exploration",
+            "pattern-exploration",
+            "pattern-exploration",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence"
+          ],
+          "last_distance_m": 106.605529054999,
+          "collisions": 0,
+          "rescues": 0
+        },
+        {
+          "opening_z": 0,
+          "distance_m": 1804.79989445209,
+          "simulated_seconds": 541.1999999999999,
+          "distance_delta_vs_perception_m": 248.15996259450998,
+          "sides": [
+            -1,
+            1,
+            1,
+            -1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "sources": [
+            "ram-pattern-evidence",
+            "pattern-exploration",
+            "pattern-exploration",
+            "pattern-exploration",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence"
+          ],
+          "last_distance_m": 129.719994321465,
+          "collisions": 0,
+          "rescues": 0
+        },
+        {
+          "opening_z": -20,
+          "distance_m": 1107.7655045986176,
+          "simulated_seconds": 332.4,
+          "distance_delta_vs_perception_m": 0.0,
+          "sides": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "sources": [
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence",
+            "ram-pattern-evidence"
+          ],
+          "last_distance_m": 92.3137920498848,
+          "collisions": 0,
+          "rescues": 0
+        }
+      ],
+      "physical_outcomes": 52,
+      "core": {
+        "intake": [
+          {
+            "acked": 4,
+            "confirmed": 4,
+            "recovered_this_poll": 4,
+            "cached_recovered": 4,
+            "world_write_authority": false
+          },
+          {
+            "acked": 4,
+            "confirmed": 8,
+            "recovered_this_poll": 8,
+            "cached_recovered": 8,
+            "world_write_authority": false
+          },
+          {
+            "acked": 4,
+            "confirmed": 12,
+            "recovered_this_poll": 12,
+            "cached_recovered": 12,
+            "world_write_authority": false
+          },
+          {
+            "acked": 4,
+            "confirmed": 16,
+            "recovered_this_poll": 16,
+            "cached_recovered": 16,
+            "world_write_authority": false
+          },
+          {
+            "acked": 4,
+            "confirmed": 20,
+            "recovered_this_poll": 20,
+            "cached_recovered": 20,
+            "world_write_authority": false
+          },
+          {
+            "acked": 4,
+            "confirmed": 24,
+            "recovered_this_poll": 24,
+            "cached_recovered": 24,
+            "world_write_authority": false
+          },
+          {
+            "acked": 4,
+            "confirmed": 28,
+            "recovered_this_poll": 28,
+            "cached_recovered": 28,
+            "world_write_authority": false
+          },
+          {
+            "acked": 4,
+            "confirmed": 32,
+            "recovered_this_poll": 32,
+            "cached_recovered": 32,
+            "world_write_authority": false
+          },
+          {
+            "acked": 4,
+            "confirmed": 36,
+            "recovered_this_poll": 36,
+            "cached_recovered": 36,
+            "world_write_authority": false
+          },
+          {
+            "acked": 4,
+            "confirmed": 40,
+            "recovered_this_poll": 40,
+            "cached_recovered": 40,
+            "world_write_authority": false
+          },
+          {
+            "acked": 4,
+            "confirmed": 44,
+            "recovered_this_poll": 44,
+            "cached_recovered": 44,
+            "world_write_authority": false
+          },
+          {
+            "acked": 4,
+            "confirmed": 48,
+            "recovered_this_poll": 48,
+            "cached_recovered": 48,
+            "world_write_authority": false
+          },
+          {
+            "acked": 4,
+            "confirmed": 52,
+            "recovered_this_poll": 52,
+            "cached_recovered": 52,
+            "world_write_authority": false
+          },
+          {
+            "acked": 0,
+            "confirmed": 52,
+            "recovered_this_poll": 52,
+            "cached_recovered": 52,
+            "world_write_authority": false
+          }
+        ],
+        "recovered": {
+          "acked": 0,
+          "confirmed": 52,
+          "recovered_this_poll": 52,
+          "cached_recovered": 52,
+          "world_write_authority": false
+        },
+        "cold": {
+          "failures": 0,
+          "runs": [
+            {
+              "arm": "cold_repeated_core",
+              "arrived": true,
+              "collisions": 0,
+              "distance_m": 92.3137920498848,
+              "recommendation": {
+                "alternatives": {
+                  "-1": {
+                    "errors": 0,
+                    "observation_ids": [
+                      "structural-event:c8b64aa40ce68c5e04188bc54e6dce96c1bad71f",
+                      "structural-event:75c09418fd0e63e72c09ac035ee2cf482481b5f7"
+                    ],
+                    "samples": 2,
+                    "score": 64.3333366612593
+                  },
+                  "1": {
+                    "errors": 0,
+                    "observation_ids": [
+                      "structural-event:70ca68fd8e4ad63032ef668a919c892fca6247c3",
+                      "structural-event:7ac441b3727631d0341bf1254ab004984a80d13d",
+                      "structural-event:a53625ab5756d154ed56d47d47dcb5e1cd2e60e3",
+                      "structural-event:1ad03fd701eb21acde12f32f35dbf1389a55c314",
+                      "structural-event:030bb52f4ea754199c7bfa4be4d42ebe25eb376a",
+                      "structural-event:d4e252ee24d71b84fe18ba9d99f4c176fae57367",
+                      "structural-event:4503382610a250e4a3505486fdac5c80784471b2",
+                      "structural-event:3a26b89059314f8b307073facee811353d5c107f",
+                      "structural-event:34160cf58e736a8530942eae484fd96692081a97",
+                      "structural-event:ca5423dfb8a2279aaac4912a2625150dba6859ae",
+                      "structural-event:16bdab3797b6a0b41dec6437404c43dafce672b0",
+                      "structural-event:84ef22e1acece2dac1cf0d9294e7cb5476c02193",
+                      "structural-event:699c3e9eeb247d11a7d0d51afb1263db69df3efe",
+                      "structural-event:41d8143fdeb8529153f8e824da0505f133af3e02",
+                      "structural-event:b6e2625ec2e59b2ccb5859e430d1003d6d827382",
+                      "structural-event:ff853ca3a4c3830e23b238a48158be093f9334d5",
+                      "structural-event:82c7d7857aeca183a2c197aaa6f6d828184e6191",
+                      "structural-event:54cf05a53db5aaa8a2e1704155a608d58152dc16",
+                      "structural-event:734db80ac1f8db9c226f22574f6c9d1998bbe038",
+                      "structural-event:0384d6a560844772fc938bf8f8043836c861dab4",
+                      "structural-event:cf96d224f9acb75ab7880d490e64bfe1fd78d0e8",
+                      "structural-event:1fee92b6b4e6dff9562ad704365f24f623cb7ae4"
+                    ],
+                    "samples": 22,
+                    "score": 18.0303038381266
+                  }
+                },
+                "contains_prediction": true,
+                "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+                "observation_ids": [
+                  "structural-event:70ca68fd8e4ad63032ef668a919c892fca6247c3",
+                  "structural-event:7ac441b3727631d0341bf1254ab004984a80d13d",
+                  "structural-event:a53625ab5756d154ed56d47d47dcb5e1cd2e60e3",
+                  "structural-event:1ad03fd701eb21acde12f32f35dbf1389a55c314",
+                  "structural-event:030bb52f4ea754199c7bfa4be4d42ebe25eb376a",
+                  "structural-event:d4e252ee24d71b84fe18ba9d99f4c176fae57367",
+                  "structural-event:4503382610a250e4a3505486fdac5c80784471b2",
+                  "structural-event:3a26b89059314f8b307073facee811353d5c107f",
+                  "structural-event:34160cf58e736a8530942eae484fd96692081a97",
+                  "structural-event:ca5423dfb8a2279aaac4912a2625150dba6859ae",
+                  "structural-event:16bdab3797b6a0b41dec6437404c43dafce672b0",
+                  "structural-event:84ef22e1acece2dac1cf0d9294e7cb5476c02193",
+                  "structural-event:699c3e9eeb247d11a7d0d51afb1263db69df3efe",
+                  "structural-event:41d8143fdeb8529153f8e824da0505f133af3e02",
+                  "structural-event:b6e2625ec2e59b2ccb5859e430d1003d6d827382",
+                  "structural-event:ff853ca3a4c3830e23b238a48158be093f9334d5",
+                  "structural-event:82c7d7857aeca183a2c197aaa6f6d828184e6191",
+                  "structural-event:54cf05a53db5aaa8a2e1704155a608d58152dc16",
+                  "structural-event:734db80ac1f8db9c226f22574f6c9d1998bbe038",
+                  "structural-event:0384d6a560844772fc938bf8f8043836c861dab4",
+                  "structural-event:cf96d224f9acb75ab7880d490e64bfe1fd78d0e8",
+                  "structural-event:1fee92b6b4e6dff9562ad704365f24f623cb7ae4"
+                ],
+                "side": 1,
+                "source": "recovered-pattern-evidence"
+              },
+              "rescued": false,
+              "route_plan_builds": 0,
+              "side": 1,
+              "simulated_seconds": 27.7,
+              "status": {
+                "changed_initial_decisions": 0,
+                "core_changed_initial_decisions": 0,
+                "decision_reasons": {
+                  "preferred_side": 1
+                },
+                "enabled": true,
+                "exclusions": {},
+                "exploration_decisions": 0,
+                "last_evaluation": {
+                  "alternatives": {
+                    "-1": {
+                      "errors": 0,
+                      "observation_ids": [
+                        "structural-event:c8b64aa40ce68c5e04188bc54e6dce96c1bad71f",
+                        "structural-event:75c09418fd0e63e72c09ac035ee2cf482481b5f7"
+                      ],
+                      "samples": 2,
+                      "score": 64.3333366612593
+                    },
+                    "1": {
+                      "errors": 0,
+                      "observation_ids": [
+                        "structural-event:70ca68fd8e4ad63032ef668a919c892fca6247c3",
+                        "structural-event:7ac441b3727631d0341bf1254ab004984a80d13d",
+                        "structural-event:a53625ab5756d154ed56d47d47dcb5e1cd2e60e3",
+                        "structural-event:1ad03fd701eb21acde12f32f35dbf1389a55c314",
+                        "structural-event:030bb52f4ea754199c7bfa4be4d42ebe25eb376a",
+                        "structural-event:d4e252ee24d71b84fe18ba9d99f4c176fae57367",
+                        "structural-event:4503382610a250e4a3505486fdac5c80784471b2",
+                        "structural-event:3a26b89059314f8b307073facee811353d5c107f",
+                        "structural-event:34160cf58e736a8530942eae484fd96692081a97",
+                        "structural-event:ca5423dfb8a2279aaac4912a2625150dba6859ae",
+                        "structural-event:16bdab3797b6a0b41dec6437404c43dafce672b0",
+                        "structural-event:84ef22e1acece2dac1cf0d9294e7cb5476c02193",
+                        "structural-event:699c3e9eeb247d11a7d0d51afb1263db69df3efe",
+                        "structural-event:41d8143fdeb8529153f8e824da0505f133af3e02",
+                        "structural-event:b6e2625ec2e59b2ccb5859e430d1003d6d827382",
+                        "structural-event:ff853ca3a4c3830e23b238a48158be093f9334d5",
+                        "structural-event:82c7d7857aeca183a2c197aaa6f6d828184e6191",
+                        "structural-event:54cf05a53db5aaa8a2e1704155a608d58152dc16",
+                        "structural-event:734db80ac1f8db9c226f22574f6c9d1998bbe038",
+                        "structural-event:0384d6a560844772fc938bf8f8043836c861dab4",
+                        "structural-event:cf96d224f9acb75ab7880d490e64bfe1fd78d0e8",
+                        "structural-event:1fee92b6b4e6dff9562ad704365f24f623cb7ae4"
+                      ],
+                      "samples": 22,
+                      "score": 18.0303038381266
+                    }
+                  },
+                  "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+                  "cost_shift": {
+                    "basis": "measured_cost_increase",
+                    "factor": 1.5,
+                    "fresh_samples": 24,
+                    "minimum_rise_cost_units": 1.0,
+                    "onset_attempt_id": "71393cc267523bcf6079516c851a6f3b:phase_2_trial_0:1",
+                    "retained_raw_samples": 52
+                  },
+                  "reason": "preferred_side",
+                  "recommendation": {
+                    "alternatives": {
+                      "-1": {
+                        "errors": 0,
+                        "observation_ids": [
+                          "structural-event:c8b64aa40ce68c5e04188bc54e6dce96c1bad71f",
+                          "structural-event:75c09418fd0e63e72c09ac035ee2cf482481b5f7"
+                        ],
+                        "samples": 2,
+                        "score": 64.3333366612593
+                      },
+                      "1": {
+                        "errors": 0,
+                        "observation_ids": [
+                          "structural-event:70ca68fd8e4ad63032ef668a919c892fca6247c3",
+                          "structural-event:7ac441b3727631d0341bf1254ab004984a80d13d",
+                          "structural-event:a53625ab5756d154ed56d47d47dcb5e1cd2e60e3",
+                          "structural-event:1ad03fd701eb21acde12f32f35dbf1389a55c314",
+                          "structural-event:030bb52f4ea754199c7bfa4be4d42ebe25eb376a",
+                          "structural-event:d4e252ee24d71b84fe18ba9d99f4c176fae57367",
+                          "structural-event:4503382610a250e4a3505486fdac5c80784471b2",
+                          "structural-event:3a26b89059314f8b307073facee811353d5c107f",
+                          "structural-event:34160cf58e736a8530942eae484fd96692081a97",
+                          "structural-event:ca5423dfb8a2279aaac4912a2625150dba6859ae",
+                          "structural-event:16bdab3797b6a0b41dec6437404c43dafce672b0",
+                          "structural-event:84ef22e1acece2dac1cf0d9294e7cb5476c02193",
+                          "structural-event:699c3e9eeb247d11a7d0d51afb1263db69df3efe",
+                          "structural-event:41d8143fdeb8529153f8e824da0505f133af3e02",
+                          "structural-event:b6e2625ec2e59b2ccb5859e430d1003d6d827382",
+                          "structural-event:ff853ca3a4c3830e23b238a48158be093f9334d5",
+                          "structural-event:82c7d7857aeca183a2c197aaa6f6d828184e6191",
+                          "structural-event:54cf05a53db5aaa8a2e1704155a608d58152dc16",
+                          "structural-event:734db80ac1f8db9c226f22574f6c9d1998bbe038",
+                          "structural-event:0384d6a560844772fc938bf8f8043836c861dab4",
+                          "structural-event:cf96d224f9acb75ab7880d490e64bfe1fd78d0e8",
+                          "structural-event:1fee92b6b4e6dff9562ad704365f24f623cb7ae4"
+                        ],
+                        "samples": 22,
+                        "score": 18.0303038381266
+                      }
+                    },
+                    "contains_prediction": true,
+                    "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+                    "observation_ids": [
+                      "structural-event:70ca68fd8e4ad63032ef668a919c892fca6247c3",
+                      "structural-event:7ac441b3727631d0341bf1254ab004984a80d13d",
+                      "structural-event:a53625ab5756d154ed56d47d47dcb5e1cd2e60e3",
+                      "structural-event:1ad03fd701eb21acde12f32f35dbf1389a55c314",
+                      "structural-event:030bb52f4ea754199c7bfa4be4d42ebe25eb376a",
+                      "structural-event:d4e252ee24d71b84fe18ba9d99f4c176fae57367",
+                      "structural-event:4503382610a250e4a3505486fdac5c80784471b2",
+                      "structural-event:3a26b89059314f8b307073facee811353d5c107f",
+                      "structural-event:34160cf58e736a8530942eae484fd96692081a97",
+                      "structural-event:ca5423dfb8a2279aaac4912a2625150dba6859ae",
+                      "structural-event:16bdab3797b6a0b41dec6437404c43dafce672b0",
+                      "structural-event:84ef22e1acece2dac1cf0d9294e7cb5476c02193",
+                      "structural-event:699c3e9eeb247d11a7d0d51afb1263db69df3efe",
+                      "structural-event:41d8143fdeb8529153f8e824da0505f133af3e02",
+                      "structural-event:b6e2625ec2e59b2ccb5859e430d1003d6d827382",
+                      "structural-event:ff853ca3a4c3830e23b238a48158be093f9334d5",
+                      "structural-event:82c7d7857aeca183a2c197aaa6f6d828184e6191",
+                      "structural-event:54cf05a53db5aaa8a2e1704155a608d58152dc16",
+                      "structural-event:734db80ac1f8db9c226f22574f6c9d1998bbe038",
+                      "structural-event:0384d6a560844772fc938bf8f8043836c861dab4",
+                      "structural-event:cf96d224f9acb75ab7880d490e64bfe1fd78d0e8",
+                      "structural-event:1fee92b6b4e6dff9562ad704365f24f623cb7ae4"
+                    ],
+                    "side": 1,
+                    "source": "recovered-pattern-evidence"
+                  },
+                  "required_gap": 12.8666673322519,
+                  "score_gap": 46.3030328231328
+                },
+                "observed_outcomes": 1,
+                "pending_contacts": 0,
+                "ram_records": 1,
+                "recovered_records": 52
+              },
+              "ticks": 277
+            }
+          ],
+          "scope": "cold_repeated_recall"
+        },
+        "sdk_commit": "dfd87c995b50c49b45a9d5dd4c43cce456983d4f"
+      }
+    }
+  ],
+  "production_policy_changed": false,
+  "scope": "isolated_actual_native_physics; repeated related flat-wall changes"
+}

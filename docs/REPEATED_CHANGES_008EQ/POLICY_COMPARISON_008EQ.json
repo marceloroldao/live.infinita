@@ -1,0 +1,32 @@
+{
+  "schema": "live-infinita-repeated-policy-comparison/v1",
+  "scope": "isolated_repeated_flat_wall_sequence",
+  "policies": [
+    {
+      "policy": "baseline",
+      "trial_distance_m": 7570.826822936537,
+      "trial_simulated_seconds": 2271.6,
+      "equal_initial_training_distance_m": 680.627676546574,
+      "training_plus_trials_distance_m": 8251.45449948311
+    },
+    {
+      "policy": "fixed_epoch",
+      "trial_distance_m": 6832.985654592514,
+      "trial_simulated_seconds": 2050.2,
+      "equal_initial_training_distance_m": 680.627676546574,
+      "training_plus_trials_distance_m": 7513.613331139088
+    },
+    {
+      "policy": "renewable_epoch",
+      "trial_distance_m": 5801.477859884493,
+      "trial_simulated_seconds": 1740.6,
+      "equal_initial_training_distance_m": 680.627676546574,
+      "training_plus_trials_distance_m": 6482.105536431067
+    }
+  ],
+  "renewable_minus_baseline_distance_m": -1769.3489630520435,
+  "reduction_in_48_trials_percent": 23.370617297593352,
+  "production_policy_changed": false,
+  "paired_phase_controls_preserved": true,
+  "limit": "Four phases of one deterministic wall scenario; not generalization or production performance."
+}

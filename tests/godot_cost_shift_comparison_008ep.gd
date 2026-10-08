@@ -8,7 +8,10 @@ func native_travel(holder: Node3D,label: String, enabled_patterns: bool=true, re
     motion._episodes.storage=""
     motion._episodes.enabled=true
     motion._episodes.set_context({"world_id":"native-pattern-008eh","observer_entity_id":"nov"})
-    motion._pattern_collector.patterns=load("/home/etbra/live.infinita/tests/godot_cost_shift_policy_008ep.gd").new()
+    if OS.get_environment("LIVE_INFINITA_REPEATED_POLICY")!="baseline":
+        var policy=OS.get_environment("LIVE_INFINITA_EXPERIMENTAL_POLICY_PATH")
+        if policy.is_empty():policy="/home/etbra/live.infinita/tests/godot_cost_shift_policy_008ep.gd"
+        motion._pattern_collector.patterns=load(policy).new()
     motion._pattern_collector.storage=state_path
     motion._pattern_collector.load_state()
     motion._pattern_collector.set_context(motion._episodes.context)
