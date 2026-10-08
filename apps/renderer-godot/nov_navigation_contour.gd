@@ -20,6 +20,7 @@ var forced_turns := 0
 var _turn_pending := false
 # Opt-in native policy: one measured contact survives local direction changes.
 var local_turn_continuity_enabled := OS.get_environment("LIVE_INFINITA_NAVIGATION_CONTACT_TURNS")=="1"
+var exit_direction_enabled := OS.get_environment("LIVE_INFINITA_NAVIGATION_EXIT_DIRECTION")=="1"
 var local_turns := 0
 var total_local_turns := 0
 const INITIAL_EXCURSION_M := 64.0
@@ -41,10 +42,19 @@ func filter(current: Vector2, goal: Vector2, rows: Array[Dictionary], direct_cle
     # back to the same wall. Release after actual forward progress or a shorter
     # distance than at contact, with the direct corridor checked again.
     if active and direct_clear and (current.distance_to(goal)<hit_distance-0.75 or (current-origin).dot(normal)>=3.0):
-        var proposal: Dictionary={"contact_serial":starts,"start":[current.x,current.y],"normal":[normal.x,normal.y]}
-        reset("clear_exit_proposed")
-        exit_proposal=proposal
-        return rows
+        var exit_rows: Array[Dictionary]=rows
+        if exit_direction_enabled:
+            exit_rows=[]
+            for row in rows:
+                if bool(row.get("clear_ahead",false)) and (Vector2(row.point)-current).dot(normal)>=0.75:
+                    exit_rows.append(row)
+        # A free ray does not mean that the selected step actually follows it.
+        # Preserve the contact when no checked forward exit candidate exists.
+        if not exit_direction_enabled or not exit_rows.is_empty():
+            var proposal: Dictionary={"contact_serial":starts,"start":[current.x,current.y],"normal":[normal.x,normal.y]}
+            reset("clear_exit_proposed")
+            exit_proposal=proposal
+            return exit_rows
     if not active and direct_clear:return rows
     var clear: Array[Dictionary] = []
     for row in rows:
@@ -120,6 +130,7 @@ func evidence() -> Dictionary:
     return {"source":"local_observed_contour","active":active,"heading":[heading.x,heading.y],
         "normal":[normal.x,normal.y],"origin":[origin.x,origin.y],
         "exit_proposal":exit_proposal.duplicate(true),"reset_event":reset_event.duplicate(true),
+        "exit_direction_enabled":exit_direction_enabled,
         "local_turn_continuity_enabled":local_turn_continuity_enabled,"local_turns":local_turns,"total_local_turns":total_local_turns,
         "turn_pending":_turn_pending,"forced_turns":forced_turns,"contact_serial":starts,"pattern_context":pattern_context,"pattern_recommendation":pattern_recommendation.duplicate(true),
         "initial_side":initial_side,"default_side":default_side,"pattern_evaluation":pattern_evaluation.duplicate(true),

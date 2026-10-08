@@ -233,6 +233,7 @@ func poll(now: float) -> void:
 func status() -> Dictionary:
     return {"observed_outcomes":observed,"ram_records":local_rows.size(),"recovered_records":recovered_rows.size(),
         "cost_shift_enabled":patterns.cost_shift_enabled,
+        "exit_direction_enabled":OS.get_environment("LIVE_INFINITA_NAVIGATION_EXIT_DIRECTION")=="1",
         "local_turn_continuity_enabled":OS.get_environment("LIVE_INFINITA_NAVIGATION_CONTACT_TURNS")=="1",
         "changed_initial_decisions":changed_decisions,"core_changed_initial_decisions":core_changed_decisions,
         "exploration_decisions":exploration_decisions,"enabled":enabled,

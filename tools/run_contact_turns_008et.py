@@ -14,6 +14,7 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output-dir',type=Path,required=True)
     parser.add_argument('--engine',default='/opt/live-infinita-godot/engine/Godot_v4.7.2-stable_linux.x86_64')
+    parser.add_argument('--comparison',choices=['contact-turns','exit-direction'],default='contact-turns')
     args=parser.parse_args()
     repo=Path(__file__).resolve().parents[1]
     args.output_dir.mkdir(parents=True,exist_ok=True)
@@ -23,7 +24,9 @@ def main():
             ignore=shutil.ignore_patterns('.godot','build'))
         environment={**os.environ,'XDG_DATA_HOME':str(work/'data'),
             'LIVE_INFINITA_NAVIGATION_COST_SHIFT':'1',
-            'LIVE_INFINITA_NAVIGATION_CONTACT_TURNS':'0',
+            'LIVE_INFINITA_NAVIGATION_CONTACT_TURNS':'1' if args.comparison=='exit-direction' else '0',
+            'LIVE_INFINITA_NAVIGATION_EXIT_DIRECTION':'0',
+            'LIVE_INFINITA_CONTACT_COMPARISON_MODE':args.comparison,
             'LIVE_INFINITA_CONTACT_TURN_OUTPUT':str(work/'physical.json')}
         completed=subprocess.run([args.engine,'--headless','--audio-driver','Dummy',
             '--path',str(work/'project'),'--script',str(repo/'tests/godot_contact_turns_008et.gd'),
@@ -45,6 +48,7 @@ def main():
             gzip.compress((work/'physical.json').read_bytes(),mtime=0))
         summary={**report,'runs':[{k:v for k,v in row.items() if k!='actions'} for row in report['runs']]}
         summary['scope']='isolated real physics; policy property explicitly toggled per arm'
+        summary['comparison']=args.comparison
         summary['memory_advantage_demonstrated']=False
         summary['limit']='Navigation/contact-lifecycle repair, not causal evidence of learned policy advantage. Failed baseline distances are bounded unfinished traversals.'
         (args.output_dir/'summary.json').write_text(json.dumps(summary,indent=2)+'\n')

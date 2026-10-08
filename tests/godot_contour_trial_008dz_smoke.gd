@@ -43,6 +43,8 @@ func run() -> void:
     check(policy.active and policy.heading.y>0.5,"Remembered bonus must not set the initial contour side")
     policy.filter(Vector2(-1,1),Vector2(10,0),rows,true)
     check(policy.active,"A clear ray obtained only by retreat must not immediately replay the same wall")
+    # Candidates must be local to the moved position, rather than stale origin points.
+    rows=[{"point":Vector2(5,1),"source":"perception","clear_ahead":true}]
     policy.filter(Vector2(4,1),Vector2(10,0),rows,true)
     check(not policy.active,"A physically clear corridor after forward progress releases contour")
     var rejected = load("res://nov_navigation_experience.gd").new("")

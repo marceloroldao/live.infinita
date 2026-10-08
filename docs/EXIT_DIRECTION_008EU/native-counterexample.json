@@ -1,0 +1,195 @@
+{
+  "collisions": 0,
+  "context_end": {
+    "observer_entity_id": "nov",
+    "region_id": "shelter",
+    "runtime_position": {
+      "x": 967.33523804665,
+      "y": 367.59885717201
+    },
+    "world_id": "nov-live-autonomous-001",
+    "world_sequence": 476380
+  },
+  "context_start": {
+    "observer_entity_id": "nov",
+    "region_id": "shelter",
+    "runtime_position": {
+      "x": 967.33523804665,
+      "y": 367.59885717201
+    },
+    "world_id": "nov-live-autonomous-001",
+    "world_sequence": 476380
+  },
+  "decision_serial": 37188,
+  "decision_source": "perception",
+  "duration_ms": 127,
+  "end": [
+    -335.374694824219,
+    -101.346748352051
+  ],
+  "ended_at_unix": 1791481754.15438,
+  "executed_motion": true,
+  "goal": [
+    -236.251373291016,
+    -37.0638809204102
+  ],
+  "goal_kind": "projected_runtime_observer_position",
+  "memory_observation_id": "",
+  "outcome": "step_reached",
+  "perception": {
+    "candidates": [
+      {
+        "allowed": true,
+        "clear_ahead": true,
+        "point": [
+          -333.538208007812,
+          -100.798751831055
+        ],
+        "reason": ""
+      },
+      {
+        "allowed": true,
+        "clear_ahead": false,
+        "point": [
+          -333.374694824219,
+          -101.346748352051
+        ],
+        "reason": "static_obstacle"
+      },
+      {
+        "allowed": true,
+        "clear_ahead": false,
+        "point": [
+          -333.667602539062,
+          -100.639640808105
+        ],
+        "reason": "static_obstacle"
+      },
+      {
+        "allowed": true,
+        "clear_ahead": false,
+        "point": [
+          -334.374694824219,
+          -100.346748352051
+        ],
+        "reason": "static_obstacle"
+      },
+      {
+        "allowed": true,
+        "clear_ahead": false,
+        "point": [
+          -335.081787109375,
+          -100.639640808105
+        ],
+        "reason": "static_obstacle"
+      },
+      {
+        "allowed": true,
+        "clear_ahead": true,
+        "point": [
+          -335.374694824219,
+          -101.346748352051
+        ],
+        "reason": ""
+      },
+      {
+        "allowed": true,
+        "clear_ahead": true,
+        "point": [
+          -335.081787109375,
+          -102.053855895996
+        ],
+        "reason": ""
+      },
+      {
+        "allowed": true,
+        "clear_ahead": true,
+        "point": [
+          -334.374694824219,
+          -102.346748352051
+        ],
+        "reason": ""
+      },
+      {
+        "allowed": true,
+        "clear_ahead": true,
+        "point": [
+          -333.667602539062,
+          -102.053855895996
+        ],
+        "reason": ""
+      }
+    ],
+    "contour": {
+      "active": false,
+      "contact_serial": 791,
+      "default_side": 0,
+      "durable_learning": false,
+      "excursion_limit": 64.0,
+      "exit_proposal": {
+        "contact_serial": 791,
+        "normal": [
+          0.828654289245605,
+          0.559760749340057
+        ],
+        "start": [
+          -334.374694824219,
+          -101.346748352051
+        ]
+      },
+      "forced_turns": 199,
+      "global_route_search": false,
+      "heading": [
+        0.0,
+        0.0
+      ],
+      "initial_side": 0,
+      "initial_side_changed": false,
+      "local_turn_continuity_enabled": true,
+      "local_turns": 0,
+      "normal": [
+        0.0,
+        0.0
+      ],
+      "origin": [
+        -334.374694824219,
+        -103.346748352051
+      ],
+      "pattern_changed_initial_side": false,
+      "pattern_context": "",
+      "pattern_evaluation": {},
+      "pattern_recommendation": {},
+      "reset_event": {
+        "contact_serial": 791,
+        "reason": "clear_exit_proposed"
+      },
+      "side_switches": 22,
+      "source": "local_observed_contour",
+      "total_local_turns": 199,
+      "turn_pending": false
+    },
+    "lookahead_m": 3.0,
+    "without_memoria": [
+      -335.374694824219,
+      -101.346748352051
+    ]
+  },
+  "physical_attempt": true,
+  "reason": "",
+  "remaining_goal_m": 118.142791748047,
+  "route_goal_id": "39ae610156f07e5eed2b08f94d2b947b:54",
+  "selected": [
+    -335.374694824219,
+    -101.346748352051
+  ],
+  "start": [
+    -334.374694824219,
+    -101.346748352051
+  ],
+  "started_at_ms": 12484822,
+  "started_at_unix": 1791481754.02779,
+  "surface": "terrain",
+  "working_memory_changed_choice": false,
+  "working_memory_key": "",
+  "working_memory_session": "785604db79228b1338bf64f2bd9fb93d"
+}

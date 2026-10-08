@@ -1,0 +1,98 @@
+{
+  "scope": "bounded actual native episode capture; observational only",
+  "actions": 571,
+  "proposals": [
+    {
+      "contact_serial": 785,
+      "first_executed_progress_m": 0.999985804643337,
+      "maximum_executed_progress_m": 0.999985804643337,
+      "executed_actions": 1,
+      "termination": "physical_threshold"
+    },
+    {
+      "contact_serial": 786,
+      "first_executed_progress_m": 0.9998862096316625,
+      "maximum_executed_progress_m": 0.9998862096316625,
+      "executed_actions": 1,
+      "termination": "physical_threshold"
+    },
+    {
+      "contact_serial": 787,
+      "first_executed_progress_m": 0.707292139530182,
+      "maximum_executed_progress_m": 1.414213597774506,
+      "executed_actions": 2,
+      "termination": "physical_threshold"
+    },
+    {
+      "contact_serial": 788,
+      "first_executed_progress_m": 0.70729786157608,
+      "maximum_executed_progress_m": 1.41459572315216,
+      "executed_actions": 2,
+      "termination": "physical_threshold"
+    },
+    {
+      "contact_serial": 789,
+      "first_executed_progress_m": 0.706894099712372,
+      "maximum_executed_progress_m": 1.413788199424744,
+      "executed_actions": 2,
+      "termination": "physical_threshold"
+    },
+    {
+      "contact_serial": 790,
+      "first_executed_progress_m": 0.9679233800815212,
+      "maximum_executed_progress_m": 0.9679233800815212,
+      "executed_actions": 1,
+      "termination": "physical_threshold"
+    },
+    {
+      "contact_serial": 791,
+      "first_executed_progress_m": -0.828654289245605,
+      "maximum_executed_progress_m": -0.6385302829204501,
+      "executed_actions": 6,
+      "termination": "new_contact"
+    },
+    {
+      "contact_serial": 792,
+      "first_executed_progress_m": 0.9997178021799995,
+      "maximum_executed_progress_m": 0.9997178021799995,
+      "executed_actions": 1,
+      "termination": "physical_threshold"
+    },
+    {
+      "contact_serial": 793,
+      "first_executed_progress_m": 1.0000000850295692,
+      "maximum_executed_progress_m": 1.0000000850295692,
+      "executed_actions": 1,
+      "termination": "physical_threshold"
+    },
+    {
+      "contact_serial": 794,
+      "first_executed_progress_m": 0.703623175621033,
+      "maximum_executed_progress_m": 1.407246351242066,
+      "executed_actions": 2,
+      "termination": "physical_threshold"
+    },
+    {
+      "contact_serial": 795,
+      "first_executed_progress_m": 0.570370733737946,
+      "maximum_executed_progress_m": 1.140741467475892,
+      "executed_actions": 2,
+      "termination": "physical_threshold"
+    },
+    {
+      "contact_serial": 796,
+      "first_executed_progress_m": 0.704359948635101,
+      "maximum_executed_progress_m": 1.408719897270202,
+      "executed_actions": 2,
+      "termination": "physical_threshold"
+    },
+    {
+      "contact_serial": 797,
+      "first_executed_progress_m": 0.595774173736572,
+      "maximum_executed_progress_m": 1.398926198482513,
+      "executed_actions": 2,
+      "termination": "physical_threshold"
+    }
+  ],
+  "memory_advantage_demonstrated": false
+}

@@ -25,7 +25,9 @@ func physical_run(holder: Node3D,label: String,experimental: bool) -> Dictionary
     motion._pattern_collector._rebuild()
     motion._pattern_collector.set_context(motion._episodes.context)
     motion._pattern_collector.set_enabled(true)
-    motion._experience.contour.local_turn_continuity_enabled=experimental
+    var exit_comparison: bool=OS.get_environment("LIVE_INFINITA_CONTACT_COMPARISON_MODE")=="exit-direction"
+    motion._experience.contour.local_turn_continuity_enabled=experimental or exit_comparison
+    motion._experience.contour.exit_direction_enabled=experimental and exit_comparison
     motion._episodes.action_completed.connect(Callable(self,"actual_action"))
     motion.route_goal_id=label
     var body: CharacterBody3D=motion.create_body(holder,null)
