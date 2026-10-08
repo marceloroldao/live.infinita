@@ -1,0 +1,2010 @@
+{
+  "schema": "live-infinita-paired-adaptation/v1",
+  "sdk_commit": "dfd87c995b50c49b45a9d5dd4c43cce456983d4f",
+  "scope": "isolated_actual_capsule_and_native_collector",
+  "production_performance_advantage_demonstrated": false,
+  "same_start_goal_physics_within_each_pair": true,
+  "deterministic_repeats_not_independent_samples": true,
+  "speed_mps": 4,
+  "dt_seconds": 0.1,
+  "training": {
+    "failures": 0,
+    "phase": "training",
+    "production_learning_demonstrated": false,
+    "runs": [
+      {
+        "arm": "training_0",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 235.314719185233,
+        "recommendation": {},
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 70.6,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "decision_reasons": {
+            "insufficient_samples": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exploration_decisions": 0,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 0
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 0
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "reason": "insufficient_samples",
+            "recommendation": {}
+          },
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 1,
+          "recovered_records": 0
+        },
+        "ticks": 706
+      },
+      {
+        "arm": "training_1",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 104.999119088054,
+        "recommendation": {
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": -1,
+          "source": "pattern-exploration"
+        },
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 31.5,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "decision_reasons": {
+            "insufficient_samples": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exploration_decisions": 1,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 0
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 1,
+                "score": 61.3333294540643
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "reason": "insufficient_samples",
+            "recommendation": {}
+          },
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 2,
+          "recovered_records": 0
+        },
+        "ticks": 315
+      },
+      {
+        "arm": "training_2",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 235.314719185233,
+        "recommendation": {
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": 1,
+          "source": "pattern-exploration"
+        },
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 70.6,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "decision_reasons": {
+            "insufficient_samples": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exploration_decisions": 1,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 1,
+                "score": 18.6666665375233
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 1,
+                "score": 61.3333294540643
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "reason": "insufficient_samples",
+            "recommendation": {}
+          },
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 3,
+          "recovered_records": 0
+        },
+        "ticks": 706
+      },
+      {
+        "arm": "training_3",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 104.999119088054,
+        "recommendation": {
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": -1,
+          "source": "pattern-exploration"
+        },
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 31.5,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "decision_reasons": {
+            "insufficient_samples": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exploration_decisions": 1,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 1,
+                "score": 18.6666665375233
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 61.3333294540643
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "reason": "insufficient_samples",
+            "recommendation": {}
+          },
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 4,
+          "recovered_records": 0
+        },
+        "ticks": 315
+      }
+    ],
+    "scope": "isolated_paired_native_physics"
+  },
+  "stable_pairs": [
+    {
+      "baseline": {
+        "arm": "stable_perception_0",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 234.572304785252,
+        "recommendation": {},
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 70.4,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "decision_reasons": {},
+          "enabled": false,
+          "exclusions": {},
+          "exploration_decisions": 0,
+          "last_evaluation": {},
+          "observed_outcomes": 0,
+          "pending_contacts": 0,
+          "ram_records": 4,
+          "recovered_records": 0
+        },
+        "ticks": 704
+      },
+      "recovered_core": {
+        "arm": "stable_core_0",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 106.605529054999,
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:49a236382ef04dea67e4d0bda6a9fa28933967a1",
+                "structural-event:80c26c655a723207e70691d7b93efe8152517dc9"
+              ],
+              "samples": 2,
+              "score": 18.6666665375233
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:482c0180ff616bcd04025031217b2ebd95787618",
+                "structural-event:1671d5510e16cc9b170037a85e3d7ae5b9118f84"
+              ],
+              "samples": 2,
+              "score": 61.3333294540643
+            }
+          },
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "observation_ids": [
+            "structural-event:49a236382ef04dea67e4d0bda6a9fa28933967a1",
+            "structural-event:80c26c655a723207e70691d7b93efe8152517dc9"
+          ],
+          "side": -1,
+          "source": "recovered-pattern-evidence"
+        },
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 32.0,
+        "status": {
+          "changed_initial_decisions": 1,
+          "core_changed_initial_decisions": 1,
+          "decision_reasons": {
+            "preferred_side": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exploration_decisions": 0,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [
+                  "structural-event:49a236382ef04dea67e4d0bda6a9fa28933967a1",
+                  "structural-event:80c26c655a723207e70691d7b93efe8152517dc9"
+                ],
+                "samples": 2,
+                "score": 18.6666665375233
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [
+                  "structural-event:482c0180ff616bcd04025031217b2ebd95787618",
+                  "structural-event:1671d5510e16cc9b170037a85e3d7ae5b9118f84"
+                ],
+                "samples": 2,
+                "score": 61.3333294540643
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "reason": "preferred_side",
+            "recommendation": {
+              "alternatives": {
+                "-1": {
+                  "errors": 0,
+                  "observation_ids": [
+                    "structural-event:49a236382ef04dea67e4d0bda6a9fa28933967a1",
+                    "structural-event:80c26c655a723207e70691d7b93efe8152517dc9"
+                  ],
+                  "samples": 2,
+                  "score": 18.6666665375233
+                },
+                "1": {
+                  "errors": 0,
+                  "observation_ids": [
+                    "structural-event:482c0180ff616bcd04025031217b2ebd95787618",
+                    "structural-event:1671d5510e16cc9b170037a85e3d7ae5b9118f84"
+                  ],
+                  "samples": 2,
+                  "score": 61.3333294540643
+                }
+              },
+              "contains_prediction": true,
+              "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+              "observation_ids": [
+                "structural-event:49a236382ef04dea67e4d0bda6a9fa28933967a1",
+                "structural-event:80c26c655a723207e70691d7b93efe8152517dc9"
+              ],
+              "side": -1,
+              "source": "recovered-pattern-evidence"
+            },
+            "required_gap": 12.2666658908129,
+            "score_gap": 42.6666629165411
+          },
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 1,
+          "recovered_records": 4
+        },
+        "ticks": 320
+      },
+      "distance_delta_m": -127.96677573025299,
+      "simulated_time_delta_s": -38.400000000000006
+    },
+    {
+      "baseline": {
+        "arm": "stable_perception_1",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 234.572304785252,
+        "recommendation": {},
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 70.4,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "decision_reasons": {},
+          "enabled": false,
+          "exclusions": {},
+          "exploration_decisions": 0,
+          "last_evaluation": {},
+          "observed_outcomes": 0,
+          "pending_contacts": 0,
+          "ram_records": 4,
+          "recovered_records": 0
+        },
+        "ticks": 704
+      },
+      "recovered_core": {
+        "arm": "stable_core_1",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 106.605529054999,
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:49a236382ef04dea67e4d0bda6a9fa28933967a1",
+                "structural-event:80c26c655a723207e70691d7b93efe8152517dc9"
+              ],
+              "samples": 2,
+              "score": 18.6666665375233
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:482c0180ff616bcd04025031217b2ebd95787618",
+                "structural-event:1671d5510e16cc9b170037a85e3d7ae5b9118f84"
+              ],
+              "samples": 2,
+              "score": 61.3333294540643
+            }
+          },
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "observation_ids": [
+            "structural-event:49a236382ef04dea67e4d0bda6a9fa28933967a1",
+            "structural-event:80c26c655a723207e70691d7b93efe8152517dc9"
+          ],
+          "side": -1,
+          "source": "recovered-pattern-evidence"
+        },
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 32.0,
+        "status": {
+          "changed_initial_decisions": 1,
+          "core_changed_initial_decisions": 1,
+          "decision_reasons": {
+            "preferred_side": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exploration_decisions": 0,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [
+                  "structural-event:49a236382ef04dea67e4d0bda6a9fa28933967a1",
+                  "structural-event:80c26c655a723207e70691d7b93efe8152517dc9"
+                ],
+                "samples": 2,
+                "score": 18.6666665375233
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [
+                  "structural-event:482c0180ff616bcd04025031217b2ebd95787618",
+                  "structural-event:1671d5510e16cc9b170037a85e3d7ae5b9118f84"
+                ],
+                "samples": 2,
+                "score": 61.3333294540643
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "reason": "preferred_side",
+            "recommendation": {
+              "alternatives": {
+                "-1": {
+                  "errors": 0,
+                  "observation_ids": [
+                    "structural-event:49a236382ef04dea67e4d0bda6a9fa28933967a1",
+                    "structural-event:80c26c655a723207e70691d7b93efe8152517dc9"
+                  ],
+                  "samples": 2,
+                  "score": 18.6666665375233
+                },
+                "1": {
+                  "errors": 0,
+                  "observation_ids": [
+                    "structural-event:482c0180ff616bcd04025031217b2ebd95787618",
+                    "structural-event:1671d5510e16cc9b170037a85e3d7ae5b9118f84"
+                  ],
+                  "samples": 2,
+                  "score": 61.3333294540643
+                }
+              },
+              "contains_prediction": true,
+              "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+              "observation_ids": [
+                "structural-event:49a236382ef04dea67e4d0bda6a9fa28933967a1",
+                "structural-event:80c26c655a723207e70691d7b93efe8152517dc9"
+              ],
+              "side": -1,
+              "source": "recovered-pattern-evidence"
+            },
+            "required_gap": 12.2666658908129,
+            "score_gap": 42.6666629165411
+          },
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 1,
+          "recovered_records": 4
+        },
+        "ticks": 320
+      },
+      "distance_delta_m": -127.96677573025299,
+      "simulated_time_delta_s": -38.400000000000006
+    }
+  ],
+  "changed_perception": {
+    "arm": "changed_perception",
+    "arrived": true,
+    "collisions": 0,
+    "distance_m": 377.792504414916,
+    "recommendation": {},
+    "rescued": false,
+    "route_plan_builds": 0,
+    "side": 1,
+    "simulated_seconds": 113.3,
+    "status": {
+      "changed_initial_decisions": 0,
+      "core_changed_initial_decisions": 0,
+      "decision_reasons": {},
+      "enabled": false,
+      "exclusions": {},
+      "exploration_decisions": 0,
+      "last_evaluation": {},
+      "observed_outcomes": 0,
+      "pending_contacts": 0,
+      "ram_records": 4,
+      "recovered_records": 0
+    },
+    "ticks": 1133
+  },
+  "changed_stale_core": {
+    "arm": "changed_stale_core",
+    "arrived": true,
+    "collisions": 0,
+    "distance_m": 274.183701574802,
+    "recommendation": {
+      "alternatives": {
+        "-1": {
+          "errors": 0,
+          "observation_ids": [
+            "structural-event:49a236382ef04dea67e4d0bda6a9fa28933967a1",
+            "structural-event:80c26c655a723207e70691d7b93efe8152517dc9"
+          ],
+          "samples": 2,
+          "score": 18.6666665375233
+        },
+        "1": {
+          "errors": 0,
+          "observation_ids": [
+            "structural-event:482c0180ff616bcd04025031217b2ebd95787618",
+            "structural-event:1671d5510e16cc9b170037a85e3d7ae5b9118f84"
+          ],
+          "samples": 2,
+          "score": 61.3333294540643
+        }
+      },
+      "contains_prediction": true,
+      "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+      "observation_ids": [
+        "structural-event:49a236382ef04dea67e4d0bda6a9fa28933967a1",
+        "structural-event:80c26c655a723207e70691d7b93efe8152517dc9"
+      ],
+      "side": -1,
+      "source": "recovered-pattern-evidence"
+    },
+    "rescued": false,
+    "route_plan_builds": 0,
+    "side": -1,
+    "simulated_seconds": 82.3,
+    "status": {
+      "changed_initial_decisions": 1,
+      "core_changed_initial_decisions": 1,
+      "decision_reasons": {
+        "preferred_side": 1
+      },
+      "enabled": true,
+      "exclusions": {},
+      "exploration_decisions": 0,
+      "last_evaluation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [
+              "structural-event:49a236382ef04dea67e4d0bda6a9fa28933967a1",
+              "structural-event:80c26c655a723207e70691d7b93efe8152517dc9"
+            ],
+            "samples": 2,
+            "score": 18.6666665375233
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [
+              "structural-event:482c0180ff616bcd04025031217b2ebd95787618",
+              "structural-event:1671d5510e16cc9b170037a85e3d7ae5b9118f84"
+            ],
+            "samples": 2,
+            "score": 61.3333294540643
+          }
+        },
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+        "reason": "preferred_side",
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:49a236382ef04dea67e4d0bda6a9fa28933967a1",
+                "structural-event:80c26c655a723207e70691d7b93efe8152517dc9"
+              ],
+              "samples": 2,
+              "score": 18.6666665375233
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:482c0180ff616bcd04025031217b2ebd95787618",
+                "structural-event:1671d5510e16cc9b170037a85e3d7ae5b9118f84"
+              ],
+              "samples": 2,
+              "score": 61.3333294540643
+            }
+          },
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "observation_ids": [
+            "structural-event:49a236382ef04dea67e4d0bda6a9fa28933967a1",
+            "structural-event:80c26c655a723207e70691d7b93efe8152517dc9"
+          ],
+          "side": -1,
+          "source": "recovered-pattern-evidence"
+        },
+        "required_gap": 12.2666658908129,
+        "score_gap": 42.6666629165411
+      },
+      "observed_outcomes": 1,
+      "pending_contacts": 0,
+      "ram_records": 1,
+      "recovered_records": 4
+    },
+    "ticks": 823
+  },
+  "adaptation_trials": [
+    {
+      "arm": "adaptation_0",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 274.183701574802,
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 18.6666665375233
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 61.3333294540643
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": -1,
+        "source": "ram-pattern-evidence"
+      },
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": -1,
+      "simulated_seconds": 82.3,
+      "status": {
+        "changed_initial_decisions": 1,
+        "core_changed_initial_decisions": 0,
+        "decision_reasons": {
+          "preferred_side": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 18.6666665375233
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 61.3333294540643
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "reason": "preferred_side",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 18.6666665375233
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 61.3333294540643
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": -1,
+            "source": "ram-pattern-evidence"
+          },
+          "required_gap": 12.2666658908129,
+          "score_gap": 42.6666629165411
+        },
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 5,
+        "recovered_records": 0
+      },
+      "ticks": 823
+    },
+    {
+      "arm": "adaptation_1",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 377.792504414916,
+      "recommendation": {
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": 1,
+        "source": "pattern-exploration"
+      },
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 113.3,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "decision_reasons": {
+          "cost_shift_exploration": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exploration_decisions": 1,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 1,
+              "score": 68.0000033875307
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "cost_shift": {
+            "basis": "measured_cost_increase",
+            "factor": 1.5,
+            "fresh_samples": 1,
+            "minimum_rise_cost_units": 1.0,
+            "onset_attempt_id": "76a333ee200c84dba86f0503b194ae2c:adaptation_0:1",
+            "retained_raw_samples": 5
+          },
+          "reason": "cost_shift_exploration",
+          "recommendation": {
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": 1,
+            "source": "pattern-exploration"
+          }
+        },
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 6,
+        "recovered_records": 0
+      },
+      "ticks": 1133
+    },
+    {
+      "arm": "adaptation_2",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 377.792504414916,
+      "recommendation": {
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": 1,
+        "source": "pattern-exploration"
+      },
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 113.3,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "decision_reasons": {
+          "cost_shift_exploration": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exploration_decisions": 1,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 1,
+              "score": 68.0000033875307
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 1,
+              "score": 86.6666493862867
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "cost_shift": {
+            "basis": "measured_cost_increase",
+            "factor": 1.5,
+            "fresh_samples": 2,
+            "minimum_rise_cost_units": 1.0,
+            "onset_attempt_id": "76a333ee200c84dba86f0503b194ae2c:adaptation_0:1",
+            "retained_raw_samples": 6
+          },
+          "reason": "cost_shift_exploration",
+          "recommendation": {
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": 1,
+            "source": "pattern-exploration"
+          }
+        },
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 7,
+        "recovered_records": 0
+      },
+      "ticks": 1133
+    },
+    {
+      "arm": "adaptation_3",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 274.183701574802,
+      "recommendation": {
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": -1,
+        "source": "pattern-exploration"
+      },
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": -1,
+      "simulated_seconds": 82.3,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "decision_reasons": {
+          "cost_shift_exploration": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exploration_decisions": 1,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 1,
+              "score": 68.0000033875307
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 86.6666493862867
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "cost_shift": {
+            "basis": "measured_cost_increase",
+            "factor": 1.5,
+            "fresh_samples": 3,
+            "minimum_rise_cost_units": 1.0,
+            "onset_attempt_id": "76a333ee200c84dba86f0503b194ae2c:adaptation_0:1",
+            "retained_raw_samples": 7
+          },
+          "reason": "cost_shift_exploration",
+          "recommendation": {
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": -1,
+            "source": "pattern-exploration"
+          }
+        },
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 8,
+        "recovered_records": 0
+      },
+      "ticks": 823
+    },
+    {
+      "arm": "adaptation_4",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 274.183701574802,
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 68.0000033875307
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 86.6666493862867
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": -1,
+        "source": "ram-pattern-evidence"
+      },
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": -1,
+      "simulated_seconds": 82.3,
+      "status": {
+        "changed_initial_decisions": 1,
+        "core_changed_initial_decisions": 0,
+        "decision_reasons": {
+          "preferred_side": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 68.0000033875307
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 86.6666493862867
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "cost_shift": {
+            "basis": "measured_cost_increase",
+            "factor": 1.5,
+            "fresh_samples": 4,
+            "minimum_rise_cost_units": 1.0,
+            "onset_attempt_id": "76a333ee200c84dba86f0503b194ae2c:adaptation_0:1",
+            "retained_raw_samples": 8
+          },
+          "reason": "preferred_side",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 68.0000033875307
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 86.6666493862867
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": -1,
+            "source": "ram-pattern-evidence"
+          },
+          "required_gap": 17.3333298772573,
+          "score_gap": 18.666645998756
+        },
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 9,
+        "recovered_records": 0
+      },
+      "ticks": 823
+    },
+    {
+      "arm": "adaptation_5",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 274.183701574802,
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 3,
+            "score": 68.0000033875307
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 86.6666493862867
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": -1,
+        "source": "ram-pattern-evidence"
+      },
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": -1,
+      "simulated_seconds": 82.3,
+      "status": {
+        "changed_initial_decisions": 1,
+        "core_changed_initial_decisions": 0,
+        "decision_reasons": {
+          "preferred_side": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 3,
+              "score": 68.0000033875307
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 86.6666493862867
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "cost_shift": {
+            "basis": "measured_cost_increase",
+            "factor": 1.5,
+            "fresh_samples": 5,
+            "minimum_rise_cost_units": 1.0,
+            "onset_attempt_id": "76a333ee200c84dba86f0503b194ae2c:adaptation_0:1",
+            "retained_raw_samples": 9
+          },
+          "reason": "preferred_side",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 3,
+                "score": 68.0000033875307
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 86.6666493862867
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": -1,
+            "source": "ram-pattern-evidence"
+          },
+          "required_gap": 17.3333298772573,
+          "score_gap": 18.666645998756
+        },
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 10,
+        "recovered_records": 0
+      },
+      "ticks": 823
+    },
+    {
+      "arm": "adaptation_6",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 274.183701574802,
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 4,
+            "score": 68.0000033875307
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 86.6666493862867
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": -1,
+        "source": "ram-pattern-evidence"
+      },
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": -1,
+      "simulated_seconds": 82.3,
+      "status": {
+        "changed_initial_decisions": 1,
+        "core_changed_initial_decisions": 0,
+        "decision_reasons": {
+          "preferred_side": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 4,
+              "score": 68.0000033875307
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 86.6666493862867
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "cost_shift": {
+            "basis": "measured_cost_increase",
+            "factor": 1.5,
+            "fresh_samples": 6,
+            "minimum_rise_cost_units": 1.0,
+            "onset_attempt_id": "76a333ee200c84dba86f0503b194ae2c:adaptation_0:1",
+            "retained_raw_samples": 10
+          },
+          "reason": "preferred_side",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 4,
+                "score": 68.0000033875307
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 86.6666493862867
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": -1,
+            "source": "ram-pattern-evidence"
+          },
+          "required_gap": 17.3333298772573,
+          "score_gap": 18.666645998756
+        },
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 11,
+        "recovered_records": 0
+      },
+      "ticks": 823
+    },
+    {
+      "arm": "adaptation_7",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 274.183701574802,
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 5,
+            "score": 68.0000033875307
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 86.6666493862867
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": -1,
+        "source": "ram-pattern-evidence"
+      },
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": -1,
+      "simulated_seconds": 82.3,
+      "status": {
+        "changed_initial_decisions": 1,
+        "core_changed_initial_decisions": 0,
+        "decision_reasons": {
+          "preferred_side": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 5,
+              "score": 68.0000033875307
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 86.6666493862867
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "cost_shift": {
+            "basis": "measured_cost_increase",
+            "factor": 1.5,
+            "fresh_samples": 7,
+            "minimum_rise_cost_units": 1.0,
+            "onset_attempt_id": "76a333ee200c84dba86f0503b194ae2c:adaptation_0:1",
+            "retained_raw_samples": 11
+          },
+          "reason": "preferred_side",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 5,
+                "score": 68.0000033875307
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 86.6666493862867
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": -1,
+            "source": "ram-pattern-evidence"
+          },
+          "required_gap": 17.3333298772573,
+          "score_gap": 18.666645998756
+        },
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 12,
+        "recovered_records": 0
+      },
+      "ticks": 823
+    },
+    {
+      "arm": "adaptation_8",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 274.183701574802,
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 6,
+            "score": 68.0000033875307
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 86.6666493862867
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": -1,
+        "source": "ram-pattern-evidence"
+      },
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": -1,
+      "simulated_seconds": 82.3,
+      "status": {
+        "changed_initial_decisions": 1,
+        "core_changed_initial_decisions": 0,
+        "decision_reasons": {
+          "preferred_side": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 6,
+              "score": 68.0000033875307
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 86.6666493862867
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "cost_shift": {
+            "basis": "measured_cost_increase",
+            "factor": 1.5,
+            "fresh_samples": 8,
+            "minimum_rise_cost_units": 1.0,
+            "onset_attempt_id": "76a333ee200c84dba86f0503b194ae2c:adaptation_0:1",
+            "retained_raw_samples": 12
+          },
+          "reason": "preferred_side",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 6,
+                "score": 68.0000033875307
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 86.6666493862867
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": -1,
+            "source": "ram-pattern-evidence"
+          },
+          "required_gap": 17.3333298772573,
+          "score_gap": 18.666645998756
+        },
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 13,
+        "recovered_records": 0
+      },
+      "ticks": 823
+    },
+    {
+      "arm": "adaptation_9",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 274.183701574802,
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 7,
+            "score": 68.0000033875307
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 86.6666493862867
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": -1,
+        "source": "ram-pattern-evidence"
+      },
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": -1,
+      "simulated_seconds": 82.3,
+      "status": {
+        "changed_initial_decisions": 1,
+        "core_changed_initial_decisions": 0,
+        "decision_reasons": {
+          "preferred_side": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 7,
+              "score": 68.0000033875307
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 86.6666493862867
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "cost_shift": {
+            "basis": "measured_cost_increase",
+            "factor": 1.5,
+            "fresh_samples": 9,
+            "minimum_rise_cost_units": 1.0,
+            "onset_attempt_id": "76a333ee200c84dba86f0503b194ae2c:adaptation_0:1",
+            "retained_raw_samples": 13
+          },
+          "reason": "preferred_side",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 7,
+                "score": 68.0000033875307
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 86.6666493862867
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": -1,
+            "source": "ram-pattern-evidence"
+          },
+          "required_gap": 17.3333298772573,
+          "score_gap": 18.666645998756
+        },
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 14,
+        "recovered_records": 0
+      },
+      "ticks": 823
+    },
+    {
+      "arm": "adaptation_10",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 274.183701574802,
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 8,
+            "score": 68.0000033875307
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 86.6666493862867
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": -1,
+        "source": "ram-pattern-evidence"
+      },
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": -1,
+      "simulated_seconds": 82.3,
+      "status": {
+        "changed_initial_decisions": 1,
+        "core_changed_initial_decisions": 0,
+        "decision_reasons": {
+          "preferred_side": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 8,
+              "score": 68.0000033875307
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 86.6666493862867
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "cost_shift": {
+            "basis": "measured_cost_increase",
+            "factor": 1.5,
+            "fresh_samples": 10,
+            "minimum_rise_cost_units": 1.0,
+            "onset_attempt_id": "76a333ee200c84dba86f0503b194ae2c:adaptation_0:1",
+            "retained_raw_samples": 14
+          },
+          "reason": "preferred_side",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 8,
+                "score": 68.0000033875307
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 86.6666493862867
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": -1,
+            "source": "ram-pattern-evidence"
+          },
+          "required_gap": 17.3333298772573,
+          "score_gap": 18.666645998756
+        },
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 15,
+        "recovered_records": 0
+      },
+      "ticks": 823
+    },
+    {
+      "arm": "adaptation_11",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 274.183701574802,
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 9,
+            "score": 68.0000033875307
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 86.6666493862867
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": -1,
+        "source": "ram-pattern-evidence"
+      },
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": -1,
+      "simulated_seconds": 82.3,
+      "status": {
+        "changed_initial_decisions": 1,
+        "core_changed_initial_decisions": 0,
+        "decision_reasons": {
+          "preferred_side": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 9,
+              "score": 68.0000033875307
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 86.6666493862867
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "cost_shift": {
+            "basis": "measured_cost_increase",
+            "factor": 1.5,
+            "fresh_samples": 11,
+            "minimum_rise_cost_units": 1.0,
+            "onset_attempt_id": "76a333ee200c84dba86f0503b194ae2c:adaptation_0:1",
+            "retained_raw_samples": 15
+          },
+          "reason": "preferred_side",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 9,
+                "score": 68.0000033875307
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 86.6666493862867
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": -1,
+            "source": "ram-pattern-evidence"
+          },
+          "required_gap": 17.3333298772573,
+          "score_gap": 18.666645998756
+        },
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 16,
+        "recovered_records": 0
+      },
+      "ticks": 823
+    }
+  ],
+  "changed_repaired_ram": {
+    "arm": "changed_repaired_ram",
+    "arrived": true,
+    "collisions": 0,
+    "distance_m": 274.183701574802,
+    "recommendation": {
+      "alternatives": {
+        "-1": {
+          "errors": 0,
+          "observation_ids": [],
+          "samples": 10,
+          "score": 68.0000033875307
+        },
+        "1": {
+          "errors": 0,
+          "observation_ids": [],
+          "samples": 2,
+          "score": 86.6666493862867
+        }
+      },
+      "contains_prediction": true,
+      "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+      "observation_ids": [],
+      "side": -1,
+      "source": "ram-pattern-evidence"
+    },
+    "rescued": false,
+    "route_plan_builds": 0,
+    "side": -1,
+    "simulated_seconds": 82.3,
+    "status": {
+      "changed_initial_decisions": 1,
+      "core_changed_initial_decisions": 0,
+      "decision_reasons": {
+        "preferred_side": 1
+      },
+      "enabled": true,
+      "exclusions": {},
+      "exploration_decisions": 0,
+      "last_evaluation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 10,
+            "score": 68.0000033875307
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 86.6666493862867
+          }
+        },
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+        "cost_shift": {
+          "basis": "measured_cost_increase",
+          "factor": 1.5,
+          "fresh_samples": 12,
+          "minimum_rise_cost_units": 1.0,
+          "onset_attempt_id": "76a333ee200c84dba86f0503b194ae2c:adaptation_0:1",
+          "retained_raw_samples": 16
+        },
+        "reason": "preferred_side",
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 10,
+              "score": 68.0000033875307
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 86.6666493862867
+            }
+          },
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": -1,
+          "source": "ram-pattern-evidence"
+        },
+        "required_gap": 17.3333298772573,
+        "score_gap": 18.666645998756
+      },
+      "observed_outcomes": 1,
+      "pending_contacts": 0,
+      "ram_records": 17,
+      "recovered_records": 0
+    },
+    "ticks": 823
+  },
+  "changed_repaired_core": {
+    "arm": "changed_repaired_core",
+    "arrived": true,
+    "collisions": 0,
+    "distance_m": 274.183701574802,
+    "recommendation": {
+      "alternatives": {
+        "-1": {
+          "errors": 0,
+          "observation_ids": [
+            "structural-event:c74f261eddabad2fc7ecd546898cb9c79e071a32",
+            "structural-event:1f46746febd2b7cc069ac733f723ee88559a085d",
+            "structural-event:21c83338f6b777860dad87048af3fed0eda2cc46",
+            "structural-event:bb6b4874be2956be0ca018a7d48d60376c56c0b1",
+            "structural-event:b6580ed22a97836ceef8de81d13fb523b4708cda",
+            "structural-event:bd8ad598d3fa538f536063bf77646ad649ac2728",
+            "structural-event:28a48ef93f8ec1ec8084d9097d22ec1724591f57",
+            "structural-event:1368fd22dd6128bb454686c83bdce5d17f5cad14",
+            "structural-event:7c28c8450a60cdf170ebdb644d01a10fc9f23172",
+            "structural-event:7c19ed70f8e83dffd0b198576c638afdc8891f9e",
+            "structural-event:864e2b506986917777d920d6944fdf6b3014eed8"
+          ],
+          "samples": 11,
+          "score": 68.0000033875307
+        },
+        "1": {
+          "errors": 0,
+          "observation_ids": [
+            "structural-event:59ae1bfbefd23fbe776f37d5c2a3fab771cb0e2c",
+            "structural-event:c93545c8bcad088d9dd272eb58d92d09187080f1"
+          ],
+          "samples": 2,
+          "score": 86.6666493862867
+        }
+      },
+      "contains_prediction": true,
+      "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+      "observation_ids": [
+        "structural-event:c74f261eddabad2fc7ecd546898cb9c79e071a32",
+        "structural-event:1f46746febd2b7cc069ac733f723ee88559a085d",
+        "structural-event:21c83338f6b777860dad87048af3fed0eda2cc46",
+        "structural-event:bb6b4874be2956be0ca018a7d48d60376c56c0b1",
+        "structural-event:b6580ed22a97836ceef8de81d13fb523b4708cda",
+        "structural-event:bd8ad598d3fa538f536063bf77646ad649ac2728",
+        "structural-event:28a48ef93f8ec1ec8084d9097d22ec1724591f57",
+        "structural-event:1368fd22dd6128bb454686c83bdce5d17f5cad14",
+        "structural-event:7c28c8450a60cdf170ebdb644d01a10fc9f23172",
+        "structural-event:7c19ed70f8e83dffd0b198576c638afdc8891f9e",
+        "structural-event:864e2b506986917777d920d6944fdf6b3014eed8"
+      ],
+      "side": -1,
+      "source": "recovered-pattern-evidence"
+    },
+    "rescued": false,
+    "route_plan_builds": 0,
+    "side": -1,
+    "simulated_seconds": 82.3,
+    "status": {
+      "changed_initial_decisions": 1,
+      "core_changed_initial_decisions": 1,
+      "decision_reasons": {
+        "preferred_side": 1
+      },
+      "enabled": true,
+      "exclusions": {},
+      "exploration_decisions": 0,
+      "last_evaluation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [
+              "structural-event:c74f261eddabad2fc7ecd546898cb9c79e071a32",
+              "structural-event:1f46746febd2b7cc069ac733f723ee88559a085d",
+              "structural-event:21c83338f6b777860dad87048af3fed0eda2cc46",
+              "structural-event:bb6b4874be2956be0ca018a7d48d60376c56c0b1",
+              "structural-event:b6580ed22a97836ceef8de81d13fb523b4708cda",
+              "structural-event:bd8ad598d3fa538f536063bf77646ad649ac2728",
+              "structural-event:28a48ef93f8ec1ec8084d9097d22ec1724591f57",
+              "structural-event:1368fd22dd6128bb454686c83bdce5d17f5cad14",
+              "structural-event:7c28c8450a60cdf170ebdb644d01a10fc9f23172",
+              "structural-event:7c19ed70f8e83dffd0b198576c638afdc8891f9e",
+              "structural-event:864e2b506986917777d920d6944fdf6b3014eed8"
+            ],
+            "samples": 11,
+            "score": 68.0000033875307
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [
+              "structural-event:59ae1bfbefd23fbe776f37d5c2a3fab771cb0e2c",
+              "structural-event:c93545c8bcad088d9dd272eb58d92d09187080f1"
+            ],
+            "samples": 2,
+            "score": 86.6666493862867
+          }
+        },
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+        "cost_shift": {
+          "basis": "measured_cost_increase",
+          "factor": 1.5,
+          "fresh_samples": 13,
+          "minimum_rise_cost_units": 1.0,
+          "onset_attempt_id": "76a333ee200c84dba86f0503b194ae2c:adaptation_0:1",
+          "retained_raw_samples": 21
+        },
+        "reason": "preferred_side",
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:c74f261eddabad2fc7ecd546898cb9c79e071a32",
+                "structural-event:1f46746febd2b7cc069ac733f723ee88559a085d",
+                "structural-event:21c83338f6b777860dad87048af3fed0eda2cc46",
+                "structural-event:bb6b4874be2956be0ca018a7d48d60376c56c0b1",
+                "structural-event:b6580ed22a97836ceef8de81d13fb523b4708cda",
+                "structural-event:bd8ad598d3fa538f536063bf77646ad649ac2728",
+                "structural-event:28a48ef93f8ec1ec8084d9097d22ec1724591f57",
+                "structural-event:1368fd22dd6128bb454686c83bdce5d17f5cad14",
+                "structural-event:7c28c8450a60cdf170ebdb644d01a10fc9f23172",
+                "structural-event:7c19ed70f8e83dffd0b198576c638afdc8891f9e",
+                "structural-event:864e2b506986917777d920d6944fdf6b3014eed8"
+              ],
+              "samples": 11,
+              "score": 68.0000033875307
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:59ae1bfbefd23fbe776f37d5c2a3fab771cb0e2c",
+                "structural-event:c93545c8bcad088d9dd272eb58d92d09187080f1"
+              ],
+              "samples": 2,
+              "score": 86.6666493862867
+            }
+          },
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "observation_ids": [
+            "structural-event:c74f261eddabad2fc7ecd546898cb9c79e071a32",
+            "structural-event:1f46746febd2b7cc069ac733f723ee88559a085d",
+            "structural-event:21c83338f6b777860dad87048af3fed0eda2cc46",
+            "structural-event:bb6b4874be2956be0ca018a7d48d60376c56c0b1",
+            "structural-event:b6580ed22a97836ceef8de81d13fb523b4708cda",
+            "structural-event:bd8ad598d3fa538f536063bf77646ad649ac2728",
+            "structural-event:28a48ef93f8ec1ec8084d9097d22ec1724591f57",
+            "structural-event:1368fd22dd6128bb454686c83bdce5d17f5cad14",
+            "structural-event:7c28c8450a60cdf170ebdb644d01a10fc9f23172",
+            "structural-event:7c19ed70f8e83dffd0b198576c638afdc8891f9e",
+            "structural-event:864e2b506986917777d920d6944fdf6b3014eed8"
+          ],
+          "side": -1,
+          "source": "recovered-pattern-evidence"
+        },
+        "required_gap": 17.3333298772573,
+        "score_gap": 18.666645998756
+      },
+      "observed_outcomes": 1,
+      "pending_contacts": 0,
+      "ram_records": 1,
+      "recovered_records": 21
+    },
+    "ticks": 823
+  },
+  "changed_stale_minus_baseline_distance_m": -103.60880284011398,
+  "repaired_minus_stale_distance_m": 0.0,
+  "repaired_minus_baseline_distance_m": -103.60880284011398,
+  "intake": {
+    "acked": 4,
+    "confirmed": 4,
+    "recovered_this_poll": 4,
+    "cached_recovered": 4,
+    "world_write_authority": false
+  },
+  "cold_recovery": {
+    "acked": 0,
+    "confirmed": 4,
+    "recovered_this_poll": 4,
+    "cached_recovered": 4,
+    "world_write_authority": false
+  },
+  "adapted_intake": [
+    {
+      "acked": 4,
+      "confirmed": 8,
+      "recovered_this_poll": 8,
+      "cached_recovered": 8,
+      "world_write_authority": false
+    },
+    {
+      "acked": 4,
+      "confirmed": 12,
+      "recovered_this_poll": 12,
+      "cached_recovered": 12,
+      "world_write_authority": false
+    },
+    {
+      "acked": 4,
+      "confirmed": 16,
+      "recovered_this_poll": 16,
+      "cached_recovered": 16,
+      "world_write_authority": false
+    },
+    {
+      "acked": 4,
+      "confirmed": 20,
+      "recovered_this_poll": 20,
+      "cached_recovered": 20,
+      "world_write_authority": false
+    },
+    {
+      "acked": 1,
+      "confirmed": 21,
+      "recovered_this_poll": 21,
+      "cached_recovered": 21,
+      "world_write_authority": false
+    },
+    {
+      "acked": 0,
+      "confirmed": 21,
+      "recovered_this_poll": 21,
+      "cached_recovered": 21,
+      "world_write_authority": false
+    }
+  ],
+  "adapted_cold_recovery": {
+    "acked": 0,
+    "confirmed": 21,
+    "recovered_this_poll": 21,
+    "cached_recovered": 21,
+    "world_write_authority": false
+  },
+  "stored_physical_outcomes": 21,
+  "adapted_fixture_outcomes": 17,
+  "acquisition_traversals": 21,
+  "acquisition_distance_m": 5132.861079245802,
+  "acquisition_simulated_seconds": 1540.3,
+  "adapted_ram_verification_added_one_physical_outcome": true,
+  "training_and_adaptation_cost_included_in_claim": false,
+  "limit": "Held-out traversal savings exclude acquisition cost. Exact sensor signatures can alias changed geometry; this is one synthetic physical fixture, not a live counterfactual or broad generalization.",
+  "changed_opening_z": 10
+}

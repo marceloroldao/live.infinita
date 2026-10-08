@@ -1,0 +1,3 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+008EP_COST_SHIFT_UNIT {"failures":0,"synthetic_unit_only":true}
