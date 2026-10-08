@@ -1,0 +1,25 @@
+test_censored_contacts_counted_without_cost_credit (test_adaptation_windows_008es.AdaptationWindowTests.test_censored_contacts_counted_without_cost_credit) ... ok
+test_classification_tampering_rejected (test_adaptation_windows_008es.AdaptationWindowTests.test_classification_tampering_rejected) ... ok
+test_duplicate_identity_rejected (test_adaptation_windows_008es.AdaptationWindowTests.test_duplicate_identity_rejected) ... ok
+test_invalid_capture_rejected (test_adaptation_windows_008es.AdaptationWindowTests.test_invalid_capture_rejected) ... ok
+test_invalid_physical_times_rejected (test_adaptation_windows_008es.AdaptationWindowTests.test_invalid_physical_times_rejected) ... ok
+test_physical_chronology_not_capture_order (test_adaptation_windows_008es.AdaptationWindowTests.test_physical_chronology_not_capture_order) ... ok
+test_same_side_preference_applied_is_separate_from_changed (test_adaptation_windows_008es.AdaptationWindowTests.test_same_side_preference_applied_is_separate_from_changed) ... ok
+test_ties_and_earlier_learning_do_not_convert (test_adaptation_windows_008es.AdaptationWindowTests.test_ties_and_earlier_learning_do_not_convert) ... ok
+test_unapplied_recommendation_is_not_learning_transition (test_adaptation_windows_008es.AdaptationWindowTests.test_unapplied_recommendation_is_not_learning_transition) ... ok
+test_windows_are_isolated_by_onset (test_adaptation_windows_008es.AdaptationWindowTests.test_windows_are_isolated_by_onset) ... ok
+test_actual_failure_and_unapplied_preference_are_separate (test_pattern_outcome_measurement_008el.OutcomeMeasurementTests.test_actual_failure_and_unapplied_preference_are_separate) ... ok
+test_bad_diagnostic_and_false_change_do_not_crash_or_credit (test_pattern_outcome_measurement_008el.OutcomeMeasurementTests.test_bad_diagnostic_and_false_change_do_not_crash_or_credit) ... ok
+test_changed_core_completed_is_observed_not_causal_gain (test_pattern_outcome_measurement_008el.OutcomeMeasurementTests.test_changed_core_completed_is_observed_not_causal_gain) ... ok
+test_duplicate_is_idempotent_but_changed_fact_is_invalid (test_pattern_outcome_measurement_008el.OutcomeMeasurementTests.test_duplicate_is_idempotent_but_changed_fact_is_invalid) ... ok
+test_exclusion_and_completion_conflict_is_not_hidden (test_pattern_outcome_measurement_008el.OutcomeMeasurementTests.test_exclusion_and_completion_conflict_is_not_hidden) ... ok
+test_exclusion_is_not_success_or_failure (test_pattern_outcome_measurement_008el.OutcomeMeasurementTests.test_exclusion_is_not_success_or_failure) ... ok
+test_exploration_is_never_learned_preference (test_pattern_outcome_measurement_008el.OutcomeMeasurementTests.test_exploration_is_never_learned_preference) ... ok
+test_missing_result_is_unresolved_not_failure (test_pattern_outcome_measurement_008el.OutcomeMeasurementTests.test_missing_result_is_unresolved_not_failure) ... ok
+test_same_side_is_not_counted_as_changed (test_pattern_outcome_measurement_008el.OutcomeMeasurementTests.test_same_side_is_not_counted_as_changed) ... ok
+test_scope_prediction_and_progress_are_validated (test_pattern_outcome_measurement_008el.OutcomeMeasurementTests.test_scope_prediction_and_progress_are_validated) ... ok
+
+----------------------------------------------------------------------
+Ran 20 tests in 0.017s
+
+OK

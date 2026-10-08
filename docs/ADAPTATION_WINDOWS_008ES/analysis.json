@@ -1,0 +1,240 @@
+{
+  "schema": "live-infinita-adaptation-window-analysis/v1",
+  "scope": "read_only_observational",
+  "counts": {
+    "exploration_completed": 42,
+    "perception_completed": 32,
+    "ram_same_completed": 4,
+    "ram_changed_completed": 3,
+    "ram_same_excluded": 1,
+    "core_same_physical_failure": 1,
+    "perception_excluded": 19,
+    "core_same_excluded": 4,
+    "core_same_completed": 7,
+    "core_changed_completed": 8,
+    "exploration_physical_failure": 2,
+    "exploration_excluded": 156,
+    "core_changed_excluded": 2
+  },
+  "exploration_exclusion_reasons": {
+    "observed_side_end": 148,
+    "new_contact_before_executed_exit": 8
+  },
+  "windows": [
+    {
+      "world_id": "nov-live-autonomous-001",
+      "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:126:126",
+      "onset_attempt_id": "7825fe4e75daa39887c2a374f4fa643a:8fa55db0c7518404e1acd750eb9d81a6:2:1",
+      "counts": {
+        "core_changed_completed": 1,
+        "core_changed_excluded": 1,
+        "exploration_completed": 2
+      },
+      "exclusion_reasons": {
+        "observed_side_end": 1
+      },
+      "observed_exploration_to_applied_learning": true,
+      "initial_completed_exploration_ids": [
+        "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:9",
+        "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:22"
+      ],
+      "later_applied_learned_ids": [
+        "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:53"
+      ],
+      "later_changed_choices": 1,
+      "initial_completed_exploration_mean_m": 10.00000320374965,
+      "later_completed_learned_mean_m": 16.5870578587055,
+      "descriptive_distance_delta_m": 6.58705465495585,
+      "sides_before": [
+        1,
+        -1
+      ],
+      "sides_after": [
+        -1
+      ]
+    },
+    {
+      "world_id": "nov-live-autonomous-001",
+      "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:252:252",
+      "onset_attempt_id": "94a08faa5356943664d303345844273a:dc3096ce8fe9810b9d309cd430499f2f:85:2004",
+      "counts": {
+        "perception_completed": 1,
+        "exploration_completed": 2
+      },
+      "exclusion_reasons": {},
+      "observed_exploration_to_applied_learning": false,
+      "initial_completed_exploration_ids": [],
+      "later_applied_learned_ids": [],
+      "later_changed_choices": 0
+    },
+    {
+      "world_id": "nov-live-autonomous-001",
+      "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:255:126",
+      "onset_attempt_id": "94a08faa5356943664d303345844273a:dc3096ce8fe9810b9d309cd430499f2f:97:2425",
+      "counts": {
+        "exploration_completed": 3
+      },
+      "exclusion_reasons": {},
+      "observed_exploration_to_applied_learning": false,
+      "initial_completed_exploration_ids": [],
+      "later_applied_learned_ids": [],
+      "later_changed_choices": 0
+    },
+    {
+      "world_id": "nov-live-autonomous-001",
+      "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:255:127",
+      "onset_attempt_id": "94a08faa5356943664d303345844273a:dc3096ce8fe9810b9d309cd430499f2f:97:2430",
+      "counts": {
+        "perception_excluded": 1,
+        "perception_completed": 1,
+        "exploration_completed": 2
+      },
+      "exclusion_reasons": {
+        "observed_side_end": 1
+      },
+      "observed_exploration_to_applied_learning": false,
+      "initial_completed_exploration_ids": [],
+      "later_applied_learned_ids": [],
+      "later_changed_choices": 0
+    },
+    {
+      "world_id": "nov-live-autonomous-001",
+      "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:255:190",
+      "onset_attempt_id": "94a08faa5356943664d303345844273a:dc3096ce8fe9810b9d309cd430499f2f:97:2483",
+      "counts": {
+        "exploration_completed": 2
+      },
+      "exclusion_reasons": {},
+      "observed_exploration_to_applied_learning": false,
+      "initial_completed_exploration_ids": [],
+      "later_applied_learned_ids": [],
+      "later_changed_choices": 0
+    },
+    {
+      "world_id": "nov-live-autonomous-001",
+      "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:255:222",
+      "onset_attempt_id": "7825fe4e75daa39887c2a374f4fa643a:8fa55db0c7518404e1acd750eb9d81a6:3:33",
+      "counts": {
+        "exploration_completed": 2
+      },
+      "exclusion_reasons": {},
+      "observed_exploration_to_applied_learning": false,
+      "initial_completed_exploration_ids": [],
+      "later_applied_learned_ids": [],
+      "later_changed_choices": 0
+    },
+    {
+      "world_id": "nov-live-autonomous-001",
+      "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:255:252",
+      "onset_attempt_id": "94a08faa5356943664d303345844273a:dc3096ce8fe9810b9d309cd430499f2f:97:2399",
+      "counts": {
+        "exploration_completed": 1
+      },
+      "exclusion_reasons": {},
+      "observed_exploration_to_applied_learning": false,
+      "initial_completed_exploration_ids": [],
+      "later_applied_learned_ids": [],
+      "later_changed_choices": 0
+    },
+    {
+      "world_id": "nov-live-autonomous-001",
+      "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:255:254",
+      "onset_attempt_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:8:256",
+      "counts": {
+        "ram_same_completed": 4,
+        "ram_changed_completed": 3,
+        "ram_same_excluded": 1,
+        "exploration_completed": 3
+      },
+      "exclusion_reasons": {
+        "new_contact_before_executed_exit": 1
+      },
+      "observed_exploration_to_applied_learning": true,
+      "initial_completed_exploration_ids": [
+        "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:10:258",
+        "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:10:260",
+        "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:10:263"
+      ],
+      "later_applied_learned_ids": [
+        "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:10:264",
+        "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:10:267",
+        "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:10:269",
+        "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:10:270",
+        "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:10:271",
+        "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:10:273",
+        "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:11:276"
+      ],
+      "later_changed_choices": 3,
+      "initial_completed_exploration_mean_m": 3.9941304524739603,
+      "later_completed_learned_mean_m": 3.8571364858320787,
+      "descriptive_distance_delta_m": -0.13699396664188157,
+      "sides_before": [
+        -1,
+        1,
+        -1
+      ],
+      "sides_after": [
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1
+      ]
+    },
+    {
+      "world_id": "nov-live-autonomous-001",
+      "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:255:254",
+      "onset_attempt_id": "94a08faa5356943664d303345844273a:dc3096ce8fe9810b9d309cd430499f2f:97:2438",
+      "counts": {
+        "core_same_physical_failure": 1,
+        "core_same_excluded": 4,
+        "core_same_completed": 5,
+        "core_changed_completed": 7,
+        "core_changed_excluded": 1
+      },
+      "exclusion_reasons": {
+        "observed_side_end": 3,
+        "new_contact_before_executed_exit": 2
+      },
+      "observed_exploration_to_applied_learning": false,
+      "initial_completed_exploration_ids": [],
+      "later_applied_learned_ids": [],
+      "later_changed_choices": 0
+    },
+    {
+      "world_id": "nov-live-autonomous-001",
+      "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:255:255",
+      "onset_attempt_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:26",
+      "counts": {
+        "exploration_completed": 3
+      },
+      "exclusion_reasons": {},
+      "observed_exploration_to_applied_learning": false,
+      "initial_completed_exploration_ids": [],
+      "later_applied_learned_ids": [],
+      "later_changed_choices": 0
+    },
+    {
+      "world_id": "nov-live-autonomous-001",
+      "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:255:255",
+      "onset_attempt_id": "94a08faa5356943664d303345844273a:dc3096ce8fe9810b9d309cd430499f2f:97:2379",
+      "counts": {
+        "perception_completed": 1
+      },
+      "exclusion_reasons": {},
+      "observed_exploration_to_applied_learning": false,
+      "initial_completed_exploration_ids": [],
+      "later_applied_learned_ids": [],
+      "later_changed_choices": 0
+    }
+  ],
+  "window_count": 11,
+  "observed_conversion_windows": 2,
+  "chronology_basis": "physical outcome ended_at_unix; capture array order is not assumed chronological",
+  "performance_advantage_demonstrated": false,
+  "limit": "Only completion timestamps are available; later completion does not establish a later decision start or causal use of the preceding exploration. Same sensor signature and onset do not identify the same obstacle geometry. Means include completed contacts only; failures and excluded contacts remain counted, with unknown censored costs. No causal advantage or acquisition-cost savings can be inferred.",
+  "capture_since": "Thu 2026-10-08 06:54:07 UTC",
+  "capture_observed_at_utc": "2026-10-08T07:25:49.146884+00:00"
+}
