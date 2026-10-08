@@ -1,0 +1,172 @@
+{
+  "active": true,
+  "active_attempt": {
+    "blocked_attempts": 0,
+    "causal_memoria_steps": 29,
+    "causal_ram_steps": 77,
+    "completed_steps": 1442,
+    "current": [
+      -685.558532714844,
+      -359.431213378906
+    ],
+    "distance_m": 1442.18730153516,
+    "duration_monotonic_ms": 558598,
+    "goal": [
+      -683.202758789062,
+      -365.567535400391
+    ],
+    "goal_id": "2cd7cfa782c2a4d727a988b92bd59775:2",
+    "initial_remaining_m": 620.490478515625,
+    "learning_evidence": false,
+    "quality_eligible": true,
+    "remaining_m": 6.57298421859741,
+    "schema": "live-infinita-nov-journey-attempt/v1",
+    "start": [
+      -160.0,
+      -32.0
+    ],
+    "started_at_unix": 1791483214.14504,
+    "started_monotonic_ms": 46137,
+    "world_id": "nov-live-autonomous-001",
+    "world_write_authority": false
+  },
+  "arrivals": 1,
+  "blocked_attempts": 0,
+  "causal_memoria_steps": 29,
+  "causal_ram_steps": 77,
+  "completed_steps": 1537,
+  "distance_m": 1442.18730153516,
+  "interruptions": 0,
+  "last_reason": "",
+  "motion_state": "walking",
+  "observed_at_unix": 1791483772.74354,
+  "patterns": {
+    "changed_initial_decisions": 14,
+    "core_changed_initial_decisions": 14,
+    "cost_shift_enabled": true,
+    "decision_reasons": {
+      "cost_shift_exploration": 3,
+      "insufficient_margin": 1,
+      "insufficient_samples": 18,
+      "preferred_side": 40
+    },
+    "enabled": true,
+    "exclusions": {},
+    "exit_direction_enabled": true,
+    "exploration_decisions": 11,
+    "last_evaluation": {
+      "alternatives": {
+        "-1": {
+          "errors": 0,
+          "observation_ids": [
+            "structural-event:b1fbb3d17bbedbf8856268d06a2011c3e6e0dff1",
+            "structural-event:e6dfc39b9a81c78882c612885a288401cd7a3a45"
+          ],
+          "samples": 2,
+          "score": 3.66666216154894
+        },
+        "1": {
+          "errors": 0,
+          "observation_ids": [
+            "structural-event:e29ea6f68f6f1d6dbc2cd13229fcb67f0353b7cb",
+            "structural-event:394c5ec2739157de77df755098f36d2e7db4f168",
+            "structural-event:cc020b6a978572a7060535479b1cc1dae0c58403",
+            "structural-event:5422cef64e49e9c37177adeeb0487c0968150b57"
+          ],
+          "samples": 6,
+          "score": 1.2206330349048
+        }
+      },
+      "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:255:126",
+      "cost_shift": {
+        "basis": "measured_cost_increase",
+        "factor": 1.5,
+        "fresh_samples": 8,
+        "minimum_rise_cost_units": 1.0,
+        "onset_attempt_id": "02a61c7a6ec615d9c92231bf1bcf02bc:39ae610156f07e5eed2b08f94d2b947b:50:577",
+        "retained_raw_samples": 12
+      },
+      "reason": "preferred_side",
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [
+              "structural-event:b1fbb3d17bbedbf8856268d06a2011c3e6e0dff1",
+              "structural-event:e6dfc39b9a81c78882c612885a288401cd7a3a45"
+            ],
+            "samples": 2,
+            "score": 3.66666216154894
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [
+              "structural-event:e29ea6f68f6f1d6dbc2cd13229fcb67f0353b7cb",
+              "structural-event:394c5ec2739157de77df755098f36d2e7db4f168",
+              "structural-event:cc020b6a978572a7060535479b1cc1dae0c58403",
+              "structural-event:5422cef64e49e9c37177adeeb0487c0968150b57"
+            ],
+            "samples": 6,
+            "score": 1.2206330349048
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:255:126",
+        "observation_ids": [
+          "structural-event:e29ea6f68f6f1d6dbc2cd13229fcb67f0353b7cb",
+          "structural-event:394c5ec2739157de77df755098f36d2e7db4f168",
+          "structural-event:cc020b6a978572a7060535479b1cc1dae0c58403",
+          "structural-event:5422cef64e49e9c37177adeeb0487c0968150b57"
+        ],
+        "side": 1,
+        "source": "recovered-pattern-evidence"
+      },
+      "required_gap": 0.733332432309788,
+      "score_gap": 2.44602912664414
+    },
+    "local_turn_continuity_enabled": true,
+    "observed_outcomes": 62,
+    "pending_contacts": 0,
+    "ram_records": 512,
+    "recovered_records": 512
+  },
+  "recent_attempts": [
+    {
+      "blocked_attempts": 0,
+      "causal_memoria_steps": 0,
+      "causal_ram_steps": 0,
+      "completed_steps": 95,
+      "current": [
+        -160.0,
+        -32.0
+      ],
+      "distance_m": 94.4474468901753,
+      "duration_monotonic_ms": 40033,
+      "ended_at_unix": 1791483213.80572,
+      "ended_monotonic_ms": 45797,
+      "goal": [
+        -160.0,
+        -32.0
+      ],
+      "goal_id": "2cd7cfa782c2a4d727a988b92bd59775:1",
+      "initial_remaining_m": 76.4193344116211,
+      "learning_evidence": false,
+      "quality_eligible": true,
+      "remaining_m": 0.0,
+      "schema": "live-infinita-nov-journey-attempt/v1",
+      "start": [
+        -236.251373291016,
+        -37.0638809204102
+      ],
+      "started_at_unix": 1791483173.77183,
+      "started_monotonic_ms": 5764,
+      "termination": "arrived",
+      "world_id": "nov-live-autonomous-001",
+      "world_write_authority": false
+    }
+  ],
+  "recoveries": 0,
+  "result": "chegou: 94.4 m",
+  "schema": "live-infinita-nov-learning-status/v1",
+  "world_id": "nov-live-autonomous-001"
+}

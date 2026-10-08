@@ -1,0 +1,177 @@
+{
+  "scope": "bounded recent native episodes filtered to current renderer start",
+  "since_unix": 1791483167,
+  "actions": 500,
+  "proposals": [
+    {
+      "decision_serial": 1058,
+      "contact_serial": 39,
+      "ended_at_unix": 1791483564.16823,
+      "progress_m": 0.999995291233063,
+      "outcome": "step_reached"
+    },
+    {
+      "decision_serial": 1070,
+      "contact_serial": 40,
+      "ended_at_unix": 1791483566.6739,
+      "progress_m": 0.9835738207763391,
+      "outcome": "step_reached"
+    },
+    {
+      "decision_serial": 1083,
+      "contact_serial": 41,
+      "ended_at_unix": 1791483570.56728,
+      "progress_m": 0.934694886207581,
+      "outcome": "step_reached"
+    },
+    {
+      "decision_serial": 1115,
+      "contact_serial": 42,
+      "ended_at_unix": 1791483586.89408,
+      "progress_m": 0.9979404944961717,
+      "outcome": "step_reached"
+    },
+    {
+      "decision_serial": 1156,
+      "contact_serial": 43,
+      "ended_at_unix": 1791483606.80525,
+      "progress_m": 0.999959588050842,
+      "outcome": "step_reached"
+    },
+    {
+      "decision_serial": 1159,
+      "contact_serial": 44,
+      "ended_at_unix": 1791483607.63834,
+      "progress_m": 0.999509751796722,
+      "outcome": "step_reached"
+    },
+    {
+      "decision_serial": 1173,
+      "contact_serial": 45,
+      "ended_at_unix": 1791483612.44263,
+      "progress_m": 0.7994241377452326,
+      "outcome": "step_reached"
+    },
+    {
+      "decision_serial": 1220,
+      "contact_serial": 46,
+      "ended_at_unix": 1791483625.73561,
+      "progress_m": 0.9726851436574395,
+      "outcome": "step_reached"
+    },
+    {
+      "decision_serial": 1233,
+      "contact_serial": 47,
+      "ended_at_unix": 1791483633.48305,
+      "progress_m": 0.9990959339851391,
+      "outcome": "step_reached"
+    },
+    {
+      "decision_serial": 1252,
+      "contact_serial": 48,
+      "ended_at_unix": 1791483649.64633,
+      "progress_m": 0.982211172580719,
+      "outcome": "step_reached"
+    },
+    {
+      "decision_serial": 1260,
+      "contact_serial": 49,
+      "ended_at_unix": 1791483655.7105,
+      "progress_m": 0.992953836917877,
+      "outcome": "step_reached"
+    },
+    {
+      "decision_serial": 1270,
+      "contact_serial": 50,
+      "ended_at_unix": 1791483659.18205,
+      "progress_m": 0.997624246676694,
+      "outcome": "step_reached"
+    },
+    {
+      "decision_serial": 1296,
+      "contact_serial": 51,
+      "ended_at_unix": 1791483669.84862,
+      "progress_m": 0.952108442783356,
+      "outcome": "step_reached"
+    },
+    {
+      "decision_serial": 1305,
+      "contact_serial": 52,
+      "ended_at_unix": 1791483673.09455,
+      "progress_m": 0.997086048126221,
+      "outcome": "step_reached"
+    },
+    {
+      "decision_serial": 1329,
+      "contact_serial": 53,
+      "ended_at_unix": 1791483678.40015,
+      "progress_m": 0.8545519602472765,
+      "outcome": "step_reached"
+    },
+    {
+      "decision_serial": 1346,
+      "contact_serial": 54,
+      "ended_at_unix": 1791483681.82303,
+      "progress_m": 0.8574457793289022,
+      "outcome": "step_reached"
+    },
+    {
+      "decision_serial": 1369,
+      "contact_serial": 55,
+      "ended_at_unix": 1791483687.95383,
+      "progress_m": 0.9288232577907104,
+      "outcome": "step_reached"
+    },
+    {
+      "decision_serial": 1389,
+      "contact_serial": 56,
+      "ended_at_unix": 1791483697.11491,
+      "progress_m": 1.0733080737413299,
+      "outcome": "step_reached"
+    },
+    {
+      "decision_serial": 1400,
+      "contact_serial": 57,
+      "ended_at_unix": 1791483707.43031,
+      "progress_m": 0.8641412885851623,
+      "outcome": "step_reached"
+    },
+    {
+      "decision_serial": 1405,
+      "contact_serial": 58,
+      "ended_at_unix": 1791483711.69072,
+      "progress_m": 0.999783955524159,
+      "outcome": "step_reached"
+    },
+    {
+      "decision_serial": 1413,
+      "contact_serial": 59,
+      "ended_at_unix": 1791483717.10935,
+      "progress_m": 0.9930729021897591,
+      "outcome": "step_reached"
+    },
+    {
+      "decision_serial": 1426,
+      "contact_serial": 60,
+      "ended_at_unix": 1791483725.54091,
+      "progress_m": 0.818396389484406,
+      "outcome": "step_reached"
+    },
+    {
+      "decision_serial": 1449,
+      "contact_serial": 61,
+      "ended_at_unix": 1791483731.92093,
+      "progress_m": 0.990382671356201,
+      "outcome": "step_reached"
+    },
+    {
+      "decision_serial": 1516,
+      "contact_serial": 62,
+      "ended_at_unix": 1791483758.90113,
+      "progress_m": 0.9833948870327527,
+      "outcome": "step_reached"
+    }
+  ],
+  "receding_executed_proposals": 0,
+  "performance_advantage_demonstrated": false
+}
