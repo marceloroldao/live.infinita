@@ -1,0 +1,12 @@
+{
+  "traversals": 30,
+  "all_arrived": true,
+  "collisions": 0,
+  "rescues": 0,
+  "route_builds": 0,
+  "all_three_flags_checked_in_every_arm": true,
+  "break_even_verified_against_observed_prefix": 6,
+  "physical_facts": 4,
+  "recovered_entries": 4,
+  "python_compiled": true
+}

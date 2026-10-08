@@ -1,0 +1,2009 @@
+{
+  "schema": "live-infinita-acquisition-cost/v1",
+  "sdk_commit": "dfd87c995b50c49b45a9d5dd4c43cce456983d4f",
+  "flags_identical_in_both_arms": {
+    "cost_shift": true,
+    "contact_turns": true,
+    "exit_direction": true
+  },
+  "training": {
+    "failures": 0,
+    "runs": [
+      {
+        "arm": "training_perception_0",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 234.325232431293,
+        "recommendation": {},
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 70.3,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "cost_shift_enabled": true,
+          "decision_reasons": {},
+          "enabled": false,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {},
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 0,
+          "pending_contacts": 0,
+          "ram_records": 0,
+          "recovered_records": 0
+        },
+        "ticks": 703
+      },
+      {
+        "arm": "training_perception_1",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 234.325232431293,
+        "recommendation": {},
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 70.3,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "cost_shift_enabled": true,
+          "decision_reasons": {},
+          "enabled": false,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {},
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 0,
+          "pending_contacts": 0,
+          "ram_records": 0,
+          "recovered_records": 0
+        },
+        "ticks": 703
+      },
+      {
+        "arm": "training_perception_2",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 234.325232431293,
+        "recommendation": {},
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 70.3,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "cost_shift_enabled": true,
+          "decision_reasons": {},
+          "enabled": false,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {},
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 0,
+          "pending_contacts": 0,
+          "ram_records": 0,
+          "recovered_records": 0
+        },
+        "ticks": 703
+      },
+      {
+        "arm": "training_perception_3",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 234.325232431293,
+        "recommendation": {},
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 70.3,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "cost_shift_enabled": true,
+          "decision_reasons": {},
+          "enabled": false,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {},
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 0,
+          "pending_contacts": 0,
+          "ram_records": 0,
+          "recovered_records": 0
+        },
+        "ticks": 703
+      },
+      {
+        "arm": "training_memory_0",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 234.325232431293,
+        "recommendation": {},
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 70.3,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "cost_shift_enabled": true,
+          "decision_reasons": {
+            "insufficient_samples": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 0
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 0
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "reason": "insufficient_samples",
+            "recommendation": {}
+          },
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 1,
+          "recovered_records": 0
+        },
+        "ticks": 703
+      },
+      {
+        "arm": "training_memory_1",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 106.000054493546,
+        "recommendation": {
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": -1,
+          "source": "pattern-exploration"
+        },
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 31.8,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "cost_shift_enabled": true,
+          "decision_reasons": {
+            "insufficient_samples": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 1,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 0
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 1,
+                "score": 60.3333329906067
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "reason": "insufficient_samples",
+            "recommendation": {}
+          },
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 2,
+          "recovered_records": 0
+        },
+        "ticks": 318
+      },
+      {
+        "arm": "training_memory_2",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 234.325232431293,
+        "recommendation": {
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": 1,
+          "source": "pattern-exploration"
+        },
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 70.3,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "cost_shift_enabled": true,
+          "decision_reasons": {
+            "insufficient_samples": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 1,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 1,
+                "score": 17.6666670342286
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 1,
+                "score": 60.3333329906067
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "reason": "insufficient_samples",
+            "recommendation": {}
+          },
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 3,
+          "recovered_records": 0
+        },
+        "ticks": 703
+      },
+      {
+        "arm": "training_memory_3",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 106.000054493546,
+        "recommendation": {
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": -1,
+          "source": "pattern-exploration"
+        },
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 31.8,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "cost_shift_enabled": true,
+          "decision_reasons": {
+            "insufficient_samples": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 1,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 1,
+                "score": 17.6666670342286
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 60.3333329906067
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "reason": "insufficient_samples",
+            "recommendation": {}
+          },
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 4,
+          "recovered_records": 0
+        },
+        "ticks": 318
+      }
+    ]
+  },
+  "pairs": [
+    {
+      "scenario": "stable",
+      "index": 0,
+      "perception": {
+        "arm": "stable_perception_0",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 237.939658373594,
+        "recommendation": {},
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 71.4,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "cost_shift_enabled": true,
+          "decision_reasons": {},
+          "enabled": false,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {},
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 0,
+          "pending_contacts": 0,
+          "ram_records": 0,
+          "recovered_records": 0
+        },
+        "ticks": 714
+      },
+      "core": {
+        "arm": "stable_core_0",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 107.342135772109,
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+              ],
+              "samples": 2,
+              "score": 17.6666670342286
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:715649242327419596fd554f4b3c787fb87b07fe",
+                "structural-event:60742061e123ccbec41185907104b9160b7a53c3"
+              ],
+              "samples": 2,
+              "score": 60.3333329906067
+            }
+          },
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "observation_ids": [
+            "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+            "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+          ],
+          "side": -1,
+          "source": "recovered-pattern-evidence"
+        },
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 32.2,
+        "status": {
+          "changed_initial_decisions": 1,
+          "core_changed_initial_decisions": 1,
+          "cost_shift_enabled": true,
+          "decision_reasons": {
+            "preferred_side": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [
+                  "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                  "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+                ],
+                "samples": 2,
+                "score": 17.6666670342286
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [
+                  "structural-event:715649242327419596fd554f4b3c787fb87b07fe",
+                  "structural-event:60742061e123ccbec41185907104b9160b7a53c3"
+                ],
+                "samples": 2,
+                "score": 60.3333329906067
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "reason": "preferred_side",
+            "recommendation": {
+              "alternatives": {
+                "-1": {
+                  "errors": 0,
+                  "observation_ids": [
+                    "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                    "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+                  ],
+                  "samples": 2,
+                  "score": 17.6666670342286
+                },
+                "1": {
+                  "errors": 0,
+                  "observation_ids": [
+                    "structural-event:715649242327419596fd554f4b3c787fb87b07fe",
+                    "structural-event:60742061e123ccbec41185907104b9160b7a53c3"
+                  ],
+                  "samples": 2,
+                  "score": 60.3333329906067
+                }
+              },
+              "contains_prediction": true,
+              "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+              "observation_ids": [
+                "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+              ],
+              "side": -1,
+              "source": "recovered-pattern-evidence"
+            },
+            "required_gap": 12.0666665981213,
+            "score_gap": 42.666665956378
+          },
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 1,
+          "recovered_records": 4
+        },
+        "ticks": 322
+      },
+      "saving_m": 130.597522601485,
+      "saving_simulated_s": 39.2
+    },
+    {
+      "scenario": "stable",
+      "index": 1,
+      "perception": {
+        "arm": "stable_perception_1",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 237.939658373594,
+        "recommendation": {},
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 71.4,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "cost_shift_enabled": true,
+          "decision_reasons": {},
+          "enabled": false,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {},
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 0,
+          "pending_contacts": 0,
+          "ram_records": 0,
+          "recovered_records": 0
+        },
+        "ticks": 714
+      },
+      "core": {
+        "arm": "stable_core_1",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 107.342135772109,
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+              ],
+              "samples": 2,
+              "score": 17.6666670342286
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:715649242327419596fd554f4b3c787fb87b07fe",
+                "structural-event:60742061e123ccbec41185907104b9160b7a53c3"
+              ],
+              "samples": 2,
+              "score": 60.3333329906067
+            }
+          },
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "observation_ids": [
+            "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+            "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+          ],
+          "side": -1,
+          "source": "recovered-pattern-evidence"
+        },
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 32.2,
+        "status": {
+          "changed_initial_decisions": 1,
+          "core_changed_initial_decisions": 1,
+          "cost_shift_enabled": true,
+          "decision_reasons": {
+            "preferred_side": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [
+                  "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                  "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+                ],
+                "samples": 2,
+                "score": 17.6666670342286
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [
+                  "structural-event:715649242327419596fd554f4b3c787fb87b07fe",
+                  "structural-event:60742061e123ccbec41185907104b9160b7a53c3"
+                ],
+                "samples": 2,
+                "score": 60.3333329906067
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "reason": "preferred_side",
+            "recommendation": {
+              "alternatives": {
+                "-1": {
+                  "errors": 0,
+                  "observation_ids": [
+                    "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                    "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+                  ],
+                  "samples": 2,
+                  "score": 17.6666670342286
+                },
+                "1": {
+                  "errors": 0,
+                  "observation_ids": [
+                    "structural-event:715649242327419596fd554f4b3c787fb87b07fe",
+                    "structural-event:60742061e123ccbec41185907104b9160b7a53c3"
+                  ],
+                  "samples": 2,
+                  "score": 60.3333329906067
+                }
+              },
+              "contains_prediction": true,
+              "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+              "observation_ids": [
+                "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+              ],
+              "side": -1,
+              "source": "recovered-pattern-evidence"
+            },
+            "required_gap": 12.0666665981213,
+            "score_gap": 42.666665956378
+          },
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 1,
+          "recovered_records": 4
+        },
+        "ticks": 322
+      },
+      "saving_m": 130.597522601485,
+      "saving_simulated_s": 39.2
+    },
+    {
+      "scenario": "stable",
+      "index": 2,
+      "perception": {
+        "arm": "stable_perception_2",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 237.939658373594,
+        "recommendation": {},
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 71.4,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "cost_shift_enabled": true,
+          "decision_reasons": {},
+          "enabled": false,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {},
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 0,
+          "pending_contacts": 0,
+          "ram_records": 0,
+          "recovered_records": 0
+        },
+        "ticks": 714
+      },
+      "core": {
+        "arm": "stable_core_2",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 107.342135772109,
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+              ],
+              "samples": 2,
+              "score": 17.6666670342286
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:715649242327419596fd554f4b3c787fb87b07fe",
+                "structural-event:60742061e123ccbec41185907104b9160b7a53c3"
+              ],
+              "samples": 2,
+              "score": 60.3333329906067
+            }
+          },
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "observation_ids": [
+            "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+            "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+          ],
+          "side": -1,
+          "source": "recovered-pattern-evidence"
+        },
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 32.2,
+        "status": {
+          "changed_initial_decisions": 1,
+          "core_changed_initial_decisions": 1,
+          "cost_shift_enabled": true,
+          "decision_reasons": {
+            "preferred_side": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [
+                  "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                  "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+                ],
+                "samples": 2,
+                "score": 17.6666670342286
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [
+                  "structural-event:715649242327419596fd554f4b3c787fb87b07fe",
+                  "structural-event:60742061e123ccbec41185907104b9160b7a53c3"
+                ],
+                "samples": 2,
+                "score": 60.3333329906067
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "reason": "preferred_side",
+            "recommendation": {
+              "alternatives": {
+                "-1": {
+                  "errors": 0,
+                  "observation_ids": [
+                    "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                    "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+                  ],
+                  "samples": 2,
+                  "score": 17.6666670342286
+                },
+                "1": {
+                  "errors": 0,
+                  "observation_ids": [
+                    "structural-event:715649242327419596fd554f4b3c787fb87b07fe",
+                    "structural-event:60742061e123ccbec41185907104b9160b7a53c3"
+                  ],
+                  "samples": 2,
+                  "score": 60.3333329906067
+                }
+              },
+              "contains_prediction": true,
+              "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+              "observation_ids": [
+                "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+              ],
+              "side": -1,
+              "source": "recovered-pattern-evidence"
+            },
+            "required_gap": 12.0666665981213,
+            "score_gap": 42.666665956378
+          },
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 1,
+          "recovered_records": 4
+        },
+        "ticks": 322
+      },
+      "saving_m": 130.597522601485,
+      "saving_simulated_s": 39.2
+    },
+    {
+      "scenario": "stable",
+      "index": 3,
+      "perception": {
+        "arm": "stable_perception_3",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 237.939658373594,
+        "recommendation": {},
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 71.4,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "cost_shift_enabled": true,
+          "decision_reasons": {},
+          "enabled": false,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {},
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 0,
+          "pending_contacts": 0,
+          "ram_records": 0,
+          "recovered_records": 0
+        },
+        "ticks": 714
+      },
+      "core": {
+        "arm": "stable_core_3",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 107.342135772109,
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+              ],
+              "samples": 2,
+              "score": 17.6666670342286
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:715649242327419596fd554f4b3c787fb87b07fe",
+                "structural-event:60742061e123ccbec41185907104b9160b7a53c3"
+              ],
+              "samples": 2,
+              "score": 60.3333329906067
+            }
+          },
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "observation_ids": [
+            "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+            "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+          ],
+          "side": -1,
+          "source": "recovered-pattern-evidence"
+        },
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 32.2,
+        "status": {
+          "changed_initial_decisions": 1,
+          "core_changed_initial_decisions": 1,
+          "cost_shift_enabled": true,
+          "decision_reasons": {
+            "preferred_side": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [
+                  "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                  "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+                ],
+                "samples": 2,
+                "score": 17.6666670342286
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [
+                  "structural-event:715649242327419596fd554f4b3c787fb87b07fe",
+                  "structural-event:60742061e123ccbec41185907104b9160b7a53c3"
+                ],
+                "samples": 2,
+                "score": 60.3333329906067
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "reason": "preferred_side",
+            "recommendation": {
+              "alternatives": {
+                "-1": {
+                  "errors": 0,
+                  "observation_ids": [
+                    "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                    "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+                  ],
+                  "samples": 2,
+                  "score": 17.6666670342286
+                },
+                "1": {
+                  "errors": 0,
+                  "observation_ids": [
+                    "structural-event:715649242327419596fd554f4b3c787fb87b07fe",
+                    "structural-event:60742061e123ccbec41185907104b9160b7a53c3"
+                  ],
+                  "samples": 2,
+                  "score": 60.3333329906067
+                }
+              },
+              "contains_prediction": true,
+              "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+              "observation_ids": [
+                "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+              ],
+              "side": -1,
+              "source": "recovered-pattern-evidence"
+            },
+            "required_gap": 12.0666665981213,
+            "score_gap": 42.666665956378
+          },
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 1,
+          "recovered_records": 4
+        },
+        "ticks": 322
+      },
+      "saving_m": 130.597522601485,
+      "saving_simulated_s": 39.2
+    },
+    {
+      "scenario": "stable",
+      "index": 4,
+      "perception": {
+        "arm": "stable_perception_4",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 237.939658373594,
+        "recommendation": {},
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 71.4,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "cost_shift_enabled": true,
+          "decision_reasons": {},
+          "enabled": false,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {},
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 0,
+          "pending_contacts": 0,
+          "ram_records": 0,
+          "recovered_records": 0
+        },
+        "ticks": 714
+      },
+      "core": {
+        "arm": "stable_core_4",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 107.342135772109,
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+              ],
+              "samples": 2,
+              "score": 17.6666670342286
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:715649242327419596fd554f4b3c787fb87b07fe",
+                "structural-event:60742061e123ccbec41185907104b9160b7a53c3"
+              ],
+              "samples": 2,
+              "score": 60.3333329906067
+            }
+          },
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "observation_ids": [
+            "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+            "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+          ],
+          "side": -1,
+          "source": "recovered-pattern-evidence"
+        },
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 32.2,
+        "status": {
+          "changed_initial_decisions": 1,
+          "core_changed_initial_decisions": 1,
+          "cost_shift_enabled": true,
+          "decision_reasons": {
+            "preferred_side": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [
+                  "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                  "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+                ],
+                "samples": 2,
+                "score": 17.6666670342286
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [
+                  "structural-event:715649242327419596fd554f4b3c787fb87b07fe",
+                  "structural-event:60742061e123ccbec41185907104b9160b7a53c3"
+                ],
+                "samples": 2,
+                "score": 60.3333329906067
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "reason": "preferred_side",
+            "recommendation": {
+              "alternatives": {
+                "-1": {
+                  "errors": 0,
+                  "observation_ids": [
+                    "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                    "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+                  ],
+                  "samples": 2,
+                  "score": 17.6666670342286
+                },
+                "1": {
+                  "errors": 0,
+                  "observation_ids": [
+                    "structural-event:715649242327419596fd554f4b3c787fb87b07fe",
+                    "structural-event:60742061e123ccbec41185907104b9160b7a53c3"
+                  ],
+                  "samples": 2,
+                  "score": 60.3333329906067
+                }
+              },
+              "contains_prediction": true,
+              "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+              "observation_ids": [
+                "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+              ],
+              "side": -1,
+              "source": "recovered-pattern-evidence"
+            },
+            "required_gap": 12.0666665981213,
+            "score_gap": 42.666665956378
+          },
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 1,
+          "recovered_records": 4
+        },
+        "ticks": 322
+      },
+      "saving_m": 130.597522601485,
+      "saving_simulated_s": 39.2
+    },
+    {
+      "scenario": "stable",
+      "index": 5,
+      "perception": {
+        "arm": "stable_perception_5",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 237.939658373594,
+        "recommendation": {},
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 71.4,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "cost_shift_enabled": true,
+          "decision_reasons": {},
+          "enabled": false,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {},
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 0,
+          "pending_contacts": 0,
+          "ram_records": 0,
+          "recovered_records": 0
+        },
+        "ticks": 714
+      },
+      "core": {
+        "arm": "stable_core_5",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 107.342135772109,
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+              ],
+              "samples": 2,
+              "score": 17.6666670342286
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:715649242327419596fd554f4b3c787fb87b07fe",
+                "structural-event:60742061e123ccbec41185907104b9160b7a53c3"
+              ],
+              "samples": 2,
+              "score": 60.3333329906067
+            }
+          },
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "observation_ids": [
+            "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+            "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+          ],
+          "side": -1,
+          "source": "recovered-pattern-evidence"
+        },
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 32.2,
+        "status": {
+          "changed_initial_decisions": 1,
+          "core_changed_initial_decisions": 1,
+          "cost_shift_enabled": true,
+          "decision_reasons": {
+            "preferred_side": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [
+                  "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                  "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+                ],
+                "samples": 2,
+                "score": 17.6666670342286
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [
+                  "structural-event:715649242327419596fd554f4b3c787fb87b07fe",
+                  "structural-event:60742061e123ccbec41185907104b9160b7a53c3"
+                ],
+                "samples": 2,
+                "score": 60.3333329906067
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "reason": "preferred_side",
+            "recommendation": {
+              "alternatives": {
+                "-1": {
+                  "errors": 0,
+                  "observation_ids": [
+                    "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                    "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+                  ],
+                  "samples": 2,
+                  "score": 17.6666670342286
+                },
+                "1": {
+                  "errors": 0,
+                  "observation_ids": [
+                    "structural-event:715649242327419596fd554f4b3c787fb87b07fe",
+                    "structural-event:60742061e123ccbec41185907104b9160b7a53c3"
+                  ],
+                  "samples": 2,
+                  "score": 60.3333329906067
+                }
+              },
+              "contains_prediction": true,
+              "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+              "observation_ids": [
+                "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+              ],
+              "side": -1,
+              "source": "recovered-pattern-evidence"
+            },
+            "required_gap": 12.0666665981213,
+            "score_gap": 42.666665956378
+          },
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 1,
+          "recovered_records": 4
+        },
+        "ticks": 322
+      },
+      "saving_m": 130.597522601485,
+      "saving_simulated_s": 39.2
+    },
+    {
+      "scenario": "stable",
+      "index": 6,
+      "perception": {
+        "arm": "stable_perception_6",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 237.939658373594,
+        "recommendation": {},
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 71.4,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "cost_shift_enabled": true,
+          "decision_reasons": {},
+          "enabled": false,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {},
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 0,
+          "pending_contacts": 0,
+          "ram_records": 0,
+          "recovered_records": 0
+        },
+        "ticks": 714
+      },
+      "core": {
+        "arm": "stable_core_6",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 107.342135772109,
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+              ],
+              "samples": 2,
+              "score": 17.6666670342286
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:715649242327419596fd554f4b3c787fb87b07fe",
+                "structural-event:60742061e123ccbec41185907104b9160b7a53c3"
+              ],
+              "samples": 2,
+              "score": 60.3333329906067
+            }
+          },
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "observation_ids": [
+            "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+            "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+          ],
+          "side": -1,
+          "source": "recovered-pattern-evidence"
+        },
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 32.2,
+        "status": {
+          "changed_initial_decisions": 1,
+          "core_changed_initial_decisions": 1,
+          "cost_shift_enabled": true,
+          "decision_reasons": {
+            "preferred_side": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [
+                  "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                  "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+                ],
+                "samples": 2,
+                "score": 17.6666670342286
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [
+                  "structural-event:715649242327419596fd554f4b3c787fb87b07fe",
+                  "structural-event:60742061e123ccbec41185907104b9160b7a53c3"
+                ],
+                "samples": 2,
+                "score": 60.3333329906067
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "reason": "preferred_side",
+            "recommendation": {
+              "alternatives": {
+                "-1": {
+                  "errors": 0,
+                  "observation_ids": [
+                    "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                    "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+                  ],
+                  "samples": 2,
+                  "score": 17.6666670342286
+                },
+                "1": {
+                  "errors": 0,
+                  "observation_ids": [
+                    "structural-event:715649242327419596fd554f4b3c787fb87b07fe",
+                    "structural-event:60742061e123ccbec41185907104b9160b7a53c3"
+                  ],
+                  "samples": 2,
+                  "score": 60.3333329906067
+                }
+              },
+              "contains_prediction": true,
+              "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+              "observation_ids": [
+                "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+              ],
+              "side": -1,
+              "source": "recovered-pattern-evidence"
+            },
+            "required_gap": 12.0666665981213,
+            "score_gap": 42.666665956378
+          },
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 1,
+          "recovered_records": 4
+        },
+        "ticks": 322
+      },
+      "saving_m": 130.597522601485,
+      "saving_simulated_s": 39.2
+    },
+    {
+      "scenario": "stable",
+      "index": 7,
+      "perception": {
+        "arm": "stable_perception_7",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 237.939658373594,
+        "recommendation": {},
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 71.4,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "cost_shift_enabled": true,
+          "decision_reasons": {},
+          "enabled": false,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {},
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 0,
+          "pending_contacts": 0,
+          "ram_records": 0,
+          "recovered_records": 0
+        },
+        "ticks": 714
+      },
+      "core": {
+        "arm": "stable_core_7",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 107.342135772109,
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+              ],
+              "samples": 2,
+              "score": 17.6666670342286
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:715649242327419596fd554f4b3c787fb87b07fe",
+                "structural-event:60742061e123ccbec41185907104b9160b7a53c3"
+              ],
+              "samples": 2,
+              "score": 60.3333329906067
+            }
+          },
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "observation_ids": [
+            "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+            "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+          ],
+          "side": -1,
+          "source": "recovered-pattern-evidence"
+        },
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 32.2,
+        "status": {
+          "changed_initial_decisions": 1,
+          "core_changed_initial_decisions": 1,
+          "cost_shift_enabled": true,
+          "decision_reasons": {
+            "preferred_side": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [
+                  "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                  "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+                ],
+                "samples": 2,
+                "score": 17.6666670342286
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [
+                  "structural-event:715649242327419596fd554f4b3c787fb87b07fe",
+                  "structural-event:60742061e123ccbec41185907104b9160b7a53c3"
+                ],
+                "samples": 2,
+                "score": 60.3333329906067
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "reason": "preferred_side",
+            "recommendation": {
+              "alternatives": {
+                "-1": {
+                  "errors": 0,
+                  "observation_ids": [
+                    "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                    "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+                  ],
+                  "samples": 2,
+                  "score": 17.6666670342286
+                },
+                "1": {
+                  "errors": 0,
+                  "observation_ids": [
+                    "structural-event:715649242327419596fd554f4b3c787fb87b07fe",
+                    "structural-event:60742061e123ccbec41185907104b9160b7a53c3"
+                  ],
+                  "samples": 2,
+                  "score": 60.3333329906067
+                }
+              },
+              "contains_prediction": true,
+              "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+              "observation_ids": [
+                "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+              ],
+              "side": -1,
+              "source": "recovered-pattern-evidence"
+            },
+            "required_gap": 12.0666665981213,
+            "score_gap": 42.666665956378
+          },
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 1,
+          "recovered_records": 4
+        },
+        "ticks": 322
+      },
+      "saving_m": 130.597522601485,
+      "saving_simulated_s": 39.2
+    },
+    {
+      "scenario": "stable",
+      "index": 8,
+      "perception": {
+        "arm": "stable_perception_8",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 237.939658373594,
+        "recommendation": {},
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 71.4,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "cost_shift_enabled": true,
+          "decision_reasons": {},
+          "enabled": false,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {},
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 0,
+          "pending_contacts": 0,
+          "ram_records": 0,
+          "recovered_records": 0
+        },
+        "ticks": 714
+      },
+      "core": {
+        "arm": "stable_core_8",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 107.342135772109,
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+              ],
+              "samples": 2,
+              "score": 17.6666670342286
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:715649242327419596fd554f4b3c787fb87b07fe",
+                "structural-event:60742061e123ccbec41185907104b9160b7a53c3"
+              ],
+              "samples": 2,
+              "score": 60.3333329906067
+            }
+          },
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "observation_ids": [
+            "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+            "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+          ],
+          "side": -1,
+          "source": "recovered-pattern-evidence"
+        },
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 32.2,
+        "status": {
+          "changed_initial_decisions": 1,
+          "core_changed_initial_decisions": 1,
+          "cost_shift_enabled": true,
+          "decision_reasons": {
+            "preferred_side": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [
+                  "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                  "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+                ],
+                "samples": 2,
+                "score": 17.6666670342286
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [
+                  "structural-event:715649242327419596fd554f4b3c787fb87b07fe",
+                  "structural-event:60742061e123ccbec41185907104b9160b7a53c3"
+                ],
+                "samples": 2,
+                "score": 60.3333329906067
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "reason": "preferred_side",
+            "recommendation": {
+              "alternatives": {
+                "-1": {
+                  "errors": 0,
+                  "observation_ids": [
+                    "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                    "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+                  ],
+                  "samples": 2,
+                  "score": 17.6666670342286
+                },
+                "1": {
+                  "errors": 0,
+                  "observation_ids": [
+                    "structural-event:715649242327419596fd554f4b3c787fb87b07fe",
+                    "structural-event:60742061e123ccbec41185907104b9160b7a53c3"
+                  ],
+                  "samples": 2,
+                  "score": 60.3333329906067
+                }
+              },
+              "contains_prediction": true,
+              "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+              "observation_ids": [
+                "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+              ],
+              "side": -1,
+              "source": "recovered-pattern-evidence"
+            },
+            "required_gap": 12.0666665981213,
+            "score_gap": 42.666665956378
+          },
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 1,
+          "recovered_records": 4
+        },
+        "ticks": 322
+      },
+      "saving_m": 130.597522601485,
+      "saving_simulated_s": 39.2
+    },
+    {
+      "scenario": "stable",
+      "index": 9,
+      "perception": {
+        "arm": "stable_perception_9",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 237.939658373594,
+        "recommendation": {},
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 71.4,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "cost_shift_enabled": true,
+          "decision_reasons": {},
+          "enabled": false,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {},
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 0,
+          "pending_contacts": 0,
+          "ram_records": 0,
+          "recovered_records": 0
+        },
+        "ticks": 714
+      },
+      "core": {
+        "arm": "stable_core_9",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 107.342135772109,
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+              ],
+              "samples": 2,
+              "score": 17.6666670342286
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:715649242327419596fd554f4b3c787fb87b07fe",
+                "structural-event:60742061e123ccbec41185907104b9160b7a53c3"
+              ],
+              "samples": 2,
+              "score": 60.3333329906067
+            }
+          },
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "observation_ids": [
+            "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+            "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+          ],
+          "side": -1,
+          "source": "recovered-pattern-evidence"
+        },
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 32.2,
+        "status": {
+          "changed_initial_decisions": 1,
+          "core_changed_initial_decisions": 1,
+          "cost_shift_enabled": true,
+          "decision_reasons": {
+            "preferred_side": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [
+                  "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                  "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+                ],
+                "samples": 2,
+                "score": 17.6666670342286
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [
+                  "structural-event:715649242327419596fd554f4b3c787fb87b07fe",
+                  "structural-event:60742061e123ccbec41185907104b9160b7a53c3"
+                ],
+                "samples": 2,
+                "score": 60.3333329906067
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "reason": "preferred_side",
+            "recommendation": {
+              "alternatives": {
+                "-1": {
+                  "errors": 0,
+                  "observation_ids": [
+                    "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                    "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+                  ],
+                  "samples": 2,
+                  "score": 17.6666670342286
+                },
+                "1": {
+                  "errors": 0,
+                  "observation_ids": [
+                    "structural-event:715649242327419596fd554f4b3c787fb87b07fe",
+                    "structural-event:60742061e123ccbec41185907104b9160b7a53c3"
+                  ],
+                  "samples": 2,
+                  "score": 60.3333329906067
+                }
+              },
+              "contains_prediction": true,
+              "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+              "observation_ids": [
+                "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+              ],
+              "side": -1,
+              "source": "recovered-pattern-evidence"
+            },
+            "required_gap": 12.0666665981213,
+            "score_gap": 42.666665956378
+          },
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 1,
+          "recovered_records": 4
+        },
+        "ticks": 322
+      },
+      "saving_m": 130.597522601485,
+      "saving_simulated_s": 39.2
+    },
+    {
+      "scenario": "changed",
+      "index": 0,
+      "perception": {
+        "arm": "changed_perception_0",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 107.342134922743,
+        "recommendation": {},
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 32.2,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "cost_shift_enabled": true,
+          "decision_reasons": {},
+          "enabled": false,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {},
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 0,
+          "pending_contacts": 0,
+          "ram_records": 0,
+          "recovered_records": 0
+        },
+        "ticks": 322
+      },
+      "core": {
+        "arm": "changed_core_0",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 237.939667254686,
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+              ],
+              "samples": 2,
+              "score": 17.6666670342286
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:715649242327419596fd554f4b3c787fb87b07fe",
+                "structural-event:60742061e123ccbec41185907104b9160b7a53c3"
+              ],
+              "samples": 2,
+              "score": 60.3333329906067
+            }
+          },
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "observation_ids": [
+            "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+            "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+          ],
+          "side": -1,
+          "source": "recovered-pattern-evidence"
+        },
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 71.4,
+        "status": {
+          "changed_initial_decisions": 1,
+          "core_changed_initial_decisions": 1,
+          "cost_shift_enabled": true,
+          "decision_reasons": {
+            "preferred_side": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [
+                  "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                  "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+                ],
+                "samples": 2,
+                "score": 17.6666670342286
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [
+                  "structural-event:715649242327419596fd554f4b3c787fb87b07fe",
+                  "structural-event:60742061e123ccbec41185907104b9160b7a53c3"
+                ],
+                "samples": 2,
+                "score": 60.3333329906067
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "reason": "preferred_side",
+            "recommendation": {
+              "alternatives": {
+                "-1": {
+                  "errors": 0,
+                  "observation_ids": [
+                    "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                    "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+                  ],
+                  "samples": 2,
+                  "score": 17.6666670342286
+                },
+                "1": {
+                  "errors": 0,
+                  "observation_ids": [
+                    "structural-event:715649242327419596fd554f4b3c787fb87b07fe",
+                    "structural-event:60742061e123ccbec41185907104b9160b7a53c3"
+                  ],
+                  "samples": 2,
+                  "score": 60.3333329906067
+                }
+              },
+              "contains_prediction": true,
+              "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+              "observation_ids": [
+                "structural-event:fd0bcfadaeb5a80566f89b870a78e7c3572449ed",
+                "structural-event:bb1f7cacc13c729085df0aaa29cc3912c294066f"
+              ],
+              "side": -1,
+              "source": "recovered-pattern-evidence"
+            },
+            "required_gap": 12.0666665981213,
+            "score_gap": 42.666665956378
+          },
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 1,
+          "recovered_records": 4
+        },
+        "ticks": 714
+      },
+      "saving_m": -130.597532331943,
+      "saving_simulated_s": -39.2
+    }
+  ],
+  "cost_accounting": {
+    "distance_m": {
+      "acquisition_total": 680.650573849678,
+      "same_four_tasks_perception": 937.300929725172,
+      "acquisition_extra": -256.6503558754939,
+      "saving_per_stable_reuse": 130.597522601485,
+      "full_cost_break_even_reuses": 6,
+      "incremental_break_even_reuses": 0,
+      "observed_ten_reuses_net_after_full_acquisition": 625.324652165172,
+      "observed_ten_reuses_net_after_extra_acquisition": 1562.625581890344
+    },
+    "simulated_seconds": {
+      "acquisition_total": 204.2,
+      "same_four_tasks_perception": 281.2,
+      "acquisition_extra": -77.0,
+      "saving_per_stable_reuse": 39.2,
+      "full_cost_break_even_reuses": 6,
+      "incremental_break_even_reuses": 0,
+      "observed_ten_reuses_net_after_full_acquisition": 187.8,
+      "observed_ten_reuses_net_after_extra_acquisition": 469.0
+    }
+  },
+  "intake": {
+    "acked": 4,
+    "confirmed": 4,
+    "recovered_this_poll": 4,
+    "cached_recovered": 4,
+    "world_write_authority": false
+  },
+  "cold_recovery": {
+    "acked": 0,
+    "confirmed": 4,
+    "recovered_this_poll": 4,
+    "cached_recovered": 4,
+    "world_write_authority": false
+  },
+  "stored_real_physical_facts": 4,
+  "core_reopened_cache_deleted_no_reingest": true,
+  "production_benefit_demonstrated": false,
+  "limits": [
+    "One flat physical wall fixture; exact sensor context can alias changed geometry.",
+    "Ten deterministic reuses are not independent samples or production measurements.",
+    "Comparison uses a fixed recovered snapshot; changed case measures stale evidence, not adaptation.",
+    "Time is simulated movement time; SDK, CPU, storage and network costs are not included.",
+    "Successful paths only in this fixture; physical error penalty is not exercised."
+  ]
+}
