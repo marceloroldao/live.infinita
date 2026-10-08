@@ -1,0 +1,27 @@
+008ET_START source=18229b6
+[world-map-preview] Importando recursos em cópia isolada.
+[world-map-preview] Validando travessabilidade física e modo local.
+[world-map-preview] Validando caminhada e câmera de NOV.
+[world-map-preview] Exportando Web em diretório temporário.
+[world-map-preview] Publicação concluída: /var/www/live-infinita-godot/world-map-preview
+[world-map-preview] Abra https://live.etbra.com.br/godot/world-map-preview/
+[world-map-preview] A live 2D /godot/, /nov-preview/ e o mundo persistente não foram alterados.
+008ET_NATIVE_OK {'last_seen': {'aborted': 0.0, 'confirmed': 13.0, 'not_observed': 0.0, 'started': 13.0}, 'memory': {'aborted': 0.0, 'confirmed': 11.0, 'not_observed': 3.0, 'started': 14.0}}
+008ET_START source=18229b6
+[world-map-preview] Importando recursos em cópia isolada.
+[world-map-preview] Validando travessabilidade física e modo local.
+[world-map-preview] Validando caminhada e câmera de NOV.
+[world-map-preview] Exportando Web em diretório temporário.
+[world-map-preview] Publicação concluída: /var/www/live-infinita-godot/world-map-preview
+[world-map-preview] Abra https://live.etbra.com.br/godot/world-map-preview/
+[world-map-preview] A live 2D /godot/, /nov-preview/ e o mundo persistente não foram alterados.
+008ET_NATIVE_OK {'last_seen': {'aborted': 0.0, 'confirmed': 13.0, 'not_observed': 0.0, 'started': 13.0}, 'memory': {'aborted': 0.0, 'confirmed': 11.0, 'not_observed': 3.0, 'started': 14.0}}
+008ET_COLLECTOR_READY {'changed_initial_decisions': 0, 'core_changed_initial_decisions': 0, 'cost_shift_enabled': True, 'decision_reasons': {}, 'enabled': True, 'exclusions': {}, 'exploration_decisions': 0, 'last_evaluation': {}, 'local_turn_continuity_enabled': True, 'observed_outcomes': 0, 'pending_contacts': 0, 'ram_records': 512, 'recovered_records': 0}
+008CA_START
+008CA_READY_WORLD 18229b6
+008CA_PUBLIC_OK 18229b6 /godot/world-map-preview/
+008CA_OK backup=/opt/live.infinita/.rollouts/008ca-20261008T142156Z
+Recarregue a fonte de navegador/monitor em https://live.etbra.com.br/godot/
+008ET_PUBLIC_OK 18229b6
+008ET_OK source=18229b6 backup=/opt/live.infinita/.rollouts/008et-20261008T141842Z
+Recarregue a live. Continuidade física dos desvios ativa; memória preservada. Para desligar: sudo bash /home/etbra/set-contact-turns-008et-root.sh off

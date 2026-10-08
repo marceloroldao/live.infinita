@@ -1,0 +1,206 @@
+{
+  "schema": "live-infinita-adaptation-window-analysis/v1",
+  "scope": "read_only_observational",
+  "counts": {
+    "perception_completed": 16,
+    "exploration_excluded": 9,
+    "exploration_completed": 15,
+    "ram_same_excluded": 2,
+    "ram_changed_completed": 1,
+    "ram_same_completed": 3,
+    "perception_excluded": 14,
+    "ram_changed_excluded": 1,
+    "core_changed_completed": 1,
+    "core_same_completed": 1
+  },
+  "exploration_exclusion_reasons": {
+    "new_contact_before_executed_exit": 9
+  },
+  "windows": [
+    {
+      "world_id": "nov-live-autonomous-001",
+      "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:252:252",
+      "onset_attempt_id": "02a61c7a6ec615d9c92231bf1bcf02bc:39ae610156f07e5eed2b08f94d2b947b:2:26",
+      "counts": {
+        "exploration_completed": 1
+      },
+      "exclusion_reasons": {},
+      "observed_exploration_to_applied_learning": false,
+      "initial_completed_exploration_ids": [],
+      "later_applied_learned_ids": [],
+      "later_changed_choices": 0
+    },
+    {
+      "world_id": "nov-live-autonomous-001",
+      "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:255:253",
+      "onset_attempt_id": "02a61c7a6ec615d9c92231bf1bcf02bc:39ae610156f07e5eed2b08f94d2b947b:2:48",
+      "counts": {
+        "exploration_completed": 1
+      },
+      "exclusion_reasons": {},
+      "observed_exploration_to_applied_learning": false,
+      "initial_completed_exploration_ids": [],
+      "later_applied_learned_ids": [],
+      "later_changed_choices": 0
+    },
+    {
+      "world_id": "nov-live-autonomous-001",
+      "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:255:253",
+      "onset_attempt_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:131:2698",
+      "counts": {
+        "core_changed_completed": 1
+      },
+      "exclusion_reasons": {},
+      "observed_exploration_to_applied_learning": false,
+      "initial_completed_exploration_ids": [],
+      "later_applied_learned_ids": [],
+      "later_changed_choices": 0
+    },
+    {
+      "world_id": "nov-live-autonomous-001",
+      "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:255:254",
+      "onset_attempt_id": "02a61c7a6ec615d9c92231bf1bcf02bc:39ae610156f07e5eed2b08f94d2b947b:2:10",
+      "counts": {
+        "ram_same_excluded": 1,
+        "ram_changed_completed": 1,
+        "perception_completed": 2,
+        "ram_same_completed": 1,
+        "ram_changed_excluded": 1,
+        "perception_excluded": 5,
+        "exploration_completed": 3,
+        "exploration_excluded": 2
+      },
+      "exclusion_reasons": {
+        "new_contact_before_executed_exit": 9
+      },
+      "observed_exploration_to_applied_learning": true,
+      "initial_completed_exploration_ids": [
+        "02a61c7a6ec615d9c92231bf1bcf02bc:39ae610156f07e5eed2b08f94d2b947b:2:14",
+        "02a61c7a6ec615d9c92231bf1bcf02bc:39ae610156f07e5eed2b08f94d2b947b:2:18",
+        "02a61c7a6ec615d9c92231bf1bcf02bc:39ae610156f07e5eed2b08f94d2b947b:2:23"
+      ],
+      "later_applied_learned_ids": [
+        "02a61c7a6ec615d9c92231bf1bcf02bc:39ae610156f07e5eed2b08f94d2b947b:2:54",
+        "02a61c7a6ec615d9c92231bf1bcf02bc:39ae610156f07e5eed2b08f94d2b947b:2:58"
+      ],
+      "later_changed_choices": 1,
+      "initial_completed_exploration_mean_m": 9.27903696894646,
+      "later_completed_learned_mean_m": 7.9999799206852895,
+      "descriptive_distance_delta_m": -1.279057048261171,
+      "sides_before": [
+        1,
+        1,
+        -1
+      ],
+      "sides_after": [
+        -1,
+        -1
+      ]
+    },
+    {
+      "world_id": "nov-live-autonomous-001",
+      "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:255:254",
+      "onset_attempt_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:106:2168",
+      "counts": {
+        "perception_completed": 3,
+        "perception_excluded": 2
+      },
+      "exclusion_reasons": {
+        "new_contact_before_executed_exit": 2
+      },
+      "observed_exploration_to_applied_learning": false,
+      "initial_completed_exploration_ids": [],
+      "later_applied_learned_ids": [],
+      "later_changed_choices": 0
+    },
+    {
+      "world_id": "nov-live-autonomous-001",
+      "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:255:255",
+      "onset_attempt_id": "02a61c7a6ec615d9c92231bf1bcf02bc:39ae610156f07e5eed2b08f94d2b947b:2:12",
+      "counts": {
+        "ram_same_completed": 2,
+        "ram_same_excluded": 1,
+        "exploration_completed": 3,
+        "exploration_excluded": 4
+      },
+      "exclusion_reasons": {
+        "new_contact_before_executed_exit": 5
+      },
+      "observed_exploration_to_applied_learning": true,
+      "initial_completed_exploration_ids": [
+        "02a61c7a6ec615d9c92231bf1bcf02bc:39ae610156f07e5eed2b08f94d2b947b:2:17",
+        "02a61c7a6ec615d9c92231bf1bcf02bc:39ae610156f07e5eed2b08f94d2b947b:2:25",
+        "02a61c7a6ec615d9c92231bf1bcf02bc:39ae610156f07e5eed2b08f94d2b947b:2:36"
+      ],
+      "later_applied_learned_ids": [
+        "02a61c7a6ec615d9c92231bf1bcf02bc:39ae610156f07e5eed2b08f94d2b947b:2:42",
+        "02a61c7a6ec615d9c92231bf1bcf02bc:39ae610156f07e5eed2b08f94d2b947b:2:44"
+      ],
+      "later_changed_choices": 0,
+      "initial_completed_exploration_mean_m": 10.8112429380417,
+      "later_completed_learned_mean_m": 9.969117790460604,
+      "descriptive_distance_delta_m": -0.8421251475810951,
+      "sides_before": [
+        -1,
+        1,
+        -1
+      ],
+      "sides_after": [
+        1,
+        1
+      ]
+    },
+    {
+      "world_id": "nov-live-autonomous-001",
+      "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:255:255",
+      "onset_attempt_id": "02a61c7a6ec615d9c92231bf1bcf02bc:39ae610156f07e5eed2b08f94d2b947b:2:44",
+      "counts": {
+        "exploration_excluded": 1,
+        "exploration_completed": 2
+      },
+      "exclusion_reasons": {
+        "new_contact_before_executed_exit": 1
+      },
+      "observed_exploration_to_applied_learning": false,
+      "initial_completed_exploration_ids": [],
+      "later_applied_learned_ids": [],
+      "later_changed_choices": 0
+    },
+    {
+      "world_id": "nov-live-autonomous-001",
+      "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:255:255",
+      "onset_attempt_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:132:2732",
+      "counts": {
+        "perception_completed": 1,
+        "perception_excluded": 2
+      },
+      "exclusion_reasons": {
+        "new_contact_before_executed_exit": 2
+      },
+      "observed_exploration_to_applied_learning": false,
+      "initial_completed_exploration_ids": [],
+      "later_applied_learned_ids": [],
+      "later_changed_choices": 0
+    },
+    {
+      "world_id": "nov-live-autonomous-001",
+      "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:255:62",
+      "onset_attempt_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:131:2720",
+      "counts": {
+        "exploration_completed": 1
+      },
+      "exclusion_reasons": {},
+      "observed_exploration_to_applied_learning": false,
+      "initial_completed_exploration_ids": [],
+      "later_applied_learned_ids": [],
+      "later_changed_choices": 0
+    }
+  ],
+  "window_count": 9,
+  "observed_conversion_windows": 2,
+  "chronology_basis": "physical outcome ended_at_unix; capture array order is not assumed chronological",
+  "performance_advantage_demonstrated": false,
+  "limit": "Only completion timestamps are available; later completion does not establish a later decision start or causal use of the preceding exploration. Same sensor signature and onset do not identify the same obstacle geometry. Means include completed contacts only; failures and excluded contacts remain counted, with unknown censored costs. No causal advantage or acquisition-cost savings can be inferred.",
+  "capture_since": "Thu 2026-10-08 14:21:08 UTC",
+  "capture_observed_at_utc": "2026-10-08T14:31:01.855650+00:00"
+}
