@@ -1,0 +1,37 @@
+Starting live-infinita-navigation-pattern.service - Live Infinita — physical navigation patterns into local Memoria.ia...
+{"acked": 4, "cached_recovered": 177, "confirmed": 177, "recovered_this_poll": 44, "world_write_authority": false}
+live-infinita-navigation-pattern.service: Deactivated successfully.
+Finished live-infinita-navigation-pattern.service - Live Infinita — physical navigation patterns into local Memoria.ia.
+Starting live-infinita-navigation-pattern.service - Live Infinita — physical navigation patterns into local Memoria.ia...
+{"acked": 4, "cached_recovered": 181, "confirmed": 181, "recovered_this_poll": 44, "world_write_authority": false}
+live-infinita-navigation-pattern.service: Deactivated successfully.
+Finished live-infinita-navigation-pattern.service - Live Infinita — physical navigation patterns into local Memoria.ia.
+Starting live-infinita-navigation-pattern.service - Live Infinita — physical navigation patterns into local Memoria.ia...
+{"acked": 4, "cached_recovered": 185, "confirmed": 185, "recovered_this_poll": 44, "world_write_authority": false}
+live-infinita-navigation-pattern.service: Deactivated successfully.
+Finished live-infinita-navigation-pattern.service - Live Infinita — physical navigation patterns into local Memoria.ia.
+Starting live-infinita-navigation-pattern.service - Live Infinita — physical navigation patterns into local Memoria.ia...
+{"acked": 4, "cached_recovered": 189, "confirmed": 189, "recovered_this_poll": 44, "world_write_authority": false}
+live-infinita-navigation-pattern.service: Deactivated successfully.
+Finished live-infinita-navigation-pattern.service - Live Infinita — physical navigation patterns into local Memoria.ia.
+Starting live-infinita-navigation-pattern.service - Live Infinita — physical navigation patterns into local Memoria.ia...
+{"acked": 4, "cached_recovered": 193, "confirmed": 193, "recovered_this_poll": 44, "world_write_authority": false}
+live-infinita-navigation-pattern.service: Deactivated successfully.
+Finished live-infinita-navigation-pattern.service - Live Infinita — physical navigation patterns into local Memoria.ia.
+Starting live-infinita-navigation-pattern.service - Live Infinita — physical navigation patterns into local Memoria.ia...
+{"acked": 4, "cached_recovered": 197, "confirmed": 197, "recovered_this_poll": 45, "world_write_authority": false}
+live-infinita-navigation-pattern.service: Deactivated successfully.
+Finished live-infinita-navigation-pattern.service - Live Infinita — physical navigation patterns into local Memoria.ia.
+Starting live-infinita-navigation-pattern.service - Live Infinita — physical navigation patterns into local Memoria.ia...
+{"acked": 4, "cached_recovered": 201, "confirmed": 201, "recovered_this_poll": 45, "world_write_authority": false}
+live-infinita-navigation-pattern.service: Deactivated successfully.
+Finished live-infinita-navigation-pattern.service - Live Infinita — physical navigation patterns into local Memoria.ia.
+Starting live-infinita-navigation-pattern.service - Live Infinita — physical navigation patterns into local Memoria.ia...
+{"acked": 4, "cached_recovered": 205, "confirmed": 205, "recovered_this_poll": 45, "world_write_authority": false}
+live-infinita-navigation-pattern.service: Deactivated successfully.
+Finished live-infinita-navigation-pattern.service - Live Infinita — physical navigation patterns into local Memoria.ia.
+Starting live-infinita-navigation-pattern.service - Live Infinita — physical navigation patterns into local Memoria.ia...
+{"acked": 4, "cached_recovered": 209, "confirmed": 209, "recovered_this_poll": 45, "world_write_authority": false}
+live-infinita-navigation-pattern.service: Deactivated successfully.
+Finished live-infinita-navigation-pattern.service - Live Infinita — physical navigation patterns into local Memoria.ia.
+Starting live-infinita-navigation-pattern.service - Live Infinita — physical navigation patterns into local Memoria.ia...
