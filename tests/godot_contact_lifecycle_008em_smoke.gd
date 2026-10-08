@@ -27,6 +27,7 @@ func _initialize() -> void:
     collector.observe_action(action(collector,1))
     check(collector.pending.is_empty(),"Monotonic serial protects old contacts even after bounded index eviction")
     var policy=load("res://nov_navigation_contour.gd").new()
+    policy.local_turn_continuity_enabled=false # Test the retained legacy/reset contract explicitly.
     var rows: Array[Dictionary]=[{"point":Vector2(0,1),"source":"perception","clear_ahead":true}]
     policy.filter(Vector2.ZERO,Vector2(10,0),rows,false)
     var serial: int=policy.starts

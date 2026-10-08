@@ -18,6 +18,10 @@ var hit_distance := 0.0
 var starts := 0
 var forced_turns := 0
 var _turn_pending := false
+# Opt-in native policy: one measured contact survives local direction changes.
+var local_turn_continuity_enabled := OS.get_environment("LIVE_INFINITA_NAVIGATION_CONTACT_TURNS")=="1"
+var local_turns := 0
+var total_local_turns := 0
 const INITIAL_EXCURSION_M := 64.0
 var excursion_limit := INITIAL_EXCURSION_M
 var side_switches := 0
@@ -28,6 +32,7 @@ func reset(reason: String="context_reset") -> void:
     heading=Vector2.ZERO
     normal=Vector2.ZERO
     _turn_pending=false
+    local_turns=0
     excursion_limit=INITIAL_EXCURSION_M
     pattern_context="";pattern_recommendation={};pattern_evaluation={};initial_side=0;default_side=0
 func filter(current: Vector2, goal: Vector2, rows: Array[Dictionary], direct_clear: bool) -> Array[Dictionary]:
@@ -89,6 +94,13 @@ func filter(current: Vector2, goal: Vector2, rows: Array[Dictionary], direct_cle
     for row in clear:
         var direction: Vector2=(Vector2(row.point)-current).normalized()
         if direction.dot(heading)>=-0.1 and direction.dot(normal)>=-0.25:forward.append(row)
+    # A sensed corner can require retreat relative to the original goal normal.
+    # Continue the checked escape heading, while retaining the original normal
+    # and contact identity for actual exit measurement.
+    if forward.is_empty() and local_turn_continuity_enabled and local_turns>0:
+        for row in clear:
+            var direction: Vector2=(Vector2(row.point)-current).normalized()
+            if direction.dot(heading)>=0.5:forward.append(row)
     _turn_pending=forward.is_empty()
     if _turn_pending:
         forced_turns+=1
@@ -96,6 +108,11 @@ func filter(current: Vector2, goal: Vector2, rows: Array[Dictionary], direct_cle
     return forward
 func committed(current: Vector2, point: Vector2) -> void:
     if active and _turn_pending and current.distance_to(point)>0.05:
+        if local_turn_continuity_enabled:
+            heading=(point-current).normalized()
+            _turn_pending=false
+            local_turns+=1;total_local_turns+=1
+            return
         # The sensed end of this side permits trying another frame; never force
         # a candidate rejected by physics, and never create failure knowledge.
         reset("observed_side_end")
@@ -103,6 +120,7 @@ func evidence() -> Dictionary:
     return {"source":"local_observed_contour","active":active,"heading":[heading.x,heading.y],
         "normal":[normal.x,normal.y],"origin":[origin.x,origin.y],
         "exit_proposal":exit_proposal.duplicate(true),"reset_event":reset_event.duplicate(true),
+        "local_turn_continuity_enabled":local_turn_continuity_enabled,"local_turns":local_turns,"total_local_turns":total_local_turns,
         "turn_pending":_turn_pending,"forced_turns":forced_turns,"contact_serial":starts,"pattern_context":pattern_context,"pattern_recommendation":pattern_recommendation.duplicate(true),
         "initial_side":initial_side,"default_side":default_side,"pattern_evaluation":pattern_evaluation.duplicate(true),
         "initial_side_changed":initial_side!=default_side,
