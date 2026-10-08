@@ -1,0 +1,1791 @@
+{
+  "schema": "live-infinita-paired-adaptation/v1",
+  "sdk_commit": "dfd87c995b50c49b45a9d5dd4c43cce456983d4f",
+  "scope": "isolated_actual_capsule_and_native_collector",
+  "production_performance_advantage_demonstrated": false,
+  "same_start_goal_physics_within_each_pair": true,
+  "deterministic_repeats_not_independent_samples": true,
+  "speed_mps": 4,
+  "dt_seconds": 0.1,
+  "training": {
+    "failures": 0,
+    "phase": "training",
+    "production_learning_demonstrated": false,
+    "runs": [
+      {
+        "arm": "training_0",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 235.314719185233,
+        "recommendation": {},
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 70.6,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "decision_reasons": {
+            "insufficient_samples": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exploration_decisions": 0,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 0
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 0
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "reason": "insufficient_samples",
+            "recommendation": {}
+          },
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 1,
+          "recovered_records": 0
+        },
+        "ticks": 706
+      },
+      {
+        "arm": "training_1",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 104.999119088054,
+        "recommendation": {
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": -1,
+          "source": "pattern-exploration"
+        },
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 31.5,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "decision_reasons": {
+            "insufficient_samples": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exploration_decisions": 1,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 0
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 1,
+                "score": 61.3333294540643
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "reason": "insufficient_samples",
+            "recommendation": {}
+          },
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 2,
+          "recovered_records": 0
+        },
+        "ticks": 315
+      },
+      {
+        "arm": "training_2",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 235.314719185233,
+        "recommendation": {
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": 1,
+          "source": "pattern-exploration"
+        },
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 70.6,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "decision_reasons": {
+            "insufficient_samples": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exploration_decisions": 1,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 1,
+                "score": 18.6666665375233
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 1,
+                "score": 61.3333294540643
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "reason": "insufficient_samples",
+            "recommendation": {}
+          },
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 3,
+          "recovered_records": 0
+        },
+        "ticks": 706
+      },
+      {
+        "arm": "training_3",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 104.999119088054,
+        "recommendation": {
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": -1,
+          "source": "pattern-exploration"
+        },
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 31.5,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "decision_reasons": {
+            "insufficient_samples": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exploration_decisions": 1,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 1,
+                "score": 18.6666665375233
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 61.3333294540643
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "reason": "insufficient_samples",
+            "recommendation": {}
+          },
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 4,
+          "recovered_records": 0
+        },
+        "ticks": 315
+      }
+    ],
+    "scope": "isolated_paired_native_physics"
+  },
+  "stable_pairs": [
+    {
+      "baseline": {
+        "arm": "stable_perception_0",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 234.572304785252,
+        "recommendation": {},
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 70.4,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "decision_reasons": {},
+          "enabled": false,
+          "exclusions": {},
+          "exploration_decisions": 0,
+          "last_evaluation": {},
+          "observed_outcomes": 0,
+          "pending_contacts": 0,
+          "ram_records": 4,
+          "recovered_records": 0
+        },
+        "ticks": 704
+      },
+      "recovered_core": {
+        "arm": "stable_core_0",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 106.605529054999,
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:ddb20850dc582bba65298fca49053e022f13200e",
+                "structural-event:c4ac6b608092347570a570e677471581ec9beeb0"
+              ],
+              "samples": 2,
+              "score": 18.6666665375233
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:3c55fa39eea6773ac9295e4f2f7ee79a96b2bc0d",
+                "structural-event:b1318aa5d9ac1956a82f4deff6773e9c41be01ce"
+              ],
+              "samples": 2,
+              "score": 61.3333294540643
+            }
+          },
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "observation_ids": [
+            "structural-event:ddb20850dc582bba65298fca49053e022f13200e",
+            "structural-event:c4ac6b608092347570a570e677471581ec9beeb0"
+          ],
+          "side": -1,
+          "source": "recovered-pattern-evidence"
+        },
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 32.0,
+        "status": {
+          "changed_initial_decisions": 1,
+          "core_changed_initial_decisions": 1,
+          "decision_reasons": {
+            "preferred_side": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exploration_decisions": 0,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [
+                  "structural-event:ddb20850dc582bba65298fca49053e022f13200e",
+                  "structural-event:c4ac6b608092347570a570e677471581ec9beeb0"
+                ],
+                "samples": 2,
+                "score": 18.6666665375233
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [
+                  "structural-event:3c55fa39eea6773ac9295e4f2f7ee79a96b2bc0d",
+                  "structural-event:b1318aa5d9ac1956a82f4deff6773e9c41be01ce"
+                ],
+                "samples": 2,
+                "score": 61.3333294540643
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "reason": "preferred_side",
+            "recommendation": {
+              "alternatives": {
+                "-1": {
+                  "errors": 0,
+                  "observation_ids": [
+                    "structural-event:ddb20850dc582bba65298fca49053e022f13200e",
+                    "structural-event:c4ac6b608092347570a570e677471581ec9beeb0"
+                  ],
+                  "samples": 2,
+                  "score": 18.6666665375233
+                },
+                "1": {
+                  "errors": 0,
+                  "observation_ids": [
+                    "structural-event:3c55fa39eea6773ac9295e4f2f7ee79a96b2bc0d",
+                    "structural-event:b1318aa5d9ac1956a82f4deff6773e9c41be01ce"
+                  ],
+                  "samples": 2,
+                  "score": 61.3333294540643
+                }
+              },
+              "contains_prediction": true,
+              "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+              "observation_ids": [
+                "structural-event:ddb20850dc582bba65298fca49053e022f13200e",
+                "structural-event:c4ac6b608092347570a570e677471581ec9beeb0"
+              ],
+              "side": -1,
+              "source": "recovered-pattern-evidence"
+            },
+            "required_gap": 12.2666658908129,
+            "score_gap": 42.6666629165411
+          },
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 1,
+          "recovered_records": 4
+        },
+        "ticks": 320
+      },
+      "distance_delta_m": -127.96677573025299,
+      "simulated_time_delta_s": -38.400000000000006
+    },
+    {
+      "baseline": {
+        "arm": "stable_perception_1",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 234.572304785252,
+        "recommendation": {},
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 70.4,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "decision_reasons": {},
+          "enabled": false,
+          "exclusions": {},
+          "exploration_decisions": 0,
+          "last_evaluation": {},
+          "observed_outcomes": 0,
+          "pending_contacts": 0,
+          "ram_records": 4,
+          "recovered_records": 0
+        },
+        "ticks": 704
+      },
+      "recovered_core": {
+        "arm": "stable_core_1",
+        "arrived": true,
+        "collisions": 0,
+        "distance_m": 106.605529054999,
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:ddb20850dc582bba65298fca49053e022f13200e",
+                "structural-event:c4ac6b608092347570a570e677471581ec9beeb0"
+              ],
+              "samples": 2,
+              "score": 18.6666665375233
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:3c55fa39eea6773ac9295e4f2f7ee79a96b2bc0d",
+                "structural-event:b1318aa5d9ac1956a82f4deff6773e9c41be01ce"
+              ],
+              "samples": 2,
+              "score": 61.3333294540643
+            }
+          },
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "observation_ids": [
+            "structural-event:ddb20850dc582bba65298fca49053e022f13200e",
+            "structural-event:c4ac6b608092347570a570e677471581ec9beeb0"
+          ],
+          "side": -1,
+          "source": "recovered-pattern-evidence"
+        },
+        "rescued": false,
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 32.0,
+        "status": {
+          "changed_initial_decisions": 1,
+          "core_changed_initial_decisions": 1,
+          "decision_reasons": {
+            "preferred_side": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exploration_decisions": 0,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [
+                  "structural-event:ddb20850dc582bba65298fca49053e022f13200e",
+                  "structural-event:c4ac6b608092347570a570e677471581ec9beeb0"
+                ],
+                "samples": 2,
+                "score": 18.6666665375233
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [
+                  "structural-event:3c55fa39eea6773ac9295e4f2f7ee79a96b2bc0d",
+                  "structural-event:b1318aa5d9ac1956a82f4deff6773e9c41be01ce"
+                ],
+                "samples": 2,
+                "score": 61.3333294540643
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "reason": "preferred_side",
+            "recommendation": {
+              "alternatives": {
+                "-1": {
+                  "errors": 0,
+                  "observation_ids": [
+                    "structural-event:ddb20850dc582bba65298fca49053e022f13200e",
+                    "structural-event:c4ac6b608092347570a570e677471581ec9beeb0"
+                  ],
+                  "samples": 2,
+                  "score": 18.6666665375233
+                },
+                "1": {
+                  "errors": 0,
+                  "observation_ids": [
+                    "structural-event:3c55fa39eea6773ac9295e4f2f7ee79a96b2bc0d",
+                    "structural-event:b1318aa5d9ac1956a82f4deff6773e9c41be01ce"
+                  ],
+                  "samples": 2,
+                  "score": 61.3333294540643
+                }
+              },
+              "contains_prediction": true,
+              "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+              "observation_ids": [
+                "structural-event:ddb20850dc582bba65298fca49053e022f13200e",
+                "structural-event:c4ac6b608092347570a570e677471581ec9beeb0"
+              ],
+              "side": -1,
+              "source": "recovered-pattern-evidence"
+            },
+            "required_gap": 12.2666658908129,
+            "score_gap": 42.6666629165411
+          },
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 1,
+          "recovered_records": 4
+        },
+        "ticks": 320
+      },
+      "distance_delta_m": -127.96677573025299,
+      "simulated_time_delta_s": -38.400000000000006
+    }
+  ],
+  "changed_perception": {
+    "arm": "changed_perception",
+    "arrived": true,
+    "collisions": 0,
+    "distance_m": 129.719994321465,
+    "recommendation": {},
+    "rescued": false,
+    "route_plan_builds": 0,
+    "side": 1,
+    "simulated_seconds": 38.9,
+    "status": {
+      "changed_initial_decisions": 0,
+      "core_changed_initial_decisions": 0,
+      "decision_reasons": {},
+      "enabled": false,
+      "exclusions": {},
+      "exploration_decisions": 0,
+      "last_evaluation": {},
+      "observed_outcomes": 0,
+      "pending_contacts": 0,
+      "ram_records": 4,
+      "recovered_records": 0
+    },
+    "ticks": 389
+  },
+  "changed_stale_core": {
+    "arm": "changed_stale_core",
+    "arrived": true,
+    "collisions": 0,
+    "distance_m": 253.79997561872,
+    "recommendation": {
+      "alternatives": {
+        "-1": {
+          "errors": 0,
+          "observation_ids": [
+            "structural-event:ddb20850dc582bba65298fca49053e022f13200e",
+            "structural-event:c4ac6b608092347570a570e677471581ec9beeb0"
+          ],
+          "samples": 2,
+          "score": 18.6666665375233
+        },
+        "1": {
+          "errors": 0,
+          "observation_ids": [
+            "structural-event:3c55fa39eea6773ac9295e4f2f7ee79a96b2bc0d",
+            "structural-event:b1318aa5d9ac1956a82f4deff6773e9c41be01ce"
+          ],
+          "samples": 2,
+          "score": 61.3333294540643
+        }
+      },
+      "contains_prediction": true,
+      "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+      "observation_ids": [
+        "structural-event:ddb20850dc582bba65298fca49053e022f13200e",
+        "structural-event:c4ac6b608092347570a570e677471581ec9beeb0"
+      ],
+      "side": -1,
+      "source": "recovered-pattern-evidence"
+    },
+    "rescued": false,
+    "route_plan_builds": 0,
+    "side": -1,
+    "simulated_seconds": 76.1,
+    "status": {
+      "changed_initial_decisions": 1,
+      "core_changed_initial_decisions": 1,
+      "decision_reasons": {
+        "preferred_side": 1
+      },
+      "enabled": true,
+      "exclusions": {},
+      "exploration_decisions": 0,
+      "last_evaluation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [
+              "structural-event:ddb20850dc582bba65298fca49053e022f13200e",
+              "structural-event:c4ac6b608092347570a570e677471581ec9beeb0"
+            ],
+            "samples": 2,
+            "score": 18.6666665375233
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [
+              "structural-event:3c55fa39eea6773ac9295e4f2f7ee79a96b2bc0d",
+              "structural-event:b1318aa5d9ac1956a82f4deff6773e9c41be01ce"
+            ],
+            "samples": 2,
+            "score": 61.3333294540643
+          }
+        },
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+        "reason": "preferred_side",
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:ddb20850dc582bba65298fca49053e022f13200e",
+                "structural-event:c4ac6b608092347570a570e677471581ec9beeb0"
+              ],
+              "samples": 2,
+              "score": 18.6666665375233
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:3c55fa39eea6773ac9295e4f2f7ee79a96b2bc0d",
+                "structural-event:b1318aa5d9ac1956a82f4deff6773e9c41be01ce"
+              ],
+              "samples": 2,
+              "score": 61.3333294540643
+            }
+          },
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "observation_ids": [
+            "structural-event:ddb20850dc582bba65298fca49053e022f13200e",
+            "structural-event:c4ac6b608092347570a570e677471581ec9beeb0"
+          ],
+          "side": -1,
+          "source": "recovered-pattern-evidence"
+        },
+        "required_gap": 12.2666658908129,
+        "score_gap": 42.6666629165411
+      },
+      "observed_outcomes": 1,
+      "pending_contacts": 0,
+      "ram_records": 1,
+      "recovered_records": 4
+    },
+    "ticks": 761
+  },
+  "adaptation_trials": [
+    {
+      "arm": "adaptation_0",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 253.79997561872,
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 18.6666665375233
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 61.3333294540643
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": -1,
+        "source": "ram-pattern-evidence"
+      },
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": -1,
+      "simulated_seconds": 76.1,
+      "status": {
+        "changed_initial_decisions": 1,
+        "core_changed_initial_decisions": 0,
+        "decision_reasons": {
+          "preferred_side": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 18.6666665375233
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 61.3333294540643
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "reason": "preferred_side",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 18.6666665375233
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 61.3333294540643
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": -1,
+            "source": "ram-pattern-evidence"
+          },
+          "required_gap": 12.2666658908129,
+          "score_gap": 42.6666629165411
+        },
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 5,
+        "recovered_records": 0
+      },
+      "ticks": 761
+    },
+    {
+      "arm": "adaptation_1",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 253.79997561872,
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 3,
+            "score": 33.888889912102
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 61.3333294540643
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": -1,
+        "source": "ram-pattern-evidence"
+      },
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": -1,
+      "simulated_seconds": 76.1,
+      "status": {
+        "changed_initial_decisions": 1,
+        "core_changed_initial_decisions": 0,
+        "decision_reasons": {
+          "preferred_side": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 3,
+              "score": 33.888889912102
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 61.3333294540643
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "reason": "preferred_side",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 3,
+                "score": 33.888889912102
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 61.3333294540643
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": -1,
+            "source": "ram-pattern-evidence"
+          },
+          "required_gap": 12.2666658908129,
+          "score_gap": 27.4444395419624
+        },
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 6,
+        "recovered_records": 0
+      },
+      "ticks": 761
+    },
+    {
+      "arm": "adaptation_2",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 253.79997561872,
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 4,
+            "score": 41.5000015993913
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 61.3333294540643
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": -1,
+        "source": "ram-pattern-evidence"
+      },
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": -1,
+      "simulated_seconds": 76.1,
+      "status": {
+        "changed_initial_decisions": 1,
+        "core_changed_initial_decisions": 0,
+        "decision_reasons": {
+          "preferred_side": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 4,
+              "score": 41.5000015993913
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 61.3333294540643
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "reason": "preferred_side",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 4,
+                "score": 41.5000015993913
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 61.3333294540643
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": -1,
+            "source": "ram-pattern-evidence"
+          },
+          "required_gap": 12.2666658908129,
+          "score_gap": 19.833327854673
+        },
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 7,
+        "recovered_records": 0
+      },
+      "ticks": 761
+    },
+    {
+      "arm": "adaptation_3",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 253.79997561872,
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 5,
+            "score": 46.0666686117649
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 61.3333294540643
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": -1,
+        "source": "ram-pattern-evidence"
+      },
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": -1,
+      "simulated_seconds": 76.1,
+      "status": {
+        "changed_initial_decisions": 1,
+        "core_changed_initial_decisions": 0,
+        "decision_reasons": {
+          "preferred_side": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 5,
+              "score": 46.0666686117649
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 61.3333294540643
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "reason": "preferred_side",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 5,
+                "score": 46.0666686117649
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 61.3333294540643
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": -1,
+            "source": "ram-pattern-evidence"
+          },
+          "required_gap": 12.2666658908129,
+          "score_gap": 15.2666608422994
+        },
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 8,
+        "recovered_records": 0
+      },
+      "ticks": 761
+    },
+    {
+      "arm": "adaptation_4",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 129.719994321465,
+      "recommendation": {},
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 38.9,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "decision_reasons": {
+          "insufficient_margin": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 6,
+              "score": 49.1111132866806
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 61.3333294540643
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "reason": "insufficient_margin",
+          "recommendation": {},
+          "required_gap": 12.2666658908129,
+          "score_gap": 12.2222161673837
+        },
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 9,
+        "recovered_records": 0
+      },
+      "ticks": 389
+    },
+    {
+      "arm": "adaptation_5",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 129.719994321465,
+      "recommendation": {},
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 38.9,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "decision_reasons": {
+          "insufficient_margin": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 6,
+              "score": 49.1111132866806
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 3,
+              "score": 48.1111086722877
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "reason": "insufficient_margin",
+          "recommendation": {},
+          "required_gap": 9.82222265733613,
+          "score_gap": 1.00000461439294
+        },
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 10,
+        "recovered_records": 0
+      },
+      "ticks": 389
+    },
+    {
+      "arm": "adaptation_6",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 129.719994321465,
+      "recommendation": {},
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 38.9,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "decision_reasons": {
+          "insufficient_margin": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 6,
+              "score": 49.1111132866806
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 4,
+              "score": 41.4999982813994
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "reason": "insufficient_margin",
+          "recommendation": {},
+          "required_gap": 9.82222265733613,
+          "score_gap": 7.61111500528126
+        },
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 11,
+        "recovered_records": 0
+      },
+      "ticks": 389
+    },
+    {
+      "arm": "adaptation_7",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 129.719994321465,
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 6,
+            "score": 49.1111132866806
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 5,
+            "score": 37.5333320468664
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": 1,
+        "source": "ram-pattern-evidence"
+      },
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 38.9,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "decision_reasons": {
+          "preferred_side": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 6,
+              "score": 49.1111132866806
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 5,
+              "score": 37.5333320468664
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "reason": "preferred_side",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 6,
+                "score": 49.1111132866806
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 5,
+                "score": 37.5333320468664
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": 1,
+            "source": "ram-pattern-evidence"
+          },
+          "required_gap": 9.82222265733613,
+          "score_gap": 11.5777812398143
+        },
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 12,
+        "recovered_records": 0
+      },
+      "ticks": 389
+    },
+    {
+      "arm": "adaptation_8",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 129.719994321465,
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 6,
+            "score": 49.1111132866806
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 6,
+            "score": 34.8888878905111
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": 1,
+        "source": "ram-pattern-evidence"
+      },
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 38.9,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "decision_reasons": {
+          "preferred_side": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 6,
+              "score": 49.1111132866806
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 6,
+              "score": 34.8888878905111
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "reason": "preferred_side",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 6,
+                "score": 49.1111132866806
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 6,
+                "score": 34.8888878905111
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": 1,
+            "source": "ram-pattern-evidence"
+          },
+          "required_gap": 9.82222265733613,
+          "score_gap": 14.2222253961696
+        },
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 13,
+        "recovered_records": 0
+      },
+      "ticks": 389
+    },
+    {
+      "arm": "adaptation_9",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 129.719994321465,
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 6,
+            "score": 49.1111132866806
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 7,
+            "score": 32.9999992074001
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": 1,
+        "source": "ram-pattern-evidence"
+      },
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 38.9,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "decision_reasons": {
+          "preferred_side": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 6,
+              "score": 49.1111132866806
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 7,
+              "score": 32.9999992074001
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "reason": "preferred_side",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 6,
+                "score": 49.1111132866806
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 7,
+                "score": 32.9999992074001
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": 1,
+            "source": "ram-pattern-evidence"
+          },
+          "required_gap": 9.82222265733613,
+          "score_gap": 16.1111140792805
+        },
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 14,
+        "recovered_records": 0
+      },
+      "ticks": 389
+    },
+    {
+      "arm": "adaptation_10",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 129.719994321465,
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 6,
+            "score": 49.1111132866806
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 8,
+            "score": 31.5833326950669
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": 1,
+        "source": "ram-pattern-evidence"
+      },
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 38.9,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "decision_reasons": {
+          "preferred_side": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 6,
+              "score": 49.1111132866806
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 8,
+              "score": 31.5833326950669
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "reason": "preferred_side",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 6,
+                "score": 49.1111132866806
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 8,
+                "score": 31.5833326950669
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": 1,
+            "source": "ram-pattern-evidence"
+          },
+          "required_gap": 9.82222265733613,
+          "score_gap": 17.5277805916137
+        },
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 15,
+        "recovered_records": 0
+      },
+      "ticks": 389
+    },
+    {
+      "arm": "adaptation_11",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 129.719994321465,
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 6,
+            "score": 49.1111132866806
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 9,
+            "score": 30.4814809632522
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": 1,
+        "source": "ram-pattern-evidence"
+      },
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 38.9,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "decision_reasons": {
+          "preferred_side": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 6,
+              "score": 49.1111132866806
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 9,
+              "score": 30.4814809632522
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "reason": "preferred_side",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 6,
+                "score": 49.1111132866806
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 9,
+                "score": 30.4814809632522
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": 1,
+            "source": "ram-pattern-evidence"
+          },
+          "required_gap": 9.82222265733613,
+          "score_gap": 18.6296323234285
+        },
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 16,
+        "recovered_records": 0
+      },
+      "ticks": 389
+    }
+  ],
+  "changed_repaired_ram": {
+    "arm": "changed_repaired_ram",
+    "arrived": true,
+    "collisions": 0,
+    "distance_m": 129.719994321465,
+    "recommendation": {
+      "alternatives": {
+        "-1": {
+          "errors": 0,
+          "observation_ids": [],
+          "samples": 6,
+          "score": 49.1111132866806
+        },
+        "1": {
+          "errors": 0,
+          "observation_ids": [],
+          "samples": 10,
+          "score": 29.5999995778004
+        }
+      },
+      "contains_prediction": true,
+      "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+      "observation_ids": [],
+      "side": 1,
+      "source": "ram-pattern-evidence"
+    },
+    "rescued": false,
+    "route_plan_builds": 0,
+    "side": 1,
+    "simulated_seconds": 38.9,
+    "status": {
+      "changed_initial_decisions": 0,
+      "core_changed_initial_decisions": 0,
+      "decision_reasons": {
+        "preferred_side": 1
+      },
+      "enabled": true,
+      "exclusions": {},
+      "exploration_decisions": 0,
+      "last_evaluation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 6,
+            "score": 49.1111132866806
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 10,
+            "score": 29.5999995778004
+          }
+        },
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+        "reason": "preferred_side",
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 6,
+              "score": 49.1111132866806
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 10,
+              "score": 29.5999995778004
+            }
+          },
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": 1,
+          "source": "ram-pattern-evidence"
+        },
+        "required_gap": 9.82222265733613,
+        "score_gap": 19.5111137088802
+      },
+      "observed_outcomes": 1,
+      "pending_contacts": 0,
+      "ram_records": 17,
+      "recovered_records": 0
+    },
+    "ticks": 389
+  },
+  "changed_repaired_core": {
+    "arm": "changed_repaired_core",
+    "arrived": true,
+    "collisions": 0,
+    "distance_m": 129.719994321465,
+    "recommendation": {},
+    "rescued": false,
+    "route_plan_builds": 0,
+    "side": 1,
+    "simulated_seconds": 38.9,
+    "status": {
+      "changed_initial_decisions": 0,
+      "core_changed_initial_decisions": 0,
+      "decision_reasons": {
+        "insufficient_margin": 1
+      },
+      "enabled": true,
+      "exclusions": {},
+      "exploration_decisions": 0,
+      "last_evaluation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [
+              "structural-event:ddb20850dc582bba65298fca49053e022f13200e",
+              "structural-event:c4ac6b608092347570a570e677471581ec9beeb0",
+              "structural-event:bf4e9688c29f85e67a47ca6a3910a81bf5810496",
+              "structural-event:187d667fa70f1d36f2ffe971a20128c055753ed8",
+              "structural-event:ca46293830481bf4c15927e7d0d1e533ba6acaa8",
+              "structural-event:896b1dfecc9295626fb38893b7a35ac0c00d7add",
+              "structural-event:3a017ae9bdb934e39baff8bca9a7f79ae022e0cf",
+              "structural-event:776730c23d6c483bee8b6f615b061e29f9fa3aa2"
+            ],
+            "samples": 8,
+            "score": 41.5000015993913
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [
+              "structural-event:3c55fa39eea6773ac9295e4f2f7ee79a96b2bc0d",
+              "structural-event:b1318aa5d9ac1956a82f4deff6773e9c41be01ce",
+              "structural-event:93a29de3ac91a48ba0c689099424aa10ac36b820",
+              "structural-event:d0911e13db1e37b2e1bcbea5717afc3c41d86690",
+              "structural-event:247f6038199df08fc8daed890ad6b8799e00de9e",
+              "structural-event:00b4e223cee029873274181f715bf34eb9a7f8d0",
+              "structural-event:5946d5f2e9c8694214ed1009fb5b7e2edcc34066",
+              "structural-event:d079c6df855a79dd7a1a32c39f5dfc4c4cd9d054",
+              "structural-event:b50c21687e758f24b3de7a5eebca1443e2a537c3",
+              "structural-event:6ada9c081210be509f7a77fe8cd1d325e41ee05e",
+              "structural-event:ddaa013392c93b9f31ec8fe550105cc71b688c95",
+              "structural-event:1d9c0702325b3b6771bc67870ee37342275f1634",
+              "structural-event:b969ab75bb1813f81cf002e40c27054a8ec88b01"
+            ],
+            "samples": 13,
+            "score": 33.8717939842206
+          }
+        },
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+        "reason": "insufficient_margin",
+        "recommendation": {},
+        "required_gap": 8.30000031987826,
+        "score_gap": 7.62820761517074
+      },
+      "observed_outcomes": 1,
+      "pending_contacts": 0,
+      "ram_records": 1,
+      "recovered_records": 21
+    },
+    "ticks": 389
+  },
+  "changed_stale_minus_baseline_distance_m": 124.07998129725499,
+  "repaired_minus_stale_distance_m": -124.07998129725499,
+  "repaired_minus_baseline_distance_m": 0.0,
+  "intake": {
+    "acked": 4,
+    "confirmed": 4,
+    "recovered_this_poll": 4,
+    "cached_recovered": 4,
+    "world_write_authority": false
+  },
+  "cold_recovery": {
+    "acked": 0,
+    "confirmed": 4,
+    "recovered_this_poll": 4,
+    "cached_recovered": 4,
+    "world_write_authority": false
+  },
+  "adapted_intake": [
+    {
+      "acked": 4,
+      "confirmed": 8,
+      "recovered_this_poll": 8,
+      "cached_recovered": 8,
+      "world_write_authority": false
+    },
+    {
+      "acked": 4,
+      "confirmed": 12,
+      "recovered_this_poll": 12,
+      "cached_recovered": 12,
+      "world_write_authority": false
+    },
+    {
+      "acked": 4,
+      "confirmed": 16,
+      "recovered_this_poll": 16,
+      "cached_recovered": 16,
+      "world_write_authority": false
+    },
+    {
+      "acked": 4,
+      "confirmed": 20,
+      "recovered_this_poll": 20,
+      "cached_recovered": 20,
+      "world_write_authority": false
+    },
+    {
+      "acked": 1,
+      "confirmed": 21,
+      "recovered_this_poll": 21,
+      "cached_recovered": 21,
+      "world_write_authority": false
+    },
+    {
+      "acked": 0,
+      "confirmed": 21,
+      "recovered_this_poll": 21,
+      "cached_recovered": 21,
+      "world_write_authority": false
+    }
+  ],
+  "adapted_cold_recovery": {
+    "acked": 0,
+    "confirmed": 21,
+    "recovered_this_poll": 21,
+    "cached_recovered": 21,
+    "world_write_authority": false
+  },
+  "stored_physical_outcomes": 21,
+  "adapted_fixture_outcomes": 17,
+  "acquisition_traversals": 21,
+  "acquisition_distance_m": 3543.9352044612133,
+  "acquisition_simulated_seconds": 1062.8999999999999,
+  "adapted_ram_verification_added_one_physical_outcome": true,
+  "training_and_adaptation_cost_included_in_claim": false,
+  "limit": "Held-out traversal savings exclude acquisition cost. Exact sensor signatures can alias changed geometry; this is one synthetic physical fixture, not a live counterfactual or broad generalization.",
+  "changed_opening_z": 0
+}
