@@ -1,0 +1,1062 @@
+{
+  "schema": "live-infinita-pattern-outcome-measurement/v1",
+  "counts": {
+    "perception_completed": 6,
+    "exploration_completed": 7,
+    "perception_excluded": 6,
+    "exploration_excluded": 2
+  },
+  "contacts": [
+    {
+      "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:21",
+      "decision": {
+        "changed_initial_side": false,
+        "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:21",
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:47:38",
+        "default_side": 1,
+        "evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:47:38",
+          "reason": "insufficient_samples",
+          "recommendation": {}
+        },
+        "goal_id": "68580ea9ae14436eccda115e4ff49b2a:2",
+        "observation_ids": [],
+        "side": 1,
+        "source": "perception",
+        "world_id": "nov-live-autonomous-001"
+      },
+      "outcome": {
+        "attempt_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:21",
+        "completion_basis": "executed_exit",
+        "contains_prediction": false,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:47:38",
+        "distance_m": 4.3256554491818,
+        "ended_at_unix": 1791442620.25561,
+        "exit_progress_m": 0.910532236099243,
+        "exploration": false,
+        "initial_remaining_m": 7.10291194915771,
+        "observer": "nov",
+        "outcome": "contour_completed",
+        "physical_attempt": true,
+        "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+        "side": 1,
+        "world_id": "nov-live-autonomous-001"
+      },
+      "exclusion": null,
+      "classification": "perception_completed"
+    },
+    {
+      "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:20",
+      "decision": {
+        "changed_initial_side": false,
+        "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:20",
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:157:156",
+        "default_side": -1,
+        "evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:124a33d593f18ea3c01381d02596c301779f0ce0"
+              ],
+              "samples": 1,
+              "score": 1.3333352903525
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:157:156",
+          "reason": "insufficient_samples",
+          "recommendation": {}
+        },
+        "goal_id": "68580ea9ae14436eccda115e4ff49b2a:2",
+        "observation_ids": [],
+        "side": -1,
+        "source": "pattern-exploration",
+        "world_id": "nov-live-autonomous-001"
+      },
+      "outcome": {
+        "attempt_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:20",
+        "completion_basis": "executed_exit",
+        "contains_prediction": false,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:157:156",
+        "distance_m": 10.5735725462437,
+        "ended_at_unix": 1791442619.41877,
+        "exit_progress_m": 0.863335013389587,
+        "exploration": true,
+        "initial_remaining_m": 4.59721994400024,
+        "observer": "nov",
+        "outcome": "contour_completed",
+        "physical_attempt": true,
+        "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+        "side": -1,
+        "world_id": "nov-live-autonomous-001"
+      },
+      "exclusion": null,
+      "classification": "exploration_completed"
+    },
+    {
+      "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:19",
+      "decision": {
+        "changed_initial_side": false,
+        "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:19",
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:102:68",
+        "default_side": 1,
+        "evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:102:68",
+          "reason": "insufficient_samples",
+          "recommendation": {}
+        },
+        "goal_id": "68580ea9ae14436eccda115e4ff49b2a:2",
+        "observation_ids": [],
+        "side": 1,
+        "source": "perception",
+        "world_id": "nov-live-autonomous-001"
+      },
+      "outcome": null,
+      "exclusion": {
+        "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:19",
+        "goal_id": "68580ea9ae14436eccda115e4ff49b2a:2",
+        "reason": "new_contact_before_executed_exit",
+        "world_id": "nov-live-autonomous-001"
+      },
+      "classification": "perception_excluded"
+    },
+    {
+      "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:18",
+      "decision": {
+        "changed_initial_side": true,
+        "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:18",
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:231:230",
+        "default_side": 1,
+        "evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:c329d9f3b4a4434e1d8f4298f14181582e32bcdd"
+              ],
+              "samples": 1,
+              "score": 1.33333333333333
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:231:230",
+          "reason": "insufficient_samples",
+          "recommendation": {}
+        },
+        "goal_id": "68580ea9ae14436eccda115e4ff49b2a:2",
+        "observation_ids": [],
+        "side": -1,
+        "source": "pattern-exploration",
+        "world_id": "nov-live-autonomous-001"
+      },
+      "outcome": null,
+      "exclusion": {
+        "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:18",
+        "goal_id": "68580ea9ae14436eccda115e4ff49b2a:2",
+        "reason": "observed_side_end",
+        "world_id": "nov-live-autonomous-001"
+      },
+      "classification": "exploration_excluded"
+    },
+    {
+      "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:17",
+      "decision": {
+        "changed_initial_side": false,
+        "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:17",
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:39:6",
+        "default_side": 1,
+        "evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:39:6",
+          "reason": "insufficient_samples",
+          "recommendation": {}
+        },
+        "goal_id": "68580ea9ae14436eccda115e4ff49b2a:2",
+        "observation_ids": [],
+        "side": 1,
+        "source": "perception",
+        "world_id": "nov-live-autonomous-001"
+      },
+      "outcome": null,
+      "exclusion": {
+        "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:17",
+        "goal_id": "68580ea9ae14436eccda115e4ff49b2a:2",
+        "reason": "new_contact_before_executed_exit",
+        "world_id": "nov-live-autonomous-001"
+      },
+      "classification": "perception_excluded"
+    },
+    {
+      "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:16",
+      "decision": {
+        "changed_initial_side": false,
+        "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:16",
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:39:38",
+        "default_side": 1,
+        "evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:39:38",
+          "reason": "insufficient_samples",
+          "recommendation": {}
+        },
+        "goal_id": "68580ea9ae14436eccda115e4ff49b2a:2",
+        "observation_ids": [],
+        "side": 1,
+        "source": "perception",
+        "world_id": "nov-live-autonomous-001"
+      },
+      "outcome": {
+        "attempt_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:16",
+        "completion_basis": "executed_exit",
+        "contains_prediction": false,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:39:38",
+        "distance_m": 2.00000292062759,
+        "ended_at_unix": 1791442603.14898,
+        "exit_progress_m": 0.998354732990265,
+        "exploration": false,
+        "initial_remaining_m": 7.60679006576538,
+        "observer": "nov",
+        "outcome": "contour_completed",
+        "physical_attempt": true,
+        "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+        "side": 1,
+        "world_id": "nov-live-autonomous-001"
+      },
+      "exclusion": null,
+      "classification": "perception_completed"
+    },
+    {
+      "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:15",
+      "decision": {
+        "changed_initial_side": false,
+        "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:15",
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:39:38",
+        "default_side": 1,
+        "evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:39:38",
+          "reason": "insufficient_samples",
+          "recommendation": {}
+        },
+        "goal_id": "68580ea9ae14436eccda115e4ff49b2a:2",
+        "observation_ids": [],
+        "side": 1,
+        "source": "perception",
+        "world_id": "nov-live-autonomous-001"
+      },
+      "outcome": null,
+      "exclusion": {
+        "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:15",
+        "goal_id": "68580ea9ae14436eccda115e4ff49b2a:2",
+        "reason": "new_contact_before_executed_exit",
+        "world_id": "nov-live-autonomous-001"
+      },
+      "classification": "perception_excluded"
+    },
+    {
+      "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:14",
+      "decision": {
+        "changed_initial_side": false,
+        "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:14",
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:249:248",
+        "default_side": -1,
+        "evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:249:248",
+          "reason": "insufficient_samples",
+          "recommendation": {}
+        },
+        "goal_id": "68580ea9ae14436eccda115e4ff49b2a:2",
+        "observation_ids": [],
+        "side": -1,
+        "source": "perception",
+        "world_id": "nov-live-autonomous-001"
+      },
+      "outcome": {
+        "attempt_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:14",
+        "completion_basis": "executed_exit",
+        "contains_prediction": false,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:249:248",
+        "distance_m": 10.1154043674469,
+        "ended_at_unix": 1791442599.54893,
+        "exit_progress_m": 0.754059314727783,
+        "exploration": false,
+        "initial_remaining_m": 4.95150756835938,
+        "observer": "nov",
+        "outcome": "contour_completed",
+        "physical_attempt": true,
+        "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+        "side": -1,
+        "world_id": "nov-live-autonomous-001"
+      },
+      "exclusion": null,
+      "classification": "perception_completed"
+    },
+    {
+      "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:13",
+      "decision": {
+        "changed_initial_side": false,
+        "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:13",
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:252:248",
+        "default_side": -1,
+        "evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:252:248",
+          "reason": "insufficient_samples",
+          "recommendation": {}
+        },
+        "goal_id": "68580ea9ae14436eccda115e4ff49b2a:2",
+        "observation_ids": [],
+        "side": -1,
+        "source": "perception",
+        "world_id": "nov-live-autonomous-001"
+      },
+      "outcome": {
+        "attempt_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:13",
+        "completion_basis": "executed_exit",
+        "contains_prediction": false,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:252:248",
+        "distance_m": 8.8326763138175,
+        "ended_at_unix": 1791442593.68977,
+        "exit_progress_m": 0.788808643817902,
+        "exploration": false,
+        "initial_remaining_m": 7.43537187576294,
+        "observer": "nov",
+        "outcome": "contour_completed",
+        "physical_attempt": true,
+        "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+        "side": -1,
+        "world_id": "nov-live-autonomous-001"
+      },
+      "exclusion": null,
+      "classification": "perception_completed"
+    },
+    {
+      "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:12",
+      "decision": {
+        "changed_initial_side": false,
+        "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:12",
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:230:230",
+        "default_side": 1,
+        "evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 1,
+              "score": 1.4130479991436
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:2ab66112e225093110750d049887c005e5255363"
+              ],
+              "samples": 1,
+              "score": 3.00000032285849
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:230:230",
+          "reason": "insufficient_samples",
+          "recommendation": {}
+        },
+        "goal_id": "68580ea9ae14436eccda115e4ff49b2a:2",
+        "observation_ids": [],
+        "side": 1,
+        "source": "pattern-exploration",
+        "world_id": "nov-live-autonomous-001"
+      },
+      "outcome": {
+        "attempt_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:12",
+        "completion_basis": "executed_exit",
+        "contains_prediction": false,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:230:230",
+        "distance_m": 4.99999891221523,
+        "ended_at_unix": 1791442590.91994,
+        "exit_progress_m": 0.978233754634857,
+        "exploration": true,
+        "initial_remaining_m": 11.8484859466553,
+        "observer": "nov",
+        "outcome": "contour_completed",
+        "physical_attempt": true,
+        "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+        "side": 1,
+        "world_id": "nov-live-autonomous-001"
+      },
+      "exclusion": null,
+      "classification": "exploration_completed"
+    },
+    {
+      "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:11",
+      "decision": {
+        "changed_initial_side": true,
+        "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:11",
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:230:230",
+        "default_side": 1,
+        "evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:2ab66112e225093110750d049887c005e5255363"
+              ],
+              "samples": 1,
+              "score": 3.00000032285849
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:230:230",
+          "reason": "insufficient_samples",
+          "recommendation": {}
+        },
+        "goal_id": "68580ea9ae14436eccda115e4ff49b2a:2",
+        "observation_ids": [],
+        "side": -1,
+        "source": "pattern-exploration",
+        "world_id": "nov-live-autonomous-001"
+      },
+      "outcome": {
+        "attempt_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:11",
+        "completion_basis": "executed_exit",
+        "contains_prediction": false,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:230:230",
+        "distance_m": 4.2391439974308,
+        "ended_at_unix": 1791442580.72126,
+        "exit_progress_m": 1.10818946361542,
+        "exploration": true,
+        "initial_remaining_m": 9.2446346282959,
+        "observer": "nov",
+        "outcome": "contour_completed",
+        "physical_attempt": true,
+        "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+        "side": -1,
+        "world_id": "nov-live-autonomous-001"
+      },
+      "exclusion": null,
+      "classification": "exploration_completed"
+    },
+    {
+      "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:10",
+      "decision": {
+        "changed_initial_side": false,
+        "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:10",
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:100:100",
+        "default_side": -1,
+        "evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:100:100",
+          "reason": "insufficient_samples",
+          "recommendation": {}
+        },
+        "goal_id": "68580ea9ae14436eccda115e4ff49b2a:2",
+        "observation_ids": [],
+        "side": -1,
+        "source": "perception",
+        "world_id": "nov-live-autonomous-001"
+      },
+      "outcome": {
+        "attempt_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:10",
+        "completion_basis": "executed_exit",
+        "contains_prediction": false,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:100:100",
+        "distance_m": 7.0000042617321,
+        "ended_at_unix": 1791442577.65922,
+        "exit_progress_m": 0.871131300926208,
+        "exploration": false,
+        "initial_remaining_m": 8.38683032989502,
+        "observer": "nov",
+        "outcome": "contour_completed",
+        "physical_attempt": true,
+        "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+        "side": -1,
+        "world_id": "nov-live-autonomous-001"
+      },
+      "exclusion": null,
+      "classification": "perception_completed"
+    },
+    {
+      "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:9",
+      "decision": {
+        "changed_initial_side": false,
+        "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:9",
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:126:126",
+        "default_side": 1,
+        "evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 1,
+              "score": 1.33331967393557
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:07541eda5dc1b136d1fbee16b009c0f37a5dc6ef"
+              ],
+              "samples": 1,
+              "score": 8.6581303179264
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:126:126",
+          "cost_shift": {
+            "basis": "measured_cost_increase",
+            "factor": 1.5,
+            "fresh_samples": 2,
+            "minimum_rise_cost_units": 1.0,
+            "onset_attempt_id": "7825fe4e75daa39887c2a374f4fa643a:8fa55db0c7518404e1acd750eb9d81a6:2:1",
+            "retained_raw_samples": 10
+          },
+          "reason": "cost_shift_exploration",
+          "recommendation": {
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:126:126",
+            "observation_ids": [],
+            "side": 1,
+            "source": "pattern-exploration"
+          }
+        },
+        "goal_id": "68580ea9ae14436eccda115e4ff49b2a:2",
+        "observation_ids": [],
+        "side": 1,
+        "source": "pattern-exploration",
+        "world_id": "nov-live-autonomous-001"
+      },
+      "outcome": {
+        "attempt_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:9",
+        "completion_basis": "executed_exit",
+        "contains_prediction": false,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:126:126",
+        "distance_m": 10.0000031888485,
+        "ended_at_unix": 1791442575.95099,
+        "exit_progress_m": 0.876485466957092,
+        "exploration": true,
+        "initial_remaining_m": 6.49837398529053,
+        "observer": "nov",
+        "outcome": "contour_completed",
+        "physical_attempt": true,
+        "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+        "side": 1,
+        "world_id": "nov-live-autonomous-001"
+      },
+      "exclusion": null,
+      "classification": "exploration_completed"
+    },
+    {
+      "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:8",
+      "decision": {
+        "changed_initial_side": false,
+        "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:8",
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:249:249",
+        "default_side": -1,
+        "evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:66b929d9e8ea2c434afa71f0f24639fd0797eec0",
+                "structural-event:55df0571ad20acb40c923729b9594647ea5a4802"
+              ],
+              "samples": 2,
+              "score": 0.9955060283343
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:249:249",
+          "reason": "insufficient_samples",
+          "recommendation": {}
+        },
+        "goal_id": "68580ea9ae14436eccda115e4ff49b2a:2",
+        "observation_ids": [],
+        "side": -1,
+        "source": "pattern-exploration",
+        "world_id": "nov-live-autonomous-001"
+      },
+      "outcome": null,
+      "exclusion": {
+        "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:8",
+        "goal_id": "68580ea9ae14436eccda115e4ff49b2a:2",
+        "reason": "new_contact_before_executed_exit",
+        "world_id": "nov-live-autonomous-001"
+      },
+      "classification": "exploration_excluded"
+    },
+    {
+      "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:7",
+      "decision": {
+        "changed_initial_side": false,
+        "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:7",
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:153:152",
+        "default_side": -1,
+        "evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:153:152",
+          "reason": "insufficient_samples",
+          "recommendation": {}
+        },
+        "goal_id": "68580ea9ae14436eccda115e4ff49b2a:2",
+        "observation_ids": [],
+        "side": -1,
+        "source": "perception",
+        "world_id": "nov-live-autonomous-001"
+      },
+      "outcome": null,
+      "exclusion": {
+        "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:7",
+        "goal_id": "68580ea9ae14436eccda115e4ff49b2a:2",
+        "reason": "new_contact_before_executed_exit",
+        "world_id": "nov-live-autonomous-001"
+      },
+      "classification": "perception_excluded"
+    },
+    {
+      "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:6",
+      "decision": {
+        "changed_initial_side": false,
+        "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:6",
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:228:224",
+        "default_side": -1,
+        "evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:228:224",
+          "reason": "insufficient_samples",
+          "recommendation": {}
+        },
+        "goal_id": "68580ea9ae14436eccda115e4ff49b2a:2",
+        "observation_ids": [],
+        "side": -1,
+        "source": "perception",
+        "world_id": "nov-live-autonomous-001"
+      },
+      "outcome": {
+        "attempt_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:6",
+        "completion_basis": "executed_exit",
+        "contains_prediction": false,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:228:224",
+        "distance_m": 11.0000059008598,
+        "ended_at_unix": 1791442522.7207,
+        "exit_progress_m": 0.819754779338837,
+        "exploration": false,
+        "initial_remaining_m": 7.41775894165039,
+        "observer": "nov",
+        "outcome": "contour_completed",
+        "physical_attempt": true,
+        "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+        "side": -1,
+        "world_id": "nov-live-autonomous-001"
+      },
+      "exclusion": null,
+      "classification": "perception_completed"
+    },
+    {
+      "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:5",
+      "decision": {
+        "changed_initial_side": false,
+        "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:5",
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:147:147",
+        "default_side": 1,
+        "evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:147:147",
+          "reason": "insufficient_samples",
+          "recommendation": {}
+        },
+        "goal_id": "68580ea9ae14436eccda115e4ff49b2a:2",
+        "observation_ids": [],
+        "side": 1,
+        "source": "perception",
+        "world_id": "nov-live-autonomous-001"
+      },
+      "outcome": null,
+      "exclusion": {
+        "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:5",
+        "goal_id": "68580ea9ae14436eccda115e4ff49b2a:2",
+        "reason": "observed_side_end",
+        "world_id": "nov-live-autonomous-001"
+      },
+      "classification": "perception_excluded"
+    },
+    {
+      "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:4",
+      "decision": {
+        "changed_initial_side": false,
+        "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:4",
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:62:62",
+        "default_side": 1,
+        "evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:7dea42d4e97acb9c08809772549ddd33771429dd",
+                "structural-event:570141d929432b1770762cfac2519a0da36531d1"
+              ],
+              "samples": 2,
+              "score": 2.16666209449371
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:62:62",
+          "reason": "insufficient_samples",
+          "recommendation": {}
+        },
+        "goal_id": "68580ea9ae14436eccda115e4ff49b2a:2",
+        "observation_ids": [],
+        "side": 1,
+        "source": "pattern-exploration",
+        "world_id": "nov-live-autonomous-001"
+      },
+      "outcome": {
+        "attempt_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:4",
+        "completion_basis": "executed_exit",
+        "contains_prediction": false,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:62:62",
+        "distance_m": 9.50860041379929,
+        "ended_at_unix": 1791442518.32462,
+        "exit_progress_m": 0.991289734840393,
+        "exploration": true,
+        "initial_remaining_m": 4.99477767944336,
+        "observer": "nov",
+        "outcome": "contour_completed",
+        "physical_attempt": true,
+        "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+        "side": 1,
+        "world_id": "nov-live-autonomous-001"
+      },
+      "exclusion": null,
+      "classification": "exploration_completed"
+    },
+    {
+      "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:3",
+      "decision": {
+        "changed_initial_side": false,
+        "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:3",
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:185:184",
+        "default_side": -1,
+        "evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:185:184",
+          "reason": "insufficient_samples",
+          "recommendation": {}
+        },
+        "goal_id": "68580ea9ae14436eccda115e4ff49b2a:2",
+        "observation_ids": [],
+        "side": -1,
+        "source": "perception",
+        "world_id": "nov-live-autonomous-001"
+      },
+      "outcome": null,
+      "exclusion": {
+        "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:2:3",
+        "goal_id": "68580ea9ae14436eccda115e4ff49b2a:2",
+        "reason": "new_contact_before_executed_exit",
+        "world_id": "nov-live-autonomous-001"
+      },
+      "classification": "perception_excluded"
+    },
+    {
+      "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:1:2",
+      "decision": {
+        "changed_initial_side": false,
+        "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:1:2",
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:255:190",
+        "default_side": 1,
+        "evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:fd6af7fc8fb137940317fa1dedc91d14e076dfdf"
+              ],
+              "samples": 1,
+              "score": 5.33333524068197
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:255:190",
+          "cost_shift": {
+            "basis": "measured_cost_increase",
+            "factor": 1.5,
+            "fresh_samples": 1,
+            "minimum_rise_cost_units": 1.0,
+            "onset_attempt_id": "94a08faa5356943664d303345844273a:dc3096ce8fe9810b9d309cd430499f2f:97:2483",
+            "retained_raw_samples": 22
+          },
+          "reason": "cost_shift_exploration",
+          "recommendation": {
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:255:190",
+            "observation_ids": [],
+            "side": 1,
+            "source": "pattern-exploration"
+          }
+        },
+        "goal_id": "68580ea9ae14436eccda115e4ff49b2a:1",
+        "observation_ids": [],
+        "side": 1,
+        "source": "pattern-exploration",
+        "world_id": "nov-live-autonomous-001"
+      },
+      "outcome": {
+        "attempt_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:1:2",
+        "completion_basis": "executed_exit",
+        "contains_prediction": false,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:255:190",
+        "distance_m": 4.0,
+        "ended_at_unix": 1791442493.48077,
+        "exit_progress_m": 1.41730928421021,
+        "exploration": true,
+        "initial_remaining_m": 22.4061851501465,
+        "observer": "nov",
+        "outcome": "contour_completed",
+        "physical_attempt": true,
+        "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+        "side": 1,
+        "world_id": "nov-live-autonomous-001"
+      },
+      "exclusion": null,
+      "classification": "exploration_completed"
+    },
+    {
+      "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:1:1",
+      "decision": {
+        "changed_initial_side": true,
+        "contact_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:1:1",
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:254:126",
+        "default_side": 1,
+        "evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:73d9fc91a2d1af79513adca9a846c22e8d88bbb2"
+              ],
+              "samples": 1,
+              "score": 1.33333307007949
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:254:126",
+          "reason": "insufficient_samples",
+          "recommendation": {}
+        },
+        "goal_id": "68580ea9ae14436eccda115e4ff49b2a:1",
+        "observation_ids": [],
+        "side": -1,
+        "source": "pattern-exploration",
+        "world_id": "nov-live-autonomous-001"
+      },
+      "outcome": {
+        "attempt_id": "828a49353931acbb3ff24dc245618a61:68580ea9ae14436eccda115e4ff49b2a:1:1",
+        "completion_basis": "executed_exit",
+        "contains_prediction": false,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:254:126",
+        "distance_m": 17.00001552701,
+        "ended_at_unix": 1791442486.5615,
+        "exit_progress_m": 0.910412490367889,
+        "exploration": true,
+        "initial_remaining_m": 37.3372955322266,
+        "observer": "nov",
+        "outcome": "contour_completed",
+        "physical_attempt": true,
+        "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+        "side": -1,
+        "world_id": "nov-live-autonomous-001"
+      },
+      "exclusion": null,
+      "classification": "exploration_completed"
+    }
+  ],
+  "invalid_event_lines": 0,
+  "conflicting_contact_ids": [],
+  "outcomes_without_decision": 0,
+  "scope": "observational_read_only",
+  "performance_advantage_demonstrated": false,
+  "comparison_limit": "Different live geometry and equal baseline choices cannot establish causal improvement.",
+  "observed_at_utc": "2026-10-08T06:57:16.830501+00:00",
+  "since": "Thu 2026-10-08 06:54:07 UTC",
+  "input_event_lines": 42
+}

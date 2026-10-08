@@ -1,0 +1,242 @@
+{
+  "active": true,
+  "active_attempt": {
+    "blocked_attempts": 0,
+    "causal_memoria_steps": 0,
+    "causal_ram_steps": 83,
+    "completed_steps": 688,
+    "current": [
+      -145.364776611328,
+      -33.4335632324219
+    ],
+    "distance_m": 688.017921101302,
+    "duration_monotonic_ms": 221348,
+    "goal": [
+      -140.522659301758,
+      -46.0945091247559
+    ],
+    "goal_id": "68580ea9ae14436eccda115e4ff49b2a:2",
+    "initial_remaining_m": 36.2870559692383,
+    "learning_evidence": false,
+    "quality_eligible": true,
+    "remaining_m": 13.5552816390991,
+    "schema": "live-infinita-nov-journey-attempt/v1",
+    "start": [
+      -158.505523681641,
+      -14.5767812728882
+    ],
+    "started_at_unix": 1791442505.52829,
+    "started_monotonic_ms": 56977,
+    "world_id": "nov-live-autonomous-001",
+    "world_write_authority": false
+  },
+  "arrivals": 1,
+  "blocked_attempts": 0,
+  "causal_memoria_steps": 0,
+  "causal_ram_steps": 83,
+  "completed_steps": 800,
+  "distance_m": 688.017921101302,
+  "interruptions": 0,
+  "last_reason": "",
+  "motion_state": "walking",
+  "observed_at_unix": 1791442726.87689,
+  "patterns": {
+    "changed_initial_decisions": 2,
+    "core_changed_initial_decisions": 2,
+    "cost_shift_enabled": true,
+    "decision_reasons": {
+      "cost_shift_exploration": 3,
+      "insufficient_margin": 1,
+      "insufficient_samples": 21,
+      "preferred_side": 2
+    },
+    "enabled": true,
+    "exclusions": {
+      "new_contact_before_executed_exit": 8,
+      "observed_side_end": 2
+    },
+    "exploration_decisions": 11,
+    "last_evaluation": {
+      "alternatives": {
+        "-1": {
+          "errors": 0,
+          "observation_ids": [
+            "structural-event:77f8e44c0b7ddfef2e8407b3d4050755e16362a1",
+            "structural-event:1d9582b6e2a09cdf7757b5220c95726699201f95",
+            "structural-event:dbe309bfc1cccc6e0d6d6b9d6679253a9231ab10",
+            "structural-event:fd77922af92a38d75a77c7584d2da94b071f90ff",
+            "structural-event:b3dfd3a4e37c2c8f05bd53dff9eca417b58a90d4",
+            "structural-event:b798d82967ae58462295bd7d239a6d0c5b9202af",
+            "structural-event:7963a8674fc3ac2511472ee6e2cfab75354d2791",
+            "structural-event:049fd38efb546194b113be27b1ba86990820f201",
+            "structural-event:597ce6206243abf8b0e7e80c3b27f231ae9dae98",
+            "structural-event:93d2a419303f9004def82abbeca9a67b21daadbf",
+            "structural-event:750fa51d67b5fa329633b1a90acc9c4ac514f67b",
+            "structural-event:2d1e6a77468aed8025ccb914d98d86fdff6ab9a0",
+            "structural-event:02c186d698186352d7d169f9dce2db09b9092295",
+            "structural-event:0df67b67d9e5a50c19a4cf63a1416ef00c393a94"
+          ],
+          "samples": 14,
+          "score": 2.48863597258571
+        },
+        "1": {
+          "errors": 0,
+          "observation_ids": [
+            "structural-event:4f4083ba7ba736bdb2f134fc65e246a9d8424d70",
+            "structural-event:c8cb6688ea9d254c7d871539084ad4b00c9cdf6b",
+            "structural-event:c6c4bdca3593931fdee0f26626942f577dc28f07",
+            "structural-event:890b67b432acc7902886730d2e3f2b8806e010cd",
+            "structural-event:476805d297177191430360d2e2f65735c6f8df0f",
+            "structural-event:ed42b42387d5d768953d99a18b5f1d076f1502c6",
+            "structural-event:1860ddf0b668810c0a31ab31955603418e804e77",
+            "structural-event:c65da6a69b59ec69c7196102dac7df94e7d529ff",
+            "structural-event:03cc0e055d83b2355a66430fcbdbbb9fa6d3fa82",
+            "structural-event:eca35314f6e0ede8b6f4d18aa979f7e71503817b",
+            "structural-event:716bf2cbd312682f68dab6ed5f3746f78709007b",
+            "structural-event:2f130139fb74ec9226b31c2575c45f58391df1d2",
+            "structural-event:1b4e866f71d7c29058196ffde934657e90ff2503",
+            "structural-event:8cf2ef2a76184320801a7ff8d3df48c29531b48f",
+            "structural-event:8a3832738d0ee62ba168260eb9803fb2d443cc66",
+            "structural-event:39adfd1d14fdab326e7ecff6109a11f0aff5624a",
+            "structural-event:a57a7b3023f18d20a20730a27780f545553d655c",
+            "structural-event:08c094f87db364c4f152dc5b9ed64c589b9dbe12",
+            "structural-event:6dcb4fd5320872d7530a4d4b8ad141f14cb642f6"
+          ],
+          "samples": 19,
+          "score": 1.36823964615663
+        }
+      },
+      "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:255:254",
+      "cost_shift": {
+        "basis": "measured_cost_increase",
+        "factor": 1.5,
+        "fresh_samples": 33,
+        "minimum_rise_cost_units": 1.0,
+        "onset_attempt_id": "94a08faa5356943664d303345844273a:dc3096ce8fe9810b9d309cd430499f2f:97:2438",
+        "retained_raw_samples": 166
+      },
+      "reason": "preferred_side",
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [
+              "structural-event:77f8e44c0b7ddfef2e8407b3d4050755e16362a1",
+              "structural-event:1d9582b6e2a09cdf7757b5220c95726699201f95",
+              "structural-event:dbe309bfc1cccc6e0d6d6b9d6679253a9231ab10",
+              "structural-event:fd77922af92a38d75a77c7584d2da94b071f90ff",
+              "structural-event:b3dfd3a4e37c2c8f05bd53dff9eca417b58a90d4",
+              "structural-event:b798d82967ae58462295bd7d239a6d0c5b9202af",
+              "structural-event:7963a8674fc3ac2511472ee6e2cfab75354d2791",
+              "structural-event:049fd38efb546194b113be27b1ba86990820f201",
+              "structural-event:597ce6206243abf8b0e7e80c3b27f231ae9dae98",
+              "structural-event:93d2a419303f9004def82abbeca9a67b21daadbf",
+              "structural-event:750fa51d67b5fa329633b1a90acc9c4ac514f67b",
+              "structural-event:2d1e6a77468aed8025ccb914d98d86fdff6ab9a0",
+              "structural-event:02c186d698186352d7d169f9dce2db09b9092295",
+              "structural-event:0df67b67d9e5a50c19a4cf63a1416ef00c393a94"
+            ],
+            "samples": 14,
+            "score": 2.48863597258571
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [
+              "structural-event:4f4083ba7ba736bdb2f134fc65e246a9d8424d70",
+              "structural-event:c8cb6688ea9d254c7d871539084ad4b00c9cdf6b",
+              "structural-event:c6c4bdca3593931fdee0f26626942f577dc28f07",
+              "structural-event:890b67b432acc7902886730d2e3f2b8806e010cd",
+              "structural-event:476805d297177191430360d2e2f65735c6f8df0f",
+              "structural-event:ed42b42387d5d768953d99a18b5f1d076f1502c6",
+              "structural-event:1860ddf0b668810c0a31ab31955603418e804e77",
+              "structural-event:c65da6a69b59ec69c7196102dac7df94e7d529ff",
+              "structural-event:03cc0e055d83b2355a66430fcbdbbb9fa6d3fa82",
+              "structural-event:eca35314f6e0ede8b6f4d18aa979f7e71503817b",
+              "structural-event:716bf2cbd312682f68dab6ed5f3746f78709007b",
+              "structural-event:2f130139fb74ec9226b31c2575c45f58391df1d2",
+              "structural-event:1b4e866f71d7c29058196ffde934657e90ff2503",
+              "structural-event:8cf2ef2a76184320801a7ff8d3df48c29531b48f",
+              "structural-event:8a3832738d0ee62ba168260eb9803fb2d443cc66",
+              "structural-event:39adfd1d14fdab326e7ecff6109a11f0aff5624a",
+              "structural-event:a57a7b3023f18d20a20730a27780f545553d655c",
+              "structural-event:08c094f87db364c4f152dc5b9ed64c589b9dbe12",
+              "structural-event:6dcb4fd5320872d7530a4d4b8ad141f14cb642f6"
+            ],
+            "samples": 19,
+            "score": 1.36823964615663
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|nov-live-autonomous-001|local-clear-v1:255:254",
+        "observation_ids": [
+          "structural-event:4f4083ba7ba736bdb2f134fc65e246a9d8424d70",
+          "structural-event:c8cb6688ea9d254c7d871539084ad4b00c9cdf6b",
+          "structural-event:c6c4bdca3593931fdee0f26626942f577dc28f07",
+          "structural-event:890b67b432acc7902886730d2e3f2b8806e010cd",
+          "structural-event:476805d297177191430360d2e2f65735c6f8df0f",
+          "structural-event:ed42b42387d5d768953d99a18b5f1d076f1502c6",
+          "structural-event:1860ddf0b668810c0a31ab31955603418e804e77",
+          "structural-event:c65da6a69b59ec69c7196102dac7df94e7d529ff",
+          "structural-event:03cc0e055d83b2355a66430fcbdbbb9fa6d3fa82",
+          "structural-event:eca35314f6e0ede8b6f4d18aa979f7e71503817b",
+          "structural-event:716bf2cbd312682f68dab6ed5f3746f78709007b",
+          "structural-event:2f130139fb74ec9226b31c2575c45f58391df1d2",
+          "structural-event:1b4e866f71d7c29058196ffde934657e90ff2503",
+          "structural-event:8cf2ef2a76184320801a7ff8d3df48c29531b48f",
+          "structural-event:8a3832738d0ee62ba168260eb9803fb2d443cc66",
+          "structural-event:39adfd1d14fdab326e7ecff6109a11f0aff5624a",
+          "structural-event:a57a7b3023f18d20a20730a27780f545553d655c",
+          "structural-event:08c094f87db364c4f152dc5b9ed64c589b9dbe12",
+          "structural-event:6dcb4fd5320872d7530a4d4b8ad141f14cb642f6"
+        ],
+        "side": 1,
+        "source": "recovered-pattern-evidence"
+      },
+      "required_gap": 0.497727194517141,
+      "score_gap": 1.12039632642908
+    },
+    "observed_outcomes": 17,
+    "pending_contacts": 0,
+    "ram_records": 512,
+    "recovered_records": 512
+  },
+  "recent_attempts": [
+    {
+      "blocked_attempts": 0,
+      "causal_memoria_steps": 0,
+      "causal_ram_steps": 0,
+      "completed_steps": 112,
+      "current": [
+        -158.505523681641,
+        -14.5767812728882
+      ],
+      "distance_m": 111.369369268417,
+      "duration_monotonic_ms": 50341,
+      "ended_at_unix": 1791442505.07788,
+      "ended_monotonic_ms": 56527,
+      "goal": [
+        -158.497543334961,
+        -14.5714492797852
+      ],
+      "goal_id": "68580ea9ae14436eccda115e4ff49b2a:1",
+      "initial_remaining_m": 80.9417572021484,
+      "learning_evidence": false,
+      "quality_eligible": true,
+      "remaining_m": 0.0095977121964097,
+      "schema": "live-infinita-nov-journey-attempt/v1",
+      "start": [
+        -236.251373291016,
+        -37.0638809204102
+      ],
+      "started_at_unix": 1791442454.73734,
+      "started_monotonic_ms": 6186,
+      "termination": "arrived",
+      "world_id": "nov-live-autonomous-001",
+      "world_write_authority": false
+    }
+  ],
+  "recoveries": 0,
+  "result": "chegou: 111.4 m",
+  "schema": "live-infinita-nov-learning-status/v1",
+  "world_id": "nov-live-autonomous-001"
+}
