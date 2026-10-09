@@ -7,6 +7,7 @@ const COOLDOWN_MS := 300000
 const MAX_ATTEMPT_MS := 45000
 const SCAN_MS := 8000
 const MAX_DISTANCE_M := 40.0
+var _approach = preload("res://nov_animal_approach.gd").new()
 var enabled := false
 var _failed := false
 var _world := ""
@@ -49,6 +50,7 @@ func _sealed_read(path: String) -> Dictionary:
     return value if typeof(value)==TYPE_DICTIONARY else {}
 
 func configure(state_path: String, public_path: String, source_path: String, session: String) -> void:
+    _approach.enabled=OS.get_environment("LIVE_INFINITA_ANIMAL_APPROACH_ENABLED")=="1"
     _path=state_path;_public=public_path;_source=source_path;_session=session
     enabled=not state_path.is_empty() and not public_path.is_empty() and not source_path.is_empty() and session.length()==32
     if not enabled or not FileAccess.file_exists(_path):return
@@ -114,17 +116,23 @@ func save(force: bool = false) -> bool:
         "serial":_serial,"cycle":_cycle,"cycle_starts":_cycle_starts,"last_end_ms":_last_end,
         "active":_active,"results":_results,"counts":_counts}
     if not _write(_path,saved,true):_failed=true;return false
+    var approach: Dictionary=_approach.status()
+    var selected: Dictionary=approach.intent if approach.active else _active
     var public := {"schema":SCHEMA,"world_id":_world,"generated_at_unix":Time.get_unix_time_from_system(),
         "logical_time_ms":_last_ms,"source":"native_bounded_animal_search","world_write_authority":false,
-        "decision_use":true,"absence_claim":false,"active":not _active.is_empty(),
-        "intent":_active,"counts":_counts,"results":_results,"cooldown_ms":COOLDOWN_MS,
+        "decision_use":true,"absence_claim":false,"active":not selected.is_empty(),"approach":approach,
+        "intent":selected,"counts":_counts,"results":_results,"cooldown_ms":COOLDOWN_MS,
         "attempt_budget_ms":MAX_ATTEMPT_MS,"cycle_attempt_limit":4,"last_error":"search_policy_unavailable" if _failed else null}
     if not _write(_public,public,false):_failed=true;return false
     _last_publish=Time.get_ticks_msec()
     return true
 
 func finish(reason: String, confirmed: bool = false, stamp: int = -1) -> void:
-    if _active.is_empty():return
+    var had_approach: bool=not _approach._active.is_empty()
+    _approach.finish(reason,stamp)
+    if _active.is_empty():
+        if had_approach:save(true)
+        return
     var row := _active.duplicate(true)
     _last_ms=maxi(_last_ms,stamp)
     var end := _last_ms
@@ -143,6 +151,7 @@ func suspend(reason: String) -> void:
     _boot_wait=true
 
 func observe(value: Dictionary) -> void:
+    if enabled and not _failed:_approach.observe(value)
     if not enabled or _failed or _active.is_empty() or value.get("schema")!="live-infinita-nov-visual-observation/v1" or value.get("source")!="local_physics_eye_sensor" or value.get("observer_entity_id")!="nov" or value.get("world_id")!=_world or value.get("world_write_authority")!=false or value.get("absence_claim")!=false or not _integer(value.get("logical_time_ms")) or value.logical_time_ms<=_active.started_ms or value.logical_time_ms>_active.deadline_ms or value.logical_time_ms<_last_ms or typeof(value.get("visible_entities"))!=TYPE_ARRAY:
         return
     for seen in value.visible_entities:
@@ -160,6 +169,11 @@ func choose(current: Vector3, world: String, now: int, normal_finished: bool, re
     if now<_last_ms:
         finish("clock_rewind");_failed=true;save(true);return {}
     _last_ms=now
+    if _active.is_empty():
+        var approach: Dictionary=_approach.choose(current,world,now,resolve,heading)
+        if not approach.is_empty():
+            save()
+            return approach
     if _restart_pending:
         _restart_pending=false;finish("renderer_restart")
     var cycle := floori(float(now)/CYCLE_MS)

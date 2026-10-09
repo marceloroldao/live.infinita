@@ -1,0 +1,16 @@
+{
+  "regressions_on": 51,
+  "regressions_off": 51,
+  "final_contract_on": true,
+  "final_contract_off": true,
+  "physical_distance_m": 3.59999871253967,
+  "collisions": 0,
+  "capture_implemented": false,
+  "hunting_learning_demonstrated": false,
+  "approach_outcomes_ingested_in_core": false,
+  "production_changed": false,
+  "root_installer_executed_by_agent": false,
+  "final_existing_search_on": true,
+  "final_existing_search_off": true,
+  "final_pause_publication_verified": true
+}

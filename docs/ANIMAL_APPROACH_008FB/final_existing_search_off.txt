@@ -1,0 +1,41 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+NOV_ANIMAL_SEARCH_START arm=memory entity=fixture:rabbit:0 region=(8.0,0.0)
+NOV_ANIMAL_SEARCH_END arm=memory result=animal_seen confirmed=true
+NOV_ANIMAL_SEARCH_START arm=last_seen entity=fixture:rabbit:0 region=(12.0,0.0)
+NOV_ANIMAL_SEARCH_END arm=last_seen result=not_observed_within_budget confirmed=false
+NOV_ANIMAL_SEARCH_START arm=memory entity=fixture:rabbit:0 region=(8.0,0.0)
+NOV_ANIMAL_SEARCH_END arm=memory result=no_progress confirmed=false
+NOV_ANIMAL_SEARCH_START arm=memory entity=fixture:rabbit:0 region=(8.0,0.0)
+NOV_ANIMAL_SEARCH_END arm=memory result=renderer_restart confirmed=false
+NOV_ANIMAL_SEARCH_START arm=memory entity=fixture:rabbit:0 region=(8.0,0.0)
+NOV_ANIMAL_SEARCH_END arm=memory result=not_observed_within_budget confirmed=false
+NOV_ANIMAL_SEARCH_START arm=last_seen entity=fixture:rabbit:0 region=(12.0,0.0)
+NOV_ANIMAL_SEARCH_END arm=last_seen result=not_observed_within_budget confirmed=false
+NOV_ANIMAL_SEARCH_START arm=memory entity=fixture:rabbit:0 region=(8.0,0.0)
+NOV_ANIMAL_SEARCH_END arm=memory result=not_observed_within_budget confirmed=false
+NOV_ANIMAL_SEARCH_START arm=last_seen entity=fixture:rabbit:0 region=(12.0,0.0)
+NOV_ANIMAL_SEARCH_END arm=last_seen result=not_observed_within_budget confirmed=false
+NOV_ANIMAL_SEARCH_START arm=memory entity=fixture:rabbit:0 region=(8.0,0.0)
+NOV_ANIMAL_SEARCH_START arm=memory entity=fixture:rabbit:0 region=(8.0,0.0)
+NOV_ANIMAL_SEARCH_END arm=memory result=clock_unavailable confirmed=false
+NOV_ANIMAL_SEARCH_START arm=memory entity=fixture:rabbit:0 region=(8.0,0.0)
+NOV_ANIMAL_SEARCH_START arm=memory entity=fixture:rabbit:0 region=(8.0,0.0)
+NOV_ANIMAL_SEARCH_END arm=memory result=clock_rewind confirmed=false
+WORLD_MAP_PERCEPTUAL_VEGETATION region= trees=10 undergrowth=84 env=
+WORLD_MAP_TILE_READY cell=9:14 biome=forest features=trail decor=1
+WORLD_MAP_DECOR_CULL tree=145 rock=110 plant=82 margin=12
+WORLD_MAP_TILE_READY cell=10:14 biome=forest features=trail decor=3
+WORLD_MAP_TILE_READY cell=11:14 biome=forest features=trail decor=1
+WORLD_MAP_TILE_READY cell=9:15 biome=forest features=trail decor=3
+WORLD_MAP_TILE_READY cell=10:15 biome=forest features=trail,landmark_shelter decor=6
+WORLD_MAP_TILE_READY cell=11:15 biome=forest features=trail decor=3
+WORLD_MAP_TILE_READY cell=9:16 biome=forest features=trail decor=1
+WORLD_MAP_TILE_READY cell=10:16 biome=forest features=trail decor=3
+WORLD_MAP_TILE_READY cell=11:16 biome=forest features=trail decor=1
+WORLD_MAP_PREVIEW_READY grid=32x32 m=2048 tiles=9 decor=22
+NOV_ANIMAL_SEARCH_START arm=memory entity=fixture:rabbit:0 region=(-344.0,-32.0)
+NOV_ROUTE_COMMIT route=04e898f3c9a2f6e93fbbe229ab3e7592:1 goal=(-344.0,-32.0)
+WORLD_MAP_HERO_NATURE region= trees=0 mid_trees=0 understory=0 rocks=0 tree_asset=CommonTree_1.gltf mid_asset=CommonTree_5.gltf under_asset=Bush_Common.gltf
+NOV_ANIMAL_SEARCH_END arm=memory result=integration_test_complete confirmed=false
+Bounded animal search smoke: 0 failures

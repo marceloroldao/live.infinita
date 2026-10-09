@@ -94,7 +94,9 @@ func _accept(raw: String, kind: String) -> bool:
         if typeof(selected) != TYPE_DICTIONARY:
             return false
         if bool(data.active):
-            if selected.get("arm") not in ["memory","last_seen"] or selected.get("phase") not in ["approach","scan"] or typeof(selected.get("id")) != TYPE_STRING or not str(selected.id).begins_with(world_id+":animal-search:") or not _integer(selected.get("started_ms")) or not _integer(selected.get("deadline_ms")) or selected.started_ms>data.logical_time_ms or selected.deadline_ms<=selected.started_ms or selected.deadline_ms>selected.started_ms+45000:
+            var visible_approach: bool=selected.get("arm")=="visible"
+            if visible_approach and (selected.get("source")!="local_physics_eye_sensor" or selected.get("contains_prediction")!=true or selected.get("phase")!="approach" or not _integer(selected.get("revision")) or typeof(selected.get("entity_id"))!=TYPE_STRING or not str(selected.entity_id).begins_with(world_id+":rabbit:")):return false
+            if selected.get("arm") not in ["memory","last_seen","visible"] or selected.get("phase") not in ["approach","scan"] or typeof(selected.get("id")) != TYPE_STRING or not str(selected.id).begins_with(world_id+(":animal-approach:" if visible_approach else ":animal-search:")) or not _integer(selected.get("started_ms")) or not _integer(selected.get("deadline_ms")) or selected.started_ms>data.logical_time_ms or selected.deadline_ms<=selected.started_ms or selected.deadline_ms>selected.started_ms+(20000 if visible_approach else 45000):
                 return false
             if not _integer(selected.get("scan_started_ms")) or typeof(selected.get("base_heading")) not in [TYPE_INT,TYPE_FLOAT] or not is_finite(float(selected.base_heading)):
                 return false
@@ -148,6 +150,8 @@ func lines(now: float = -1.0) -> String:
     var memory_fresh := _fresh(_memory,now)
     var search_fresh := _fresh(_search,now)
     var first := "Animais: %d lembrados" % int(_memory.stored) if memory_fresh else "Animais: aguardando memória"
+    var approach := intent(now)
+    if approach.get("arm")=="visible":return first+"\nBusca: aproximando-se de coelho avistado"
     if not search_fresh:
         return first+"\nBusca: aguardando dados do servidor"
     first += " | %d regiões" % int(_search.active)

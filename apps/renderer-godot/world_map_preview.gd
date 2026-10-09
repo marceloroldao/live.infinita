@@ -954,7 +954,7 @@ func _advance_live_walk(delta: float) -> void:
             _animal_search_selection = _animal_search_intent.choose(_position,world,logical_ms,
                 not _route_goal.active and _local_motion._journey.closed,Callable(_local_motion,"resolve_destination"),
                 _visual_perception.latest(),atan2(_camera_forward.x,_camera_forward.z))
-    var search_key := str(_animal_search_selection.get("id",""))+":"+str(_animal_search_selection.get("phase","")) if not _animal_search_selection.is_empty() else ""
+    var search_key := str(_animal_search_selection.get("id",""))+":"+str(_animal_search_selection.get("phase",""))+":"+str(_animal_search_selection.get("revision",0)) if not _animal_search_selection.is_empty() else ""
     if search_key!=_animal_search_route:
         _local_motion._journey.abort("intenção de busca mudou","search_intent_changed")
         _route_goal.reset()
