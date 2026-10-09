@@ -1,0 +1,13 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "[Reading last 4 lines (total: 4 lines)]\n\nGodot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\n\n008EY_FAILURE_POLICY_CONTRACT {\"disabled_abstains\":true,\"failures\":0,\"one_success_abstains\":true,\"real_mixed_evidence_produces_preference\":true,\"unchanged_real_contexts\":3}\n\n✅ Process completed with exit code 0 (runtime: 0.69s)"
+    },
+    {
+      "type": "text",
+      "text": "\n[executed on device: liveinfinita (b71f2034-4709-4378-893b-4d5b6a3ed9c7)]"
+    }
+  ],
+  "isError": false
+}

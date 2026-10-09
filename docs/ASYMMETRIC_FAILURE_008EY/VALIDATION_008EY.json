@@ -1,0 +1,31 @@
+{
+  "actual_traversals": 22,
+  "arrivals": 4,
+  "real_watchdog_failed_journeys": 18,
+  "collisions": 0,
+  "global_route_builds": 0,
+  "gate_reacts_only_to_occupied_position_checked": true,
+  "same_eight_real_facts_in_both_cold_assessments": true,
+  "persisted_actual_failures": 6,
+  "persisted_actual_completions": 2,
+  "negative_facts_removed_case_fails": true,
+  "zero_numeric_error_penalty_case_still_arrives": true,
+  "current_cold": {
+    "arrived": false,
+    "distance_m": 398.00001335144,
+    "simulated_seconds": 119.4,
+    "side": 1
+  },
+  "experimental_cold": {
+    "arrived": true,
+    "distance_m": 70.3862650096416,
+    "simulated_seconds": 21.1,
+    "side": -1
+  },
+  "bad_side_scores": {
+    "with_penalty": 120.0,
+    "without_penalty": 100.0
+  },
+  "censored_contacts": 0,
+  "pending_at_end": 0
+}

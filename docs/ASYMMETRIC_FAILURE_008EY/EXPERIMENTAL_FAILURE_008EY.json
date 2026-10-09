@@ -1,0 +1,3145 @@
+{
+  "schema": "live-infinita-asymmetric-failure/v1",
+  "sdk_commit": "dfd87c995b50c49b45a9d5dd4c43cce456983d4f",
+  "training": {
+    "failures": 0,
+    "runs": [
+      {
+        "arm": "perception_0",
+        "arrived": false,
+        "collisions": 0,
+        "compute_wall_ms": 2180,
+        "distance_m": 398.00001335144,
+        "facts": [],
+        "final_position": [
+          -82.6926651000977,
+          8.70237159729004
+        ],
+        "gate_closed": true,
+        "gate_event": {
+          "basis": "actual_occupied_position",
+          "position": [
+            -82.2928924560547,
+            10.1071062088013
+          ],
+          "tick": 40
+        },
+        "initial_evaluation": {},
+        "recommendation": {},
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 119.4,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "cost_shift_enabled": true,
+          "decision_reasons": {},
+          "enabled": false,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {},
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 0,
+          "pending_contacts": 0,
+          "ram_records": 0,
+          "recovered_records": 0
+        },
+        "termination": "stuck_recovery",
+        "ticks": 1194,
+        "watchdog_reason": "repeated_area_no_goal_progress",
+        "watchdog_stop": true
+      },
+      {
+        "arm": "memory_0",
+        "arrived": false,
+        "collisions": 0,
+        "compute_wall_ms": 2150,
+        "distance_m": 398.00001335144,
+        "facts": [
+          {
+            "attempt_id": "6c3bab9912e7a20258a83b6a2099dc4d:memory_0:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791549817.26621,
+            "exit_progress_m": 0.0,
+            "exploration": false,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1,
+            "world_id": "asymmetric-failure-008ey"
+          }
+        ],
+        "final_position": [
+          -82.6926651000977,
+          8.70237159729004
+        ],
+        "gate_closed": true,
+        "gate_event": {
+          "basis": "actual_occupied_position",
+          "position": [
+            -82.2928924560547,
+            10.1071062088013
+          ],
+          "tick": 40
+        },
+        "initial_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+          "reason": "insufficient_samples",
+          "recommendation": {}
+        },
+        "recommendation": {},
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 119.4,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "cost_shift_enabled": true,
+          "decision_reasons": {
+            "insufficient_samples": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 0
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 0
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "reason": "insufficient_samples",
+            "recommendation": {}
+          },
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 1,
+          "recovered_records": 0
+        },
+        "termination": "stuck_recovery",
+        "ticks": 1194,
+        "watchdog_reason": "repeated_area_no_goal_progress",
+        "watchdog_stop": true
+      },
+      {
+        "arm": "perception_1",
+        "arrived": false,
+        "collisions": 0,
+        "compute_wall_ms": 2759,
+        "distance_m": 398.00001335144,
+        "facts": [
+          {
+            "attempt_id": "6c3bab9912e7a20258a83b6a2099dc4d:memory_0:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791549817.26621,
+            "exit_progress_m": 0.0,
+            "exploration": false,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1.0,
+            "world_id": "asymmetric-failure-008ey"
+          }
+        ],
+        "final_position": [
+          -82.6926651000977,
+          8.70237159729004
+        ],
+        "gate_closed": true,
+        "gate_event": {
+          "basis": "actual_occupied_position",
+          "position": [
+            -82.2928924560547,
+            10.1071062088013
+          ],
+          "tick": 40
+        },
+        "initial_evaluation": {},
+        "recommendation": {},
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 119.4,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "cost_shift_enabled": true,
+          "decision_reasons": {},
+          "enabled": false,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {},
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 0,
+          "pending_contacts": 0,
+          "ram_records": 1,
+          "recovered_records": 0
+        },
+        "termination": "stuck_recovery",
+        "ticks": 1194,
+        "watchdog_reason": "repeated_area_no_goal_progress",
+        "watchdog_stop": true
+      },
+      {
+        "arm": "memory_1",
+        "arrived": true,
+        "collisions": 0,
+        "compute_wall_ms": 390,
+        "distance_m": 70.3862650096416,
+        "facts": [
+          {
+            "attempt_id": "6c3bab9912e7a20258a83b6a2099dc4d:memory_0:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791549817.26621,
+            "exit_progress_m": 0.0,
+            "exploration": false,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "caf93c50e2d89f657b8f808ac66d88cd:memory_1:1",
+            "completion_basis": "executed_exit",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 35.0000012665987,
+            "ended_at_unix": 1791549820.2456,
+            "exit_progress_m": 1.0,
+            "exploration": true,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "contour_completed",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": -1,
+            "world_id": "asymmetric-failure-008ey"
+          }
+        ],
+        "final_position": [
+          -68.0,
+          -5.96046447753906e-08
+        ],
+        "gate_closed": false,
+        "gate_event": {},
+        "initial_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            },
+            "1": {
+              "errors": 1,
+              "observation_ids": [],
+              "samples": 1,
+              "score": 120.0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+          "reason": "insufficient_samples",
+          "recommendation": {}
+        },
+        "recommendation": {
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": -1,
+          "source": "pattern-exploration"
+        },
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 21.1,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "cost_shift_enabled": true,
+          "decision_reasons": {
+            "insufficient_samples": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 1,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 0
+              },
+              "1": {
+                "errors": 1,
+                "observation_ids": [],
+                "samples": 1,
+                "score": 120.0
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "reason": "insufficient_samples",
+            "recommendation": {}
+          },
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 2,
+          "recovered_records": 0
+        },
+        "termination": "arrived",
+        "ticks": 211,
+        "watchdog_reason": "",
+        "watchdog_stop": false
+      },
+      {
+        "arm": "perception_2",
+        "arrived": false,
+        "collisions": 0,
+        "compute_wall_ms": 2645,
+        "distance_m": 398.00001335144,
+        "facts": [
+          {
+            "attempt_id": "6c3bab9912e7a20258a83b6a2099dc4d:memory_0:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791549817.26621,
+            "exit_progress_m": 0.0,
+            "exploration": false,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "caf93c50e2d89f657b8f808ac66d88cd:memory_1:1",
+            "completion_basis": "executed_exit",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 35.0000012665987,
+            "ended_at_unix": 1791549820.2456,
+            "exit_progress_m": 1.0,
+            "exploration": true,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "contour_completed",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": -1.0,
+            "world_id": "asymmetric-failure-008ey"
+          }
+        ],
+        "final_position": [
+          -82.6926651000977,
+          8.70237159729004
+        ],
+        "gate_closed": true,
+        "gate_event": {
+          "basis": "actual_occupied_position",
+          "position": [
+            -82.2928924560547,
+            10.1071062088013
+          ],
+          "tick": 40
+        },
+        "initial_evaluation": {},
+        "recommendation": {},
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 119.4,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "cost_shift_enabled": true,
+          "decision_reasons": {},
+          "enabled": false,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {},
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 0,
+          "pending_contacts": 0,
+          "ram_records": 2,
+          "recovered_records": 0
+        },
+        "termination": "stuck_recovery",
+        "ticks": 1194,
+        "watchdog_reason": "repeated_area_no_goal_progress",
+        "watchdog_stop": true
+      },
+      {
+        "arm": "memory_2",
+        "arrived": false,
+        "collisions": 0,
+        "compute_wall_ms": 2273,
+        "distance_m": 398.00001335144,
+        "facts": [
+          {
+            "attempt_id": "6c3bab9912e7a20258a83b6a2099dc4d:memory_0:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791549817.26621,
+            "exit_progress_m": 0.0,
+            "exploration": false,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "caf93c50e2d89f657b8f808ac66d88cd:memory_1:1",
+            "completion_basis": "executed_exit",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 35.0000012665987,
+            "ended_at_unix": 1791549820.2456,
+            "exit_progress_m": 1.0,
+            "exploration": true,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "contour_completed",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": -1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "424588b3641c8e9008aa185c82511894:memory_2:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791549825.37087,
+            "exit_progress_m": 0.0,
+            "exploration": true,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1,
+            "world_id": "asymmetric-failure-008ey"
+          }
+        ],
+        "final_position": [
+          -82.6926651000977,
+          8.70237159729004
+        ],
+        "gate_closed": true,
+        "gate_event": {
+          "basis": "actual_occupied_position",
+          "position": [
+            -82.2928924560547,
+            10.1071062088013
+          ],
+          "tick": 40
+        },
+        "initial_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 1,
+              "score": 11.6666670888662
+            },
+            "1": {
+              "errors": 1,
+              "observation_ids": [],
+              "samples": 1,
+              "score": 120.0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+          "reason": "insufficient_samples",
+          "recommendation": {}
+        },
+        "recommendation": {
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": 1,
+          "source": "pattern-exploration"
+        },
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 119.4,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "cost_shift_enabled": true,
+          "decision_reasons": {
+            "insufficient_samples": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 1,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 1,
+                "score": 11.6666670888662
+              },
+              "1": {
+                "errors": 1,
+                "observation_ids": [],
+                "samples": 1,
+                "score": 120.0
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "reason": "insufficient_samples",
+            "recommendation": {}
+          },
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 3,
+          "recovered_records": 0
+        },
+        "termination": "stuck_recovery",
+        "ticks": 1194,
+        "watchdog_reason": "repeated_area_no_goal_progress",
+        "watchdog_stop": true
+      },
+      {
+        "arm": "perception_3",
+        "arrived": false,
+        "collisions": 0,
+        "compute_wall_ms": 2244,
+        "distance_m": 398.00001335144,
+        "facts": [
+          {
+            "attempt_id": "6c3bab9912e7a20258a83b6a2099dc4d:memory_0:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791549817.26621,
+            "exit_progress_m": 0.0,
+            "exploration": false,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "caf93c50e2d89f657b8f808ac66d88cd:memory_1:1",
+            "completion_basis": "executed_exit",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 35.0000012665987,
+            "ended_at_unix": 1791549820.2456,
+            "exit_progress_m": 1.0,
+            "exploration": true,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "contour_completed",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": -1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "424588b3641c8e9008aa185c82511894:memory_2:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791549825.37087,
+            "exit_progress_m": 0.0,
+            "exploration": true,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1.0,
+            "world_id": "asymmetric-failure-008ey"
+          }
+        ],
+        "final_position": [
+          -82.6926651000977,
+          8.70237159729004
+        ],
+        "gate_closed": true,
+        "gate_event": {
+          "basis": "actual_occupied_position",
+          "position": [
+            -82.2928924560547,
+            10.1071062088013
+          ],
+          "tick": 40
+        },
+        "initial_evaluation": {},
+        "recommendation": {},
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 119.4,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "cost_shift_enabled": true,
+          "decision_reasons": {},
+          "enabled": false,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {},
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 0,
+          "pending_contacts": 0,
+          "ram_records": 3,
+          "recovered_records": 0
+        },
+        "termination": "stuck_recovery",
+        "ticks": 1194,
+        "watchdog_reason": "repeated_area_no_goal_progress",
+        "watchdog_stop": true
+      },
+      {
+        "arm": "memory_3",
+        "arrived": true,
+        "collisions": 0,
+        "compute_wall_ms": 348,
+        "distance_m": 70.3862650096416,
+        "facts": [
+          {
+            "attempt_id": "6c3bab9912e7a20258a83b6a2099dc4d:memory_0:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791549817.26621,
+            "exit_progress_m": 0.0,
+            "exploration": false,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "caf93c50e2d89f657b8f808ac66d88cd:memory_1:1",
+            "completion_basis": "executed_exit",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 35.0000012665987,
+            "ended_at_unix": 1791549820.2456,
+            "exit_progress_m": 1.0,
+            "exploration": true,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "contour_completed",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": -1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "424588b3641c8e9008aa185c82511894:memory_2:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791549825.37087,
+            "exit_progress_m": 0.0,
+            "exploration": true,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "a382736b87179195c4859d3ce3152898:memory_3:1",
+            "completion_basis": "executed_exit",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 35.0000012665987,
+            "ended_at_unix": 1791549827.81942,
+            "exit_progress_m": 1.0,
+            "exploration": true,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "contour_completed",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": -1,
+            "world_id": "asymmetric-failure-008ey"
+          }
+        ],
+        "final_position": [
+          -68.0,
+          -5.96046447753906e-08
+        ],
+        "gate_closed": false,
+        "gate_event": {},
+        "initial_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 1,
+              "score": 11.6666670888662
+            },
+            "1": {
+              "errors": 2,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 120.0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+          "reason": "insufficient_samples",
+          "recommendation": {}
+        },
+        "recommendation": {
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": -1,
+          "source": "pattern-exploration"
+        },
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 21.1,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "cost_shift_enabled": true,
+          "decision_reasons": {
+            "insufficient_samples": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 1,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 1,
+                "score": 11.6666670888662
+              },
+              "1": {
+                "errors": 2,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 120.0
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "reason": "insufficient_samples",
+            "recommendation": {}
+          },
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 4,
+          "recovered_records": 0
+        },
+        "termination": "arrived",
+        "ticks": 211,
+        "watchdog_reason": "",
+        "watchdog_stop": false
+      },
+      {
+        "arm": "perception_4",
+        "arrived": false,
+        "collisions": 0,
+        "compute_wall_ms": 2292,
+        "distance_m": 398.00001335144,
+        "facts": [
+          {
+            "attempt_id": "6c3bab9912e7a20258a83b6a2099dc4d:memory_0:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791549817.26621,
+            "exit_progress_m": 0.0,
+            "exploration": false,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "caf93c50e2d89f657b8f808ac66d88cd:memory_1:1",
+            "completion_basis": "executed_exit",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 35.0000012665987,
+            "ended_at_unix": 1791549820.2456,
+            "exit_progress_m": 1.0,
+            "exploration": true,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "contour_completed",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": -1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "424588b3641c8e9008aa185c82511894:memory_2:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791549825.37087,
+            "exit_progress_m": 0.0,
+            "exploration": true,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "a382736b87179195c4859d3ce3152898:memory_3:1",
+            "completion_basis": "executed_exit",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 35.0000012665987,
+            "ended_at_unix": 1791549827.81942,
+            "exit_progress_m": 1.0,
+            "exploration": true,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "contour_completed",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": -1.0,
+            "world_id": "asymmetric-failure-008ey"
+          }
+        ],
+        "final_position": [
+          -82.6926651000977,
+          8.70237159729004
+        ],
+        "gate_closed": true,
+        "gate_event": {
+          "basis": "actual_occupied_position",
+          "position": [
+            -82.2928924560547,
+            10.1071062088013
+          ],
+          "tick": 40
+        },
+        "initial_evaluation": {},
+        "recommendation": {},
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 119.4,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "cost_shift_enabled": true,
+          "decision_reasons": {},
+          "enabled": false,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {},
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 0,
+          "pending_contacts": 0,
+          "ram_records": 4,
+          "recovered_records": 0
+        },
+        "termination": "stuck_recovery",
+        "ticks": 1194,
+        "watchdog_reason": "repeated_area_no_goal_progress",
+        "watchdog_stop": true
+      },
+      {
+        "arm": "memory_4",
+        "arrived": false,
+        "collisions": 0,
+        "compute_wall_ms": 2274,
+        "distance_m": 398.00001335144,
+        "facts": [
+          {
+            "attempt_id": "6c3bab9912e7a20258a83b6a2099dc4d:memory_0:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791549817.26621,
+            "exit_progress_m": 0.0,
+            "exploration": false,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "caf93c50e2d89f657b8f808ac66d88cd:memory_1:1",
+            "completion_basis": "executed_exit",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 35.0000012665987,
+            "ended_at_unix": 1791549820.2456,
+            "exit_progress_m": 1.0,
+            "exploration": true,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "contour_completed",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": -1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "424588b3641c8e9008aa185c82511894:memory_2:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791549825.37087,
+            "exit_progress_m": 0.0,
+            "exploration": true,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "a382736b87179195c4859d3ce3152898:memory_3:1",
+            "completion_basis": "executed_exit",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 35.0000012665987,
+            "ended_at_unix": 1791549827.81942,
+            "exit_progress_m": 1.0,
+            "exploration": true,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "contour_completed",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": -1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "a70768373b7f3b094a214b842a72659f:memory_4:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791549832.56427,
+            "exit_progress_m": 0.0,
+            "exploration": false,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1,
+            "world_id": "asymmetric-failure-008ey"
+          }
+        ],
+        "final_position": [
+          -82.6926651000977,
+          8.70237159729004
+        ],
+        "gate_closed": true,
+        "gate_event": {
+          "basis": "actual_occupied_position",
+          "position": [
+            -82.2928924560547,
+            10.1071062088013
+          ],
+          "tick": 40
+        },
+        "initial_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 11.6666670888662
+            },
+            "1": {
+              "errors": 2,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 120.0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+          "reason": "side_without_success",
+          "recommendation": {}
+        },
+        "recommendation": {},
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 119.4,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "cost_shift_enabled": true,
+          "decision_reasons": {
+            "side_without_success": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 11.6666670888662
+              },
+              "1": {
+                "errors": 2,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 120.0
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "reason": "side_without_success",
+            "recommendation": {}
+          },
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 5,
+          "recovered_records": 0
+        },
+        "termination": "stuck_recovery",
+        "ticks": 1194,
+        "watchdog_reason": "repeated_area_no_goal_progress",
+        "watchdog_stop": true
+      },
+      {
+        "arm": "perception_5",
+        "arrived": false,
+        "collisions": 0,
+        "compute_wall_ms": 2186,
+        "distance_m": 398.00001335144,
+        "facts": [
+          {
+            "attempt_id": "6c3bab9912e7a20258a83b6a2099dc4d:memory_0:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791549817.26621,
+            "exit_progress_m": 0.0,
+            "exploration": false,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "caf93c50e2d89f657b8f808ac66d88cd:memory_1:1",
+            "completion_basis": "executed_exit",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 35.0000012665987,
+            "ended_at_unix": 1791549820.2456,
+            "exit_progress_m": 1.0,
+            "exploration": true,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "contour_completed",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": -1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "424588b3641c8e9008aa185c82511894:memory_2:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791549825.37087,
+            "exit_progress_m": 0.0,
+            "exploration": true,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "a382736b87179195c4859d3ce3152898:memory_3:1",
+            "completion_basis": "executed_exit",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 35.0000012665987,
+            "ended_at_unix": 1791549827.81942,
+            "exit_progress_m": 1.0,
+            "exploration": true,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "contour_completed",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": -1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "a70768373b7f3b094a214b842a72659f:memory_4:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791549832.56427,
+            "exit_progress_m": 0.0,
+            "exploration": false,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1.0,
+            "world_id": "asymmetric-failure-008ey"
+          }
+        ],
+        "final_position": [
+          -82.6926651000977,
+          8.70237159729004
+        ],
+        "gate_closed": true,
+        "gate_event": {
+          "basis": "actual_occupied_position",
+          "position": [
+            -82.2928924560547,
+            10.1071062088013
+          ],
+          "tick": 40
+        },
+        "initial_evaluation": {},
+        "recommendation": {},
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 119.4,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "cost_shift_enabled": true,
+          "decision_reasons": {},
+          "enabled": false,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {},
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 0,
+          "pending_contacts": 0,
+          "ram_records": 5,
+          "recovered_records": 0
+        },
+        "termination": "stuck_recovery",
+        "ticks": 1194,
+        "watchdog_reason": "repeated_area_no_goal_progress",
+        "watchdog_stop": true
+      },
+      {
+        "arm": "memory_5",
+        "arrived": false,
+        "collisions": 0,
+        "compute_wall_ms": 2242,
+        "distance_m": 398.00001335144,
+        "facts": [
+          {
+            "attempt_id": "6c3bab9912e7a20258a83b6a2099dc4d:memory_0:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791549817.26621,
+            "exit_progress_m": 0.0,
+            "exploration": false,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "caf93c50e2d89f657b8f808ac66d88cd:memory_1:1",
+            "completion_basis": "executed_exit",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 35.0000012665987,
+            "ended_at_unix": 1791549820.2456,
+            "exit_progress_m": 1.0,
+            "exploration": true,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "contour_completed",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": -1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "424588b3641c8e9008aa185c82511894:memory_2:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791549825.37087,
+            "exit_progress_m": 0.0,
+            "exploration": true,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "a382736b87179195c4859d3ce3152898:memory_3:1",
+            "completion_basis": "executed_exit",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 35.0000012665987,
+            "ended_at_unix": 1791549827.81942,
+            "exit_progress_m": 1.0,
+            "exploration": true,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "contour_completed",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": -1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "a70768373b7f3b094a214b842a72659f:memory_4:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791549832.56427,
+            "exit_progress_m": 0.0,
+            "exploration": false,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "8d5a9839d217a166d5112e1b02276ccf:memory_5:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791549837.01321,
+            "exit_progress_m": 0.0,
+            "exploration": false,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1,
+            "world_id": "asymmetric-failure-008ey"
+          }
+        ],
+        "final_position": [
+          -82.6926651000977,
+          8.70237159729004
+        ],
+        "gate_closed": true,
+        "gate_event": {
+          "basis": "actual_occupied_position",
+          "position": [
+            -82.2928924560547,
+            10.1071062088013
+          ],
+          "tick": 40
+        },
+        "initial_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 11.6666670888662
+            },
+            "1": {
+              "errors": 3,
+              "observation_ids": [],
+              "samples": 3,
+              "score": 120.0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+          "reason": "side_without_success",
+          "recommendation": {}
+        },
+        "recommendation": {},
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 119.4,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "cost_shift_enabled": true,
+          "decision_reasons": {
+            "side_without_success": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 11.6666670888662
+              },
+              "1": {
+                "errors": 3,
+                "observation_ids": [],
+                "samples": 3,
+                "score": 120.0
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "reason": "side_without_success",
+            "recommendation": {}
+          },
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 6,
+          "recovered_records": 0
+        },
+        "termination": "stuck_recovery",
+        "ticks": 1194,
+        "watchdog_reason": "repeated_area_no_goal_progress",
+        "watchdog_stop": true
+      },
+      {
+        "arm": "perception_6",
+        "arrived": false,
+        "collisions": 0,
+        "compute_wall_ms": 2084,
+        "distance_m": 398.00001335144,
+        "facts": [
+          {
+            "attempt_id": "6c3bab9912e7a20258a83b6a2099dc4d:memory_0:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791549817.26621,
+            "exit_progress_m": 0.0,
+            "exploration": false,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "caf93c50e2d89f657b8f808ac66d88cd:memory_1:1",
+            "completion_basis": "executed_exit",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 35.0000012665987,
+            "ended_at_unix": 1791549820.2456,
+            "exit_progress_m": 1.0,
+            "exploration": true,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "contour_completed",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": -1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "424588b3641c8e9008aa185c82511894:memory_2:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791549825.37087,
+            "exit_progress_m": 0.0,
+            "exploration": true,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "a382736b87179195c4859d3ce3152898:memory_3:1",
+            "completion_basis": "executed_exit",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 35.0000012665987,
+            "ended_at_unix": 1791549827.81942,
+            "exit_progress_m": 1.0,
+            "exploration": true,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "contour_completed",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": -1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "a70768373b7f3b094a214b842a72659f:memory_4:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791549832.56427,
+            "exit_progress_m": 0.0,
+            "exploration": false,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "8d5a9839d217a166d5112e1b02276ccf:memory_5:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791549837.01321,
+            "exit_progress_m": 0.0,
+            "exploration": false,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1.0,
+            "world_id": "asymmetric-failure-008ey"
+          }
+        ],
+        "final_position": [
+          -82.6926651000977,
+          8.70237159729004
+        ],
+        "gate_closed": true,
+        "gate_event": {
+          "basis": "actual_occupied_position",
+          "position": [
+            -82.2928924560547,
+            10.1071062088013
+          ],
+          "tick": 40
+        },
+        "initial_evaluation": {},
+        "recommendation": {},
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 119.4,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "cost_shift_enabled": true,
+          "decision_reasons": {},
+          "enabled": false,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {},
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 0,
+          "pending_contacts": 0,
+          "ram_records": 6,
+          "recovered_records": 0
+        },
+        "termination": "stuck_recovery",
+        "ticks": 1194,
+        "watchdog_reason": "repeated_area_no_goal_progress",
+        "watchdog_stop": true
+      },
+      {
+        "arm": "memory_6",
+        "arrived": false,
+        "collisions": 0,
+        "compute_wall_ms": 2377,
+        "distance_m": 398.00001335144,
+        "facts": [
+          {
+            "attempt_id": "6c3bab9912e7a20258a83b6a2099dc4d:memory_0:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791549817.26621,
+            "exit_progress_m": 0.0,
+            "exploration": false,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "caf93c50e2d89f657b8f808ac66d88cd:memory_1:1",
+            "completion_basis": "executed_exit",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 35.0000012665987,
+            "ended_at_unix": 1791549820.2456,
+            "exit_progress_m": 1.0,
+            "exploration": true,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "contour_completed",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": -1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "424588b3641c8e9008aa185c82511894:memory_2:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791549825.37087,
+            "exit_progress_m": 0.0,
+            "exploration": true,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "a382736b87179195c4859d3ce3152898:memory_3:1",
+            "completion_basis": "executed_exit",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 35.0000012665987,
+            "ended_at_unix": 1791549827.81942,
+            "exit_progress_m": 1.0,
+            "exploration": true,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "contour_completed",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": -1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "a70768373b7f3b094a214b842a72659f:memory_4:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791549832.56427,
+            "exit_progress_m": 0.0,
+            "exploration": false,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "8d5a9839d217a166d5112e1b02276ccf:memory_5:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791549837.01321,
+            "exit_progress_m": 0.0,
+            "exploration": false,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "f83799ffc57d1baa0c8817e91acf16c4:memory_6:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791549841.49583,
+            "exit_progress_m": 0.0,
+            "exploration": false,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1,
+            "world_id": "asymmetric-failure-008ey"
+          }
+        ],
+        "final_position": [
+          -82.6926651000977,
+          8.70237159729004
+        ],
+        "gate_closed": true,
+        "gate_event": {
+          "basis": "actual_occupied_position",
+          "position": [
+            -82.2928924560547,
+            10.1071062088013
+          ],
+          "tick": 40
+        },
+        "initial_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 11.6666670888662
+            },
+            "1": {
+              "errors": 4,
+              "observation_ids": [],
+              "samples": 4,
+              "score": 120.0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+          "reason": "side_without_success",
+          "recommendation": {}
+        },
+        "recommendation": {},
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 119.4,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "cost_shift_enabled": true,
+          "decision_reasons": {
+            "side_without_success": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 11.6666670888662
+              },
+              "1": {
+                "errors": 4,
+                "observation_ids": [],
+                "samples": 4,
+                "score": 120.0
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "reason": "side_without_success",
+            "recommendation": {}
+          },
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 7,
+          "recovered_records": 0
+        },
+        "termination": "stuck_recovery",
+        "ticks": 1194,
+        "watchdog_reason": "repeated_area_no_goal_progress",
+        "watchdog_stop": true
+      },
+      {
+        "arm": "perception_7",
+        "arrived": false,
+        "collisions": 0,
+        "compute_wall_ms": 2219,
+        "distance_m": 398.00001335144,
+        "facts": [
+          {
+            "attempt_id": "6c3bab9912e7a20258a83b6a2099dc4d:memory_0:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791549817.26621,
+            "exit_progress_m": 0.0,
+            "exploration": false,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "caf93c50e2d89f657b8f808ac66d88cd:memory_1:1",
+            "completion_basis": "executed_exit",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 35.0000012665987,
+            "ended_at_unix": 1791549820.2456,
+            "exit_progress_m": 1.0,
+            "exploration": true,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "contour_completed",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": -1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "424588b3641c8e9008aa185c82511894:memory_2:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791549825.37087,
+            "exit_progress_m": 0.0,
+            "exploration": true,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "a382736b87179195c4859d3ce3152898:memory_3:1",
+            "completion_basis": "executed_exit",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 35.0000012665987,
+            "ended_at_unix": 1791549827.81942,
+            "exit_progress_m": 1.0,
+            "exploration": true,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "contour_completed",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": -1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "a70768373b7f3b094a214b842a72659f:memory_4:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791549832.56427,
+            "exit_progress_m": 0.0,
+            "exploration": false,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "8d5a9839d217a166d5112e1b02276ccf:memory_5:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791549837.01321,
+            "exit_progress_m": 0.0,
+            "exploration": false,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "f83799ffc57d1baa0c8817e91acf16c4:memory_6:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791549841.49583,
+            "exit_progress_m": 0.0,
+            "exploration": false,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1.0,
+            "world_id": "asymmetric-failure-008ey"
+          }
+        ],
+        "final_position": [
+          -82.6926651000977,
+          8.70237159729004
+        ],
+        "gate_closed": true,
+        "gate_event": {
+          "basis": "actual_occupied_position",
+          "position": [
+            -82.2928924560547,
+            10.1071062088013
+          ],
+          "tick": 40
+        },
+        "initial_evaluation": {},
+        "recommendation": {},
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 119.4,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "cost_shift_enabled": true,
+          "decision_reasons": {},
+          "enabled": false,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {},
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 0,
+          "pending_contacts": 0,
+          "ram_records": 7,
+          "recovered_records": 0
+        },
+        "termination": "stuck_recovery",
+        "ticks": 1194,
+        "watchdog_reason": "repeated_area_no_goal_progress",
+        "watchdog_stop": true
+      },
+      {
+        "arm": "memory_7",
+        "arrived": false,
+        "collisions": 0,
+        "compute_wall_ms": 2200,
+        "distance_m": 398.00001335144,
+        "facts": [
+          {
+            "attempt_id": "6c3bab9912e7a20258a83b6a2099dc4d:memory_0:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791549817.26621,
+            "exit_progress_m": 0.0,
+            "exploration": false,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "caf93c50e2d89f657b8f808ac66d88cd:memory_1:1",
+            "completion_basis": "executed_exit",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 35.0000012665987,
+            "ended_at_unix": 1791549820.2456,
+            "exit_progress_m": 1.0,
+            "exploration": true,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "contour_completed",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": -1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "424588b3641c8e9008aa185c82511894:memory_2:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791549825.37087,
+            "exit_progress_m": 0.0,
+            "exploration": true,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "a382736b87179195c4859d3ce3152898:memory_3:1",
+            "completion_basis": "executed_exit",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 35.0000012665987,
+            "ended_at_unix": 1791549827.81942,
+            "exit_progress_m": 1.0,
+            "exploration": true,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "contour_completed",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": -1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "a70768373b7f3b094a214b842a72659f:memory_4:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791549832.56427,
+            "exit_progress_m": 0.0,
+            "exploration": false,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "8d5a9839d217a166d5112e1b02276ccf:memory_5:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791549837.01321,
+            "exit_progress_m": 0.0,
+            "exploration": false,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "f83799ffc57d1baa0c8817e91acf16c4:memory_6:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791549841.49583,
+            "exit_progress_m": 0.0,
+            "exploration": false,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1.0,
+            "world_id": "asymmetric-failure-008ey"
+          },
+          {
+            "attempt_id": "c88ba3a7921f15bc89a4c260dc2ae20d:memory_7:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791549845.93626,
+            "exit_progress_m": 0.0,
+            "exploration": false,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1,
+            "world_id": "asymmetric-failure-008ey"
+          }
+        ],
+        "final_position": [
+          -82.6926651000977,
+          8.70237159729004
+        ],
+        "gate_closed": true,
+        "gate_event": {
+          "basis": "actual_occupied_position",
+          "position": [
+            -82.2928924560547,
+            10.1071062088013
+          ],
+          "tick": 40
+        },
+        "initial_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 11.6666670888662
+            },
+            "1": {
+              "errors": 5,
+              "observation_ids": [],
+              "samples": 5,
+              "score": 120.0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+          "reason": "side_without_success",
+          "recommendation": {}
+        },
+        "recommendation": {},
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 119.4,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "cost_shift_enabled": true,
+          "decision_reasons": {
+            "side_without_success": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 11.6666670888662
+              },
+              "1": {
+                "errors": 5,
+                "observation_ids": [],
+                "samples": 5,
+                "score": 120.0
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "reason": "side_without_success",
+            "recommendation": {}
+          },
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 8,
+          "recovered_records": 0
+        },
+        "termination": "stuck_recovery",
+        "ticks": 1194,
+        "watchdog_reason": "repeated_area_no_goal_progress",
+        "watchdog_stop": true
+      }
+    ],
+    "world_id": "asymmetric-failure-008ey"
+  },
+  "cold": {
+    "failures": 0,
+    "runs": [
+      {
+        "arm": "cold_perception",
+        "arrived": false,
+        "collisions": 0,
+        "compute_wall_ms": 2234,
+        "distance_m": 398.00001335144,
+        "facts": [],
+        "final_position": [
+          -82.6926651000977,
+          8.70237159729004
+        ],
+        "gate_closed": true,
+        "gate_event": {
+          "basis": "actual_occupied_position",
+          "position": [
+            -82.2928924560547,
+            10.1071062088013
+          ],
+          "tick": 40
+        },
+        "initial_evaluation": {},
+        "recommendation": {},
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 119.4,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "cost_shift_enabled": true,
+          "decision_reasons": {},
+          "enabled": false,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {},
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 0,
+          "pending_contacts": 0,
+          "ram_records": 0,
+          "recovered_records": 0
+        },
+        "termination": "stuck_recovery",
+        "ticks": 1194,
+        "watchdog_reason": "repeated_area_no_goal_progress",
+        "watchdog_stop": true
+      },
+      {
+        "arm": "cold_memory",
+        "arrived": true,
+        "collisions": 0,
+        "compute_wall_ms": 355,
+        "distance_m": 70.3862650096416,
+        "facts": [
+          {
+            "attempt_id": "989a58c031d225e94d727eed3f9b38cd:cold_memory:1",
+            "completion_basis": "executed_exit",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 35.0000012665987,
+            "ended_at_unix": 1791550053.01881,
+            "exit_progress_m": 1.0,
+            "exploration": false,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "contour_completed",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": -1,
+            "world_id": "asymmetric-failure-008ey"
+          }
+        ],
+        "final_position": [
+          -68.0,
+          -5.96046447753906e-08
+        ],
+        "gate_closed": false,
+        "gate_event": {},
+        "initial_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:1a22e2b6a0201bac7474005913f2c5efef0bb6e2",
+                "structural-event:5316b766c631f220c25e7d428aa103f84d193ef3"
+              ],
+              "samples": 2,
+              "score": 11.6666670888662
+            },
+            "1": {
+              "errors": 6,
+              "observation_ids": [
+                "structural-event:ec3a41cc1520c893de194ea851f71e67d085ef3e",
+                "structural-event:8c73ed0295d8c4bc4af32d7f674a2fd84a5aafc4",
+                "structural-event:77e0f9b31782dea6ac9ad4c45bb84ad65ce96cb5",
+                "structural-event:9f2e40730962f4f187822743143277d5ae45aeb3",
+                "structural-event:e1b96a3fde1ba15c05a0b7cd11b2fe0f255779a7",
+                "structural-event:57925cfea275d1776107df352c6d6356c11b011b"
+              ],
+              "samples": 6,
+              "score": 120.0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+          "reason": "preferred_successful_side_after_failures",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [
+                  "structural-event:1a22e2b6a0201bac7474005913f2c5efef0bb6e2",
+                  "structural-event:5316b766c631f220c25e7d428aa103f84d193ef3"
+                ],
+                "samples": 2,
+                "score": 11.6666670888662
+              },
+              "1": {
+                "errors": 6,
+                "observation_ids": [
+                  "structural-event:ec3a41cc1520c893de194ea851f71e67d085ef3e",
+                  "structural-event:8c73ed0295d8c4bc4af32d7f674a2fd84a5aafc4",
+                  "structural-event:77e0f9b31782dea6ac9ad4c45bb84ad65ce96cb5",
+                  "structural-event:9f2e40730962f4f187822743143277d5ae45aeb3",
+                  "structural-event:e1b96a3fde1ba15c05a0b7cd11b2fe0f255779a7",
+                  "structural-event:57925cfea275d1776107df352c6d6356c11b011b"
+                ],
+                "samples": 6,
+                "score": 120.0
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "observation_ids": [
+              "structural-event:1a22e2b6a0201bac7474005913f2c5efef0bb6e2",
+              "structural-event:5316b766c631f220c25e7d428aa103f84d193ef3"
+            ],
+            "side": -1,
+            "source": "recovered-pattern-evidence"
+          },
+          "required_gap": 24.0,
+          "score_gap": 108.333332911134
+        },
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:1a22e2b6a0201bac7474005913f2c5efef0bb6e2",
+                "structural-event:5316b766c631f220c25e7d428aa103f84d193ef3"
+              ],
+              "samples": 2,
+              "score": 11.6666670888662
+            },
+            "1": {
+              "errors": 6,
+              "observation_ids": [
+                "structural-event:ec3a41cc1520c893de194ea851f71e67d085ef3e",
+                "structural-event:8c73ed0295d8c4bc4af32d7f674a2fd84a5aafc4",
+                "structural-event:77e0f9b31782dea6ac9ad4c45bb84ad65ce96cb5",
+                "structural-event:9f2e40730962f4f187822743143277d5ae45aeb3",
+                "structural-event:e1b96a3fde1ba15c05a0b7cd11b2fe0f255779a7",
+                "structural-event:57925cfea275d1776107df352c6d6356c11b011b"
+              ],
+              "samples": 6,
+              "score": 120.0
+            }
+          },
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+          "observation_ids": [
+            "structural-event:1a22e2b6a0201bac7474005913f2c5efef0bb6e2",
+            "structural-event:5316b766c631f220c25e7d428aa103f84d193ef3"
+          ],
+          "side": -1,
+          "source": "recovered-pattern-evidence"
+        },
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 21.1,
+        "status": {
+          "changed_initial_decisions": 1,
+          "core_changed_initial_decisions": 1,
+          "cost_shift_enabled": true,
+          "decision_reasons": {
+            "preferred_successful_side_after_failures": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [
+                  "structural-event:1a22e2b6a0201bac7474005913f2c5efef0bb6e2",
+                  "structural-event:5316b766c631f220c25e7d428aa103f84d193ef3"
+                ],
+                "samples": 2,
+                "score": 11.6666670888662
+              },
+              "1": {
+                "errors": 6,
+                "observation_ids": [
+                  "structural-event:ec3a41cc1520c893de194ea851f71e67d085ef3e",
+                  "structural-event:8c73ed0295d8c4bc4af32d7f674a2fd84a5aafc4",
+                  "structural-event:77e0f9b31782dea6ac9ad4c45bb84ad65ce96cb5",
+                  "structural-event:9f2e40730962f4f187822743143277d5ae45aeb3",
+                  "structural-event:e1b96a3fde1ba15c05a0b7cd11b2fe0f255779a7",
+                  "structural-event:57925cfea275d1776107df352c6d6356c11b011b"
+                ],
+                "samples": 6,
+                "score": 120.0
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "reason": "preferred_successful_side_after_failures",
+            "recommendation": {
+              "alternatives": {
+                "-1": {
+                  "errors": 0,
+                  "observation_ids": [
+                    "structural-event:1a22e2b6a0201bac7474005913f2c5efef0bb6e2",
+                    "structural-event:5316b766c631f220c25e7d428aa103f84d193ef3"
+                  ],
+                  "samples": 2,
+                  "score": 11.6666670888662
+                },
+                "1": {
+                  "errors": 6,
+                  "observation_ids": [
+                    "structural-event:ec3a41cc1520c893de194ea851f71e67d085ef3e",
+                    "structural-event:8c73ed0295d8c4bc4af32d7f674a2fd84a5aafc4",
+                    "structural-event:77e0f9b31782dea6ac9ad4c45bb84ad65ce96cb5",
+                    "structural-event:9f2e40730962f4f187822743143277d5ae45aeb3",
+                    "structural-event:e1b96a3fde1ba15c05a0b7cd11b2fe0f255779a7",
+                    "structural-event:57925cfea275d1776107df352c6d6356c11b011b"
+                  ],
+                  "samples": 6,
+                  "score": 120.0
+                }
+              },
+              "contains_prediction": true,
+              "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+              "observation_ids": [
+                "structural-event:1a22e2b6a0201bac7474005913f2c5efef0bb6e2",
+                "structural-event:5316b766c631f220c25e7d428aa103f84d193ef3"
+              ],
+              "side": -1,
+              "source": "recovered-pattern-evidence"
+            },
+            "required_gap": 24.0,
+            "score_gap": 108.333332911134
+          },
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 1,
+          "recovered_records": 8
+        },
+        "termination": "arrived",
+        "ticks": 211,
+        "watchdog_reason": "",
+        "watchdog_stop": false
+      },
+      {
+        "arm": "cold_positive_only",
+        "arrived": false,
+        "collisions": 0,
+        "compute_wall_ms": 2232,
+        "distance_m": 398.00001335144,
+        "facts": [
+          {
+            "attempt_id": "e2764f71031de5e5d35a0804c54610ff:cold_positive_only:1",
+            "completion_basis": "stuck_recovery",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 395.00001335144,
+            "ended_at_unix": 1791550055.42104,
+            "exit_progress_m": 0.0,
+            "exploration": true,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "stuck_recovery",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": 1,
+            "world_id": "asymmetric-failure-008ey"
+          }
+        ],
+        "final_position": [
+          -82.6926651000977,
+          8.70237159729004
+        ],
+        "gate_closed": true,
+        "gate_event": {
+          "basis": "actual_occupied_position",
+          "position": [
+            -82.2928924560547,
+            10.1071062088013
+          ],
+          "tick": 40
+        },
+        "initial_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:1a22e2b6a0201bac7474005913f2c5efef0bb6e2",
+                "structural-event:5316b766c631f220c25e7d428aa103f84d193ef3"
+              ],
+              "samples": 2,
+              "score": 11.6666670888662
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+          "reason": "insufficient_samples",
+          "recommendation": {}
+        },
+        "recommendation": {
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": 1,
+          "source": "pattern-exploration"
+        },
+        "route_plan_builds": 0,
+        "side": 1,
+        "simulated_seconds": 119.4,
+        "status": {
+          "changed_initial_decisions": 0,
+          "core_changed_initial_decisions": 0,
+          "cost_shift_enabled": true,
+          "decision_reasons": {
+            "insufficient_samples": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 1,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [
+                  "structural-event:1a22e2b6a0201bac7474005913f2c5efef0bb6e2",
+                  "structural-event:5316b766c631f220c25e7d428aa103f84d193ef3"
+                ],
+                "samples": 2,
+                "score": 11.6666670888662
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 0
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "reason": "insufficient_samples",
+            "recommendation": {}
+          },
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 1,
+          "recovered_records": 2
+        },
+        "termination": "stuck_recovery",
+        "ticks": 1194,
+        "watchdog_reason": "repeated_area_no_goal_progress",
+        "watchdog_stop": true
+      },
+      {
+        "arm": "cold_no_error_penalty",
+        "arrived": true,
+        "collisions": 0,
+        "compute_wall_ms": 348,
+        "distance_m": 70.3862650096416,
+        "facts": [
+          {
+            "attempt_id": "18cc5361d678e43cccc1bb22970de52e:cold_no_error_penalty:1",
+            "completion_basis": "executed_exit",
+            "contains_prediction": false,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "distance_m": 35.0000012665987,
+            "ended_at_unix": 1791550055.61721,
+            "exit_progress_m": 1.0,
+            "exploration": false,
+            "initial_remaining_m": 15.0,
+            "observer": "nov",
+            "outcome": "contour_completed",
+            "physical_attempt": true,
+            "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+            "side": -1,
+            "world_id": "asymmetric-failure-008ey"
+          }
+        ],
+        "final_position": [
+          -68.0,
+          -5.96046447753906e-08
+        ],
+        "gate_closed": false,
+        "gate_event": {},
+        "initial_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:1a22e2b6a0201bac7474005913f2c5efef0bb6e2",
+                "structural-event:5316b766c631f220c25e7d428aa103f84d193ef3"
+              ],
+              "samples": 2,
+              "score": 11.6666670888662
+            },
+            "1": {
+              "errors": 6,
+              "observation_ids": [
+                "structural-event:ec3a41cc1520c893de194ea851f71e67d085ef3e",
+                "structural-event:8c73ed0295d8c4bc4af32d7f674a2fd84a5aafc4",
+                "structural-event:77e0f9b31782dea6ac9ad4c45bb84ad65ce96cb5",
+                "structural-event:9f2e40730962f4f187822743143277d5ae45aeb3",
+                "structural-event:e1b96a3fde1ba15c05a0b7cd11b2fe0f255779a7",
+                "structural-event:57925cfea275d1776107df352c6d6356c11b011b"
+              ],
+              "samples": 6,
+              "score": 100.0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+          "reason": "preferred_successful_side_after_failures",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [
+                  "structural-event:1a22e2b6a0201bac7474005913f2c5efef0bb6e2",
+                  "structural-event:5316b766c631f220c25e7d428aa103f84d193ef3"
+                ],
+                "samples": 2,
+                "score": 11.6666670888662
+              },
+              "1": {
+                "errors": 6,
+                "observation_ids": [
+                  "structural-event:ec3a41cc1520c893de194ea851f71e67d085ef3e",
+                  "structural-event:8c73ed0295d8c4bc4af32d7f674a2fd84a5aafc4",
+                  "structural-event:77e0f9b31782dea6ac9ad4c45bb84ad65ce96cb5",
+                  "structural-event:9f2e40730962f4f187822743143277d5ae45aeb3",
+                  "structural-event:e1b96a3fde1ba15c05a0b7cd11b2fe0f255779a7",
+                  "structural-event:57925cfea275d1776107df352c6d6356c11b011b"
+                ],
+                "samples": 6,
+                "score": 100.0
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "observation_ids": [
+              "structural-event:1a22e2b6a0201bac7474005913f2c5efef0bb6e2",
+              "structural-event:5316b766c631f220c25e7d428aa103f84d193ef3"
+            ],
+            "side": -1,
+            "source": "recovered-pattern-evidence"
+          },
+          "required_gap": 20.0,
+          "score_gap": 88.3333329111338
+        },
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:1a22e2b6a0201bac7474005913f2c5efef0bb6e2",
+                "structural-event:5316b766c631f220c25e7d428aa103f84d193ef3"
+              ],
+              "samples": 2,
+              "score": 11.6666670888662
+            },
+            "1": {
+              "errors": 6,
+              "observation_ids": [
+                "structural-event:ec3a41cc1520c893de194ea851f71e67d085ef3e",
+                "structural-event:8c73ed0295d8c4bc4af32d7f674a2fd84a5aafc4",
+                "structural-event:77e0f9b31782dea6ac9ad4c45bb84ad65ce96cb5",
+                "structural-event:9f2e40730962f4f187822743143277d5ae45aeb3",
+                "structural-event:e1b96a3fde1ba15c05a0b7cd11b2fe0f255779a7",
+                "structural-event:57925cfea275d1776107df352c6d6356c11b011b"
+              ],
+              "samples": 6,
+              "score": 100.0
+            }
+          },
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+          "observation_ids": [
+            "structural-event:1a22e2b6a0201bac7474005913f2c5efef0bb6e2",
+            "structural-event:5316b766c631f220c25e7d428aa103f84d193ef3"
+          ],
+          "side": -1,
+          "source": "recovered-pattern-evidence"
+        },
+        "route_plan_builds": 0,
+        "side": -1,
+        "simulated_seconds": 21.1,
+        "status": {
+          "changed_initial_decisions": 1,
+          "core_changed_initial_decisions": 1,
+          "cost_shift_enabled": true,
+          "decision_reasons": {
+            "preferred_successful_side_after_failures": 1
+          },
+          "enabled": true,
+          "exclusions": {},
+          "exit_direction_enabled": true,
+          "exploration_decisions": 0,
+          "last_evaluation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [
+                  "structural-event:1a22e2b6a0201bac7474005913f2c5efef0bb6e2",
+                  "structural-event:5316b766c631f220c25e7d428aa103f84d193ef3"
+                ],
+                "samples": 2,
+                "score": 11.6666670888662
+              },
+              "1": {
+                "errors": 6,
+                "observation_ids": [
+                  "structural-event:ec3a41cc1520c893de194ea851f71e67d085ef3e",
+                  "structural-event:8c73ed0295d8c4bc4af32d7f674a2fd84a5aafc4",
+                  "structural-event:77e0f9b31782dea6ac9ad4c45bb84ad65ce96cb5",
+                  "structural-event:9f2e40730962f4f187822743143277d5ae45aeb3",
+                  "structural-event:e1b96a3fde1ba15c05a0b7cd11b2fe0f255779a7",
+                  "structural-event:57925cfea275d1776107df352c6d6356c11b011b"
+                ],
+                "samples": 6,
+                "score": 100.0
+              }
+            },
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "reason": "preferred_successful_side_after_failures",
+            "recommendation": {
+              "alternatives": {
+                "-1": {
+                  "errors": 0,
+                  "observation_ids": [
+                    "structural-event:1a22e2b6a0201bac7474005913f2c5efef0bb6e2",
+                    "structural-event:5316b766c631f220c25e7d428aa103f84d193ef3"
+                  ],
+                  "samples": 2,
+                  "score": 11.6666670888662
+                },
+                "1": {
+                  "errors": 6,
+                  "observation_ids": [
+                    "structural-event:ec3a41cc1520c893de194ea851f71e67d085ef3e",
+                    "structural-event:8c73ed0295d8c4bc4af32d7f674a2fd84a5aafc4",
+                    "structural-event:77e0f9b31782dea6ac9ad4c45bb84ad65ce96cb5",
+                    "structural-event:9f2e40730962f4f187822743143277d5ae45aeb3",
+                    "structural-event:e1b96a3fde1ba15c05a0b7cd11b2fe0f255779a7",
+                    "structural-event:57925cfea275d1776107df352c6d6356c11b011b"
+                  ],
+                  "samples": 6,
+                  "score": 100.0
+                }
+              },
+              "contains_prediction": true,
+              "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+              "observation_ids": [
+                "structural-event:1a22e2b6a0201bac7474005913f2c5efef0bb6e2",
+                "structural-event:5316b766c631f220c25e7d428aa103f84d193ef3"
+              ],
+              "side": -1,
+              "source": "recovered-pattern-evidence"
+            },
+            "required_gap": 20.0,
+            "score_gap": 88.3333329111338
+          },
+          "local_turn_continuity_enabled": true,
+          "observed_outcomes": 1,
+          "pending_contacts": 0,
+          "ram_records": 1,
+          "recovered_records": 8
+        },
+        "termination": "arrived",
+        "ticks": 211,
+        "watchdog_reason": "",
+        "watchdog_stop": false
+      }
+    ],
+    "world_id": "asymmetric-failure-008ey"
+  },
+  "intake": [
+    {
+      "acked": 4,
+      "confirmed": 4,
+      "recovered_this_poll": 4,
+      "cached_recovered": 4,
+      "world_write_authority": false
+    },
+    {
+      "acked": 4,
+      "confirmed": 8,
+      "recovered_this_poll": 8,
+      "cached_recovered": 8,
+      "world_write_authority": false
+    },
+    {
+      "acked": 0,
+      "confirmed": 8,
+      "recovered_this_poll": 8,
+      "cached_recovered": 8,
+      "world_write_authority": false
+    }
+  ],
+  "cold_recovery": {
+    "acked": 0,
+    "confirmed": 8,
+    "recovered_this_poll": 8,
+    "cached_recovered": 8,
+    "world_write_authority": false
+  },
+  "persisted_outcomes": {
+    "stuck_recovery": 6,
+    "contour_completed": 2
+  },
+  "control": {
+    "attempts": 9,
+    "arrivals": 0,
+    "terminations": {
+      "stuck_recovery": 9
+    },
+    "distance_m": 3582.00012016296,
+    "simulated_seconds": 1074.6000000000001
+  },
+  "memory": {
+    "attempts": 9,
+    "arrivals": 3,
+    "terminations": {
+      "stuck_recovery": 6,
+      "arrived": 3
+    },
+    "distance_m": 2599.158875137565,
+    "simulated_seconds": 779.7
+  },
+  "production_changed": false,
+  "production_benefit_demonstrated": false,
+  "experimental_policy_assessed": true,
+  "diagnostic_ablations_not_in_primary_paired_budget": [
+    {
+      "arm": "cold_positive_only",
+      "arrived": false,
+      "collisions": 0,
+      "compute_wall_ms": 2232,
+      "distance_m": 398.00001335144,
+      "facts": [
+        {
+          "attempt_id": "e2764f71031de5e5d35a0804c54610ff:cold_positive_only:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791550055.42104,
+          "exit_progress_m": 0.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1,
+          "world_id": "asymmetric-failure-008ey"
+        }
+      ],
+      "final_position": [
+        -82.6926651000977,
+        8.70237159729004
+      ],
+      "gate_closed": true,
+      "gate_event": {
+        "basis": "actual_occupied_position",
+        "position": [
+          -82.2928924560547,
+          10.1071062088013
+        ],
+        "tick": 40
+      },
+      "initial_evaluation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [
+              "structural-event:1a22e2b6a0201bac7474005913f2c5efef0bb6e2",
+              "structural-event:5316b766c631f220c25e7d428aa103f84d193ef3"
+            ],
+            "samples": 2,
+            "score": 11.6666670888662
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 0
+          }
+        },
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+        "reason": "insufficient_samples",
+        "recommendation": {}
+      },
+      "recommendation": {
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": 1,
+        "source": "pattern-exploration"
+      },
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 119.4,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {
+          "insufficient_samples": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 1,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:1a22e2b6a0201bac7474005913f2c5efef0bb6e2",
+                "structural-event:5316b766c631f220c25e7d428aa103f84d193ef3"
+              ],
+              "samples": 2,
+              "score": 11.6666670888662
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+          "reason": "insufficient_samples",
+          "recommendation": {}
+        },
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 1,
+        "recovered_records": 2
+      },
+      "termination": "stuck_recovery",
+      "ticks": 1194,
+      "watchdog_reason": "repeated_area_no_goal_progress",
+      "watchdog_stop": true
+    },
+    {
+      "arm": "cold_no_error_penalty",
+      "arrived": true,
+      "collisions": 0,
+      "compute_wall_ms": 348,
+      "distance_m": 70.3862650096416,
+      "facts": [
+        {
+          "attempt_id": "18cc5361d678e43cccc1bb22970de52e:cold_no_error_penalty:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791550055.61721,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1,
+          "world_id": "asymmetric-failure-008ey"
+        }
+      ],
+      "final_position": [
+        -68.0,
+        -5.96046447753906e-08
+      ],
+      "gate_closed": false,
+      "gate_event": {},
+      "initial_evaluation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [
+              "structural-event:1a22e2b6a0201bac7474005913f2c5efef0bb6e2",
+              "structural-event:5316b766c631f220c25e7d428aa103f84d193ef3"
+            ],
+            "samples": 2,
+            "score": 11.6666670888662
+          },
+          "1": {
+            "errors": 6,
+            "observation_ids": [
+              "structural-event:ec3a41cc1520c893de194ea851f71e67d085ef3e",
+              "structural-event:8c73ed0295d8c4bc4af32d7f674a2fd84a5aafc4",
+              "structural-event:77e0f9b31782dea6ac9ad4c45bb84ad65ce96cb5",
+              "structural-event:9f2e40730962f4f187822743143277d5ae45aeb3",
+              "structural-event:e1b96a3fde1ba15c05a0b7cd11b2fe0f255779a7",
+              "structural-event:57925cfea275d1776107df352c6d6356c11b011b"
+            ],
+            "samples": 6,
+            "score": 100.0
+          }
+        },
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+        "reason": "preferred_successful_side_after_failures",
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:1a22e2b6a0201bac7474005913f2c5efef0bb6e2",
+                "structural-event:5316b766c631f220c25e7d428aa103f84d193ef3"
+              ],
+              "samples": 2,
+              "score": 11.6666670888662
+            },
+            "1": {
+              "errors": 6,
+              "observation_ids": [
+                "structural-event:ec3a41cc1520c893de194ea851f71e67d085ef3e",
+                "structural-event:8c73ed0295d8c4bc4af32d7f674a2fd84a5aafc4",
+                "structural-event:77e0f9b31782dea6ac9ad4c45bb84ad65ce96cb5",
+                "structural-event:9f2e40730962f4f187822743143277d5ae45aeb3",
+                "structural-event:e1b96a3fde1ba15c05a0b7cd11b2fe0f255779a7",
+                "structural-event:57925cfea275d1776107df352c6d6356c11b011b"
+              ],
+              "samples": 6,
+              "score": 100.0
+            }
+          },
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+          "observation_ids": [
+            "structural-event:1a22e2b6a0201bac7474005913f2c5efef0bb6e2",
+            "structural-event:5316b766c631f220c25e7d428aa103f84d193ef3"
+          ],
+          "side": -1,
+          "source": "recovered-pattern-evidence"
+        },
+        "required_gap": 20.0,
+        "score_gap": 88.3333329111338
+      },
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [
+              "structural-event:1a22e2b6a0201bac7474005913f2c5efef0bb6e2",
+              "structural-event:5316b766c631f220c25e7d428aa103f84d193ef3"
+            ],
+            "samples": 2,
+            "score": 11.6666670888662
+          },
+          "1": {
+            "errors": 6,
+            "observation_ids": [
+              "structural-event:ec3a41cc1520c893de194ea851f71e67d085ef3e",
+              "structural-event:8c73ed0295d8c4bc4af32d7f674a2fd84a5aafc4",
+              "structural-event:77e0f9b31782dea6ac9ad4c45bb84ad65ce96cb5",
+              "structural-event:9f2e40730962f4f187822743143277d5ae45aeb3",
+              "structural-event:e1b96a3fde1ba15c05a0b7cd11b2fe0f255779a7",
+              "structural-event:57925cfea275d1776107df352c6d6356c11b011b"
+            ],
+            "samples": 6,
+            "score": 100.0
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+        "observation_ids": [
+          "structural-event:1a22e2b6a0201bac7474005913f2c5efef0bb6e2",
+          "structural-event:5316b766c631f220c25e7d428aa103f84d193ef3"
+        ],
+        "side": -1,
+        "source": "recovered-pattern-evidence"
+      },
+      "route_plan_builds": 0,
+      "side": -1,
+      "simulated_seconds": 21.1,
+      "status": {
+        "changed_initial_decisions": 1,
+        "core_changed_initial_decisions": 1,
+        "cost_shift_enabled": true,
+        "decision_reasons": {
+          "preferred_successful_side_after_failures": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:1a22e2b6a0201bac7474005913f2c5efef0bb6e2",
+                "structural-event:5316b766c631f220c25e7d428aa103f84d193ef3"
+              ],
+              "samples": 2,
+              "score": 11.6666670888662
+            },
+            "1": {
+              "errors": 6,
+              "observation_ids": [
+                "structural-event:ec3a41cc1520c893de194ea851f71e67d085ef3e",
+                "structural-event:8c73ed0295d8c4bc4af32d7f674a2fd84a5aafc4",
+                "structural-event:77e0f9b31782dea6ac9ad4c45bb84ad65ce96cb5",
+                "structural-event:9f2e40730962f4f187822743143277d5ae45aeb3",
+                "structural-event:e1b96a3fde1ba15c05a0b7cd11b2fe0f255779a7",
+                "structural-event:57925cfea275d1776107df352c6d6356c11b011b"
+              ],
+              "samples": 6,
+              "score": 100.0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+          "reason": "preferred_successful_side_after_failures",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [
+                  "structural-event:1a22e2b6a0201bac7474005913f2c5efef0bb6e2",
+                  "structural-event:5316b766c631f220c25e7d428aa103f84d193ef3"
+                ],
+                "samples": 2,
+                "score": 11.6666670888662
+              },
+              "1": {
+                "errors": 6,
+                "observation_ids": [
+                  "structural-event:ec3a41cc1520c893de194ea851f71e67d085ef3e",
+                  "structural-event:8c73ed0295d8c4bc4af32d7f674a2fd84a5aafc4",
+                  "structural-event:77e0f9b31782dea6ac9ad4c45bb84ad65ce96cb5",
+                  "structural-event:9f2e40730962f4f187822743143277d5ae45aeb3",
+                  "structural-event:e1b96a3fde1ba15c05a0b7cd11b2fe0f255779a7",
+                  "structural-event:57925cfea275d1776107df352c6d6356c11b011b"
+                ],
+                "samples": 6,
+                "score": 100.0
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|asymmetric-failure-008ey|local-clear-v1:255:254",
+            "observation_ids": [
+              "structural-event:1a22e2b6a0201bac7474005913f2c5efef0bb6e2",
+              "structural-event:5316b766c631f220c25e7d428aa103f84d193ef3"
+            ],
+            "side": -1,
+            "source": "recovered-pattern-evidence"
+          },
+          "required_gap": 20.0,
+          "score_gap": 88.3333329111338
+        },
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 1,
+        "recovered_records": 8
+      },
+      "termination": "arrived",
+      "ticks": 211,
+      "watchdog_reason": "",
+      "watchdog_stop": false
+    }
+  ],
+  "limits": [
+    "Dynamic one-way trap resets identically per attempt; closure reacts only to real occupied position.",
+    "All failed effort remains counted. No shorter failed journey is called a successful gain.",
+    "One isolated deterministic fixture, no broad or production benefit claim.",
+    "Simulated time excludes compute, SDK/database and network costs."
+  ]
+}
