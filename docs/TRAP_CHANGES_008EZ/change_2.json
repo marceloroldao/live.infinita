@@ -1,0 +1,4916 @@
+{
+  "failures": 0,
+  "phase": "change_2",
+  "runs": [
+    {
+      "arm": "change_2_perception_0",
+      "arrived": false,
+      "collisions": 0,
+      "compute_wall_ms": 2257,
+      "distance_m": 398.00001335144,
+      "facts": [],
+      "final_position": [
+        -82.6926651000977,
+        8.70237159729004
+      ],
+      "gate_closed": true,
+      "gate_event": {
+        "basis": "actual_occupied_position",
+        "position": [
+          -82.2928924560547,
+          10.1071062088013
+        ],
+        "tick": 40
+      },
+      "initial_evaluation": {},
+      "recommendation": {},
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 119.4,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {},
+        "enabled": false,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {},
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 0,
+        "pending_contacts": 0,
+        "ram_records": 0,
+        "recovered_records": 0
+      },
+      "termination": "stuck_recovery",
+      "ticks": 1194,
+      "trap_sign": 1,
+      "watchdog_reason": "repeated_area_no_goal_progress",
+      "watchdog_stop": true
+    },
+    {
+      "arm": "change_2_memory_0",
+      "arrived": false,
+      "collisions": 0,
+      "compute_wall_ms": 2564,
+      "distance_m": 398.00001335144,
+      "facts": [
+        {
+          "attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791551711.08952,
+          "exit_progress_m": 0.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1,
+          "world_id": "trap-changes-008ez"
+        }
+      ],
+      "final_position": [
+        -82.6926651000977,
+        8.70237159729004
+      ],
+      "gate_closed": true,
+      "gate_event": {
+        "basis": "actual_occupied_position",
+        "position": [
+          -82.2928924560547,
+          10.1071062088013
+        ],
+        "tick": 40
+      },
+      "initial_evaluation": {
+        "alternatives": {
+          "-1": {
+            "errors": 2,
+            "observation_ids": [
+              "structural-event:3f5ded81d219d95af63bd5f25f222896b44435cf",
+              "structural-event:f3b14d943b9a619d7a4cf53d7f204b82d48093ae"
+            ],
+            "samples": 2,
+            "score": 120.0
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [
+              "structural-event:88d1082107cc217c08706a83fa158799b72e25a6",
+              "structural-event:360547cf641625577ce7dc98bf694dff22ca8319",
+              "structural-event:b98be002698dfd5c8b95661b057a20046a2b9314",
+              "structural-event:99fc503d3f52533e5df4b7216fa95737ab1be287",
+              "structural-event:def4918e63c4a50c75f41b1e2452e5db9b4e0fa1",
+              "structural-event:23de8316f2af3dfb34f657e5e2cc8e33595cd16f",
+              "structural-event:ae7363bab91054c701cc45d8c42e682229cb20c7",
+              "structural-event:873abfc52e5a3c0c4c8c5334cf266cf74916403b",
+              "structural-event:4ac0fb04b6e6e4b68a3d7621714f5101b9db8dcf",
+              "structural-event:38f7905b0a41e0c04046ad9bdc7fb19de456dd06"
+            ],
+            "samples": 10,
+            "score": 11.6666670988003
+          }
+        },
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+        "cost_shift": {
+          "basis": "measured_cost_increase",
+          "factor": 1.5,
+          "fresh_samples": 12,
+          "minimum_rise_cost_units": 1.0,
+          "onset_attempt_id": "96771f53ceedabff4f2eabcd1d4c3b31:change_1_memory_0:1",
+          "retained_raw_samples": 33
+        },
+        "reason": "preferred_successful_side_after_failures",
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 2,
+              "observation_ids": [
+                "structural-event:3f5ded81d219d95af63bd5f25f222896b44435cf",
+                "structural-event:f3b14d943b9a619d7a4cf53d7f204b82d48093ae"
+              ],
+              "samples": 2,
+              "score": 120.0
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:88d1082107cc217c08706a83fa158799b72e25a6",
+                "structural-event:360547cf641625577ce7dc98bf694dff22ca8319",
+                "structural-event:b98be002698dfd5c8b95661b057a20046a2b9314",
+                "structural-event:99fc503d3f52533e5df4b7216fa95737ab1be287",
+                "structural-event:def4918e63c4a50c75f41b1e2452e5db9b4e0fa1",
+                "structural-event:23de8316f2af3dfb34f657e5e2cc8e33595cd16f",
+                "structural-event:ae7363bab91054c701cc45d8c42e682229cb20c7",
+                "structural-event:873abfc52e5a3c0c4c8c5334cf266cf74916403b",
+                "structural-event:4ac0fb04b6e6e4b68a3d7621714f5101b9db8dcf",
+                "structural-event:38f7905b0a41e0c04046ad9bdc7fb19de456dd06"
+              ],
+              "samples": 10,
+              "score": 11.6666670988003
+            }
+          },
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "observation_ids": [
+            "structural-event:88d1082107cc217c08706a83fa158799b72e25a6",
+            "structural-event:360547cf641625577ce7dc98bf694dff22ca8319",
+            "structural-event:b98be002698dfd5c8b95661b057a20046a2b9314",
+            "structural-event:99fc503d3f52533e5df4b7216fa95737ab1be287",
+            "structural-event:def4918e63c4a50c75f41b1e2452e5db9b4e0fa1",
+            "structural-event:23de8316f2af3dfb34f657e5e2cc8e33595cd16f",
+            "structural-event:ae7363bab91054c701cc45d8c42e682229cb20c7",
+            "structural-event:873abfc52e5a3c0c4c8c5334cf266cf74916403b",
+            "structural-event:4ac0fb04b6e6e4b68a3d7621714f5101b9db8dcf",
+            "structural-event:38f7905b0a41e0c04046ad9bdc7fb19de456dd06"
+          ],
+          "side": 1,
+          "source": "recovered-pattern-evidence"
+        },
+        "required_gap": 24.0,
+        "score_gap": 108.3333329012
+      },
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 2,
+            "observation_ids": [
+              "structural-event:3f5ded81d219d95af63bd5f25f222896b44435cf",
+              "structural-event:f3b14d943b9a619d7a4cf53d7f204b82d48093ae"
+            ],
+            "samples": 2,
+            "score": 120.0
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [
+              "structural-event:88d1082107cc217c08706a83fa158799b72e25a6",
+              "structural-event:360547cf641625577ce7dc98bf694dff22ca8319",
+              "structural-event:b98be002698dfd5c8b95661b057a20046a2b9314",
+              "structural-event:99fc503d3f52533e5df4b7216fa95737ab1be287",
+              "structural-event:def4918e63c4a50c75f41b1e2452e5db9b4e0fa1",
+              "structural-event:23de8316f2af3dfb34f657e5e2cc8e33595cd16f",
+              "structural-event:ae7363bab91054c701cc45d8c42e682229cb20c7",
+              "structural-event:873abfc52e5a3c0c4c8c5334cf266cf74916403b",
+              "structural-event:4ac0fb04b6e6e4b68a3d7621714f5101b9db8dcf",
+              "structural-event:38f7905b0a41e0c04046ad9bdc7fb19de456dd06"
+            ],
+            "samples": 10,
+            "score": 11.6666670988003
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+        "observation_ids": [
+          "structural-event:88d1082107cc217c08706a83fa158799b72e25a6",
+          "structural-event:360547cf641625577ce7dc98bf694dff22ca8319",
+          "structural-event:b98be002698dfd5c8b95661b057a20046a2b9314",
+          "structural-event:99fc503d3f52533e5df4b7216fa95737ab1be287",
+          "structural-event:def4918e63c4a50c75f41b1e2452e5db9b4e0fa1",
+          "structural-event:23de8316f2af3dfb34f657e5e2cc8e33595cd16f",
+          "structural-event:ae7363bab91054c701cc45d8c42e682229cb20c7",
+          "structural-event:873abfc52e5a3c0c4c8c5334cf266cf74916403b",
+          "structural-event:4ac0fb04b6e6e4b68a3d7621714f5101b9db8dcf",
+          "structural-event:38f7905b0a41e0c04046ad9bdc7fb19de456dd06"
+        ],
+        "side": 1,
+        "source": "recovered-pattern-evidence"
+      },
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 119.4,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {
+          "preferred_successful_side_after_failures": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 2,
+              "observation_ids": [
+                "structural-event:3f5ded81d219d95af63bd5f25f222896b44435cf",
+                "structural-event:f3b14d943b9a619d7a4cf53d7f204b82d48093ae"
+              ],
+              "samples": 2,
+              "score": 120.0
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:88d1082107cc217c08706a83fa158799b72e25a6",
+                "structural-event:360547cf641625577ce7dc98bf694dff22ca8319",
+                "structural-event:b98be002698dfd5c8b95661b057a20046a2b9314",
+                "structural-event:99fc503d3f52533e5df4b7216fa95737ab1be287",
+                "structural-event:def4918e63c4a50c75f41b1e2452e5db9b4e0fa1",
+                "structural-event:23de8316f2af3dfb34f657e5e2cc8e33595cd16f",
+                "structural-event:ae7363bab91054c701cc45d8c42e682229cb20c7",
+                "structural-event:873abfc52e5a3c0c4c8c5334cf266cf74916403b",
+                "structural-event:4ac0fb04b6e6e4b68a3d7621714f5101b9db8dcf",
+                "structural-event:38f7905b0a41e0c04046ad9bdc7fb19de456dd06"
+              ],
+              "samples": 10,
+              "score": 11.6666670988003
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "cost_shift": {
+            "basis": "measured_cost_increase",
+            "factor": 1.5,
+            "fresh_samples": 12,
+            "minimum_rise_cost_units": 1.0,
+            "onset_attempt_id": "96771f53ceedabff4f2eabcd1d4c3b31:change_1_memory_0:1",
+            "retained_raw_samples": 33
+          },
+          "reason": "preferred_successful_side_after_failures",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 2,
+                "observation_ids": [
+                  "structural-event:3f5ded81d219d95af63bd5f25f222896b44435cf",
+                  "structural-event:f3b14d943b9a619d7a4cf53d7f204b82d48093ae"
+                ],
+                "samples": 2,
+                "score": 120.0
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [
+                  "structural-event:88d1082107cc217c08706a83fa158799b72e25a6",
+                  "structural-event:360547cf641625577ce7dc98bf694dff22ca8319",
+                  "structural-event:b98be002698dfd5c8b95661b057a20046a2b9314",
+                  "structural-event:99fc503d3f52533e5df4b7216fa95737ab1be287",
+                  "structural-event:def4918e63c4a50c75f41b1e2452e5db9b4e0fa1",
+                  "structural-event:23de8316f2af3dfb34f657e5e2cc8e33595cd16f",
+                  "structural-event:ae7363bab91054c701cc45d8c42e682229cb20c7",
+                  "structural-event:873abfc52e5a3c0c4c8c5334cf266cf74916403b",
+                  "structural-event:4ac0fb04b6e6e4b68a3d7621714f5101b9db8dcf",
+                  "structural-event:38f7905b0a41e0c04046ad9bdc7fb19de456dd06"
+                ],
+                "samples": 10,
+                "score": 11.6666670988003
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+            "observation_ids": [
+              "structural-event:88d1082107cc217c08706a83fa158799b72e25a6",
+              "structural-event:360547cf641625577ce7dc98bf694dff22ca8319",
+              "structural-event:b98be002698dfd5c8b95661b057a20046a2b9314",
+              "structural-event:99fc503d3f52533e5df4b7216fa95737ab1be287",
+              "structural-event:def4918e63c4a50c75f41b1e2452e5db9b4e0fa1",
+              "structural-event:23de8316f2af3dfb34f657e5e2cc8e33595cd16f",
+              "structural-event:ae7363bab91054c701cc45d8c42e682229cb20c7",
+              "structural-event:873abfc52e5a3c0c4c8c5334cf266cf74916403b",
+              "structural-event:4ac0fb04b6e6e4b68a3d7621714f5101b9db8dcf",
+              "structural-event:38f7905b0a41e0c04046ad9bdc7fb19de456dd06"
+            ],
+            "side": 1,
+            "source": "recovered-pattern-evidence"
+          },
+          "required_gap": 24.0,
+          "score_gap": 108.3333329012
+        },
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 1,
+        "recovered_records": 33
+      },
+      "termination": "stuck_recovery",
+      "ticks": 1194,
+      "trap_sign": 1,
+      "watchdog_reason": "repeated_area_no_goal_progress",
+      "watchdog_stop": true
+    },
+    {
+      "arm": "change_2_perception_1",
+      "arrived": false,
+      "collisions": 0,
+      "compute_wall_ms": 2262,
+      "distance_m": 398.00001335144,
+      "facts": [
+        {
+          "attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791551711.08952,
+          "exit_progress_m": 0.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        }
+      ],
+      "final_position": [
+        -82.6926651000977,
+        8.70237159729004
+      ],
+      "gate_closed": true,
+      "gate_event": {
+        "basis": "actual_occupied_position",
+        "position": [
+          -82.2928924560547,
+          10.1071062088013
+        ],
+        "tick": 40
+      },
+      "initial_evaluation": {},
+      "recommendation": {},
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 119.4,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {},
+        "enabled": false,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {},
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 0,
+        "pending_contacts": 0,
+        "ram_records": 1,
+        "recovered_records": 0
+      },
+      "termination": "stuck_recovery",
+      "ticks": 1194,
+      "trap_sign": 1,
+      "watchdog_reason": "repeated_area_no_goal_progress",
+      "watchdog_stop": true
+    },
+    {
+      "arm": "change_2_memory_1",
+      "arrived": true,
+      "collisions": 0,
+      "compute_wall_ms": 350,
+      "distance_m": 70.3862650096416,
+      "facts": [
+        {
+          "attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791551711.08952,
+          "exit_progress_m": 0.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "1171c22be42ff6f36041598e347ed886:change_2_memory_1:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551713.55922,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1,
+          "world_id": "trap-changes-008ez"
+        }
+      ],
+      "final_position": [
+        -68.0,
+        -5.96046447753906e-08
+      ],
+      "gate_closed": false,
+      "gate_event": {},
+      "initial_evaluation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 0
+          },
+          "1": {
+            "errors": 1,
+            "observation_ids": [],
+            "samples": 1,
+            "score": 120.0
+          }
+        },
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+        "cost_shift": {
+          "basis": "measured_cost_increase",
+          "factor": 1.5,
+          "fresh_samples": 1,
+          "minimum_rise_cost_units": 1.0,
+          "onset_attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+          "retained_raw_samples": 34
+        },
+        "reason": "cost_shift_exploration",
+        "recommendation": {
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": -1,
+          "source": "pattern-exploration"
+        }
+      },
+      "recommendation": {
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": -1,
+        "source": "pattern-exploration"
+      },
+      "route_plan_builds": 0,
+      "side": -1,
+      "simulated_seconds": 21.1,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {
+          "cost_shift_exploration": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 1,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            },
+            "1": {
+              "errors": 1,
+              "observation_ids": [],
+              "samples": 1,
+              "score": 120.0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "cost_shift": {
+            "basis": "measured_cost_increase",
+            "factor": 1.5,
+            "fresh_samples": 1,
+            "minimum_rise_cost_units": 1.0,
+            "onset_attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+            "retained_raw_samples": 34
+          },
+          "reason": "cost_shift_exploration",
+          "recommendation": {
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": -1,
+            "source": "pattern-exploration"
+          }
+        },
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 2,
+        "recovered_records": 33
+      },
+      "termination": "arrived",
+      "ticks": 211,
+      "trap_sign": 1,
+      "watchdog_reason": "",
+      "watchdog_stop": false
+    },
+    {
+      "arm": "change_2_perception_2",
+      "arrived": false,
+      "collisions": 0,
+      "compute_wall_ms": 2215,
+      "distance_m": 398.00001335144,
+      "facts": [
+        {
+          "attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791551711.08952,
+          "exit_progress_m": 0.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "1171c22be42ff6f36041598e347ed886:change_2_memory_1:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551713.55922,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        }
+      ],
+      "final_position": [
+        -82.6926651000977,
+        8.70237159729004
+      ],
+      "gate_closed": true,
+      "gate_event": {
+        "basis": "actual_occupied_position",
+        "position": [
+          -82.2928924560547,
+          10.1071062088013
+        ],
+        "tick": 40
+      },
+      "initial_evaluation": {},
+      "recommendation": {},
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 119.4,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {},
+        "enabled": false,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {},
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 0,
+        "pending_contacts": 0,
+        "ram_records": 2,
+        "recovered_records": 0
+      },
+      "termination": "stuck_recovery",
+      "ticks": 1194,
+      "trap_sign": 1,
+      "watchdog_reason": "repeated_area_no_goal_progress",
+      "watchdog_stop": true
+    },
+    {
+      "arm": "change_2_memory_2",
+      "arrived": false,
+      "collisions": 0,
+      "compute_wall_ms": 2296,
+      "distance_m": 398.00001335144,
+      "facts": [
+        {
+          "attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791551711.08952,
+          "exit_progress_m": 0.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "1171c22be42ff6f36041598e347ed886:change_2_memory_1:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551713.55922,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "da5dc24927a1dbe5ddafaed73233a629:change_2_memory_2:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791551718.25458,
+          "exit_progress_m": 0.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1,
+          "world_id": "trap-changes-008ez"
+        }
+      ],
+      "final_position": [
+        -82.6926651000977,
+        8.70237159729004
+      ],
+      "gate_closed": true,
+      "gate_event": {
+        "basis": "actual_occupied_position",
+        "position": [
+          -82.2928924560547,
+          10.1071062088013
+        ],
+        "tick": 40
+      },
+      "initial_evaluation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 1,
+            "score": 11.6666670888662
+          },
+          "1": {
+            "errors": 1,
+            "observation_ids": [],
+            "samples": 1,
+            "score": 120.0
+          }
+        },
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+        "cost_shift": {
+          "basis": "measured_cost_increase",
+          "factor": 1.5,
+          "fresh_samples": 2,
+          "minimum_rise_cost_units": 1.0,
+          "onset_attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+          "retained_raw_samples": 35
+        },
+        "reason": "cost_shift_exploration",
+        "recommendation": {
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": 1,
+          "source": "pattern-exploration"
+        }
+      },
+      "recommendation": {
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": 1,
+        "source": "pattern-exploration"
+      },
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 119.4,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {
+          "cost_shift_exploration": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 1,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 1,
+              "score": 11.6666670888662
+            },
+            "1": {
+              "errors": 1,
+              "observation_ids": [],
+              "samples": 1,
+              "score": 120.0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "cost_shift": {
+            "basis": "measured_cost_increase",
+            "factor": 1.5,
+            "fresh_samples": 2,
+            "minimum_rise_cost_units": 1.0,
+            "onset_attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+            "retained_raw_samples": 35
+          },
+          "reason": "cost_shift_exploration",
+          "recommendation": {
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": 1,
+            "source": "pattern-exploration"
+          }
+        },
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 3,
+        "recovered_records": 33
+      },
+      "termination": "stuck_recovery",
+      "ticks": 1194,
+      "trap_sign": 1,
+      "watchdog_reason": "repeated_area_no_goal_progress",
+      "watchdog_stop": true
+    },
+    {
+      "arm": "change_2_perception_3",
+      "arrived": false,
+      "collisions": 0,
+      "compute_wall_ms": 2209,
+      "distance_m": 398.00001335144,
+      "facts": [
+        {
+          "attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791551711.08952,
+          "exit_progress_m": 0.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "1171c22be42ff6f36041598e347ed886:change_2_memory_1:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551713.55922,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "da5dc24927a1dbe5ddafaed73233a629:change_2_memory_2:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791551718.25458,
+          "exit_progress_m": 0.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        }
+      ],
+      "final_position": [
+        -82.6926651000977,
+        8.70237159729004
+      ],
+      "gate_closed": true,
+      "gate_event": {
+        "basis": "actual_occupied_position",
+        "position": [
+          -82.2928924560547,
+          10.1071062088013
+        ],
+        "tick": 40
+      },
+      "initial_evaluation": {},
+      "recommendation": {},
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 119.4,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {},
+        "enabled": false,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {},
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 0,
+        "pending_contacts": 0,
+        "ram_records": 3,
+        "recovered_records": 0
+      },
+      "termination": "stuck_recovery",
+      "ticks": 1194,
+      "trap_sign": 1,
+      "watchdog_reason": "repeated_area_no_goal_progress",
+      "watchdog_stop": true
+    },
+    {
+      "arm": "change_2_memory_3",
+      "arrived": true,
+      "collisions": 0,
+      "compute_wall_ms": 357,
+      "distance_m": 70.3862650096416,
+      "facts": [
+        {
+          "attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791551711.08952,
+          "exit_progress_m": 0.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "1171c22be42ff6f36041598e347ed886:change_2_memory_1:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551713.55922,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "da5dc24927a1dbe5ddafaed73233a629:change_2_memory_2:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791551718.25458,
+          "exit_progress_m": 0.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "33a3a2e5c624e282d978722a12a7b4f9:change_2_memory_3:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551720.67721,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1,
+          "world_id": "trap-changes-008ez"
+        }
+      ],
+      "final_position": [
+        -68.0,
+        -5.96046447753906e-08
+      ],
+      "gate_closed": false,
+      "gate_event": {},
+      "initial_evaluation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 1,
+            "score": 11.6666670888662
+          },
+          "1": {
+            "errors": 2,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 120.0
+          }
+        },
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+        "cost_shift": {
+          "basis": "measured_cost_increase",
+          "factor": 1.5,
+          "fresh_samples": 3,
+          "minimum_rise_cost_units": 1.0,
+          "onset_attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+          "retained_raw_samples": 36
+        },
+        "reason": "cost_shift_exploration",
+        "recommendation": {
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": -1,
+          "source": "pattern-exploration"
+        }
+      },
+      "recommendation": {
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": -1,
+        "source": "pattern-exploration"
+      },
+      "route_plan_builds": 0,
+      "side": -1,
+      "simulated_seconds": 21.1,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {
+          "cost_shift_exploration": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 1,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 1,
+              "score": 11.6666670888662
+            },
+            "1": {
+              "errors": 2,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 120.0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "cost_shift": {
+            "basis": "measured_cost_increase",
+            "factor": 1.5,
+            "fresh_samples": 3,
+            "minimum_rise_cost_units": 1.0,
+            "onset_attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+            "retained_raw_samples": 36
+          },
+          "reason": "cost_shift_exploration",
+          "recommendation": {
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": -1,
+            "source": "pattern-exploration"
+          }
+        },
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 4,
+        "recovered_records": 33
+      },
+      "termination": "arrived",
+      "ticks": 211,
+      "trap_sign": 1,
+      "watchdog_reason": "",
+      "watchdog_stop": false
+    },
+    {
+      "arm": "change_2_perception_4",
+      "arrived": false,
+      "collisions": 0,
+      "compute_wall_ms": 2225,
+      "distance_m": 398.00001335144,
+      "facts": [
+        {
+          "attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791551711.08952,
+          "exit_progress_m": 0.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "1171c22be42ff6f36041598e347ed886:change_2_memory_1:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551713.55922,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "da5dc24927a1dbe5ddafaed73233a629:change_2_memory_2:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791551718.25458,
+          "exit_progress_m": 0.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "33a3a2e5c624e282d978722a12a7b4f9:change_2_memory_3:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551720.67721,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        }
+      ],
+      "final_position": [
+        -82.6926651000977,
+        8.70237159729004
+      ],
+      "gate_closed": true,
+      "gate_event": {
+        "basis": "actual_occupied_position",
+        "position": [
+          -82.2928924560547,
+          10.1071062088013
+        ],
+        "tick": 40
+      },
+      "initial_evaluation": {},
+      "recommendation": {},
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 119.4,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {},
+        "enabled": false,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {},
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 0,
+        "pending_contacts": 0,
+        "ram_records": 4,
+        "recovered_records": 0
+      },
+      "termination": "stuck_recovery",
+      "ticks": 1194,
+      "trap_sign": 1,
+      "watchdog_reason": "repeated_area_no_goal_progress",
+      "watchdog_stop": true
+    },
+    {
+      "arm": "change_2_memory_4",
+      "arrived": true,
+      "collisions": 0,
+      "compute_wall_ms": 354,
+      "distance_m": 70.3862650096416,
+      "facts": [
+        {
+          "attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791551711.08952,
+          "exit_progress_m": 0.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "1171c22be42ff6f36041598e347ed886:change_2_memory_1:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551713.55922,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "da5dc24927a1dbe5ddafaed73233a629:change_2_memory_2:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791551718.25458,
+          "exit_progress_m": 0.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "33a3a2e5c624e282d978722a12a7b4f9:change_2_memory_3:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551720.67721,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "f5cea499e6af5744f616d64bbc36ec23:change_2_memory_4:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551723.27368,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1,
+          "world_id": "trap-changes-008ez"
+        }
+      ],
+      "final_position": [
+        -68.0,
+        -5.96046447753906e-08
+      ],
+      "gate_closed": false,
+      "gate_event": {},
+      "initial_evaluation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 11.6666670888662
+          },
+          "1": {
+            "errors": 2,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 120.0
+          }
+        },
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+        "cost_shift": {
+          "basis": "measured_cost_increase",
+          "factor": 1.5,
+          "fresh_samples": 4,
+          "minimum_rise_cost_units": 1.0,
+          "onset_attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+          "retained_raw_samples": 37
+        },
+        "reason": "preferred_successful_side_after_failures",
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 11.6666670888662
+            },
+            "1": {
+              "errors": 2,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 120.0
+            }
+          },
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": -1,
+          "source": "ram-pattern-evidence"
+        },
+        "required_gap": 24.0,
+        "score_gap": 108.333332911134
+      },
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 11.6666670888662
+          },
+          "1": {
+            "errors": 2,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 120.0
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": -1,
+        "source": "ram-pattern-evidence"
+      },
+      "route_plan_builds": 0,
+      "side": -1,
+      "simulated_seconds": 21.1,
+      "status": {
+        "changed_initial_decisions": 1,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {
+          "preferred_successful_side_after_failures": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 11.6666670888662
+            },
+            "1": {
+              "errors": 2,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 120.0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "cost_shift": {
+            "basis": "measured_cost_increase",
+            "factor": 1.5,
+            "fresh_samples": 4,
+            "minimum_rise_cost_units": 1.0,
+            "onset_attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+            "retained_raw_samples": 37
+          },
+          "reason": "preferred_successful_side_after_failures",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 11.6666670888662
+              },
+              "1": {
+                "errors": 2,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 120.0
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": -1,
+            "source": "ram-pattern-evidence"
+          },
+          "required_gap": 24.0,
+          "score_gap": 108.333332911134
+        },
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 5,
+        "recovered_records": 33
+      },
+      "termination": "arrived",
+      "ticks": 211,
+      "trap_sign": 1,
+      "watchdog_reason": "",
+      "watchdog_stop": false
+    },
+    {
+      "arm": "change_2_perception_5",
+      "arrived": false,
+      "collisions": 0,
+      "compute_wall_ms": 2300,
+      "distance_m": 398.00001335144,
+      "facts": [
+        {
+          "attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791551711.08952,
+          "exit_progress_m": 0.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "1171c22be42ff6f36041598e347ed886:change_2_memory_1:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551713.55922,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "da5dc24927a1dbe5ddafaed73233a629:change_2_memory_2:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791551718.25458,
+          "exit_progress_m": 0.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "33a3a2e5c624e282d978722a12a7b4f9:change_2_memory_3:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551720.67721,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "f5cea499e6af5744f616d64bbc36ec23:change_2_memory_4:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551723.27368,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        }
+      ],
+      "final_position": [
+        -82.6926651000977,
+        8.70237159729004
+      ],
+      "gate_closed": true,
+      "gate_event": {
+        "basis": "actual_occupied_position",
+        "position": [
+          -82.2928924560547,
+          10.1071062088013
+        ],
+        "tick": 40
+      },
+      "initial_evaluation": {},
+      "recommendation": {},
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 119.4,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {},
+        "enabled": false,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {},
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 0,
+        "pending_contacts": 0,
+        "ram_records": 5,
+        "recovered_records": 0
+      },
+      "termination": "stuck_recovery",
+      "ticks": 1194,
+      "trap_sign": 1,
+      "watchdog_reason": "repeated_area_no_goal_progress",
+      "watchdog_stop": true
+    },
+    {
+      "arm": "change_2_memory_5",
+      "arrived": true,
+      "collisions": 0,
+      "compute_wall_ms": 370,
+      "distance_m": 70.3862650096416,
+      "facts": [
+        {
+          "attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791551711.08952,
+          "exit_progress_m": 0.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "1171c22be42ff6f36041598e347ed886:change_2_memory_1:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551713.55922,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "da5dc24927a1dbe5ddafaed73233a629:change_2_memory_2:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791551718.25458,
+          "exit_progress_m": 0.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "33a3a2e5c624e282d978722a12a7b4f9:change_2_memory_3:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551720.67721,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "f5cea499e6af5744f616d64bbc36ec23:change_2_memory_4:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551723.27368,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "72b67b0a9fe6ca82c9df0a866a8ea3a6:change_2_memory_5:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551725.95789,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1,
+          "world_id": "trap-changes-008ez"
+        }
+      ],
+      "final_position": [
+        -68.0,
+        -5.96046447753906e-08
+      ],
+      "gate_closed": false,
+      "gate_event": {},
+      "initial_evaluation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 3,
+            "score": 11.6666670888662
+          },
+          "1": {
+            "errors": 2,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 120.0
+          }
+        },
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+        "cost_shift": {
+          "basis": "measured_cost_increase",
+          "factor": 1.5,
+          "fresh_samples": 5,
+          "minimum_rise_cost_units": 1.0,
+          "onset_attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+          "retained_raw_samples": 38
+        },
+        "reason": "preferred_successful_side_after_failures",
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 3,
+              "score": 11.6666670888662
+            },
+            "1": {
+              "errors": 2,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 120.0
+            }
+          },
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": -1,
+          "source": "ram-pattern-evidence"
+        },
+        "required_gap": 24.0,
+        "score_gap": 108.333332911134
+      },
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 3,
+            "score": 11.6666670888662
+          },
+          "1": {
+            "errors": 2,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 120.0
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": -1,
+        "source": "ram-pattern-evidence"
+      },
+      "route_plan_builds": 0,
+      "side": -1,
+      "simulated_seconds": 21.1,
+      "status": {
+        "changed_initial_decisions": 1,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {
+          "preferred_successful_side_after_failures": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 3,
+              "score": 11.6666670888662
+            },
+            "1": {
+              "errors": 2,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 120.0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "cost_shift": {
+            "basis": "measured_cost_increase",
+            "factor": 1.5,
+            "fresh_samples": 5,
+            "minimum_rise_cost_units": 1.0,
+            "onset_attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+            "retained_raw_samples": 38
+          },
+          "reason": "preferred_successful_side_after_failures",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 3,
+                "score": 11.6666670888662
+              },
+              "1": {
+                "errors": 2,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 120.0
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": -1,
+            "source": "ram-pattern-evidence"
+          },
+          "required_gap": 24.0,
+          "score_gap": 108.333332911134
+        },
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 6,
+        "recovered_records": 33
+      },
+      "termination": "arrived",
+      "ticks": 211,
+      "trap_sign": 1,
+      "watchdog_reason": "",
+      "watchdog_stop": false
+    },
+    {
+      "arm": "change_2_perception_6",
+      "arrived": false,
+      "collisions": 0,
+      "compute_wall_ms": 2221,
+      "distance_m": 398.00001335144,
+      "facts": [
+        {
+          "attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791551711.08952,
+          "exit_progress_m": 0.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "1171c22be42ff6f36041598e347ed886:change_2_memory_1:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551713.55922,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "da5dc24927a1dbe5ddafaed73233a629:change_2_memory_2:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791551718.25458,
+          "exit_progress_m": 0.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "33a3a2e5c624e282d978722a12a7b4f9:change_2_memory_3:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551720.67721,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "f5cea499e6af5744f616d64bbc36ec23:change_2_memory_4:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551723.27368,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "72b67b0a9fe6ca82c9df0a866a8ea3a6:change_2_memory_5:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551725.95789,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        }
+      ],
+      "final_position": [
+        -82.6926651000977,
+        8.70237159729004
+      ],
+      "gate_closed": true,
+      "gate_event": {
+        "basis": "actual_occupied_position",
+        "position": [
+          -82.2928924560547,
+          10.1071062088013
+        ],
+        "tick": 40
+      },
+      "initial_evaluation": {},
+      "recommendation": {},
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 119.4,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {},
+        "enabled": false,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {},
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 0,
+        "pending_contacts": 0,
+        "ram_records": 6,
+        "recovered_records": 0
+      },
+      "termination": "stuck_recovery",
+      "ticks": 1194,
+      "trap_sign": 1,
+      "watchdog_reason": "repeated_area_no_goal_progress",
+      "watchdog_stop": true
+    },
+    {
+      "arm": "change_2_memory_6",
+      "arrived": true,
+      "collisions": 0,
+      "compute_wall_ms": 352,
+      "distance_m": 70.3862650096416,
+      "facts": [
+        {
+          "attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791551711.08952,
+          "exit_progress_m": 0.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "1171c22be42ff6f36041598e347ed886:change_2_memory_1:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551713.55922,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "da5dc24927a1dbe5ddafaed73233a629:change_2_memory_2:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791551718.25458,
+          "exit_progress_m": 0.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "33a3a2e5c624e282d978722a12a7b4f9:change_2_memory_3:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551720.67721,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "f5cea499e6af5744f616d64bbc36ec23:change_2_memory_4:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551723.27368,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "72b67b0a9fe6ca82c9df0a866a8ea3a6:change_2_memory_5:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551725.95789,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "f13e0b85ae62556c63634cdf9168d949:change_2_memory_6:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551728.55965,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1,
+          "world_id": "trap-changes-008ez"
+        }
+      ],
+      "final_position": [
+        -68.0,
+        -5.96046447753906e-08
+      ],
+      "gate_closed": false,
+      "gate_event": {},
+      "initial_evaluation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 4,
+            "score": 11.6666670888662
+          },
+          "1": {
+            "errors": 2,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 120.0
+          }
+        },
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+        "cost_shift": {
+          "basis": "measured_cost_increase",
+          "factor": 1.5,
+          "fresh_samples": 6,
+          "minimum_rise_cost_units": 1.0,
+          "onset_attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+          "retained_raw_samples": 39
+        },
+        "reason": "preferred_successful_side_after_failures",
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 4,
+              "score": 11.6666670888662
+            },
+            "1": {
+              "errors": 2,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 120.0
+            }
+          },
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": -1,
+          "source": "ram-pattern-evidence"
+        },
+        "required_gap": 24.0,
+        "score_gap": 108.333332911134
+      },
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 4,
+            "score": 11.6666670888662
+          },
+          "1": {
+            "errors": 2,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 120.0
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": -1,
+        "source": "ram-pattern-evidence"
+      },
+      "route_plan_builds": 0,
+      "side": -1,
+      "simulated_seconds": 21.1,
+      "status": {
+        "changed_initial_decisions": 1,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {
+          "preferred_successful_side_after_failures": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 4,
+              "score": 11.6666670888662
+            },
+            "1": {
+              "errors": 2,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 120.0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "cost_shift": {
+            "basis": "measured_cost_increase",
+            "factor": 1.5,
+            "fresh_samples": 6,
+            "minimum_rise_cost_units": 1.0,
+            "onset_attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+            "retained_raw_samples": 39
+          },
+          "reason": "preferred_successful_side_after_failures",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 4,
+                "score": 11.6666670888662
+              },
+              "1": {
+                "errors": 2,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 120.0
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": -1,
+            "source": "ram-pattern-evidence"
+          },
+          "required_gap": 24.0,
+          "score_gap": 108.333332911134
+        },
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 7,
+        "recovered_records": 33
+      },
+      "termination": "arrived",
+      "ticks": 211,
+      "trap_sign": 1,
+      "watchdog_reason": "",
+      "watchdog_stop": false
+    },
+    {
+      "arm": "change_2_perception_7",
+      "arrived": false,
+      "collisions": 0,
+      "compute_wall_ms": 2265,
+      "distance_m": 398.00001335144,
+      "facts": [
+        {
+          "attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791551711.08952,
+          "exit_progress_m": 0.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "1171c22be42ff6f36041598e347ed886:change_2_memory_1:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551713.55922,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "da5dc24927a1dbe5ddafaed73233a629:change_2_memory_2:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791551718.25458,
+          "exit_progress_m": 0.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "33a3a2e5c624e282d978722a12a7b4f9:change_2_memory_3:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551720.67721,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "f5cea499e6af5744f616d64bbc36ec23:change_2_memory_4:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551723.27368,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "72b67b0a9fe6ca82c9df0a866a8ea3a6:change_2_memory_5:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551725.95789,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "f13e0b85ae62556c63634cdf9168d949:change_2_memory_6:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551728.55965,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        }
+      ],
+      "final_position": [
+        -82.6926651000977,
+        8.70237159729004
+      ],
+      "gate_closed": true,
+      "gate_event": {
+        "basis": "actual_occupied_position",
+        "position": [
+          -82.2928924560547,
+          10.1071062088013
+        ],
+        "tick": 40
+      },
+      "initial_evaluation": {},
+      "recommendation": {},
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 119.4,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {},
+        "enabled": false,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {},
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 0,
+        "pending_contacts": 0,
+        "ram_records": 7,
+        "recovered_records": 0
+      },
+      "termination": "stuck_recovery",
+      "ticks": 1194,
+      "trap_sign": 1,
+      "watchdog_reason": "repeated_area_no_goal_progress",
+      "watchdog_stop": true
+    },
+    {
+      "arm": "change_2_memory_7",
+      "arrived": true,
+      "collisions": 0,
+      "compute_wall_ms": 361,
+      "distance_m": 70.3862650096416,
+      "facts": [
+        {
+          "attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791551711.08952,
+          "exit_progress_m": 0.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "1171c22be42ff6f36041598e347ed886:change_2_memory_1:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551713.55922,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "da5dc24927a1dbe5ddafaed73233a629:change_2_memory_2:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791551718.25458,
+          "exit_progress_m": 0.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "33a3a2e5c624e282d978722a12a7b4f9:change_2_memory_3:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551720.67721,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "f5cea499e6af5744f616d64bbc36ec23:change_2_memory_4:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551723.27368,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "72b67b0a9fe6ca82c9df0a866a8ea3a6:change_2_memory_5:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551725.95789,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "f13e0b85ae62556c63634cdf9168d949:change_2_memory_6:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551728.55965,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "65baf4848badd2eff267bb06074c2408:change_2_memory_7:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551731.20245,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1,
+          "world_id": "trap-changes-008ez"
+        }
+      ],
+      "final_position": [
+        -68.0,
+        -5.96046447753906e-08
+      ],
+      "gate_closed": false,
+      "gate_event": {},
+      "initial_evaluation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 5,
+            "score": 11.6666670888662
+          },
+          "1": {
+            "errors": 2,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 120.0
+          }
+        },
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+        "cost_shift": {
+          "basis": "measured_cost_increase",
+          "factor": 1.5,
+          "fresh_samples": 7,
+          "minimum_rise_cost_units": 1.0,
+          "onset_attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+          "retained_raw_samples": 40
+        },
+        "reason": "preferred_successful_side_after_failures",
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 5,
+              "score": 11.6666670888662
+            },
+            "1": {
+              "errors": 2,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 120.0
+            }
+          },
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": -1,
+          "source": "ram-pattern-evidence"
+        },
+        "required_gap": 24.0,
+        "score_gap": 108.333332911134
+      },
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 5,
+            "score": 11.6666670888662
+          },
+          "1": {
+            "errors": 2,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 120.0
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": -1,
+        "source": "ram-pattern-evidence"
+      },
+      "route_plan_builds": 0,
+      "side": -1,
+      "simulated_seconds": 21.1,
+      "status": {
+        "changed_initial_decisions": 1,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {
+          "preferred_successful_side_after_failures": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 5,
+              "score": 11.6666670888662
+            },
+            "1": {
+              "errors": 2,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 120.0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "cost_shift": {
+            "basis": "measured_cost_increase",
+            "factor": 1.5,
+            "fresh_samples": 7,
+            "minimum_rise_cost_units": 1.0,
+            "onset_attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+            "retained_raw_samples": 40
+          },
+          "reason": "preferred_successful_side_after_failures",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 5,
+                "score": 11.6666670888662
+              },
+              "1": {
+                "errors": 2,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 120.0
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": -1,
+            "source": "ram-pattern-evidence"
+          },
+          "required_gap": 24.0,
+          "score_gap": 108.333332911134
+        },
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 8,
+        "recovered_records": 33
+      },
+      "termination": "arrived",
+      "ticks": 211,
+      "trap_sign": 1,
+      "watchdog_reason": "",
+      "watchdog_stop": false
+    },
+    {
+      "arm": "change_2_perception_8",
+      "arrived": false,
+      "collisions": 0,
+      "compute_wall_ms": 2267,
+      "distance_m": 398.00001335144,
+      "facts": [
+        {
+          "attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791551711.08952,
+          "exit_progress_m": 0.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "1171c22be42ff6f36041598e347ed886:change_2_memory_1:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551713.55922,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "da5dc24927a1dbe5ddafaed73233a629:change_2_memory_2:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791551718.25458,
+          "exit_progress_m": 0.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "33a3a2e5c624e282d978722a12a7b4f9:change_2_memory_3:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551720.67721,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "f5cea499e6af5744f616d64bbc36ec23:change_2_memory_4:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551723.27368,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "72b67b0a9fe6ca82c9df0a866a8ea3a6:change_2_memory_5:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551725.95789,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "f13e0b85ae62556c63634cdf9168d949:change_2_memory_6:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551728.55965,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "65baf4848badd2eff267bb06074c2408:change_2_memory_7:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551731.20245,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        }
+      ],
+      "final_position": [
+        -82.6926651000977,
+        8.70237159729004
+      ],
+      "gate_closed": true,
+      "gate_event": {
+        "basis": "actual_occupied_position",
+        "position": [
+          -82.2928924560547,
+          10.1071062088013
+        ],
+        "tick": 40
+      },
+      "initial_evaluation": {},
+      "recommendation": {},
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 119.4,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {},
+        "enabled": false,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {},
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 0,
+        "pending_contacts": 0,
+        "ram_records": 8,
+        "recovered_records": 0
+      },
+      "termination": "stuck_recovery",
+      "ticks": 1194,
+      "trap_sign": 1,
+      "watchdog_reason": "repeated_area_no_goal_progress",
+      "watchdog_stop": true
+    },
+    {
+      "arm": "change_2_memory_8",
+      "arrived": true,
+      "collisions": 0,
+      "compute_wall_ms": 535,
+      "distance_m": 70.3862650096416,
+      "facts": [
+        {
+          "attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791551711.08952,
+          "exit_progress_m": 0.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "1171c22be42ff6f36041598e347ed886:change_2_memory_1:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551713.55922,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "da5dc24927a1dbe5ddafaed73233a629:change_2_memory_2:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791551718.25458,
+          "exit_progress_m": 0.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "33a3a2e5c624e282d978722a12a7b4f9:change_2_memory_3:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551720.67721,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "f5cea499e6af5744f616d64bbc36ec23:change_2_memory_4:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551723.27368,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "72b67b0a9fe6ca82c9df0a866a8ea3a6:change_2_memory_5:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551725.95789,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "f13e0b85ae62556c63634cdf9168d949:change_2_memory_6:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551728.55965,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "65baf4848badd2eff267bb06074c2408:change_2_memory_7:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551731.20245,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "675d8db68dc95839208f2a5e3c814a04:change_2_memory_8:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551733.91981,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1,
+          "world_id": "trap-changes-008ez"
+        }
+      ],
+      "final_position": [
+        -68.0,
+        -5.96046447753906e-08
+      ],
+      "gate_closed": false,
+      "gate_event": {},
+      "initial_evaluation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 6,
+            "score": 11.6666670888662
+          },
+          "1": {
+            "errors": 2,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 120.0
+          }
+        },
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+        "cost_shift": {
+          "basis": "measured_cost_increase",
+          "factor": 1.5,
+          "fresh_samples": 8,
+          "minimum_rise_cost_units": 1.0,
+          "onset_attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+          "retained_raw_samples": 41
+        },
+        "reason": "preferred_successful_side_after_failures",
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 6,
+              "score": 11.6666670888662
+            },
+            "1": {
+              "errors": 2,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 120.0
+            }
+          },
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": -1,
+          "source": "ram-pattern-evidence"
+        },
+        "required_gap": 24.0,
+        "score_gap": 108.333332911134
+      },
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 6,
+            "score": 11.6666670888662
+          },
+          "1": {
+            "errors": 2,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 120.0
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": -1,
+        "source": "ram-pattern-evidence"
+      },
+      "route_plan_builds": 0,
+      "side": -1,
+      "simulated_seconds": 21.1,
+      "status": {
+        "changed_initial_decisions": 1,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {
+          "preferred_successful_side_after_failures": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 6,
+              "score": 11.6666670888662
+            },
+            "1": {
+              "errors": 2,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 120.0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "cost_shift": {
+            "basis": "measured_cost_increase",
+            "factor": 1.5,
+            "fresh_samples": 8,
+            "minimum_rise_cost_units": 1.0,
+            "onset_attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+            "retained_raw_samples": 41
+          },
+          "reason": "preferred_successful_side_after_failures",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 6,
+                "score": 11.6666670888662
+              },
+              "1": {
+                "errors": 2,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 120.0
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": -1,
+            "source": "ram-pattern-evidence"
+          },
+          "required_gap": 24.0,
+          "score_gap": 108.333332911134
+        },
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 9,
+        "recovered_records": 33
+      },
+      "termination": "arrived",
+      "ticks": 211,
+      "trap_sign": 1,
+      "watchdog_reason": "",
+      "watchdog_stop": false
+    },
+    {
+      "arm": "change_2_perception_9",
+      "arrived": false,
+      "collisions": 0,
+      "compute_wall_ms": 2330,
+      "distance_m": 398.00001335144,
+      "facts": [
+        {
+          "attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791551711.08952,
+          "exit_progress_m": 0.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "1171c22be42ff6f36041598e347ed886:change_2_memory_1:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551713.55922,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "da5dc24927a1dbe5ddafaed73233a629:change_2_memory_2:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791551718.25458,
+          "exit_progress_m": 0.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "33a3a2e5c624e282d978722a12a7b4f9:change_2_memory_3:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551720.67721,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "f5cea499e6af5744f616d64bbc36ec23:change_2_memory_4:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551723.27368,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "72b67b0a9fe6ca82c9df0a866a8ea3a6:change_2_memory_5:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551725.95789,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "f13e0b85ae62556c63634cdf9168d949:change_2_memory_6:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551728.55965,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "65baf4848badd2eff267bb06074c2408:change_2_memory_7:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551731.20245,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "675d8db68dc95839208f2a5e3c814a04:change_2_memory_8:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551733.91981,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        }
+      ],
+      "final_position": [
+        -82.6926651000977,
+        8.70237159729004
+      ],
+      "gate_closed": true,
+      "gate_event": {
+        "basis": "actual_occupied_position",
+        "position": [
+          -82.2928924560547,
+          10.1071062088013
+        ],
+        "tick": 40
+      },
+      "initial_evaluation": {},
+      "recommendation": {},
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 119.4,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {},
+        "enabled": false,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {},
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 0,
+        "pending_contacts": 0,
+        "ram_records": 9,
+        "recovered_records": 0
+      },
+      "termination": "stuck_recovery",
+      "ticks": 1194,
+      "trap_sign": 1,
+      "watchdog_reason": "repeated_area_no_goal_progress",
+      "watchdog_stop": true
+    },
+    {
+      "arm": "change_2_memory_9",
+      "arrived": true,
+      "collisions": 0,
+      "compute_wall_ms": 371,
+      "distance_m": 70.3862650096416,
+      "facts": [
+        {
+          "attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791551711.08952,
+          "exit_progress_m": 0.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "1171c22be42ff6f36041598e347ed886:change_2_memory_1:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551713.55922,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "da5dc24927a1dbe5ddafaed73233a629:change_2_memory_2:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791551718.25458,
+          "exit_progress_m": 0.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "33a3a2e5c624e282d978722a12a7b4f9:change_2_memory_3:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551720.67721,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "f5cea499e6af5744f616d64bbc36ec23:change_2_memory_4:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551723.27368,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "72b67b0a9fe6ca82c9df0a866a8ea3a6:change_2_memory_5:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551725.95789,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "f13e0b85ae62556c63634cdf9168d949:change_2_memory_6:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551728.55965,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "65baf4848badd2eff267bb06074c2408:change_2_memory_7:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551731.20245,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "675d8db68dc95839208f2a5e3c814a04:change_2_memory_8:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551733.91981,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "85cd41acaee51a0ef11bc5a31c875bf4:change_2_memory_9:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551736.74416,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1,
+          "world_id": "trap-changes-008ez"
+        }
+      ],
+      "final_position": [
+        -68.0,
+        -5.96046447753906e-08
+      ],
+      "gate_closed": false,
+      "gate_event": {},
+      "initial_evaluation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 7,
+            "score": 11.6666670888662
+          },
+          "1": {
+            "errors": 2,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 120.0
+          }
+        },
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+        "cost_shift": {
+          "basis": "measured_cost_increase",
+          "factor": 1.5,
+          "fresh_samples": 9,
+          "minimum_rise_cost_units": 1.0,
+          "onset_attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+          "retained_raw_samples": 42
+        },
+        "reason": "preferred_successful_side_after_failures",
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 7,
+              "score": 11.6666670888662
+            },
+            "1": {
+              "errors": 2,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 120.0
+            }
+          },
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": -1,
+          "source": "ram-pattern-evidence"
+        },
+        "required_gap": 24.0,
+        "score_gap": 108.333332911134
+      },
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 7,
+            "score": 11.6666670888662
+          },
+          "1": {
+            "errors": 2,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 120.0
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": -1,
+        "source": "ram-pattern-evidence"
+      },
+      "route_plan_builds": 0,
+      "side": -1,
+      "simulated_seconds": 21.1,
+      "status": {
+        "changed_initial_decisions": 1,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {
+          "preferred_successful_side_after_failures": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 7,
+              "score": 11.6666670888662
+            },
+            "1": {
+              "errors": 2,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 120.0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "cost_shift": {
+            "basis": "measured_cost_increase",
+            "factor": 1.5,
+            "fresh_samples": 9,
+            "minimum_rise_cost_units": 1.0,
+            "onset_attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+            "retained_raw_samples": 42
+          },
+          "reason": "preferred_successful_side_after_failures",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 7,
+                "score": 11.6666670888662
+              },
+              "1": {
+                "errors": 2,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 120.0
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": -1,
+            "source": "ram-pattern-evidence"
+          },
+          "required_gap": 24.0,
+          "score_gap": 108.333332911134
+        },
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 10,
+        "recovered_records": 33
+      },
+      "termination": "arrived",
+      "ticks": 211,
+      "trap_sign": 1,
+      "watchdog_reason": "",
+      "watchdog_stop": false
+    },
+    {
+      "arm": "change_2_perception_10",
+      "arrived": false,
+      "collisions": 0,
+      "compute_wall_ms": 2306,
+      "distance_m": 398.00001335144,
+      "facts": [
+        {
+          "attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791551711.08952,
+          "exit_progress_m": 0.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "1171c22be42ff6f36041598e347ed886:change_2_memory_1:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551713.55922,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "da5dc24927a1dbe5ddafaed73233a629:change_2_memory_2:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791551718.25458,
+          "exit_progress_m": 0.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "33a3a2e5c624e282d978722a12a7b4f9:change_2_memory_3:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551720.67721,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "f5cea499e6af5744f616d64bbc36ec23:change_2_memory_4:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551723.27368,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "72b67b0a9fe6ca82c9df0a866a8ea3a6:change_2_memory_5:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551725.95789,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "f13e0b85ae62556c63634cdf9168d949:change_2_memory_6:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551728.55965,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "65baf4848badd2eff267bb06074c2408:change_2_memory_7:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551731.20245,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "675d8db68dc95839208f2a5e3c814a04:change_2_memory_8:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551733.91981,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "85cd41acaee51a0ef11bc5a31c875bf4:change_2_memory_9:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551736.74416,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        }
+      ],
+      "final_position": [
+        -82.6926651000977,
+        8.70237159729004
+      ],
+      "gate_closed": true,
+      "gate_event": {
+        "basis": "actual_occupied_position",
+        "position": [
+          -82.2928924560547,
+          10.1071062088013
+        ],
+        "tick": 40
+      },
+      "initial_evaluation": {},
+      "recommendation": {},
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 119.4,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {},
+        "enabled": false,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {},
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 0,
+        "pending_contacts": 0,
+        "ram_records": 10,
+        "recovered_records": 0
+      },
+      "termination": "stuck_recovery",
+      "ticks": 1194,
+      "trap_sign": 1,
+      "watchdog_reason": "repeated_area_no_goal_progress",
+      "watchdog_stop": true
+    },
+    {
+      "arm": "change_2_memory_10",
+      "arrived": true,
+      "collisions": 0,
+      "compute_wall_ms": 365,
+      "distance_m": 70.3862650096416,
+      "facts": [
+        {
+          "attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791551711.08952,
+          "exit_progress_m": 0.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "1171c22be42ff6f36041598e347ed886:change_2_memory_1:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551713.55922,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "da5dc24927a1dbe5ddafaed73233a629:change_2_memory_2:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791551718.25458,
+          "exit_progress_m": 0.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "33a3a2e5c624e282d978722a12a7b4f9:change_2_memory_3:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551720.67721,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "f5cea499e6af5744f616d64bbc36ec23:change_2_memory_4:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551723.27368,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "72b67b0a9fe6ca82c9df0a866a8ea3a6:change_2_memory_5:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551725.95789,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "f13e0b85ae62556c63634cdf9168d949:change_2_memory_6:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551728.55965,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "65baf4848badd2eff267bb06074c2408:change_2_memory_7:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551731.20245,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "675d8db68dc95839208f2a5e3c814a04:change_2_memory_8:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551733.91981,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "85cd41acaee51a0ef11bc5a31c875bf4:change_2_memory_9:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551736.74416,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "879280a019164fdd4bcd5a9fe660d485:change_2_memory_10:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551739.43468,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1,
+          "world_id": "trap-changes-008ez"
+        }
+      ],
+      "final_position": [
+        -68.0,
+        -5.96046447753906e-08
+      ],
+      "gate_closed": false,
+      "gate_event": {},
+      "initial_evaluation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 8,
+            "score": 11.6666670888662
+          },
+          "1": {
+            "errors": 2,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 120.0
+          }
+        },
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+        "cost_shift": {
+          "basis": "measured_cost_increase",
+          "factor": 1.5,
+          "fresh_samples": 10,
+          "minimum_rise_cost_units": 1.0,
+          "onset_attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+          "retained_raw_samples": 43
+        },
+        "reason": "preferred_successful_side_after_failures",
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 8,
+              "score": 11.6666670888662
+            },
+            "1": {
+              "errors": 2,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 120.0
+            }
+          },
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": -1,
+          "source": "ram-pattern-evidence"
+        },
+        "required_gap": 24.0,
+        "score_gap": 108.333332911134
+      },
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 8,
+            "score": 11.6666670888662
+          },
+          "1": {
+            "errors": 2,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 120.0
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": -1,
+        "source": "ram-pattern-evidence"
+      },
+      "route_plan_builds": 0,
+      "side": -1,
+      "simulated_seconds": 21.1,
+      "status": {
+        "changed_initial_decisions": 1,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {
+          "preferred_successful_side_after_failures": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 8,
+              "score": 11.6666670888662
+            },
+            "1": {
+              "errors": 2,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 120.0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "cost_shift": {
+            "basis": "measured_cost_increase",
+            "factor": 1.5,
+            "fresh_samples": 10,
+            "minimum_rise_cost_units": 1.0,
+            "onset_attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+            "retained_raw_samples": 43
+          },
+          "reason": "preferred_successful_side_after_failures",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 8,
+                "score": 11.6666670888662
+              },
+              "1": {
+                "errors": 2,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 120.0
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": -1,
+            "source": "ram-pattern-evidence"
+          },
+          "required_gap": 24.0,
+          "score_gap": 108.333332911134
+        },
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 11,
+        "recovered_records": 33
+      },
+      "termination": "arrived",
+      "ticks": 211,
+      "trap_sign": 1,
+      "watchdog_reason": "",
+      "watchdog_stop": false
+    },
+    {
+      "arm": "change_2_perception_11",
+      "arrived": false,
+      "collisions": 0,
+      "compute_wall_ms": 2223,
+      "distance_m": 398.00001335144,
+      "facts": [
+        {
+          "attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791551711.08952,
+          "exit_progress_m": 0.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "1171c22be42ff6f36041598e347ed886:change_2_memory_1:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551713.55922,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "da5dc24927a1dbe5ddafaed73233a629:change_2_memory_2:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791551718.25458,
+          "exit_progress_m": 0.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "33a3a2e5c624e282d978722a12a7b4f9:change_2_memory_3:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551720.67721,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "f5cea499e6af5744f616d64bbc36ec23:change_2_memory_4:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551723.27368,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "72b67b0a9fe6ca82c9df0a866a8ea3a6:change_2_memory_5:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551725.95789,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "f13e0b85ae62556c63634cdf9168d949:change_2_memory_6:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551728.55965,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "65baf4848badd2eff267bb06074c2408:change_2_memory_7:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551731.20245,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "675d8db68dc95839208f2a5e3c814a04:change_2_memory_8:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551733.91981,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "85cd41acaee51a0ef11bc5a31c875bf4:change_2_memory_9:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551736.74416,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "879280a019164fdd4bcd5a9fe660d485:change_2_memory_10:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551739.43468,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        }
+      ],
+      "final_position": [
+        -82.6926651000977,
+        8.70237159729004
+      ],
+      "gate_closed": true,
+      "gate_event": {
+        "basis": "actual_occupied_position",
+        "position": [
+          -82.2928924560547,
+          10.1071062088013
+        ],
+        "tick": 40
+      },
+      "initial_evaluation": {},
+      "recommendation": {},
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 119.4,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {},
+        "enabled": false,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {},
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 0,
+        "pending_contacts": 0,
+        "ram_records": 11,
+        "recovered_records": 0
+      },
+      "termination": "stuck_recovery",
+      "ticks": 1194,
+      "trap_sign": 1,
+      "watchdog_reason": "repeated_area_no_goal_progress",
+      "watchdog_stop": true
+    },
+    {
+      "arm": "change_2_memory_11",
+      "arrived": true,
+      "collisions": 0,
+      "compute_wall_ms": 353,
+      "distance_m": 70.3862650096416,
+      "facts": [
+        {
+          "attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791551711.08952,
+          "exit_progress_m": 0.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "1171c22be42ff6f36041598e347ed886:change_2_memory_1:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551713.55922,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "da5dc24927a1dbe5ddafaed73233a629:change_2_memory_2:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.00001335144,
+          "ended_at_unix": 1791551718.25458,
+          "exit_progress_m": 0.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "33a3a2e5c624e282d978722a12a7b4f9:change_2_memory_3:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551720.67721,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "f5cea499e6af5744f616d64bbc36ec23:change_2_memory_4:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551723.27368,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "72b67b0a9fe6ca82c9df0a866a8ea3a6:change_2_memory_5:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551725.95789,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "f13e0b85ae62556c63634cdf9168d949:change_2_memory_6:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551728.55965,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "65baf4848badd2eff267bb06074c2408:change_2_memory_7:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551731.20245,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "675d8db68dc95839208f2a5e3c814a04:change_2_memory_8:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551733.91981,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "85cd41acaee51a0ef11bc5a31c875bf4:change_2_memory_9:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551736.74416,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "879280a019164fdd4bcd5a9fe660d485:change_2_memory_10:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551739.43468,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "bab0342084d0c4e761bdf9bb82d93edf:change_2_memory_11:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791551742.04097,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1,
+          "world_id": "trap-changes-008ez"
+        }
+      ],
+      "final_position": [
+        -68.0,
+        -5.96046447753906e-08
+      ],
+      "gate_closed": false,
+      "gate_event": {},
+      "initial_evaluation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 9,
+            "score": 11.6666670888662
+          },
+          "1": {
+            "errors": 2,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 120.0
+          }
+        },
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+        "cost_shift": {
+          "basis": "measured_cost_increase",
+          "factor": 1.5,
+          "fresh_samples": 11,
+          "minimum_rise_cost_units": 1.0,
+          "onset_attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+          "retained_raw_samples": 44
+        },
+        "reason": "preferred_successful_side_after_failures",
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 9,
+              "score": 11.6666670888662
+            },
+            "1": {
+              "errors": 2,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 120.0
+            }
+          },
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": -1,
+          "source": "ram-pattern-evidence"
+        },
+        "required_gap": 24.0,
+        "score_gap": 108.333332911134
+      },
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 9,
+            "score": 11.6666670888662
+          },
+          "1": {
+            "errors": 2,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 120.0
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": -1,
+        "source": "ram-pattern-evidence"
+      },
+      "route_plan_builds": 0,
+      "side": -1,
+      "simulated_seconds": 21.1,
+      "status": {
+        "changed_initial_decisions": 1,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {
+          "preferred_successful_side_after_failures": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 9,
+              "score": 11.6666670888662
+            },
+            "1": {
+              "errors": 2,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 120.0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "cost_shift": {
+            "basis": "measured_cost_increase",
+            "factor": 1.5,
+            "fresh_samples": 11,
+            "minimum_rise_cost_units": 1.0,
+            "onset_attempt_id": "8346badf786d4f5e6ed48d076844a2a4:change_2_memory_0:1",
+            "retained_raw_samples": 44
+          },
+          "reason": "preferred_successful_side_after_failures",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 9,
+                "score": 11.6666670888662
+              },
+              "1": {
+                "errors": 2,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 120.0
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": -1,
+            "source": "ram-pattern-evidence"
+          },
+          "required_gap": 24.0,
+          "score_gap": 108.333332911134
+        },
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 12,
+        "recovered_records": 33
+      },
+      "termination": "arrived",
+      "ticks": 211,
+      "trap_sign": 1,
+      "watchdog_reason": "",
+      "watchdog_stop": false
+    }
+  ],
+  "trap_sign": 1,
+  "world_id": "trap-changes-008ez"
+}

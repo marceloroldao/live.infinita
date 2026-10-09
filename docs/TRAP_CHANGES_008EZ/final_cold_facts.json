@@ -1,0 +1,24 @@
+{
+  "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+  "rows": [
+    {
+      "attempt_id": "b70befd9c7823b0e8d22fec69ecc25ce:final_cold_memory_0:1",
+      "completion_basis": "executed_exit",
+      "contains_prediction": false,
+      "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+      "distance_m": 35.0000012665987,
+      "ended_at_unix": 1791551747.59093,
+      "exit_progress_m": 1.0,
+      "exploration": false,
+      "initial_remaining_m": 15.0,
+      "observer": "nov",
+      "outcome": "contour_completed",
+      "physical_attempt": true,
+      "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+      "side": -1,
+      "world_id": "trap-changes-008ez"
+    }
+  ],
+  "schema": "live-infinita-native-pattern-outcomes/v2",
+  "world_id": "trap-changes-008ez"
+}

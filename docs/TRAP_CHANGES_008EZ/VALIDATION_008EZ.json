@@ -1,0 +1,22 @@
+{
+  "actual_traversals": 92,
+  "arrivals": 59,
+  "real_watchdog_failures": 33,
+  "collisions": 0,
+  "route_plan_builds": 0,
+  "distinct_physical_facts_exactly_recovered": 46,
+  "mirrored_core_preference_side": 1,
+  "all_three_reversals_stable_preference_from_trial": 5,
+  "final_core_preference_side": -1,
+  "six_cold_recoveries_counts": [
+    8,
+    9,
+    21,
+    33,
+    45,
+    46
+  ],
+  "censored_contacts": 0,
+  "pending_at_end": 0,
+  "all_costs_recomputed": true
+}

@@ -1,0 +1,2337 @@
+{
+  "failures": 0,
+  "phase": "training",
+  "runs": [
+    {
+      "arm": "training_perception_0",
+      "arrived": true,
+      "collisions": 0,
+      "compute_wall_ms": 522,
+      "distance_m": 70.386265039444,
+      "facts": [],
+      "final_position": [
+        -68.0,
+        5.96046447753906e-08
+      ],
+      "gate_closed": false,
+      "gate_event": {},
+      "initial_evaluation": {},
+      "recommendation": {},
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 21.1,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {},
+        "enabled": false,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {},
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 0,
+        "pending_contacts": 0,
+        "ram_records": 0,
+        "recovered_records": 0
+      },
+      "termination": "arrived",
+      "ticks": 211,
+      "trap_sign": -1,
+      "watchdog_reason": "",
+      "watchdog_stop": false
+    },
+    {
+      "arm": "training_memory_0",
+      "arrived": true,
+      "collisions": 0,
+      "compute_wall_ms": 356,
+      "distance_m": 70.386265039444,
+      "facts": [
+        {
+          "attempt_id": "350f556c789e13df607e977eabd56330:training_memory_0:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.000001296401,
+          "ended_at_unix": 1791551630.23707,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1,
+          "world_id": "trap-changes-008ez"
+        }
+      ],
+      "final_position": [
+        -68.0,
+        5.96046447753906e-08
+      ],
+      "gate_closed": false,
+      "gate_event": {},
+      "initial_evaluation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 0
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 0
+          }
+        },
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+        "reason": "insufficient_samples",
+        "recommendation": {}
+      },
+      "recommendation": {},
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 21.1,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {
+          "insufficient_samples": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "reason": "insufficient_samples",
+          "recommendation": {}
+        },
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 1,
+        "recovered_records": 0
+      },
+      "termination": "arrived",
+      "ticks": 211,
+      "trap_sign": -1,
+      "watchdog_reason": "",
+      "watchdog_stop": false
+    },
+    {
+      "arm": "training_perception_1",
+      "arrived": true,
+      "collisions": 0,
+      "compute_wall_ms": 379,
+      "distance_m": 70.386265039444,
+      "facts": [
+        {
+          "attempt_id": "350f556c789e13df607e977eabd56330:training_memory_0:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.000001296401,
+          "ended_at_unix": 1791551630.23707,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        }
+      ],
+      "final_position": [
+        -68.0,
+        5.96046447753906e-08
+      ],
+      "gate_closed": false,
+      "gate_event": {},
+      "initial_evaluation": {},
+      "recommendation": {},
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 21.1,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {},
+        "enabled": false,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {},
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 0,
+        "pending_contacts": 0,
+        "ram_records": 1,
+        "recovered_records": 0
+      },
+      "termination": "arrived",
+      "ticks": 211,
+      "trap_sign": -1,
+      "watchdog_reason": "",
+      "watchdog_stop": false
+    },
+    {
+      "arm": "training_memory_1",
+      "arrived": false,
+      "collisions": 0,
+      "compute_wall_ms": 2375,
+      "distance_m": 398.000013321638,
+      "facts": [
+        {
+          "attempt_id": "350f556c789e13df607e977eabd56330:training_memory_0:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.000001296401,
+          "ended_at_unix": 1791551630.23707,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "980299746d18547c03ee3880b7fb42d6:training_memory_1:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.000013321638,
+          "ended_at_unix": 1791551633.16945,
+          "exit_progress_m": 0.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1,
+          "world_id": "trap-changes-008ez"
+        }
+      ],
+      "final_position": [
+        -82.6926651000977,
+        -8.70237159729004
+      ],
+      "gate_closed": true,
+      "gate_event": {
+        "basis": "actual_occupied_position",
+        "position": [
+          -82.2928924560547,
+          -10.1071062088013
+        ],
+        "tick": 40
+      },
+      "initial_evaluation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 0
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 1,
+            "score": 11.6666670988003
+          }
+        },
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+        "reason": "insufficient_samples",
+        "recommendation": {}
+      },
+      "recommendation": {
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": -1,
+        "source": "pattern-exploration"
+      },
+      "route_plan_builds": 0,
+      "side": -1,
+      "simulated_seconds": 119.4,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {
+          "insufficient_samples": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 1,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 1,
+              "score": 11.6666670988003
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "reason": "insufficient_samples",
+          "recommendation": {}
+        },
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 2,
+        "recovered_records": 0
+      },
+      "termination": "stuck_recovery",
+      "ticks": 1194,
+      "trap_sign": -1,
+      "watchdog_reason": "repeated_area_no_goal_progress",
+      "watchdog_stop": true
+    },
+    {
+      "arm": "training_perception_2",
+      "arrived": true,
+      "collisions": 0,
+      "compute_wall_ms": 378,
+      "distance_m": 70.386265039444,
+      "facts": [
+        {
+          "attempt_id": "350f556c789e13df607e977eabd56330:training_memory_0:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.000001296401,
+          "ended_at_unix": 1791551630.23707,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "980299746d18547c03ee3880b7fb42d6:training_memory_1:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.000013321638,
+          "ended_at_unix": 1791551633.16945,
+          "exit_progress_m": 0.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        }
+      ],
+      "final_position": [
+        -68.0,
+        5.96046447753906e-08
+      ],
+      "gate_closed": false,
+      "gate_event": {},
+      "initial_evaluation": {},
+      "recommendation": {},
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 21.1,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {},
+        "enabled": false,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {},
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 0,
+        "pending_contacts": 0,
+        "ram_records": 2,
+        "recovered_records": 0
+      },
+      "termination": "arrived",
+      "ticks": 211,
+      "trap_sign": -1,
+      "watchdog_reason": "",
+      "watchdog_stop": false
+    },
+    {
+      "arm": "training_memory_2",
+      "arrived": true,
+      "collisions": 0,
+      "compute_wall_ms": 384,
+      "distance_m": 70.386265039444,
+      "facts": [
+        {
+          "attempt_id": "350f556c789e13df607e977eabd56330:training_memory_0:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.000001296401,
+          "ended_at_unix": 1791551630.23707,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "980299746d18547c03ee3880b7fb42d6:training_memory_1:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.000013321638,
+          "ended_at_unix": 1791551633.16945,
+          "exit_progress_m": 0.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "be23edd8c4256d8837224239b5db5659:training_memory_2:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.000001296401,
+          "ended_at_unix": 1791551633.76945,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1,
+          "world_id": "trap-changes-008ez"
+        }
+      ],
+      "final_position": [
+        -68.0,
+        5.96046447753906e-08
+      ],
+      "gate_closed": false,
+      "gate_event": {},
+      "initial_evaluation": {
+        "alternatives": {
+          "-1": {
+            "errors": 1,
+            "observation_ids": [],
+            "samples": 1,
+            "score": 120.0
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 1,
+            "score": 11.6666670988003
+          }
+        },
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+        "reason": "insufficient_samples",
+        "recommendation": {}
+      },
+      "recommendation": {
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": 1,
+        "source": "pattern-exploration"
+      },
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 21.1,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {
+          "insufficient_samples": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 1,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 1,
+              "observation_ids": [],
+              "samples": 1,
+              "score": 120.0
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 1,
+              "score": 11.6666670988003
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "reason": "insufficient_samples",
+          "recommendation": {}
+        },
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 3,
+        "recovered_records": 0
+      },
+      "termination": "arrived",
+      "ticks": 211,
+      "trap_sign": -1,
+      "watchdog_reason": "",
+      "watchdog_stop": false
+    },
+    {
+      "arm": "training_perception_3",
+      "arrived": true,
+      "collisions": 0,
+      "compute_wall_ms": 411,
+      "distance_m": 70.386265039444,
+      "facts": [
+        {
+          "attempt_id": "350f556c789e13df607e977eabd56330:training_memory_0:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.000001296401,
+          "ended_at_unix": 1791551630.23707,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "980299746d18547c03ee3880b7fb42d6:training_memory_1:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.000013321638,
+          "ended_at_unix": 1791551633.16945,
+          "exit_progress_m": 0.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "be23edd8c4256d8837224239b5db5659:training_memory_2:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.000001296401,
+          "ended_at_unix": 1791551633.76945,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        }
+      ],
+      "final_position": [
+        -68.0,
+        5.96046447753906e-08
+      ],
+      "gate_closed": false,
+      "gate_event": {},
+      "initial_evaluation": {},
+      "recommendation": {},
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 21.1,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {},
+        "enabled": false,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {},
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 0,
+        "pending_contacts": 0,
+        "ram_records": 3,
+        "recovered_records": 0
+      },
+      "termination": "arrived",
+      "ticks": 211,
+      "trap_sign": -1,
+      "watchdog_reason": "",
+      "watchdog_stop": false
+    },
+    {
+      "arm": "training_memory_3",
+      "arrived": false,
+      "collisions": 0,
+      "compute_wall_ms": 2456,
+      "distance_m": 398.000013321638,
+      "facts": [
+        {
+          "attempt_id": "350f556c789e13df607e977eabd56330:training_memory_0:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.000001296401,
+          "ended_at_unix": 1791551630.23707,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "980299746d18547c03ee3880b7fb42d6:training_memory_1:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.000013321638,
+          "ended_at_unix": 1791551633.16945,
+          "exit_progress_m": 0.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "be23edd8c4256d8837224239b5db5659:training_memory_2:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.000001296401,
+          "ended_at_unix": 1791551633.76945,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "4e3ae0571a086232bdcfcd5bc063de4c:training_memory_3:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.000013321638,
+          "ended_at_unix": 1791551636.82592,
+          "exit_progress_m": 0.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1,
+          "world_id": "trap-changes-008ez"
+        }
+      ],
+      "final_position": [
+        -82.6926651000977,
+        -8.70237159729004
+      ],
+      "gate_closed": true,
+      "gate_event": {
+        "basis": "actual_occupied_position",
+        "position": [
+          -82.2928924560547,
+          -10.1071062088013
+        ],
+        "tick": 40
+      },
+      "initial_evaluation": {
+        "alternatives": {
+          "-1": {
+            "errors": 1,
+            "observation_ids": [],
+            "samples": 1,
+            "score": 120.0
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 11.6666670988003
+          }
+        },
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+        "reason": "insufficient_samples",
+        "recommendation": {}
+      },
+      "recommendation": {
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": -1,
+        "source": "pattern-exploration"
+      },
+      "route_plan_builds": 0,
+      "side": -1,
+      "simulated_seconds": 119.4,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {
+          "insufficient_samples": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 1,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 1,
+              "observation_ids": [],
+              "samples": 1,
+              "score": 120.0
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 11.6666670988003
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "reason": "insufficient_samples",
+          "recommendation": {}
+        },
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 4,
+        "recovered_records": 0
+      },
+      "termination": "stuck_recovery",
+      "ticks": 1194,
+      "trap_sign": -1,
+      "watchdog_reason": "repeated_area_no_goal_progress",
+      "watchdog_stop": true
+    },
+    {
+      "arm": "training_perception_4",
+      "arrived": true,
+      "collisions": 0,
+      "compute_wall_ms": 342,
+      "distance_m": 70.386265039444,
+      "facts": [
+        {
+          "attempt_id": "350f556c789e13df607e977eabd56330:training_memory_0:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.000001296401,
+          "ended_at_unix": 1791551630.23707,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "980299746d18547c03ee3880b7fb42d6:training_memory_1:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.000013321638,
+          "ended_at_unix": 1791551633.16945,
+          "exit_progress_m": 0.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "be23edd8c4256d8837224239b5db5659:training_memory_2:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.000001296401,
+          "ended_at_unix": 1791551633.76945,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "4e3ae0571a086232bdcfcd5bc063de4c:training_memory_3:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.000013321638,
+          "ended_at_unix": 1791551636.82592,
+          "exit_progress_m": 0.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        }
+      ],
+      "final_position": [
+        -68.0,
+        5.96046447753906e-08
+      ],
+      "gate_closed": false,
+      "gate_event": {},
+      "initial_evaluation": {},
+      "recommendation": {},
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 21.1,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {},
+        "enabled": false,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {},
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 0,
+        "pending_contacts": 0,
+        "ram_records": 4,
+        "recovered_records": 0
+      },
+      "termination": "arrived",
+      "ticks": 211,
+      "trap_sign": -1,
+      "watchdog_reason": "",
+      "watchdog_stop": false
+    },
+    {
+      "arm": "training_memory_4",
+      "arrived": true,
+      "collisions": 0,
+      "compute_wall_ms": 349,
+      "distance_m": 70.386265039444,
+      "facts": [
+        {
+          "attempt_id": "350f556c789e13df607e977eabd56330:training_memory_0:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.000001296401,
+          "ended_at_unix": 1791551630.23707,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "980299746d18547c03ee3880b7fb42d6:training_memory_1:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.000013321638,
+          "ended_at_unix": 1791551633.16945,
+          "exit_progress_m": 0.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "be23edd8c4256d8837224239b5db5659:training_memory_2:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.000001296401,
+          "ended_at_unix": 1791551633.76945,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "4e3ae0571a086232bdcfcd5bc063de4c:training_memory_3:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.000013321638,
+          "ended_at_unix": 1791551636.82592,
+          "exit_progress_m": 0.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "533920eb482434922c80e58258e4bf2c:training_memory_4:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.000001296401,
+          "ended_at_unix": 1791551637.36667,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1,
+          "world_id": "trap-changes-008ez"
+        }
+      ],
+      "final_position": [
+        -68.0,
+        5.96046447753906e-08
+      ],
+      "gate_closed": false,
+      "gate_event": {},
+      "initial_evaluation": {
+        "alternatives": {
+          "-1": {
+            "errors": 2,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 120.0
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 11.6666670988003
+          }
+        },
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+        "reason": "preferred_successful_side_after_failures",
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 2,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 120.0
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 11.6666670988003
+            }
+          },
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": 1,
+          "source": "ram-pattern-evidence"
+        },
+        "required_gap": 24.0,
+        "score_gap": 108.3333329012
+      },
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 2,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 120.0
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 11.6666670988003
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": 1,
+        "source": "ram-pattern-evidence"
+      },
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 21.1,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {
+          "preferred_successful_side_after_failures": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 2,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 120.0
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 11.6666670988003
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "reason": "preferred_successful_side_after_failures",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 2,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 120.0
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 11.6666670988003
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": 1,
+            "source": "ram-pattern-evidence"
+          },
+          "required_gap": 24.0,
+          "score_gap": 108.3333329012
+        },
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 5,
+        "recovered_records": 0
+      },
+      "termination": "arrived",
+      "ticks": 211,
+      "trap_sign": -1,
+      "watchdog_reason": "",
+      "watchdog_stop": false
+    },
+    {
+      "arm": "training_perception_5",
+      "arrived": true,
+      "collisions": 0,
+      "compute_wall_ms": 350,
+      "distance_m": 70.386265039444,
+      "facts": [
+        {
+          "attempt_id": "350f556c789e13df607e977eabd56330:training_memory_0:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.000001296401,
+          "ended_at_unix": 1791551630.23707,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "980299746d18547c03ee3880b7fb42d6:training_memory_1:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.000013321638,
+          "ended_at_unix": 1791551633.16945,
+          "exit_progress_m": 0.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "be23edd8c4256d8837224239b5db5659:training_memory_2:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.000001296401,
+          "ended_at_unix": 1791551633.76945,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "4e3ae0571a086232bdcfcd5bc063de4c:training_memory_3:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.000013321638,
+          "ended_at_unix": 1791551636.82592,
+          "exit_progress_m": 0.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "533920eb482434922c80e58258e4bf2c:training_memory_4:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.000001296401,
+          "ended_at_unix": 1791551637.36667,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        }
+      ],
+      "final_position": [
+        -68.0,
+        5.96046447753906e-08
+      ],
+      "gate_closed": false,
+      "gate_event": {},
+      "initial_evaluation": {},
+      "recommendation": {},
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 21.1,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {},
+        "enabled": false,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {},
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 0,
+        "pending_contacts": 0,
+        "ram_records": 5,
+        "recovered_records": 0
+      },
+      "termination": "arrived",
+      "ticks": 211,
+      "trap_sign": -1,
+      "watchdog_reason": "",
+      "watchdog_stop": false
+    },
+    {
+      "arm": "training_memory_5",
+      "arrived": true,
+      "collisions": 0,
+      "compute_wall_ms": 390,
+      "distance_m": 70.386265039444,
+      "facts": [
+        {
+          "attempt_id": "350f556c789e13df607e977eabd56330:training_memory_0:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.000001296401,
+          "ended_at_unix": 1791551630.23707,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "980299746d18547c03ee3880b7fb42d6:training_memory_1:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.000013321638,
+          "ended_at_unix": 1791551633.16945,
+          "exit_progress_m": 0.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "be23edd8c4256d8837224239b5db5659:training_memory_2:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.000001296401,
+          "ended_at_unix": 1791551633.76945,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "4e3ae0571a086232bdcfcd5bc063de4c:training_memory_3:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.000013321638,
+          "ended_at_unix": 1791551636.82592,
+          "exit_progress_m": 0.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "533920eb482434922c80e58258e4bf2c:training_memory_4:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.000001296401,
+          "ended_at_unix": 1791551637.36667,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "d46d28b91060f424a6eba9483939d239:training_memory_5:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.000001296401,
+          "ended_at_unix": 1791551638.115,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1,
+          "world_id": "trap-changes-008ez"
+        }
+      ],
+      "final_position": [
+        -68.0,
+        5.96046447753906e-08
+      ],
+      "gate_closed": false,
+      "gate_event": {},
+      "initial_evaluation": {
+        "alternatives": {
+          "-1": {
+            "errors": 2,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 120.0
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 3,
+            "score": 11.6666670988003
+          }
+        },
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+        "reason": "preferred_successful_side_after_failures",
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 2,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 120.0
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 3,
+              "score": 11.6666670988003
+            }
+          },
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": 1,
+          "source": "ram-pattern-evidence"
+        },
+        "required_gap": 24.0,
+        "score_gap": 108.3333329012
+      },
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 2,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 120.0
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 3,
+            "score": 11.6666670988003
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": 1,
+        "source": "ram-pattern-evidence"
+      },
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 21.1,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {
+          "preferred_successful_side_after_failures": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 2,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 120.0
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 3,
+              "score": 11.6666670988003
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "reason": "preferred_successful_side_after_failures",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 2,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 120.0
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 3,
+                "score": 11.6666670988003
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": 1,
+            "source": "ram-pattern-evidence"
+          },
+          "required_gap": 24.0,
+          "score_gap": 108.3333329012
+        },
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 6,
+        "recovered_records": 0
+      },
+      "termination": "arrived",
+      "ticks": 211,
+      "trap_sign": -1,
+      "watchdog_reason": "",
+      "watchdog_stop": false
+    },
+    {
+      "arm": "training_perception_6",
+      "arrived": true,
+      "collisions": 0,
+      "compute_wall_ms": 363,
+      "distance_m": 70.386265039444,
+      "facts": [
+        {
+          "attempt_id": "350f556c789e13df607e977eabd56330:training_memory_0:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.000001296401,
+          "ended_at_unix": 1791551630.23707,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "980299746d18547c03ee3880b7fb42d6:training_memory_1:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.000013321638,
+          "ended_at_unix": 1791551633.16945,
+          "exit_progress_m": 0.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "be23edd8c4256d8837224239b5db5659:training_memory_2:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.000001296401,
+          "ended_at_unix": 1791551633.76945,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "4e3ae0571a086232bdcfcd5bc063de4c:training_memory_3:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.000013321638,
+          "ended_at_unix": 1791551636.82592,
+          "exit_progress_m": 0.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "533920eb482434922c80e58258e4bf2c:training_memory_4:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.000001296401,
+          "ended_at_unix": 1791551637.36667,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "d46d28b91060f424a6eba9483939d239:training_memory_5:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.000001296401,
+          "ended_at_unix": 1791551638.115,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        }
+      ],
+      "final_position": [
+        -68.0,
+        5.96046447753906e-08
+      ],
+      "gate_closed": false,
+      "gate_event": {},
+      "initial_evaluation": {},
+      "recommendation": {},
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 21.1,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {},
+        "enabled": false,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {},
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 0,
+        "pending_contacts": 0,
+        "ram_records": 6,
+        "recovered_records": 0
+      },
+      "termination": "arrived",
+      "ticks": 211,
+      "trap_sign": -1,
+      "watchdog_reason": "",
+      "watchdog_stop": false
+    },
+    {
+      "arm": "training_memory_6",
+      "arrived": true,
+      "collisions": 0,
+      "compute_wall_ms": 386,
+      "distance_m": 70.386265039444,
+      "facts": [
+        {
+          "attempt_id": "350f556c789e13df607e977eabd56330:training_memory_0:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.000001296401,
+          "ended_at_unix": 1791551630.23707,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "980299746d18547c03ee3880b7fb42d6:training_memory_1:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.000013321638,
+          "ended_at_unix": 1791551633.16945,
+          "exit_progress_m": 0.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "be23edd8c4256d8837224239b5db5659:training_memory_2:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.000001296401,
+          "ended_at_unix": 1791551633.76945,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "4e3ae0571a086232bdcfcd5bc063de4c:training_memory_3:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.000013321638,
+          "ended_at_unix": 1791551636.82592,
+          "exit_progress_m": 0.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "533920eb482434922c80e58258e4bf2c:training_memory_4:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.000001296401,
+          "ended_at_unix": 1791551637.36667,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "d46d28b91060f424a6eba9483939d239:training_memory_5:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.000001296401,
+          "ended_at_unix": 1791551638.115,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "e0cf8dbcaefbda699ea2567ea7a19c66:training_memory_6:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.000001296401,
+          "ended_at_unix": 1791551638.85703,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1,
+          "world_id": "trap-changes-008ez"
+        }
+      ],
+      "final_position": [
+        -68.0,
+        5.96046447753906e-08
+      ],
+      "gate_closed": false,
+      "gate_event": {},
+      "initial_evaluation": {
+        "alternatives": {
+          "-1": {
+            "errors": 2,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 120.0
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 4,
+            "score": 11.6666670988003
+          }
+        },
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+        "reason": "preferred_successful_side_after_failures",
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 2,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 120.0
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 4,
+              "score": 11.6666670988003
+            }
+          },
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": 1,
+          "source": "ram-pattern-evidence"
+        },
+        "required_gap": 24.0,
+        "score_gap": 108.3333329012
+      },
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 2,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 120.0
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 4,
+            "score": 11.6666670988003
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": 1,
+        "source": "ram-pattern-evidence"
+      },
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 21.1,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {
+          "preferred_successful_side_after_failures": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 2,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 120.0
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 4,
+              "score": 11.6666670988003
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "reason": "preferred_successful_side_after_failures",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 2,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 120.0
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 4,
+                "score": 11.6666670988003
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": 1,
+            "source": "ram-pattern-evidence"
+          },
+          "required_gap": 24.0,
+          "score_gap": 108.3333329012
+        },
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 7,
+        "recovered_records": 0
+      },
+      "termination": "arrived",
+      "ticks": 211,
+      "trap_sign": -1,
+      "watchdog_reason": "",
+      "watchdog_stop": false
+    },
+    {
+      "arm": "training_perception_7",
+      "arrived": true,
+      "collisions": 0,
+      "compute_wall_ms": 482,
+      "distance_m": 70.386265039444,
+      "facts": [
+        {
+          "attempt_id": "350f556c789e13df607e977eabd56330:training_memory_0:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.000001296401,
+          "ended_at_unix": 1791551630.23707,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "980299746d18547c03ee3880b7fb42d6:training_memory_1:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.000013321638,
+          "ended_at_unix": 1791551633.16945,
+          "exit_progress_m": 0.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "be23edd8c4256d8837224239b5db5659:training_memory_2:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.000001296401,
+          "ended_at_unix": 1791551633.76945,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "4e3ae0571a086232bdcfcd5bc063de4c:training_memory_3:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.000013321638,
+          "ended_at_unix": 1791551636.82592,
+          "exit_progress_m": 0.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "533920eb482434922c80e58258e4bf2c:training_memory_4:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.000001296401,
+          "ended_at_unix": 1791551637.36667,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "d46d28b91060f424a6eba9483939d239:training_memory_5:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.000001296401,
+          "ended_at_unix": 1791551638.115,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "e0cf8dbcaefbda699ea2567ea7a19c66:training_memory_6:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.000001296401,
+          "ended_at_unix": 1791551638.85703,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        }
+      ],
+      "final_position": [
+        -68.0,
+        5.96046447753906e-08
+      ],
+      "gate_closed": false,
+      "gate_event": {},
+      "initial_evaluation": {},
+      "recommendation": {},
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 21.1,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {},
+        "enabled": false,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {},
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 0,
+        "pending_contacts": 0,
+        "ram_records": 7,
+        "recovered_records": 0
+      },
+      "termination": "arrived",
+      "ticks": 211,
+      "trap_sign": -1,
+      "watchdog_reason": "",
+      "watchdog_stop": false
+    },
+    {
+      "arm": "training_memory_7",
+      "arrived": true,
+      "collisions": 0,
+      "compute_wall_ms": 416,
+      "distance_m": 70.386265039444,
+      "facts": [
+        {
+          "attempt_id": "350f556c789e13df607e977eabd56330:training_memory_0:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.000001296401,
+          "ended_at_unix": 1791551630.23707,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "980299746d18547c03ee3880b7fb42d6:training_memory_1:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.000013321638,
+          "ended_at_unix": 1791551633.16945,
+          "exit_progress_m": 0.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "be23edd8c4256d8837224239b5db5659:training_memory_2:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.000001296401,
+          "ended_at_unix": 1791551633.76945,
+          "exit_progress_m": 1.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "4e3ae0571a086232bdcfcd5bc063de4c:training_memory_3:1",
+          "completion_basis": "stuck_recovery",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 395.000013321638,
+          "ended_at_unix": 1791551636.82592,
+          "exit_progress_m": 0.0,
+          "exploration": true,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "stuck_recovery",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "533920eb482434922c80e58258e4bf2c:training_memory_4:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.000001296401,
+          "ended_at_unix": 1791551637.36667,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "d46d28b91060f424a6eba9483939d239:training_memory_5:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.000001296401,
+          "ended_at_unix": 1791551638.115,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "e0cf8dbcaefbda699ea2567ea7a19c66:training_memory_6:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.000001296401,
+          "ended_at_unix": 1791551638.85703,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1.0,
+          "world_id": "trap-changes-008ez"
+        },
+        {
+          "attempt_id": "a709407ffc2c10a99bce6cc64dd7d091:training_memory_7:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.000001296401,
+          "ended_at_unix": 1791551639.75663,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1,
+          "world_id": "trap-changes-008ez"
+        }
+      ],
+      "final_position": [
+        -68.0,
+        5.96046447753906e-08
+      ],
+      "gate_closed": false,
+      "gate_event": {},
+      "initial_evaluation": {
+        "alternatives": {
+          "-1": {
+            "errors": 2,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 120.0
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 5,
+            "score": 11.6666670988003
+          }
+        },
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+        "reason": "preferred_successful_side_after_failures",
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 2,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 120.0
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 5,
+              "score": 11.6666670988003
+            }
+          },
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "observation_ids": [],
+          "side": 1,
+          "source": "ram-pattern-evidence"
+        },
+        "required_gap": 24.0,
+        "score_gap": 108.3333329012
+      },
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 2,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 120.0
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 5,
+            "score": 11.6666670988003
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": 1,
+        "source": "ram-pattern-evidence"
+      },
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 21.1,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {
+          "preferred_successful_side_after_failures": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 2,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 120.0
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 5,
+              "score": 11.6666670988003
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "reason": "preferred_successful_side_after_failures",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 2,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 120.0
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 5,
+                "score": 11.6666670988003
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": 1,
+            "source": "ram-pattern-evidence"
+          },
+          "required_gap": 24.0,
+          "score_gap": 108.3333329012
+        },
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 8,
+        "recovered_records": 0
+      },
+      "termination": "arrived",
+      "ticks": 211,
+      "trap_sign": -1,
+      "watchdog_reason": "",
+      "watchdog_stop": false
+    }
+  ],
+  "trap_sign": -1,
+  "world_id": "trap-changes-008ez"
+}
