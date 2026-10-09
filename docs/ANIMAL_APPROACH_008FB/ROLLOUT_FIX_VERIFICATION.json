@@ -1,0 +1,15 @@
+{
+  "checked_at_utc": "2026-10-09T19:55:44.284938+00:00",
+  "failed_rollout_source": "3fb5932",
+  "rollback_completed": true,
+  "renderer_status": {
+    "ActiveState": "active",
+    "NRestarts": "0",
+    "ExecMainStartTimestamp": "Fri 2026-10-09 19:32:25 UTC"
+  },
+  "script_errors_after_rollback": 0,
+  "new_feature_live": false,
+  "readiness_regressions_passed": 4,
+  "isolated_production_project_startup_passed": true,
+  "root_retry_executed_by_agent": false
+}

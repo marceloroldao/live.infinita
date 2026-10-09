@@ -38,6 +38,7 @@ cp -a /var/www/live-infinita-godot/build.json "$BACKUP/live-build.json"
 rollback() {
   rc=$?; trap - ERR
   echo "008FB_ROLLBACK rc=$rc"
+  systemctl stop live-infinita-renderer.service || true
   systemctl disable --now live-infinita-navigation-pattern.timer || true
   systemctl stop live-infinita-navigation-pattern.service || true
   for unit in live-infinita-navigation-pattern.service live-infinita-navigation-pattern.timer; do
@@ -72,7 +73,7 @@ done
 mkdir -p "$FLAG_DIR"
 printf '[Service]\nEnvironment=LIVE_INFINITA_ANIMAL_APPROACH_ENABLED=1\n' > "$FLAG_FILE"
 systemctl daemon-reload
-RESTART_AT="$(date +%s)"
+RESTART_AT="$(python3 -c 'import time; print(time.time())')"
 systemctl restart live-infinita-renderer.service
 python3 - "$RESTART_AT" <<'CHECK'
 import pathlib,json,time,sys
@@ -80,9 +81,7 @@ p=pathlib.Path('/var/www/live-infinita-godot/wildlife/search-intent.json')
 for _ in range(60):
     try:
         d=json.loads(p.read_text())
-        if d.get('generated_at_unix',0)>=int(sys.argv[1]) and -5<time.time()-d.get('generated_at_unix',0)<10 and d.get('last_error') is None:
-            assert d['source']=='native_bounded_animal_search' and d['world_write_authority'] is False
-            assert d.get('approach',{}).get('enabled') is True
+        if isinstance(d,dict) and isinstance(d.get('approach'),dict) and isinstance(d.get('generated_at_unix'),(int,float)) and d['generated_at_unix']>=float(sys.argv[1]) and -5<time.time()-d['generated_at_unix']<10 and d.get('last_error') is None and d.get('source')=='native_bounded_animal_search' and d.get('world_write_authority') is False and d['approach'].get('enabled') is True:
             print('008FB_NATIVE_OK',d['counts'])
             break
     except (OSError,ValueError):
@@ -100,7 +99,7 @@ root=pathlib.Path('/opt/live.infinita/.local/share/godot/app_userdata/Live Infin
 for _ in range(60):
     try:
         d=json.loads((root/'nov-learning-status-008df.json').read_text())
-        assert d.get('observed_at_unix',0)>=int(sys.argv[1]) and d.get('patterns',{}).get('enabled') is True
+        assert d.get('observed_at_unix',0)>=float(sys.argv[1]) and d.get('patterns',{}).get('enabled') is True
         p=json.loads((root/'nov-navigation-patterns-008ej.json').read_text())
         assert p['schema']=='live-infinita-native-pattern-outcomes/v2'
         assert p['profile']=='capsule044-height18-lookahead3-contour64-localexit-v3'

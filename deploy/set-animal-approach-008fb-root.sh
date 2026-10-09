@@ -19,7 +19,7 @@ rollback() {
 trap rollback ERR
 printf '[Service]\nEnvironment=LIVE_INFINITA_ANIMAL_APPROACH_ENABLED=%s\n' "$FLAG" > "$FILE"
 systemctl daemon-reload
-RESTART_AT="$(date +%s)"
+RESTART_AT="$(python3 -c 'import time; print(time.time())')"
 systemctl restart live-infinita-renderer.service
 python3 - "$FLAG" "$RESTART_AT" <<'CHECK'
 import pathlib,json,time,sys
@@ -28,7 +28,7 @@ expected=sys.argv[1]=='1'
 for _ in range(60):
     try:
         d=json.loads(p.read_text())
-        if d.get('generated_at_unix',0)>=int(sys.argv[2]) and d.get('approach',{}).get('enabled') is expected:
+        if d.get('generated_at_unix',0)>=float(sys.argv[2]) and d.get('approach',{}).get('enabled') is expected:
             print('008FB_SWITCH_OK',{'animal_approach_enabled':expected})
             break
     except (OSError,ValueError,KeyError):
