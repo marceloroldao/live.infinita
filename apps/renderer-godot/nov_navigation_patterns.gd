@@ -6,6 +6,7 @@ const MIN_SAMPLES := 2
 const LOCAL_COST_SCALE_M := 3.0
 var enabled := false
 var cost_shift_enabled := false
+var failure_preference_enabled := false
 var records: Array[Dictionary] = []
 var _identities: Dictionary = {}
 func context(current: Vector2, goal: Vector2, rows: Array[Dictionary]) -> String:
@@ -77,16 +78,23 @@ func _evaluate_rows(key: String, source_rows: Array[Dictionary]) -> Dictionary:
     evaluation.alternatives=sides
     if int(sides[-1].samples)<MIN_SAMPLES or int(sides[1].samples)<MIN_SAMPLES:
         evaluation.reason="insufficient_samples";return evaluation
-    if int(sides[-1].errors)==int(sides[-1].samples) or int(sides[1].errors)==int(sides[1].samples):
-        evaluation.reason="side_without_success";return evaluation
+    var without_success: bool=int(sides[-1].errors)==int(sides[-1].samples) or int(sides[1].errors)==int(sides[1].samples)
     var best := -1 if float(sides[-1].score)<float(sides[1].score) else 1
+    if without_success:
+        evaluation.reason="side_without_success"
+        if not failure_preference_enabled:return evaluation
+        var eligible: Array[int]=[]
+        for side in [-1,1]:
+            if int(sides[side].samples)-int(sides[side].errors)>=MIN_SAMPLES:eligible.append(side)
+        if eligible.size()!=1:return evaluation
+        best=eligible[0]
     var other := -best
     # Abstain on weak/equal evidence; no permanent ban or fabricated certainty.
     evaluation.score_gap=float(sides[other].score)-float(sides[best].score)
     evaluation.required_gap=0.2*maxf(1.0,float(sides[other].score))
     if float(evaluation.score_gap)<float(evaluation.required_gap):
-        evaluation.reason="insufficient_margin";return evaluation
-    evaluation.reason="preferred_side"
+        evaluation.reason="side_without_success" if without_success else "insufficient_margin";return evaluation
+    evaluation.reason="preferred_successful_side_after_failures" if without_success else "preferred_side"
     evaluation.recommendation={"side":best,"context":key,"alternatives":sides,
         "source":"recovered-pattern-evidence" if not sides[best].observation_ids.is_empty() else "ram-pattern-evidence",
         "observation_ids":sides[best].observation_ids.duplicate(),"contains_prediction":true}

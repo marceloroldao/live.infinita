@@ -1,0 +1,336 @@
+{
+  "failures": 0,
+  "phase": "final_cold",
+  "runs": [
+    {
+      "arm": "final_cold_perception_0",
+      "arrived": false,
+      "collisions": 0,
+      "compute_wall_ms": 3331,
+      "distance_m": 398.00001335144,
+      "facts": [],
+      "final_position": [
+        -82.6926651000977,
+        8.70237159729004
+      ],
+      "gate_closed": true,
+      "gate_event": {
+        "basis": "actual_occupied_position",
+        "position": [
+          -82.2928924560547,
+          10.1071062088013
+        ],
+        "tick": 40
+      },
+      "initial_evaluation": {},
+      "recommendation": {},
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 119.4,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {},
+        "enabled": false,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "failure_preference_enabled": true,
+        "last_evaluation": {},
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 0,
+        "pending_contacts": 0,
+        "ram_records": 0,
+        "recovered_records": 0
+      },
+      "termination": "stuck_recovery",
+      "ticks": 1194,
+      "trap_sign": 1,
+      "watchdog_reason": "repeated_area_no_goal_progress",
+      "watchdog_stop": true
+    },
+    {
+      "arm": "final_cold_memory_0",
+      "arrived": true,
+      "collisions": 0,
+      "compute_wall_ms": 351,
+      "distance_m": 70.3862650096416,
+      "facts": [
+        {
+          "attempt_id": "6508d1d4c38fd8ffdc4ea53dbaa6adcb:final_cold_memory_0:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "distance_m": 35.0000012665987,
+          "ended_at_unix": 1791559285.00535,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": -1,
+          "world_id": "trap-changes-008ez"
+        }
+      ],
+      "final_position": [
+        -68.0,
+        -5.96046447753906e-08
+      ],
+      "gate_closed": false,
+      "gate_event": {},
+      "initial_evaluation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [
+              "structural-event:b56ddbf221717c4e49589bf0a52747562b07114e",
+              "structural-event:68ad39eadb68d8324c62970f0e040752bd581688",
+              "structural-event:9c191c2b2373ca0c0c43d85b7b1874b49a5a6666",
+              "structural-event:7615c9a9cccdabc50d0b337074d771cb1751dac9",
+              "structural-event:fc4b8976a7c8f8464b0657ffde49b3823985c737",
+              "structural-event:90b461afa9a0ef30edbbb94d90609b98ffdf4404",
+              "structural-event:24be800c75b89263e94dc2b3ac11e06c8980d80a",
+              "structural-event:ea5cb3daa049dc9b760e8b990581f969f8137e88",
+              "structural-event:c7a1730b58237715842ddf0cd547e56230466878",
+              "structural-event:25e3963ae86ec2c2f404c729ff25f3659321f2ef"
+            ],
+            "samples": 10,
+            "score": 11.6666670888662
+          },
+          "1": {
+            "errors": 2,
+            "observation_ids": [
+              "structural-event:fae96b39f47e72d31d7f3e65e2ee9fe2749e3b75",
+              "structural-event:889076e93d4c60475e5e7ab3b0effa7e0e232e26"
+            ],
+            "samples": 2,
+            "score": 120.0
+          }
+        },
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+        "cost_shift": {
+          "basis": "measured_cost_increase",
+          "factor": 1.5,
+          "fresh_samples": 12,
+          "minimum_rise_cost_units": 1.0,
+          "onset_attempt_id": "d924fe8e7dd2c09b8abad36fbf20075e:change_2_memory_0:1",
+          "retained_raw_samples": 45
+        },
+        "reason": "preferred_successful_side_after_failures",
+        "recommendation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:b56ddbf221717c4e49589bf0a52747562b07114e",
+                "structural-event:68ad39eadb68d8324c62970f0e040752bd581688",
+                "structural-event:9c191c2b2373ca0c0c43d85b7b1874b49a5a6666",
+                "structural-event:7615c9a9cccdabc50d0b337074d771cb1751dac9",
+                "structural-event:fc4b8976a7c8f8464b0657ffde49b3823985c737",
+                "structural-event:90b461afa9a0ef30edbbb94d90609b98ffdf4404",
+                "structural-event:24be800c75b89263e94dc2b3ac11e06c8980d80a",
+                "structural-event:ea5cb3daa049dc9b760e8b990581f969f8137e88",
+                "structural-event:c7a1730b58237715842ddf0cd547e56230466878",
+                "structural-event:25e3963ae86ec2c2f404c729ff25f3659321f2ef"
+              ],
+              "samples": 10,
+              "score": 11.6666670888662
+            },
+            "1": {
+              "errors": 2,
+              "observation_ids": [
+                "structural-event:fae96b39f47e72d31d7f3e65e2ee9fe2749e3b75",
+                "structural-event:889076e93d4c60475e5e7ab3b0effa7e0e232e26"
+              ],
+              "samples": 2,
+              "score": 120.0
+            }
+          },
+          "contains_prediction": true,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "observation_ids": [
+            "structural-event:b56ddbf221717c4e49589bf0a52747562b07114e",
+            "structural-event:68ad39eadb68d8324c62970f0e040752bd581688",
+            "structural-event:9c191c2b2373ca0c0c43d85b7b1874b49a5a6666",
+            "structural-event:7615c9a9cccdabc50d0b337074d771cb1751dac9",
+            "structural-event:fc4b8976a7c8f8464b0657ffde49b3823985c737",
+            "structural-event:90b461afa9a0ef30edbbb94d90609b98ffdf4404",
+            "structural-event:24be800c75b89263e94dc2b3ac11e06c8980d80a",
+            "structural-event:ea5cb3daa049dc9b760e8b990581f969f8137e88",
+            "structural-event:c7a1730b58237715842ddf0cd547e56230466878",
+            "structural-event:25e3963ae86ec2c2f404c729ff25f3659321f2ef"
+          ],
+          "side": -1,
+          "source": "recovered-pattern-evidence"
+        },
+        "required_gap": 24.0,
+        "score_gap": 108.333332911134
+      },
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [
+              "structural-event:b56ddbf221717c4e49589bf0a52747562b07114e",
+              "structural-event:68ad39eadb68d8324c62970f0e040752bd581688",
+              "structural-event:9c191c2b2373ca0c0c43d85b7b1874b49a5a6666",
+              "structural-event:7615c9a9cccdabc50d0b337074d771cb1751dac9",
+              "structural-event:fc4b8976a7c8f8464b0657ffde49b3823985c737",
+              "structural-event:90b461afa9a0ef30edbbb94d90609b98ffdf4404",
+              "structural-event:24be800c75b89263e94dc2b3ac11e06c8980d80a",
+              "structural-event:ea5cb3daa049dc9b760e8b990581f969f8137e88",
+              "structural-event:c7a1730b58237715842ddf0cd547e56230466878",
+              "structural-event:25e3963ae86ec2c2f404c729ff25f3659321f2ef"
+            ],
+            "samples": 10,
+            "score": 11.6666670888662
+          },
+          "1": {
+            "errors": 2,
+            "observation_ids": [
+              "structural-event:fae96b39f47e72d31d7f3e65e2ee9fe2749e3b75",
+              "structural-event:889076e93d4c60475e5e7ab3b0effa7e0e232e26"
+            ],
+            "samples": 2,
+            "score": 120.0
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+        "observation_ids": [
+          "structural-event:b56ddbf221717c4e49589bf0a52747562b07114e",
+          "structural-event:68ad39eadb68d8324c62970f0e040752bd581688",
+          "structural-event:9c191c2b2373ca0c0c43d85b7b1874b49a5a6666",
+          "structural-event:7615c9a9cccdabc50d0b337074d771cb1751dac9",
+          "structural-event:fc4b8976a7c8f8464b0657ffde49b3823985c737",
+          "structural-event:90b461afa9a0ef30edbbb94d90609b98ffdf4404",
+          "structural-event:24be800c75b89263e94dc2b3ac11e06c8980d80a",
+          "structural-event:ea5cb3daa049dc9b760e8b990581f969f8137e88",
+          "structural-event:c7a1730b58237715842ddf0cd547e56230466878",
+          "structural-event:25e3963ae86ec2c2f404c729ff25f3659321f2ef"
+        ],
+        "side": -1,
+        "source": "recovered-pattern-evidence"
+      },
+      "route_plan_builds": 0,
+      "side": -1,
+      "simulated_seconds": 21.1,
+      "status": {
+        "changed_initial_decisions": 1,
+        "core_changed_initial_decisions": 1,
+        "cost_shift_enabled": true,
+        "decision_reasons": {
+          "preferred_successful_side_after_failures": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "failure_preference_enabled": true,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:b56ddbf221717c4e49589bf0a52747562b07114e",
+                "structural-event:68ad39eadb68d8324c62970f0e040752bd581688",
+                "structural-event:9c191c2b2373ca0c0c43d85b7b1874b49a5a6666",
+                "structural-event:7615c9a9cccdabc50d0b337074d771cb1751dac9",
+                "structural-event:fc4b8976a7c8f8464b0657ffde49b3823985c737",
+                "structural-event:90b461afa9a0ef30edbbb94d90609b98ffdf4404",
+                "structural-event:24be800c75b89263e94dc2b3ac11e06c8980d80a",
+                "structural-event:ea5cb3daa049dc9b760e8b990581f969f8137e88",
+                "structural-event:c7a1730b58237715842ddf0cd547e56230466878",
+                "structural-event:25e3963ae86ec2c2f404c729ff25f3659321f2ef"
+              ],
+              "samples": 10,
+              "score": 11.6666670888662
+            },
+            "1": {
+              "errors": 2,
+              "observation_ids": [
+                "structural-event:fae96b39f47e72d31d7f3e65e2ee9fe2749e3b75",
+                "structural-event:889076e93d4c60475e5e7ab3b0effa7e0e232e26"
+              ],
+              "samples": 2,
+              "score": 120.0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+          "cost_shift": {
+            "basis": "measured_cost_increase",
+            "factor": 1.5,
+            "fresh_samples": 12,
+            "minimum_rise_cost_units": 1.0,
+            "onset_attempt_id": "d924fe8e7dd2c09b8abad36fbf20075e:change_2_memory_0:1",
+            "retained_raw_samples": 45
+          },
+          "reason": "preferred_successful_side_after_failures",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [
+                  "structural-event:b56ddbf221717c4e49589bf0a52747562b07114e",
+                  "structural-event:68ad39eadb68d8324c62970f0e040752bd581688",
+                  "structural-event:9c191c2b2373ca0c0c43d85b7b1874b49a5a6666",
+                  "structural-event:7615c9a9cccdabc50d0b337074d771cb1751dac9",
+                  "structural-event:fc4b8976a7c8f8464b0657ffde49b3823985c737",
+                  "structural-event:90b461afa9a0ef30edbbb94d90609b98ffdf4404",
+                  "structural-event:24be800c75b89263e94dc2b3ac11e06c8980d80a",
+                  "structural-event:ea5cb3daa049dc9b760e8b990581f969f8137e88",
+                  "structural-event:c7a1730b58237715842ddf0cd547e56230466878",
+                  "structural-event:25e3963ae86ec2c2f404c729ff25f3659321f2ef"
+                ],
+                "samples": 10,
+                "score": 11.6666670888662
+              },
+              "1": {
+                "errors": 2,
+                "observation_ids": [
+                  "structural-event:fae96b39f47e72d31d7f3e65e2ee9fe2749e3b75",
+                  "structural-event:889076e93d4c60475e5e7ab3b0effa7e0e232e26"
+                ],
+                "samples": 2,
+                "score": 120.0
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|trap-changes-008ez|local-clear-v1:255:254",
+            "observation_ids": [
+              "structural-event:b56ddbf221717c4e49589bf0a52747562b07114e",
+              "structural-event:68ad39eadb68d8324c62970f0e040752bd581688",
+              "structural-event:9c191c2b2373ca0c0c43d85b7b1874b49a5a6666",
+              "structural-event:7615c9a9cccdabc50d0b337074d771cb1751dac9",
+              "structural-event:fc4b8976a7c8f8464b0657ffde49b3823985c737",
+              "structural-event:90b461afa9a0ef30edbbb94d90609b98ffdf4404",
+              "structural-event:24be800c75b89263e94dc2b3ac11e06c8980d80a",
+              "structural-event:ea5cb3daa049dc9b760e8b990581f969f8137e88",
+              "structural-event:c7a1730b58237715842ddf0cd547e56230466878",
+              "structural-event:25e3963ae86ec2c2f404c729ff25f3659321f2ef"
+            ],
+            "side": -1,
+            "source": "recovered-pattern-evidence"
+          },
+          "required_gap": 24.0,
+          "score_gap": 108.333332911134
+        },
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 1,
+        "recovered_records": 45
+      },
+      "termination": "arrived",
+      "ticks": 211,
+      "trap_sign": 1,
+      "watchdog_reason": "",
+      "watchdog_stop": false
+    }
+  ],
+  "trap_sign": 1,
+  "world_id": "trap-changes-008ez"
+}

@@ -1,0 +1,10 @@
+{
+  "native_integration": true,
+  "actual_traversals": 92,
+  "arrivals": 59,
+  "real_watchdog_failures": 33,
+  "unaltered_cold_recovered_facts": 46,
+  "matches_experimental_physical_totals": true,
+  "collisions": 0,
+  "production_changed": false
+}

@@ -5,7 +5,7 @@ import run_native_patterns_008eh as native
 from nov_navigation_pattern_sync import sync_once
 SCRIPT=native.ROOT/"tests/godot_trap_changes_008ez.gd"
 PLAN=(("training",-1,8),("mirror_cold",-1,1),("change_0",1,12),("change_1",-1,12),("change_2",1,12),("final_cold",1,1))
-def run(project,out):
+def run(project,out,integrated=False):
     out.mkdir(parents=True,exist_ok=True)
     sys.path.insert(0,str(native.SDK))
     from fastapi import FastAPI
@@ -36,6 +36,11 @@ def run(project,out):
                 LIVE_INFINITA_TRAP_PHASE_008EZ=phase,LIVE_INFINITA_TRAP_SIGN_008EZ=str(sign),LIVE_INFINITA_TRAP_TRIALS_008EZ=str(count),
                 LIVE_INFINITA_FAILURE_POLICY_008EY="candidate",LIVE_INFINITA_NAVIGATION_COST_SHIFT="1",
                 LIVE_INFINITA_NAVIGATION_CONTACT_TURNS="1",LIVE_INFINITA_NAVIGATION_EXIT_DIRECTION="1",XDG_DATA_HOME=str(tmp/"userdata"))
+            if integrated:
+                env.pop("LIVE_INFINITA_FAILURE_POLICY_008EY",None)
+                env["LIVE_INFINITA_NAVIGATION_FAILURE_PREFERENCE"]="1"
+            else:
+                env["LIVE_INFINITA_NAVIGATION_FAILURE_PREFERENCE"]="0"
             env.pop("LIVE_INFINITA_PHYSICAL_MEMORY_RECALL",None)
             if cold:env["LIVE_INFINITA_PHYSICAL_MEMORY_RECALL"]=str(recall)
             p=subprocess.run([native.ENGINE,"--headless","--audio-driver","Dummy","--path",str(project),
@@ -59,6 +64,7 @@ def run(project,out):
             for i in range(count):
                 b,c=result["runs"][2*i:2*i+2]
                 assert not b["status"]["enabled"] and c["status"]["enabled"]
+                assert c["status"]["failure_preference_enabled"] is integrated
                 assert c["status"]["recovered_records"]==stored and c["status"]["ram_records"]==i+1
                 for row in (b,c):
                     assert row["collisions"]==0 and row["route_plan_builds"]==0
@@ -101,7 +107,7 @@ def run(project,out):
             "plan":[{"phase":p,"trap_sign":s,"trials":n} for p,s,n in PLAN],"stages":stages,
             "control":totals(control),"candidate":totals(candidate),"actual_traversals":len(control)+len(candidate),
             "durable_recoveries":recoveries,"persisted_actual_facts":stored,
-            "production_changed":False,"production_benefit_demonstrated":False,"experimental_policy":True,
+            "production_changed":False,"production_benefit_demonstrated":False,"experimental_policy":not integrated,"native_failure_preference":integrated,
             "limits":["Single constructed dynamic trap family, deterministic paired trajectories.",
                 "Perception is the comparison; no current-policy memory arm in this reversal experiment.",
                 "All failed costs included; raw movement differences are not completed-task efficiency.",

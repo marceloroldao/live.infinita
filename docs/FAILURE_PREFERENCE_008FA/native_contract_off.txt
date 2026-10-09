@@ -1,0 +1,3 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+008FA_FAILURE_PREFERENCE {"failures":0,"flag_off_retains_guard":true,"native_equals_experiment":true,"unchanged_real_contexts":3}

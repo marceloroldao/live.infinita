@@ -26,6 +26,7 @@ var _serial_goal := ""
 var _latest_serial := 0
 func _init(value: RefCounted=null, path: String="user://nov-navigation-patterns-008ej.json") -> void:
     journey=value;storage=path
+    patterns.failure_preference_enabled=OS.get_environment("LIVE_INFINITA_NAVIGATION_FAILURE_PREFERENCE")=="1"
     patterns.cost_shift_enabled=OS.get_environment("LIVE_INFINITA_NAVIGATION_COST_SHIFT")=="1"
     if storage.is_empty() or OS.has_feature("web") or OS.get_cmdline_user_args().has("--offline-tour"):return
     load_state()
@@ -233,6 +234,7 @@ func poll(now: float) -> void:
 func status() -> Dictionary:
     return {"observed_outcomes":observed,"ram_records":local_rows.size(),"recovered_records":recovered_rows.size(),
         "cost_shift_enabled":patterns.cost_shift_enabled,
+        "failure_preference_enabled":patterns.failure_preference_enabled,
         "exit_direction_enabled":OS.get_environment("LIVE_INFINITA_NAVIGATION_EXIT_DIRECTION")=="1",
         "local_turn_continuity_enabled":OS.get_environment("LIVE_INFINITA_NAVIGATION_CONTACT_TURNS")=="1",
         "changed_initial_decisions":changed_decisions,"core_changed_initial_decisions":core_changed_decisions,
