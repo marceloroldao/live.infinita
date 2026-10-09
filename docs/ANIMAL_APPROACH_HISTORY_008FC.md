@@ -21,7 +21,7 @@ Instalador: `deploy/apply-animal-approach-history-008fc-root.sh`.
 Executar pelo usuário:
 `sudo bash /home/etbra/apply-animal-approach-history-008fc-root.sh`
 
-Mantém a chave reversível 008FB e as quatro melhorias de navegação. Faz backup de código e publicação; em falha para o renderer antes de restaurar arquivos. Não apaga memória nem o novo histórico durante rollback. A prontidão exige publicação posterior ao reinício e histórico configurado como persistente e disponível. A aplicação na produção permanece pendente até a execução pelo usuário.
+Mantém a chave reversível 008FB e as quatro melhorias de navegação. Faz backup de código e publicação; em falha para o renderer antes de restaurar arquivos. Não apaga memória nem o novo histórico durante rollback. A prontidão exige publicação posterior ao reinício e histórico configurado como persistente e disponível. Aplicação confirmada na produção em 09/10/2026: fonte 4e16afc, renderer iniciado às 19:14:42 de São Paulo, sem erros de script ou reinícios automáticos. Publicação recente confirma armazenamento configurado como persistente e disponível. Ainda não há tentativas novas neste histórico; persistência de uma tentativa real em produção aguarda um novo encontro.
 
 ## Validação concluída
 52 regressões com aproximação ativada e 52 desativada: 104/104 passaram. Seis testes do instalador 008FC e quatro da prontidão 008FB passaram. Sintaxe dos dois scripts de shell e verificação de whitespace sem erros. O teste físico mediu 3,5999987 m e zero colisões, preservando o resultado após recarga fria. Evidências e código são versionados juntos.

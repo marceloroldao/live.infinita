@@ -1,0 +1,26 @@
+{
+  "verified_at_utc": "2026-10-09T22:31:25.577276+00:00",
+  "production_source": "4e16afc",
+  "renderer_started_at_utc": "2026-10-09T22:14:42Z",
+  "script_errors": [],
+  "approach": {
+    "active": false,
+    "capture": false,
+    "enabled": true,
+    "history": {
+      "censored_attempts": 0,
+      "core_ingestion": false,
+      "learning_eligible_attempts": 0,
+      "persistent": true,
+      "storage_ready": true,
+      "stored_attempts": 0
+    },
+    "intent": {},
+    "learned_hunting": false,
+    "results": []
+  },
+  "publication_age_s": 2.1951661109924316,
+  "rollout_result": "008FC_OK",
+  "native_source_files_match": true,
+  "note": "No completed attempts in the new history yet. Durable recovery was validated in isolated physical tests; production persistence awaits a real new approach."
+}
