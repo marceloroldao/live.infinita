@@ -1,0 +1,1443 @@
+{
+  "failures": 0,
+  "opening_z": -20.0,
+  "runs": [
+    {
+      "arm": "phase_0_perception_0",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 87.5467020124197,
+      "recommendation": {},
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 26.3,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {},
+        "enabled": false,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {},
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 0,
+        "pending_contacts": 0,
+        "ram_records": 0,
+        "recovered_records": 0
+      },
+      "ticks": 263
+    },
+    {
+      "arm": "phase_0_memory_0",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 215.800029918551,
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [
+              "structural-event:84b2c3879d123e2e1488d21d6761e22726f564a0",
+              "structural-event:a9962c61e46d1662f8e71e8a74e8f9ea0aa0af73"
+            ],
+            "samples": 2,
+            "score": 17.6666670342286
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [
+              "structural-event:89f6bc221bac805d5d1a546c453218ee76c2419b",
+              "structural-event:dc745e7df9656d212b29b2d8195215ed830711f7"
+            ],
+            "samples": 2,
+            "score": 60.3333329906067
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+        "observation_ids": [
+          "structural-event:84b2c3879d123e2e1488d21d6761e22726f564a0",
+          "structural-event:a9962c61e46d1662f8e71e8a74e8f9ea0aa0af73"
+        ],
+        "side": -1,
+        "source": "recovered-pattern-evidence"
+      },
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": -1,
+      "simulated_seconds": 64.7,
+      "status": {
+        "changed_initial_decisions": 1,
+        "core_changed_initial_decisions": 1,
+        "cost_shift_enabled": true,
+        "decision_reasons": {
+          "preferred_side": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:84b2c3879d123e2e1488d21d6761e22726f564a0",
+                "structural-event:a9962c61e46d1662f8e71e8a74e8f9ea0aa0af73"
+              ],
+              "samples": 2,
+              "score": 17.6666670342286
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:89f6bc221bac805d5d1a546c453218ee76c2419b",
+                "structural-event:dc745e7df9656d212b29b2d8195215ed830711f7"
+              ],
+              "samples": 2,
+              "score": 60.3333329906067
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "reason": "preferred_side",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [
+                  "structural-event:84b2c3879d123e2e1488d21d6761e22726f564a0",
+                  "structural-event:a9962c61e46d1662f8e71e8a74e8f9ea0aa0af73"
+                ],
+                "samples": 2,
+                "score": 17.6666670342286
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [
+                  "structural-event:89f6bc221bac805d5d1a546c453218ee76c2419b",
+                  "structural-event:dc745e7df9656d212b29b2d8195215ed830711f7"
+                ],
+                "samples": 2,
+                "score": 60.3333329906067
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "observation_ids": [
+              "structural-event:84b2c3879d123e2e1488d21d6761e22726f564a0",
+              "structural-event:a9962c61e46d1662f8e71e8a74e8f9ea0aa0af73"
+            ],
+            "side": -1,
+            "source": "recovered-pattern-evidence"
+          },
+          "required_gap": 12.0666665981213,
+          "score_gap": 42.666665956378
+        },
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 1,
+        "recovered_records": 4
+      },
+      "ticks": 647
+    },
+    {
+      "arm": "phase_0_perception_1",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 87.5467020124197,
+      "recommendation": {},
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 26.3,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {},
+        "enabled": false,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {},
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 0,
+        "pending_contacts": 0,
+        "ram_records": 1,
+        "recovered_records": 0
+      },
+      "ticks": 263
+    },
+    {
+      "arm": "phase_0_memory_1",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 87.5467020124197,
+      "recommendation": {
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": 1,
+        "source": "pattern-exploration"
+      },
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 26.3,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {
+          "cost_shift_exploration": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 1,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 1,
+              "score": 57.0000037401913
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "cost_shift": {
+            "basis": "measured_cost_increase",
+            "factor": 1.5,
+            "fresh_samples": 1,
+            "minimum_rise_cost_units": 1.0,
+            "onset_attempt_id": "07e57781e0dc0ab2e55accdb51aa660b:phase_0_memory_0:1",
+            "retained_raw_samples": 5
+          },
+          "reason": "cost_shift_exploration",
+          "recommendation": {
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": 1,
+            "source": "pattern-exploration"
+          }
+        },
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 2,
+        "recovered_records": 4
+      },
+      "ticks": 263
+    },
+    {
+      "arm": "phase_0_perception_2",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 87.5467020124197,
+      "recommendation": {},
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 26.3,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {},
+        "enabled": false,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {},
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 0,
+        "pending_contacts": 0,
+        "ram_records": 2,
+        "recovered_records": 0
+      },
+      "ticks": 263
+    },
+    {
+      "arm": "phase_0_memory_2",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 87.5467020124197,
+      "recommendation": {
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": 1,
+        "source": "pattern-exploration"
+      },
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 26.3,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {
+          "cost_shift_exploration": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 1,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 1,
+              "score": 57.0000037401913
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 1,
+              "score": 14.3333337008953
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "cost_shift": {
+            "basis": "measured_cost_increase",
+            "factor": 1.5,
+            "fresh_samples": 2,
+            "minimum_rise_cost_units": 1.0,
+            "onset_attempt_id": "07e57781e0dc0ab2e55accdb51aa660b:phase_0_memory_0:1",
+            "retained_raw_samples": 6
+          },
+          "reason": "cost_shift_exploration",
+          "recommendation": {
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": 1,
+            "source": "pattern-exploration"
+          }
+        },
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 3,
+        "recovered_records": 4
+      },
+      "ticks": 263
+    },
+    {
+      "arm": "phase_0_perception_3",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 87.5467020124197,
+      "recommendation": {},
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 26.3,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {},
+        "enabled": false,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {},
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 0,
+        "pending_contacts": 0,
+        "ram_records": 3,
+        "recovered_records": 0
+      },
+      "ticks": 263
+    },
+    {
+      "arm": "phase_0_memory_3",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 215.800029918551,
+      "recommendation": {
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": -1,
+        "source": "pattern-exploration"
+      },
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": -1,
+      "simulated_seconds": 64.7,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {
+          "cost_shift_exploration": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 1,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 1,
+              "score": 57.0000037401913
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 14.3333337008953
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "cost_shift": {
+            "basis": "measured_cost_increase",
+            "factor": 1.5,
+            "fresh_samples": 3,
+            "minimum_rise_cost_units": 1.0,
+            "onset_attempt_id": "07e57781e0dc0ab2e55accdb51aa660b:phase_0_memory_0:1",
+            "retained_raw_samples": 7
+          },
+          "reason": "cost_shift_exploration",
+          "recommendation": {
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": -1,
+            "source": "pattern-exploration"
+          }
+        },
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 4,
+        "recovered_records": 4
+      },
+      "ticks": 647
+    },
+    {
+      "arm": "phase_0_perception_4",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 87.5467020124197,
+      "recommendation": {},
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 26.3,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {},
+        "enabled": false,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {},
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 0,
+        "pending_contacts": 0,
+        "ram_records": 4,
+        "recovered_records": 0
+      },
+      "ticks": 263
+    },
+    {
+      "arm": "phase_0_memory_4",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 87.5467020124197,
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 57.0000037401913
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 14.3333337008953
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": 1,
+        "source": "ram-pattern-evidence"
+      },
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 26.3,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {
+          "preferred_side": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 57.0000037401913
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 14.3333337008953
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "cost_shift": {
+            "basis": "measured_cost_increase",
+            "factor": 1.5,
+            "fresh_samples": 4,
+            "minimum_rise_cost_units": 1.0,
+            "onset_attempt_id": "07e57781e0dc0ab2e55accdb51aa660b:phase_0_memory_0:1",
+            "retained_raw_samples": 8
+          },
+          "reason": "preferred_side",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 57.0000037401913
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 14.3333337008953
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": 1,
+            "source": "ram-pattern-evidence"
+          },
+          "required_gap": 11.4000007480383,
+          "score_gap": 42.666670039296
+        },
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 5,
+        "recovered_records": 4
+      },
+      "ticks": 263
+    },
+    {
+      "arm": "phase_0_perception_5",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 87.5467020124197,
+      "recommendation": {},
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 26.3,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {},
+        "enabled": false,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {},
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 0,
+        "pending_contacts": 0,
+        "ram_records": 5,
+        "recovered_records": 0
+      },
+      "ticks": 263
+    },
+    {
+      "arm": "phase_0_memory_5",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 87.5467020124197,
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 57.0000037401913
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 3,
+            "score": 14.3333337008953
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": 1,
+        "source": "ram-pattern-evidence"
+      },
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 26.3,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {
+          "preferred_side": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 57.0000037401913
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 3,
+              "score": 14.3333337008953
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "cost_shift": {
+            "basis": "measured_cost_increase",
+            "factor": 1.5,
+            "fresh_samples": 5,
+            "minimum_rise_cost_units": 1.0,
+            "onset_attempt_id": "07e57781e0dc0ab2e55accdb51aa660b:phase_0_memory_0:1",
+            "retained_raw_samples": 9
+          },
+          "reason": "preferred_side",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 57.0000037401913
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 3,
+                "score": 14.3333337008953
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": 1,
+            "source": "ram-pattern-evidence"
+          },
+          "required_gap": 11.4000007480383,
+          "score_gap": 42.666670039296
+        },
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 6,
+        "recovered_records": 4
+      },
+      "ticks": 263
+    },
+    {
+      "arm": "phase_0_perception_6",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 87.5467020124197,
+      "recommendation": {},
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 26.3,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {},
+        "enabled": false,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {},
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 0,
+        "pending_contacts": 0,
+        "ram_records": 6,
+        "recovered_records": 0
+      },
+      "ticks": 263
+    },
+    {
+      "arm": "phase_0_memory_6",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 87.5467020124197,
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 57.0000037401913
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 4,
+            "score": 14.3333337008953
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": 1,
+        "source": "ram-pattern-evidence"
+      },
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 26.3,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {
+          "preferred_side": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 57.0000037401913
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 4,
+              "score": 14.3333337008953
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "cost_shift": {
+            "basis": "measured_cost_increase",
+            "factor": 1.5,
+            "fresh_samples": 6,
+            "minimum_rise_cost_units": 1.0,
+            "onset_attempt_id": "07e57781e0dc0ab2e55accdb51aa660b:phase_0_memory_0:1",
+            "retained_raw_samples": 10
+          },
+          "reason": "preferred_side",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 57.0000037401913
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 4,
+                "score": 14.3333337008953
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": 1,
+            "source": "ram-pattern-evidence"
+          },
+          "required_gap": 11.4000007480383,
+          "score_gap": 42.666670039296
+        },
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 7,
+        "recovered_records": 4
+      },
+      "ticks": 263
+    },
+    {
+      "arm": "phase_0_perception_7",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 87.5467020124197,
+      "recommendation": {},
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 26.3,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {},
+        "enabled": false,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {},
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 0,
+        "pending_contacts": 0,
+        "ram_records": 7,
+        "recovered_records": 0
+      },
+      "ticks": 263
+    },
+    {
+      "arm": "phase_0_memory_7",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 87.5467020124197,
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 57.0000037401913
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 5,
+            "score": 14.3333337008953
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": 1,
+        "source": "ram-pattern-evidence"
+      },
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 26.3,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {
+          "preferred_side": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 57.0000037401913
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 5,
+              "score": 14.3333337008953
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "cost_shift": {
+            "basis": "measured_cost_increase",
+            "factor": 1.5,
+            "fresh_samples": 7,
+            "minimum_rise_cost_units": 1.0,
+            "onset_attempt_id": "07e57781e0dc0ab2e55accdb51aa660b:phase_0_memory_0:1",
+            "retained_raw_samples": 11
+          },
+          "reason": "preferred_side",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 57.0000037401913
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 5,
+                "score": 14.3333337008953
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": 1,
+            "source": "ram-pattern-evidence"
+          },
+          "required_gap": 11.4000007480383,
+          "score_gap": 42.666670039296
+        },
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 8,
+        "recovered_records": 4
+      },
+      "ticks": 263
+    },
+    {
+      "arm": "phase_0_perception_8",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 87.5467020124197,
+      "recommendation": {},
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 26.3,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {},
+        "enabled": false,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {},
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 0,
+        "pending_contacts": 0,
+        "ram_records": 8,
+        "recovered_records": 0
+      },
+      "ticks": 263
+    },
+    {
+      "arm": "phase_0_memory_8",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 87.5467020124197,
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 57.0000037401913
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 6,
+            "score": 14.3333337008953
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": 1,
+        "source": "ram-pattern-evidence"
+      },
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 26.3,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {
+          "preferred_side": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 57.0000037401913
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 6,
+              "score": 14.3333337008953
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "cost_shift": {
+            "basis": "measured_cost_increase",
+            "factor": 1.5,
+            "fresh_samples": 8,
+            "minimum_rise_cost_units": 1.0,
+            "onset_attempt_id": "07e57781e0dc0ab2e55accdb51aa660b:phase_0_memory_0:1",
+            "retained_raw_samples": 12
+          },
+          "reason": "preferred_side",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 57.0000037401913
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 6,
+                "score": 14.3333337008953
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": 1,
+            "source": "ram-pattern-evidence"
+          },
+          "required_gap": 11.4000007480383,
+          "score_gap": 42.666670039296
+        },
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 9,
+        "recovered_records": 4
+      },
+      "ticks": 263
+    },
+    {
+      "arm": "phase_0_perception_9",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 87.5467020124197,
+      "recommendation": {},
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 26.3,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {},
+        "enabled": false,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {},
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 0,
+        "pending_contacts": 0,
+        "ram_records": 9,
+        "recovered_records": 0
+      },
+      "ticks": 263
+    },
+    {
+      "arm": "phase_0_memory_9",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 87.5467020124197,
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 57.0000037401913
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 7,
+            "score": 14.3333337008953
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": 1,
+        "source": "ram-pattern-evidence"
+      },
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 26.3,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {
+          "preferred_side": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 57.0000037401913
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 7,
+              "score": 14.3333337008953
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "cost_shift": {
+            "basis": "measured_cost_increase",
+            "factor": 1.5,
+            "fresh_samples": 9,
+            "minimum_rise_cost_units": 1.0,
+            "onset_attempt_id": "07e57781e0dc0ab2e55accdb51aa660b:phase_0_memory_0:1",
+            "retained_raw_samples": 13
+          },
+          "reason": "preferred_side",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 57.0000037401913
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 7,
+                "score": 14.3333337008953
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": 1,
+            "source": "ram-pattern-evidence"
+          },
+          "required_gap": 11.4000007480383,
+          "score_gap": 42.666670039296
+        },
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 10,
+        "recovered_records": 4
+      },
+      "ticks": 263
+    },
+    {
+      "arm": "phase_0_perception_10",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 87.5467020124197,
+      "recommendation": {},
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 26.3,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {},
+        "enabled": false,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {},
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 0,
+        "pending_contacts": 0,
+        "ram_records": 10,
+        "recovered_records": 0
+      },
+      "ticks": 263
+    },
+    {
+      "arm": "phase_0_memory_10",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 87.5467020124197,
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 57.0000037401913
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 8,
+            "score": 14.3333337008953
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": 1,
+        "source": "ram-pattern-evidence"
+      },
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 26.3,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {
+          "preferred_side": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 57.0000037401913
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 8,
+              "score": 14.3333337008953
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "cost_shift": {
+            "basis": "measured_cost_increase",
+            "factor": 1.5,
+            "fresh_samples": 10,
+            "minimum_rise_cost_units": 1.0,
+            "onset_attempt_id": "07e57781e0dc0ab2e55accdb51aa660b:phase_0_memory_0:1",
+            "retained_raw_samples": 14
+          },
+          "reason": "preferred_side",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 57.0000037401913
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 8,
+                "score": 14.3333337008953
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": 1,
+            "source": "ram-pattern-evidence"
+          },
+          "required_gap": 11.4000007480383,
+          "score_gap": 42.666670039296
+        },
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 11,
+        "recovered_records": 4
+      },
+      "ticks": 263
+    },
+    {
+      "arm": "phase_0_perception_11",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 87.5467020124197,
+      "recommendation": {},
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 26.3,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {},
+        "enabled": false,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {},
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 0,
+        "pending_contacts": 0,
+        "ram_records": 11,
+        "recovered_records": 0
+      },
+      "ticks": 263
+    },
+    {
+      "arm": "phase_0_memory_11",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 87.5467020124197,
+      "recommendation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 2,
+            "score": 57.0000037401913
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [],
+            "samples": 9,
+            "score": 14.3333337008953
+          }
+        },
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": 1,
+        "source": "ram-pattern-evidence"
+      },
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 26.3,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {
+          "preferred_side": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 57.0000037401913
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 9,
+              "score": 14.3333337008953
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "cost_shift": {
+            "basis": "measured_cost_increase",
+            "factor": 1.5,
+            "fresh_samples": 11,
+            "minimum_rise_cost_units": 1.0,
+            "onset_attempt_id": "07e57781e0dc0ab2e55accdb51aa660b:phase_0_memory_0:1",
+            "retained_raw_samples": 15
+          },
+          "reason": "preferred_side",
+          "recommendation": {
+            "alternatives": {
+              "-1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 2,
+                "score": 57.0000037401913
+              },
+              "1": {
+                "errors": 0,
+                "observation_ids": [],
+                "samples": 9,
+                "score": 14.3333337008953
+              }
+            },
+            "contains_prediction": true,
+            "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+            "observation_ids": [],
+            "side": 1,
+            "source": "ram-pattern-evidence"
+          },
+          "required_gap": 11.4000007480383,
+          "score_gap": 42.666670039296
+        },
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 12,
+        "recovered_records": 4
+      },
+      "ticks": 263
+    }
+  ]
+}

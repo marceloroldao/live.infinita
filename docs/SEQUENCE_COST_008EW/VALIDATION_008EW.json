@@ -1,0 +1,29 @@
+{
+  "actual_traversals": 104,
+  "all_arrived": true,
+  "collisions": 0,
+  "rescues": 0,
+  "route_builds": 0,
+  "independent_metric_totals": {
+    "distance_m": {
+      "all_52_perception_tasks": 7439.297348737721,
+      "all_52_memory_tasks": 6390.664893716577,
+      "matched_saving": 1048.6324550211439,
+      "matched_saving_percent": 14.09585349077454
+    },
+    "simulated_seconds": {
+      "all_52_perception_tasks": 2232.4,
+      "all_52_memory_tasks": 1917.6000000000001,
+      "matched_saving": 314.79999999999995,
+      "matched_saving_percent": 14.101415516932446
+    }
+  },
+  "distinct_physical_facts": 52,
+  "recovered_physical_facts_exactly_equal": 52,
+  "five_cold_recoveries": true,
+  "censored_contacts": 0,
+  "pending_contacts_at_end": 0,
+  "first_decision_each_phase_uses_cold_recovered_history": true,
+  "recovered_recommendation_ids_checked_against_prior_core_snapshot": true,
+  "python_compiled": true
+}

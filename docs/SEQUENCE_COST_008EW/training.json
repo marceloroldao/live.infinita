@@ -1,0 +1,325 @@
+{
+  "failures": 0,
+  "opening_z": -130.0,
+  "runs": [
+    {
+      "arm": "training_perception_0",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 234.325232431293,
+      "recommendation": {},
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 70.3,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {},
+        "enabled": false,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {},
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 0,
+        "pending_contacts": 0,
+        "ram_records": 0,
+        "recovered_records": 0
+      },
+      "ticks": 703
+    },
+    {
+      "arm": "training_perception_1",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 234.325232431293,
+      "recommendation": {},
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 70.3,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {},
+        "enabled": false,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {},
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 0,
+        "pending_contacts": 0,
+        "ram_records": 0,
+        "recovered_records": 0
+      },
+      "ticks": 703
+    },
+    {
+      "arm": "training_perception_2",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 234.325232431293,
+      "recommendation": {},
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 70.3,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {},
+        "enabled": false,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {},
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 0,
+        "pending_contacts": 0,
+        "ram_records": 0,
+        "recovered_records": 0
+      },
+      "ticks": 703
+    },
+    {
+      "arm": "training_perception_3",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 234.325232431293,
+      "recommendation": {},
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 70.3,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {},
+        "enabled": false,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {},
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 0,
+        "pending_contacts": 0,
+        "ram_records": 0,
+        "recovered_records": 0
+      },
+      "ticks": 703
+    },
+    {
+      "arm": "training_memory_0",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 234.325232431293,
+      "recommendation": {},
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 70.3,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {
+          "insufficient_samples": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "reason": "insufficient_samples",
+          "recommendation": {}
+        },
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 1,
+        "recovered_records": 0
+      },
+      "ticks": 703
+    },
+    {
+      "arm": "training_memory_1",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 106.000054493546,
+      "recommendation": {
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": -1,
+        "source": "pattern-exploration"
+      },
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": -1,
+      "simulated_seconds": 31.8,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {
+          "insufficient_samples": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 1,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 0
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 1,
+              "score": 60.3333329906067
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "reason": "insufficient_samples",
+          "recommendation": {}
+        },
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 2,
+        "recovered_records": 0
+      },
+      "ticks": 318
+    },
+    {
+      "arm": "training_memory_2",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 234.325232431293,
+      "recommendation": {
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": 1,
+        "source": "pattern-exploration"
+      },
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 70.3,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {
+          "insufficient_samples": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 1,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 1,
+              "score": 17.6666670342286
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 1,
+              "score": 60.3333329906067
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "reason": "insufficient_samples",
+          "recommendation": {}
+        },
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 3,
+        "recovered_records": 0
+      },
+      "ticks": 703
+    },
+    {
+      "arm": "training_memory_3",
+      "arrived": true,
+      "collisions": 0,
+      "distance_m": 106.000054493546,
+      "recommendation": {
+        "contains_prediction": true,
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+        "observation_ids": [],
+        "side": -1,
+        "source": "pattern-exploration"
+      },
+      "rescued": false,
+      "route_plan_builds": 0,
+      "side": -1,
+      "simulated_seconds": 31.8,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {
+          "insufficient_samples": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 1,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 1,
+              "score": 17.6666670342286
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [],
+              "samples": 2,
+              "score": 60.3333329906067
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|native-pattern-008eh|local-clear-v1:255:254",
+          "reason": "insufficient_samples",
+          "recommendation": {}
+        },
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 4,
+        "recovered_records": 0
+      },
+      "ticks": 318
+    }
+  ]
+}
