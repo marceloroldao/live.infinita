@@ -1,0 +1,12 @@
+{
+  "checked_at_utc": "2026-10-09T20:55:11.591085+00:00",
+  "live_source_commit": "36b4087",
+  "rollout_completed": true,
+  "animal_approach_enabled": true,
+  "script_errors_since_restart": 0,
+  "observed_approach_events": 0,
+  "approach_results": [],
+  "capture_implemented": false,
+  "learned_hunting": false,
+  "renderer_restarted_by_agent": false
+}
