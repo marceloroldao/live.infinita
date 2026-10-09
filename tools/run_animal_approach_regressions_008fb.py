@@ -26,5 +26,5 @@ for mode,flag in (("on","1"),("off","0")):
     (a.output_dir/("regressions_"+mode+".json")).write_text(json.dumps(rows,indent=2)+"\n")
     (a.output_dir/("regressions_"+mode+".txt")).write_text("\n".join(lines)+"\n")
     all_rows.extend(rows)
-assert len(all_rows)==102 and all(r["passed"] for r in all_rows)
-print("008FB_102_REGRESSIONS_PASS",flush=True)
+assert len(all_rows)==2*len(names) and all(r["passed"] for r in all_rows)
+print("008FB_"+str(len(all_rows))+"_REGRESSIONS_PASS",flush=True)

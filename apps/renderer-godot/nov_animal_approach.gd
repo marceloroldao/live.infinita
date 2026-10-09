@@ -4,6 +4,9 @@ const MAX_MS := 20000
 const SIGHT_MS := 1500
 const COOLDOWN_MS := 60000
 const APPROACHED_M := 6.5
+var _history = preload("res://nov_animal_approach_history.gd").new()
+var _boot_wait := false
+var _restart_cooldown := false
 var enabled := false
 var _world := ""
 var _last_ms := -1
@@ -15,7 +18,18 @@ var _active: Dictionary = {}
 var _results: Array = []
 var _selection: Dictionary = {}
 var _distance := 0.0
+var _last_remaining := 0.0
 var _previous := Vector3(INF,INF,INF)
+func configure(path: String) -> void:
+    _history.configure(path)
+    if not _history.ready:enabled=false;return
+    _results=_history.records.slice(maxi(0,_history.records.size()-16)).duplicate(true)
+    if not _results.is_empty():
+        var latest: Dictionary=_results.back()
+        _world=latest.world_id
+        _restart_cooldown=latest.ended_ms==null
+        if not _restart_cooldown:
+            _last_ms=int(latest.ended_ms);_last_end=_last_ms;_boot_wait=true
 func observe(value: Dictionary) -> void:
     if not enabled or value.get("schema")!="live-infinita-nov-visual-observation/v1" or value.get("source")!="local_physics_eye_sensor" or value.get("observer_entity_id")!="nov" or value.get("world_write_authority")!=false or value.get("absence_claim")!=false:return
     var stamp=value.get("logical_time_ms")
@@ -47,8 +61,14 @@ func finish(reason: String, now: int = -1) -> void:
     row["absence_claim"]=false
     row["world_write_authority"]=false
     row["approach_confirmed"]=reason=="approached"
-    _results.append(row)
-    while _results.size()>16:_results.pop_front()
+    var censored: bool=not reason in ["approached","contact_lost","no_progress","budget_exhausted"]
+    var fact: Dictionary={"id":row.id,"world_id":_world,"entity_id":row.entity_id,
+        "started_ms":row.started_ms,"ended_ms":row.ended_ms,"result":reason,"distance_m":_distance,
+        "initial_observed_remaining_m":row.initial_observed_remaining_m,"final_observed_remaining_m":_last_remaining,"revision":row.revision,
+        "censored":censored,"learning_eligible":not censored and _distance>0,
+        "capture":false,"contains_prediction":false,"absence_claim":false,"world_write_authority":false}
+    if not _history.record(fact):enabled=false
+    _results=_history.records.slice(maxi(0,_history.records.size()-16)).duplicate(true)
     print("NOV_ANIMAL_APPROACH_END "+JSON.stringify(row))
     _last_end=int(row.ended_ms);_active.clear();_previous=Vector3(INF,INF,INF)
 func _fresh(row: Dictionary, now: int) -> bool:
@@ -58,6 +78,10 @@ func choose(current: Vector3, world: String, now: int, resolve: Callable, headin
     if not enabled or not current.is_finite() or world.is_empty() or now<0 or not resolve.is_valid():return {}
     if world!=_world:
         finish("world_changed",now);_seen.clear();_world=world;_last_ms=-1;_last_end=now-COOLDOWN_MS
+    if _restart_cooldown:
+        _last_end=now;_restart_cooldown=false
+    if _boot_wait and now<_last_ms:return {}
+    _boot_wait=false
     if now<_last_ms:
         finish("clock_rewind");_seen.clear();return {}
     _last_ms=now
@@ -82,11 +106,15 @@ func choose(current: Vector3, world: String, now: int, resolve: Callable, headin
         _active={"id":world+":animal-approach:"+_session+":"+str(_serial),"entity_id":best,"arm":"visible",
             "phase":"approach","started_ms":now,"deadline_ms":now+MAX_MS,"wall_started":Time.get_ticks_msec(),
             "scan_started_ms":0,"heading":heading,"base_heading":heading,"revision":0,"updated_ms":now-1000,
-            "best_remaining":remaining,"progress_ms":now,"source":"local_physics_eye_sensor","contains_prediction":true}
+            "best_remaining":remaining,"initial_observed_remaining_m":remaining,"world_id":world,"progress_ms":now,"source":"local_physics_eye_sensor","contains_prediction":true}
+        _last_remaining=remaining
+        if not _history.begin(_active):
+            enabled=false;_active.clear();return {}
         print("NOV_ANIMAL_APPROACH_START "+JSON.stringify(_active))
     var seen: Dictionary=_seen[_active.entity_id]
     var point: Vector3=seen.point
     var remaining:=Vector2(current.x,current.z).distance_to(Vector2(point.x,point.z))
+    _last_remaining=remaining
     if remaining<=APPROACHED_M and now-int(seen.stamp)<=300 and Time.get_ticks_msec()-int(seen.received)<=500:
         finish("approached");return {}
     if remaining<float(_active.best_remaining)-0.75:_active.best_remaining=remaining;_active.progress_ms=now
@@ -105,4 +133,4 @@ func choose(current: Vector3, world: String, now: int, resolve: Callable, headin
     return _selection.duplicate(true)
 func status() -> Dictionary:
     return {"enabled":enabled,"active":not _selection.is_empty(),"intent":_selection.duplicate(true),
-        "results":_results.duplicate(true),"capture":false,"learned_hunting":false}
+        "results":_results.duplicate(true),"history":_history.status(),"capture":false,"learned_hunting":false}

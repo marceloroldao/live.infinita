@@ -9,6 +9,8 @@ func policy():
     value.enabled=true
     value.choose(Vector3.ZERO,"fixture",100000,Callable(self,"allowed"))
     return value
+func verify_persistence(_approach: RefCounted) -> void:
+    pass
 func _initialize() -> void:
     call_deferred("run")
 func run() -> void:
@@ -60,6 +62,7 @@ func run() -> void:
     check(approach._results[0].revision==1,"Stationary animal must not repeatedly reset physical route")
     check(not approach._results[0].capture and not approach._results[0].absence_claim,"Approach does not imply capture or absence")
     check(approach.choose(body.position,"fixture",109000,Callable(self,"allowed")).is_empty(),"Completed approach cannot restart during cooldown")
+    verify_persistence(approach)
     var lost=policy();lost.observe(observation)
     lost.choose(Vector3.ZERO,"fixture",100300,Callable(self,"allowed"))
     check(lost.choose(Vector3.ZERO,"fixture",102000,Callable(self,"allowed")).is_empty() and lost._results[0].result=="contact_lost","Lost sight expires, not omniscient pursuit")

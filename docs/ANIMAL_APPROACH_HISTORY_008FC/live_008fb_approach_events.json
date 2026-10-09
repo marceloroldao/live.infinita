@@ -1,0 +1,205 @@
+{
+  "observed_at_utc": "2026-10-09T22:02:12.232187+00:00",
+  "source": "native renderer journal since 2026-10-09 20:53:37 UTC",
+  "events": [
+    {
+      "event": "NOV_ANIMAL_APPROACH_START",
+      "value": {
+        "arm": "visible",
+        "base_heading": 0.855047507945199,
+        "best_remaining": 23.7035350799561,
+        "contains_prediction": true,
+        "deadline_ms": 800628500,
+        "entity_id": "nov-live-autonomous-001:rabbit:2",
+        "heading": 0.855047507945199,
+        "id": "nov-live-autonomous-001:animal-approach:272288d8434547dd:1",
+        "phase": "approach",
+        "progress_ms": 800608500,
+        "revision": 0,
+        "scan_started_ms": 0,
+        "source": "local_physics_eye_sensor",
+        "started_ms": 800608500,
+        "updated_ms": 800607500,
+        "wall_started": 163454
+      }
+    },
+    {
+      "event": "NOV_ANIMAL_APPROACH_END",
+      "value": {
+        "absence_claim": false,
+        "approach_confirmed": true,
+        "arm": "visible",
+        "base_heading": 0.855047507945199,
+        "best_remaining": 7.00318193435669,
+        "capture": false,
+        "contains_prediction": false,
+        "deadline_ms": 800628500,
+        "distance_m": 17.5174115896225,
+        "ended_ms": 800612500,
+        "entity_id": "nov-live-autonomous-001:rabbit:2",
+        "goal": [
+          -355.460998535156,
+          2.16980314254761,
+          -21.4125518798828
+        ],
+        "heading": 0.855047507945199,
+        "id": "nov-live-autonomous-001:animal-approach:272288d8434547dd:1",
+        "observed_point": [
+          -354.389678955078,
+          2.80998015403748,
+          -16.5286731719971
+        ],
+        "phase": "approach",
+        "progress_ms": 800612500,
+        "result": "approached",
+        "revision": 1,
+        "scan_started_ms": 0,
+        "source": "local_physics_eye_sensor",
+        "started_ms": 800608500,
+        "updated_ms": 800608500,
+        "wall_started": 163454,
+        "world_write_authority": false
+      }
+    },
+    {
+      "event": "NOV_ANIMAL_APPROACH_START",
+      "value": {
+        "arm": "visible",
+        "base_heading": 0.228289969481976,
+        "best_remaining": 11.024302482605,
+        "contains_prediction": true,
+        "deadline_ms": 801982500,
+        "entity_id": "nov-live-autonomous-001:rabbit:2",
+        "heading": 0.228289969481976,
+        "id": "nov-live-autonomous-001:animal-approach:272288d8434547dd:2",
+        "phase": "approach",
+        "progress_ms": 801962500,
+        "revision": 0,
+        "scan_started_ms": 0,
+        "source": "local_physics_eye_sensor",
+        "started_ms": 801962500,
+        "updated_ms": 801961500,
+        "wall_started": 1994061
+      }
+    },
+    {
+      "event": "NOV_ANIMAL_APPROACH_END",
+      "value": {
+        "absence_claim": false,
+        "approach_confirmed": true,
+        "arm": "visible",
+        "base_heading": 0.228289969481976,
+        "best_remaining": 7.32136106491089,
+        "capture": false,
+        "contains_prediction": false,
+        "deadline_ms": 801982500,
+        "distance_m": 4.79997602105141,
+        "ended_ms": 801964216,
+        "entity_id": "nov-live-autonomous-001:rabbit:2",
+        "goal": [
+          -351.626434326172,
+          2.11552834510803,
+          -20.6957378387451
+        ],
+        "heading": 0.228289969481976,
+        "id": "nov-live-autonomous-001:animal-approach:272288d8434547dd:2",
+        "observed_point": [
+          -354.389678955078,
+          2.80998015403748,
+          -16.5286731719971
+        ],
+        "phase": "approach",
+        "progress_ms": 801963500,
+        "result": "approached",
+        "revision": 1,
+        "scan_started_ms": 0,
+        "source": "local_physics_eye_sensor",
+        "started_ms": 801962500,
+        "updated_ms": 801962500,
+        "wall_started": 1994061,
+        "world_write_authority": false
+      }
+    }
+  ],
+  "published_approach": {
+    "active": false,
+    "capture": false,
+    "enabled": true,
+    "intent": {},
+    "learned_hunting": false,
+    "results": [
+      {
+        "absence_claim": false,
+        "approach_confirmed": true,
+        "arm": "visible",
+        "base_heading": 0.855047507945199,
+        "best_remaining": 7.00318193435669,
+        "capture": false,
+        "contains_prediction": false,
+        "deadline_ms": 800628500,
+        "distance_m": 17.5174115896225,
+        "ended_ms": 800612500,
+        "entity_id": "nov-live-autonomous-001:rabbit:2",
+        "goal": [
+          -355.460998535156,
+          2.16980314254761,
+          -21.4125518798828
+        ],
+        "heading": 0.855047507945199,
+        "id": "nov-live-autonomous-001:animal-approach:272288d8434547dd:1",
+        "observed_point": [
+          -354.389678955078,
+          2.80998015403748,
+          -16.5286731719971
+        ],
+        "phase": "approach",
+        "progress_ms": 800612500,
+        "result": "approached",
+        "revision": 1,
+        "scan_started_ms": 0,
+        "source": "local_physics_eye_sensor",
+        "started_ms": 800608500,
+        "updated_ms": 800608500,
+        "wall_started": 163454,
+        "world_write_authority": false
+      },
+      {
+        "absence_claim": false,
+        "approach_confirmed": true,
+        "arm": "visible",
+        "base_heading": 0.228289969481976,
+        "best_remaining": 7.32136106491089,
+        "capture": false,
+        "contains_prediction": false,
+        "deadline_ms": 801982500,
+        "distance_m": 4.79997602105141,
+        "ended_ms": 801964216,
+        "entity_id": "nov-live-autonomous-001:rabbit:2",
+        "goal": [
+          -351.626434326172,
+          2.11552834510803,
+          -20.6957378387451
+        ],
+        "heading": 0.228289969481976,
+        "id": "nov-live-autonomous-001:animal-approach:272288d8434547dd:2",
+        "observed_point": [
+          -354.389678955078,
+          2.80998015403748,
+          -16.5286731719971
+        ],
+        "phase": "approach",
+        "progress_ms": 801963500,
+        "result": "approached",
+        "revision": 1,
+        "scan_started_ms": 0,
+        "source": "local_physics_eye_sensor",
+        "started_ms": 801962500,
+        "updated_ms": 801962500,
+        "wall_started": 1994061,
+        "world_write_authority": false
+      }
+    ]
+  },
+  "imported_into_new_history": false,
+  "core_ingestion": false
+}
