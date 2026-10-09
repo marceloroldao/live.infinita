@@ -1,0 +1,35 @@
+{
+  "source_commit": "6f4416b",
+  "checked_at_utc": "2026-10-09T18:02:08.743765+00:00",
+  "journal_window_start_utc": "2026-10-09T17:58:34Z",
+  "renderer": {
+    "ActiveState": "active",
+    "NRestarts": "0",
+    "ExecMainStartTimestamp": "Fri 2026-10-09 17:58:34 UTC"
+  },
+  "bridge": {
+    "Result": "success",
+    "ExecMainStatus": "0"
+  },
+  "native_flags": {
+    "enabled": true,
+    "failure_preference_enabled": true,
+    "cost_shift_enabled": true,
+    "exit_direction_enabled": true,
+    "local_turn_continuity_enabled": true
+  },
+  "status_observed_at_unix": 1791568928.36164,
+  "ram_records": 512,
+  "recovered_records": 512,
+  "session_core_changed_initial_decisions": 2,
+  "session_observed_outcomes": 11,
+  "decision_reasons_in_window": {
+    "insufficient_samples": 4,
+    "insufficient_margin": 3,
+    "preferred_side": 4
+  },
+  "new_rule_triggered_in_window": false,
+  "godot_script_errors": 0,
+  "alsa_startup_fallback_to_dummy": true,
+  "production_net_benefit_demonstrated": false
+}
