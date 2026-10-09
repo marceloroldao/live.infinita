@@ -1,0 +1,35 @@
+{
+  "actual_traversals": 54,
+  "arrivals": 36,
+  "real_watchdog_failed_journeys": 18,
+  "time_limit_censored_journeys": 0,
+  "collisions": 0,
+  "global_route_builds": 0,
+  "distinct_stored_real_facts": 24,
+  "cases": [
+    {
+      "geometry": "corner",
+      "actual_traversals": 18,
+      "recovered_facts_match_native": 8,
+      "initial_reason": "preferred_side",
+      "failure_penalty_checked_on_real_recovered_facts": false,
+      "all_costs_recomputed": true
+    },
+    {
+      "geometry": "pocket",
+      "actual_traversals": 18,
+      "recovered_facts_match_native": 8,
+      "initial_reason": "insufficient_margin",
+      "failure_penalty_checked_on_real_recovered_facts": false,
+      "all_costs_recomputed": true
+    },
+    {
+      "geometry": "closed",
+      "actual_traversals": 18,
+      "recovered_facts_match_native": 8,
+      "initial_reason": "side_without_success",
+      "failure_penalty_checked_on_real_recovered_facts": true,
+      "all_costs_recomputed": true
+    }
+  ]
+}

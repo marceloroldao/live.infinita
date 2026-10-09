@@ -1,0 +1,162 @@
+{
+  "all_attempts_included": true,
+  "failures": 0,
+  "geometry": "pocket",
+  "runs": [
+    {
+      "arm": "cold_perception",
+      "arrived": true,
+      "collisions": 0,
+      "compute_wall_ms": 1077,
+      "distance_m": 190.800065845251,
+      "facts": [],
+      "final_position": [
+        -68.0112457275391,
+        -0.0550408959388733
+      ],
+      "initial_evaluation": {},
+      "recommendation": {},
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 57.2,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {},
+        "enabled": false,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {},
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 0,
+        "pending_contacts": 0,
+        "ram_records": 0,
+        "recovered_records": 0
+      },
+      "termination": "arrived",
+      "ticks": 572,
+      "watchdog_reason": "",
+      "watchdog_stop": false
+    },
+    {
+      "arm": "cold_memory",
+      "arrived": true,
+      "collisions": 0,
+      "compute_wall_ms": 1014,
+      "distance_m": 190.800065845251,
+      "facts": [
+        {
+          "attempt_id": "c1126ddd2db1eb340827036ff2764c98:cold_memory:1",
+          "completion_basis": "executed_exit",
+          "contains_prediction": false,
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|obstacle-failure-008ex-pocket|local-clear-v1:255:254",
+          "distance_m": 135.000036925077,
+          "ended_at_unix": 1791548622.42136,
+          "exit_progress_m": 1.0,
+          "exploration": false,
+          "initial_remaining_m": 15.0,
+          "observer": "nov",
+          "outcome": "contour_completed",
+          "physical_attempt": true,
+          "profile": "capsule044-height18-lookahead3-contour64-localexit-v3",
+          "side": 1,
+          "world_id": "obstacle-failure-008ex-pocket"
+        }
+      ],
+      "final_position": [
+        -68.0112457275391,
+        -0.0550408959388733
+      ],
+      "initial_evaluation": {
+        "alternatives": {
+          "-1": {
+            "errors": 0,
+            "observation_ids": [
+              "structural-event:84a2cf8ead73dbe0aa886949fcb062eb8f76b20c",
+              "structural-event:9b8fe6778f2e687c2a6797e3b5d0c87dc652fd7a"
+            ],
+            "samples": 2,
+            "score": 45.000012298425
+          },
+          "1": {
+            "errors": 0,
+            "observation_ids": [
+              "structural-event:bde4a57ae342054f15b828a508ccaa69ab1b6440",
+              "structural-event:2b03671f69c29f0745672bba0b4fd159cd7e99a0",
+              "structural-event:cb26c2179e7862399ce861cc01bf4028d9935a28",
+              "structural-event:d723dba7d25a3853b9e0c71f661f5da20b77489b",
+              "structural-event:cae004f1a55465a64a283f06ed9fe1a469d946bb",
+              "structural-event:1d6e1021057781a48077d37816de9ae07ff1787d"
+            ],
+            "samples": 6,
+            "score": 45.000012308359
+          }
+        },
+        "context": "capsule044-height18-lookahead3-contour64-localexit-v3|obstacle-failure-008ex-pocket|local-clear-v1:255:254",
+        "reason": "insufficient_margin",
+        "recommendation": {},
+        "required_gap": 9.0000024616718,
+        "score_gap": 9.93400561810631e-09
+      },
+      "recommendation": {},
+      "route_plan_builds": 0,
+      "side": 1,
+      "simulated_seconds": 57.2,
+      "status": {
+        "changed_initial_decisions": 0,
+        "core_changed_initial_decisions": 0,
+        "cost_shift_enabled": true,
+        "decision_reasons": {
+          "insufficient_margin": 1
+        },
+        "enabled": true,
+        "exclusions": {},
+        "exit_direction_enabled": true,
+        "exploration_decisions": 0,
+        "last_evaluation": {
+          "alternatives": {
+            "-1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:84a2cf8ead73dbe0aa886949fcb062eb8f76b20c",
+                "structural-event:9b8fe6778f2e687c2a6797e3b5d0c87dc652fd7a"
+              ],
+              "samples": 2,
+              "score": 45.000012298425
+            },
+            "1": {
+              "errors": 0,
+              "observation_ids": [
+                "structural-event:bde4a57ae342054f15b828a508ccaa69ab1b6440",
+                "structural-event:2b03671f69c29f0745672bba0b4fd159cd7e99a0",
+                "structural-event:cb26c2179e7862399ce861cc01bf4028d9935a28",
+                "structural-event:d723dba7d25a3853b9e0c71f661f5da20b77489b",
+                "structural-event:cae004f1a55465a64a283f06ed9fe1a469d946bb",
+                "structural-event:1d6e1021057781a48077d37816de9ae07ff1787d"
+              ],
+              "samples": 6,
+              "score": 45.000012308359
+            }
+          },
+          "context": "capsule044-height18-lookahead3-contour64-localexit-v3|obstacle-failure-008ex-pocket|local-clear-v1:255:254",
+          "reason": "insufficient_margin",
+          "recommendation": {},
+          "required_gap": 9.0000024616718,
+          "score_gap": 9.93400561810631e-09
+        },
+        "local_turn_continuity_enabled": true,
+        "observed_outcomes": 1,
+        "pending_contacts": 0,
+        "ram_records": 1,
+        "recovered_records": 8
+      },
+      "termination": "arrived",
+      "ticks": 572,
+      "watchdog_reason": "",
+      "watchdog_stop": false
+    }
+  ],
+  "world_id": "obstacle-failure-008ex-pocket"
+}
