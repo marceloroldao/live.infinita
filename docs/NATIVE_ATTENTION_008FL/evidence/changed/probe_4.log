@@ -1,0 +1,3 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+008FL_PHYSICAL {"candidates":[{"context":{"blocked_ahead":false,"profile":"capsule044-height18-sweep4-native-contour-v1","sample_logical_ms":448000,"sweep_m":4.0},"distance_m":16.0,"entity_id":"approach-native-attention-008fl:rabbit:20"},{"context":{"blocked_ahead":false,"profile":"capsule044-height18-sweep4-native-contour-v1","sample_logical_ms":448000,"sweep_m":4.0},"distance_m":22.0227146148682,"entity_id":"approach-native-attention-008fl:rabbit:21"}],"fixture":{"animal_serial":20,"far_m":22.0,"near_m":16.0,"speed_m_s":4.0,"wall_at_m":12.5,"wall_length_m":80.0},"probe":true}

@@ -1,0 +1,34 @@
+{
+  "context-core": {
+    "acked_this_poll": 0,
+    "cached_recovered": 7,
+    "capture": false,
+    "confirmed_total": 7,
+    "decision_use": false,
+    "eligible_in_source": 7,
+    "generated_at_unix": 1791655506.2338696,
+    "profile": "capsule044-height18-sweep4-native-contour-v1",
+    "recovered_this_poll": 1,
+    "schema": "live-infinita-native-contextual-approach-core-status/v1",
+    "source": "memoria.ia-local-structural-api",
+    "world_id": "nov-live-autonomous-001",
+    "world_write_authority": false
+  },
+  "approach-core": {
+    "acked_this_poll": 0,
+    "cached_recovered": 27,
+    "capture": false,
+    "censored_in_source": 0,
+    "confirmed_total": 27,
+    "decision_use": false,
+    "eligible_in_source": 27,
+    "generated_at_unix": 1791655508.5956004,
+    "learned_hunting": false,
+    "pending_intention": false,
+    "recovered_this_poll": 1,
+    "schema": "live-infinita-animal-approach-core-status/v1",
+    "source": "memoria.ia-local-structural-api",
+    "world_id": "nov-live-autonomous-001",
+    "world_write_authority": false
+  }
+}
