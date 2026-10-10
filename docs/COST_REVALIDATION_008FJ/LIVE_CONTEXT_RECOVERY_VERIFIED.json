@@ -1,0 +1,67 @@
+{
+  "verified_at_unix": 1791653011.137694,
+  "context_history": {
+    "collection_enabled": true,
+    "decision_use": false,
+    "last_error": "",
+    "persistent": true,
+    "profile": "capsule044-height18-sweep4-native-contour-v1",
+    "storage_ready": true,
+    "stored_attempts": 2
+  },
+  "context_core": {
+    "acked_this_poll": 0,
+    "cached_recovered": 2,
+    "capture": false,
+    "confirmed_total": 2,
+    "decision_use": false,
+    "eligible_in_source": 2,
+    "generated_at_unix": 1791653004.8502078,
+    "profile": "capsule044-height18-sweep4-native-contour-v1",
+    "recovered_this_poll": 0,
+    "schema": "live-infinita-native-contextual-approach-core-status/v1",
+    "source": "memoria.ia-local-structural-api",
+    "world_id": "nov-live-autonomous-001",
+    "world_write_authority": false
+  },
+  "latest_native_approach_results": [
+    {
+      "absence_claim": false,
+      "capture": false,
+      "censored": false,
+      "contains_prediction": false,
+      "distance_m": 9.77183872461319,
+      "ended_ms": 857848332,
+      "entity_id": "nov-live-autonomous-001:rabbit:2",
+      "final_observed_remaining_m": 5.88295364379883,
+      "id": "nov-live-autonomous-001:animal-approach:b68bdcd17939b297:1",
+      "initial_observed_remaining_m": 15.6547927856445,
+      "learning_eligible": true,
+      "result": "approached",
+      "revision": 1,
+      "started_ms": 857845116,
+      "world_id": "nov-live-autonomous-001",
+      "world_write_authority": false
+    },
+    {
+      "absence_claim": false,
+      "capture": false,
+      "censored": false,
+      "contains_prediction": false,
+      "distance_m": 16.00006313622,
+      "ended_ms": 859042500,
+      "entity_id": "nov-live-autonomous-001:rabbit:2",
+      "final_observed_remaining_m": 6.42473745346069,
+      "id": "nov-live-autonomous-001:animal-approach:b68bdcd17939b297:2",
+      "initial_observed_remaining_m": 22.3515701293945,
+      "learning_eligible": true,
+      "result": "approached",
+      "revision": 1,
+      "started_ms": 859041119,
+      "world_id": "nov-live-autonomous-001",
+      "world_write_authority": false
+    }
+  ],
+  "experimental_policy_installed": false,
+  "production_changed_by_experiment": false
+}
