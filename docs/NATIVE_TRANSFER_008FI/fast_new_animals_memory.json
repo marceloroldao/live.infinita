@@ -1,0 +1,86 @@
+{
+  "candidates": [
+    {
+      "context": {
+        "blocked_ahead": false,
+        "profile": "capsule044-height18-sweep4-native-contour-v1",
+        "sample_logical_ms": 350000,
+        "sweep_m": 4.0
+      },
+      "distance_m": 17.0,
+      "entity_id": "approach-native-transfer-008fi:rabbit:40"
+    },
+    {
+      "context": {
+        "blocked_ahead": false,
+        "profile": "capsule044-height18-sweep4-native-contour-v1",
+        "sample_logical_ms": 350000,
+        "sweep_m": 4.0
+      },
+      "distance_m": 23.021728515625,
+      "entity_id": "approach-native-transfer-008fi:rabbit:41"
+    }
+  ],
+  "contacts": 0,
+  "context_fact": {
+    "approach": {
+      "absence_claim": false,
+      "capture": false,
+      "censored": false,
+      "contains_prediction": false,
+      "distance_m": 16.5999973416328,
+      "ended_ms": 353300,
+      "entity_id": "approach-native-transfer-008fi:rabbit:41",
+      "final_observed_remaining_m": 6.42173147201538,
+      "id": "approach-native-transfer-008fi:animal-approach:6466b7621b20f3d9:1",
+      "initial_observed_remaining_m": 23.021728515625,
+      "learning_eligible": true,
+      "result": "approached",
+      "revision": 1,
+      "started_ms": 350000,
+      "world_id": "approach-native-transfer-008fi",
+      "world_write_authority": false
+    },
+    "contacts": 0,
+    "context": {
+      "blocked_ahead": false,
+      "profile": "capsule044-height18-sweep4-native-contour-v1",
+      "sample_logical_ms": 350000,
+      "sweep_m": 4.0
+    }
+  },
+  "distance_m": 16.5999973416328,
+  "fact": {
+    "absence_claim": false,
+    "capture": false,
+    "censored": false,
+    "contains_prediction": false,
+    "distance_m": 16.5999973416328,
+    "ended_ms": 353300,
+    "entity_id": "approach-native-transfer-008fi:rabbit:41",
+    "final_observed_remaining_m": 6.42173147201538,
+    "id": "approach-native-transfer-008fi:animal-approach:6466b7621b20f3d9:1",
+    "initial_observed_remaining_m": 23.021728515625,
+    "learning_eligible": true,
+    "result": "approached",
+    "revision": 1,
+    "started_ms": 350000,
+    "world_id": "approach-native-transfer-008fi",
+    "world_write_authority": false
+  },
+  "fixture": {
+    "animal_serial": 40,
+    "far_m": 23.0,
+    "near_m": 17.0,
+    "speed_m_s": 6.0,
+    "wall_at_m": 6.0,
+    "wall_length_m": 100.0
+  },
+  "motion_model": "native local motion with anticipation, collision guards and observed contour on flat terrain",
+  "navigation_status": "perception",
+  "probe": false,
+  "reverse": false,
+  "route_plan_builds": 0,
+  "world_write_authority": false,
+  "label": "fast_new_animals_memory"
+}
