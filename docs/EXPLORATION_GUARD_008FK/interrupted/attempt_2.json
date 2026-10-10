@@ -1,0 +1,20 @@
+{
+  "actual_steps": 5,
+  "partial_distance_m": 1.79999995231628,
+  "pending": {
+    "absence_claim": false,
+    "capture": false,
+    "censored": true,
+    "contains_prediction": false,
+    "distance_m": null,
+    "ended_ms": null,
+    "entity_id": "approach-native-transfer-008fi:rabbit:20",
+    "id": "approach-native-transfer-008fi:animal-approach:19ac78b098c27776:1",
+    "initial_observed_remaining_m": 16.0,
+    "learning_eligible": false,
+    "result": "renderer_restart",
+    "started_ms": 424000,
+    "world_id": "approach-native-transfer-008fi",
+    "world_write_authority": false
+  }
+}

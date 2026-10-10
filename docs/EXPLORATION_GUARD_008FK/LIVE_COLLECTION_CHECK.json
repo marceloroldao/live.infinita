@@ -1,0 +1,29 @@
+{
+  "verified_at_unix": 1791653836.1325674,
+  "context_history": {
+    "collection_enabled": true,
+    "decision_use": false,
+    "last_error": "",
+    "persistent": true,
+    "profile": "capsule044-height18-sweep4-native-contour-v1",
+    "storage_ready": true,
+    "stored_attempts": 3
+  },
+  "context_core": {
+    "acked_this_poll": 0,
+    "cached_recovered": 3,
+    "capture": false,
+    "confirmed_total": 3,
+    "decision_use": false,
+    "eligible_in_source": 3,
+    "generated_at_unix": 1791653824.9437568,
+    "profile": "capsule044-height18-sweep4-native-contour-v1",
+    "recovered_this_poll": 1,
+    "schema": "live-infinita-native-contextual-approach-core-status/v1",
+    "source": "memoria.ia-local-structural-api",
+    "world_id": "nov-live-autonomous-001",
+    "world_write_authority": false
+  },
+  "production_changed_by_experiment": false,
+  "exploration_guard_installed": false
+}
