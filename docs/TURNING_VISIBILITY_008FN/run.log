@@ -1,0 +1,9 @@
+008FN_PAIR brief 0 recovered-contextual-evidence approached
+008FN_PAIR brief 1 recovered-contextual-evidence approached
+008FN_PAIR brief 2 recovered-contextual-evidence approached
+008FN_PAIR brief 3 recovered-contextual-evidence approached
+008FN_PAIR prolonged 0 recovered-contextual-evidence contact_lost
+008FN_PAIR prolonged 1 recovered-failure-reassessment contact_lost
+008FN_PAIR prolonged 2 recovered-failure-reassessment contact_lost
+008FN_PAIR prolonged 3 recovered-failure-reassessment contact_lost
+008FN_COST_REVALIDATION_PASS traversals=24 actual_facts=16 cold_recoveries=16

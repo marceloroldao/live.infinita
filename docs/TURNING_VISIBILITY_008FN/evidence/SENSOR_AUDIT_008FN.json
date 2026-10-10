@@ -1,0 +1,149 @@
+{
+  "schema": "live-infinita-sensor-transition-audit/v1",
+  "cases": {
+    "brief": [
+      {
+        "entity_id": "approach-turning-visibility-008fn:rabbit:21",
+        "result": "approached",
+        "transitions": [
+          {
+            "relative_ms": 0,
+            "visible": true
+          },
+          {
+            "relative_ms": 3000,
+            "visible": false
+          },
+          {
+            "relative_ms": 3600,
+            "visible": true
+          }
+        ],
+        "decision_source": "recovered-contextual-evidence"
+      },
+      {
+        "entity_id": "approach-turning-visibility-008fn:rabbit:21",
+        "result": "approached",
+        "transitions": [
+          {
+            "relative_ms": 0,
+            "visible": true
+          },
+          {
+            "relative_ms": 3000,
+            "visible": false
+          },
+          {
+            "relative_ms": 3600,
+            "visible": true
+          }
+        ],
+        "decision_source": "recovered-contextual-evidence"
+      },
+      {
+        "entity_id": "approach-turning-visibility-008fn:rabbit:21",
+        "result": "approached",
+        "transitions": [
+          {
+            "relative_ms": 0,
+            "visible": true
+          },
+          {
+            "relative_ms": 3000,
+            "visible": false
+          },
+          {
+            "relative_ms": 3600,
+            "visible": true
+          }
+        ],
+        "decision_source": "recovered-contextual-evidence"
+      },
+      {
+        "entity_id": "approach-turning-visibility-008fn:rabbit:21",
+        "result": "approached",
+        "transitions": [
+          {
+            "relative_ms": 0,
+            "visible": true
+          },
+          {
+            "relative_ms": 3000,
+            "visible": false
+          },
+          {
+            "relative_ms": 3600,
+            "visible": true
+          }
+        ],
+        "decision_source": "recovered-contextual-evidence"
+      }
+    ],
+    "prolonged": [
+      {
+        "entity_id": "approach-turning-visibility-008fn:rabbit:21",
+        "result": "contact_lost",
+        "transitions": [
+          {
+            "relative_ms": 0,
+            "visible": true
+          },
+          {
+            "relative_ms": 3000,
+            "visible": false
+          }
+        ],
+        "decision_source": "recovered-contextual-evidence"
+      },
+      {
+        "entity_id": "approach-turning-visibility-008fn:rabbit:20",
+        "result": "contact_lost",
+        "transitions": [
+          {
+            "relative_ms": 0,
+            "visible": true
+          },
+          {
+            "relative_ms": 2100,
+            "visible": false
+          }
+        ],
+        "decision_source": "recovered-failure-reassessment"
+      },
+      {
+        "entity_id": "approach-turning-visibility-008fn:rabbit:21",
+        "result": "contact_lost",
+        "transitions": [
+          {
+            "relative_ms": 0,
+            "visible": true
+          },
+          {
+            "relative_ms": 3000,
+            "visible": false
+          }
+        ],
+        "decision_source": "recovered-failure-reassessment"
+      },
+      {
+        "entity_id": "approach-turning-visibility-008fn:rabbit:20",
+        "result": "contact_lost",
+        "transitions": [
+          {
+            "relative_ms": 0,
+            "visible": true
+          },
+          {
+            "relative_ms": 2100,
+            "visible": false
+          }
+        ],
+        "decision_source": "recovered-failure-reassessment"
+      }
+    ]
+  },
+  "brief_reacquisitions": 4,
+  "fresh_confirmed_approaches": 4,
+  "prolonged_first_stopped_before_screen_cleared": true,
+  "production_changed": false
+}
