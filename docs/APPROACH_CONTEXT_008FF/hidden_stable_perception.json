@@ -1,0 +1,75 @@
+{
+  "candidates": [
+    {
+      "context": {
+        "blocked_ahead": false,
+        "profile": "capsule044-height18-sweep4-v1",
+        "sample_logical_ms": 200000,
+        "sweep_m": 4.0
+      },
+      "distance_m": 16.0,
+      "entity_id": "approach-context-008ff:rabbit:0"
+    },
+    {
+      "context": {
+        "blocked_ahead": false,
+        "profile": "capsule044-height18-sweep4-v1",
+        "sample_logical_ms": 200000,
+        "sweep_m": 4.0
+      },
+      "distance_m": 22.3606796264648,
+      "entity_id": "approach-context-008ff:rabbit:1"
+    }
+  ],
+  "contacts": 75,
+  "context_fact": {
+    "approach": {
+      "absence_claim": false,
+      "capture": false,
+      "censored": false,
+      "contains_prediction": false,
+      "distance_m": 5.36182975769043,
+      "ended_ms": 212800,
+      "entity_id": "approach-context-008ff:rabbit:0",
+      "final_observed_remaining_m": 10.6381702423096,
+      "id": "approach-context-008ff:animal-approach:49e272c3e0c90ef2:1",
+      "initial_observed_remaining_m": 16.0,
+      "learning_eligible": true,
+      "result": "no_progress",
+      "revision": 1,
+      "started_ms": 200000,
+      "world_id": "approach-context-008ff",
+      "world_write_authority": false
+    },
+    "contacts": 75,
+    "context": {
+      "blocked_ahead": false,
+      "profile": "capsule044-height18-sweep4-v1",
+      "sample_logical_ms": 200000,
+      "sweep_m": 4.0
+    }
+  },
+  "distance_m": 5.36182975769043,
+  "fact": {
+    "absence_claim": false,
+    "capture": false,
+    "censored": false,
+    "contains_prediction": false,
+    "distance_m": 5.36182975769043,
+    "ended_ms": 212800,
+    "entity_id": "approach-context-008ff:rabbit:0",
+    "final_observed_remaining_m": 10.6381702423096,
+    "id": "approach-context-008ff:animal-approach:49e272c3e0c90ef2:1",
+    "initial_observed_remaining_m": 16.0,
+    "learning_eligible": true,
+    "result": "no_progress",
+    "revision": 1,
+    "started_ms": 200000,
+    "world_id": "approach-context-008ff",
+    "world_write_authority": false
+  },
+  "motion_model": "incremental direct CharacterBody approach; full scene contour navigation not exercised",
+  "probe": false,
+  "reverse": false,
+  "world_write_authority": false
+}
