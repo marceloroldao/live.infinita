@@ -1,0 +1,9 @@
+008FM_PAIR slow 0 recovered-contextual-evidence approached
+008FM_PAIR slow 1 recovered-contextual-evidence approached
+008FM_PAIR slow 2 recovered-contextual-evidence approached
+008FM_PAIR slow 3 recovered-contextual-evidence approached
+008FM_PAIR faster 0 recovered-contextual-evidence approached
+008FM_PAIR faster 1 recovered-contextual-evidence approached
+008FM_PAIR faster 2 recovered-contextual-evidence approached
+008FM_PAIR faster 3 recovered-contextual-evidence approached
+008FM_COST_REVALIDATION_PASS traversals=24 actual_facts=16 cold_recoveries=16

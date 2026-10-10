@@ -1,0 +1,1886 @@
+{
+  "case": "slow",
+  "acquisition": [
+    {
+      "animal_positions_final": {
+        "far": [
+          1.0,
+          0.200000002980232,
+          23.6999740600586
+        ],
+        "near": [
+          17.6999740600586,
+          0.200000002980232,
+          0.0
+        ]
+      },
+      "animal_steps": 34,
+      "candidates": [
+        {
+          "context": {
+            "blocked_ahead": false,
+            "profile": "capsule044-height18-sweep4-native-contour-v1",
+            "sample_logical_ms": 100000,
+            "sweep_m": 4.0
+          },
+          "distance_m": 16.0,
+          "entity_id": "approach-moving-animals-008fm:rabbit:0"
+        },
+        {
+          "context": {
+            "blocked_ahead": false,
+            "profile": "capsule044-height18-sweep4-native-contour-v1",
+            "sample_logical_ms": 100000,
+            "sweep_m": 4.0
+          },
+          "distance_m": 22.0227146148682,
+          "entity_id": "approach-moving-animals-008fm:rabbit:1"
+        }
+      ],
+      "contacts": 0,
+      "context_fact": {
+        "approach": {
+          "absence_claim": false,
+          "capture": false,
+          "censored": false,
+          "contains_prediction": false,
+          "distance_m": 11.3999994546175,
+          "ended_ms": 103400,
+          "entity_id": "approach-moving-animals-008fm:rabbit:0",
+          "final_observed_remaining_m": 15.2791223526001,
+          "id": "approach-moving-animals-008fm:animal-approach:7879e546519a0fbf:1",
+          "initial_observed_remaining_m": 16.0,
+          "learning_eligible": true,
+          "result": "contact_lost",
+          "revision": 1,
+          "started_ms": 100000,
+          "world_id": "approach-moving-animals-008fm",
+          "world_write_authority": false
+        },
+        "contacts": 0,
+        "context": {
+          "blocked_ahead": false,
+          "profile": "capsule044-height18-sweep4-native-contour-v1",
+          "sample_logical_ms": 100000,
+          "sweep_m": 4.0
+        }
+      },
+      "distance_m": 11.3999994546175,
+      "fact": {
+        "absence_claim": false,
+        "capture": false,
+        "censored": false,
+        "contains_prediction": false,
+        "distance_m": 11.3999994546175,
+        "ended_ms": 103400,
+        "entity_id": "approach-moving-animals-008fm:rabbit:0",
+        "final_observed_remaining_m": 15.2791223526001,
+        "id": "approach-moving-animals-008fm:animal-approach:7879e546519a0fbf:1",
+        "initial_observed_remaining_m": 16.0,
+        "learning_eligible": true,
+        "result": "contact_lost",
+        "revision": 1,
+        "started_ms": 100000,
+        "world_id": "approach-moving-animals-008fm",
+        "world_write_authority": false
+      },
+      "fixture": {
+        "animal_serial": 0,
+        "animal_speed_m_s": 0.5,
+        "far_m": 22.0,
+        "near_m": 16.0,
+        "speed_m_s": 4.0,
+        "wall_at_m": 6.0,
+        "wall_length_m": 80.0
+      },
+      "future_position_given_to_controller": false,
+      "motion_model": "native local motion; production stabilized body heading and 0.25s scan scheduler; moving collidable animals; flat terrain",
+      "navigation_status": "perception",
+      "probe": false,
+      "reverse": false,
+      "route_plan_builds": 0,
+      "scan_count": 12,
+      "world_write_authority": false
+    },
+    {
+      "animal_positions_final": {
+        "far": [
+          1.0,
+          0.200000002980232,
+          24.7499580383301
+        ],
+        "near": [
+          18.7499580383301,
+          0.200000002980232,
+          0.0
+        ]
+      },
+      "animal_steps": 55,
+      "candidates": [
+        {
+          "context": {
+            "blocked_ahead": false,
+            "profile": "capsule044-height18-sweep4-native-contour-v1",
+            "sample_logical_ms": 120000,
+            "sweep_m": 4.0
+          },
+          "distance_m": 16.0,
+          "entity_id": "approach-moving-animals-008fm:rabbit:0"
+        },
+        {
+          "context": {
+            "blocked_ahead": false,
+            "profile": "capsule044-height18-sweep4-native-contour-v1",
+            "sample_logical_ms": 120000,
+            "sweep_m": 4.0
+          },
+          "distance_m": 22.0227146148682,
+          "entity_id": "approach-moving-animals-008fm:rabbit:1"
+        }
+      ],
+      "contacts": 0,
+      "context_fact": {
+        "approach": {
+          "absence_claim": false,
+          "capture": false,
+          "censored": false,
+          "contains_prediction": false,
+          "distance_m": 18.3999972045422,
+          "ended_ms": 125500,
+          "entity_id": "approach-moving-animals-008fm:rabbit:1",
+          "final_observed_remaining_m": 6.32060861587524,
+          "id": "approach-moving-animals-008fm:animal-approach:21b60308c72f8330:1",
+          "initial_observed_remaining_m": 22.0227146148682,
+          "learning_eligible": true,
+          "result": "approached",
+          "revision": 2,
+          "started_ms": 120000,
+          "world_id": "approach-moving-animals-008fm",
+          "world_write_authority": false
+        },
+        "contacts": 0,
+        "context": {
+          "blocked_ahead": false,
+          "profile": "capsule044-height18-sweep4-native-contour-v1",
+          "sample_logical_ms": 120000,
+          "sweep_m": 4.0
+        }
+      },
+      "distance_m": 18.3999972045422,
+      "fact": {
+        "absence_claim": false,
+        "capture": false,
+        "censored": false,
+        "contains_prediction": false,
+        "distance_m": 18.3999972045422,
+        "ended_ms": 125500,
+        "entity_id": "approach-moving-animals-008fm:rabbit:1",
+        "final_observed_remaining_m": 6.32060861587524,
+        "id": "approach-moving-animals-008fm:animal-approach:21b60308c72f8330:1",
+        "initial_observed_remaining_m": 22.0227146148682,
+        "learning_eligible": true,
+        "result": "approached",
+        "revision": 2,
+        "started_ms": 120000,
+        "world_id": "approach-moving-animals-008fm",
+        "world_write_authority": false
+      },
+      "fixture": {
+        "animal_serial": 0,
+        "animal_speed_m_s": 0.5,
+        "far_m": 22.0,
+        "near_m": 16.0,
+        "speed_m_s": 4.0,
+        "wall_at_m": 6.0,
+        "wall_length_m": 80.0
+      },
+      "future_position_given_to_controller": false,
+      "motion_model": "native local motion; production stabilized body heading and 0.25s scan scheduler; moving collidable animals; flat terrain",
+      "navigation_status": "perception",
+      "probe": false,
+      "reverse": false,
+      "route_plan_builds": 0,
+      "scan_count": 19,
+      "world_write_authority": false
+    },
+    {
+      "animal_positions_final": {
+        "far": [
+          1.0,
+          0.200000002980232,
+          23.6999740600586
+        ],
+        "near": [
+          17.6999740600586,
+          0.200000002980232,
+          0.0
+        ]
+      },
+      "animal_steps": 34,
+      "candidates": [
+        {
+          "context": {
+            "blocked_ahead": false,
+            "profile": "capsule044-height18-sweep4-native-contour-v1",
+            "sample_logical_ms": 140000,
+            "sweep_m": 4.0
+          },
+          "distance_m": 16.0,
+          "entity_id": "approach-moving-animals-008fm:rabbit:0"
+        },
+        {
+          "context": {
+            "blocked_ahead": false,
+            "profile": "capsule044-height18-sweep4-native-contour-v1",
+            "sample_logical_ms": 140000,
+            "sweep_m": 4.0
+          },
+          "distance_m": 22.0227146148682,
+          "entity_id": "approach-moving-animals-008fm:rabbit:1"
+        }
+      ],
+      "contacts": 0,
+      "context_fact": {
+        "approach": {
+          "absence_claim": false,
+          "capture": false,
+          "censored": false,
+          "contains_prediction": false,
+          "distance_m": 11.3999994546175,
+          "ended_ms": 143400,
+          "entity_id": "approach-moving-animals-008fm:rabbit:0",
+          "final_observed_remaining_m": 15.2791223526001,
+          "id": "approach-moving-animals-008fm:animal-approach:3012c9aa1b2bc214:1",
+          "initial_observed_remaining_m": 16.0,
+          "learning_eligible": true,
+          "result": "contact_lost",
+          "revision": 1,
+          "started_ms": 140000,
+          "world_id": "approach-moving-animals-008fm",
+          "world_write_authority": false
+        },
+        "contacts": 0,
+        "context": {
+          "blocked_ahead": false,
+          "profile": "capsule044-height18-sweep4-native-contour-v1",
+          "sample_logical_ms": 140000,
+          "sweep_m": 4.0
+        }
+      },
+      "distance_m": 11.3999994546175,
+      "fact": {
+        "absence_claim": false,
+        "capture": false,
+        "censored": false,
+        "contains_prediction": false,
+        "distance_m": 11.3999994546175,
+        "ended_ms": 143400,
+        "entity_id": "approach-moving-animals-008fm:rabbit:0",
+        "final_observed_remaining_m": 15.2791223526001,
+        "id": "approach-moving-animals-008fm:animal-approach:3012c9aa1b2bc214:1",
+        "initial_observed_remaining_m": 16.0,
+        "learning_eligible": true,
+        "result": "contact_lost",
+        "revision": 1,
+        "started_ms": 140000,
+        "world_id": "approach-moving-animals-008fm",
+        "world_write_authority": false
+      },
+      "fixture": {
+        "animal_serial": 0,
+        "animal_speed_m_s": 0.5,
+        "far_m": 22.0,
+        "near_m": 16.0,
+        "speed_m_s": 4.0,
+        "wall_at_m": 6.0,
+        "wall_length_m": 80.0
+      },
+      "future_position_given_to_controller": false,
+      "motion_model": "native local motion; production stabilized body heading and 0.25s scan scheduler; moving collidable animals; flat terrain",
+      "navigation_status": "perception",
+      "probe": false,
+      "reverse": false,
+      "route_plan_builds": 0,
+      "scan_count": 12,
+      "world_write_authority": false
+    },
+    {
+      "animal_positions_final": {
+        "far": [
+          1.0,
+          0.200000002980232,
+          24.7499580383301
+        ],
+        "near": [
+          18.7499580383301,
+          0.200000002980232,
+          0.0
+        ]
+      },
+      "animal_steps": 55,
+      "candidates": [
+        {
+          "context": {
+            "blocked_ahead": false,
+            "profile": "capsule044-height18-sweep4-native-contour-v1",
+            "sample_logical_ms": 160000,
+            "sweep_m": 4.0
+          },
+          "distance_m": 16.0,
+          "entity_id": "approach-moving-animals-008fm:rabbit:0"
+        },
+        {
+          "context": {
+            "blocked_ahead": false,
+            "profile": "capsule044-height18-sweep4-native-contour-v1",
+            "sample_logical_ms": 160000,
+            "sweep_m": 4.0
+          },
+          "distance_m": 22.0227146148682,
+          "entity_id": "approach-moving-animals-008fm:rabbit:1"
+        }
+      ],
+      "contacts": 0,
+      "context_fact": {
+        "approach": {
+          "absence_claim": false,
+          "capture": false,
+          "censored": false,
+          "contains_prediction": false,
+          "distance_m": 18.3999972045422,
+          "ended_ms": 165500,
+          "entity_id": "approach-moving-animals-008fm:rabbit:1",
+          "final_observed_remaining_m": 6.32060861587524,
+          "id": "approach-moving-animals-008fm:animal-approach:6297edf5afe425c1:1",
+          "initial_observed_remaining_m": 22.0227146148682,
+          "learning_eligible": true,
+          "result": "approached",
+          "revision": 2,
+          "started_ms": 160000,
+          "world_id": "approach-moving-animals-008fm",
+          "world_write_authority": false
+        },
+        "contacts": 0,
+        "context": {
+          "blocked_ahead": false,
+          "profile": "capsule044-height18-sweep4-native-contour-v1",
+          "sample_logical_ms": 160000,
+          "sweep_m": 4.0
+        }
+      },
+      "distance_m": 18.3999972045422,
+      "fact": {
+        "absence_claim": false,
+        "capture": false,
+        "censored": false,
+        "contains_prediction": false,
+        "distance_m": 18.3999972045422,
+        "ended_ms": 165500,
+        "entity_id": "approach-moving-animals-008fm:rabbit:1",
+        "final_observed_remaining_m": 6.32060861587524,
+        "id": "approach-moving-animals-008fm:animal-approach:6297edf5afe425c1:1",
+        "initial_observed_remaining_m": 22.0227146148682,
+        "learning_eligible": true,
+        "result": "approached",
+        "revision": 2,
+        "started_ms": 160000,
+        "world_id": "approach-moving-animals-008fm",
+        "world_write_authority": false
+      },
+      "fixture": {
+        "animal_serial": 0,
+        "animal_speed_m_s": 0.5,
+        "far_m": 22.0,
+        "near_m": 16.0,
+        "speed_m_s": 4.0,
+        "wall_at_m": 6.0,
+        "wall_length_m": 80.0
+      },
+      "future_position_given_to_controller": false,
+      "motion_model": "native local motion; production stabilized body heading and 0.25s scan scheduler; moving collidable animals; flat terrain",
+      "navigation_status": "perception",
+      "probe": false,
+      "reverse": false,
+      "route_plan_builds": 0,
+      "scan_count": 19,
+      "world_write_authority": false
+    }
+  ],
+  "pairs": [
+    {
+      "decision": {
+        "entity_id": "approach-moving-animals-008fm:rabbit:21",
+        "source": "recovered-contextual-evidence",
+        "reason": "lower_contextual_failure_cost",
+        "observation_ids": [
+          "structural-event:64532625c5acfdf7916d357a168f934a3a4a426a",
+          "structural-event:c992fa6ce66d78904347eee669d36e149d3754ee",
+          "structural-event:ef298651be53d5efa6ce1f9eec1fca120df32cf3",
+          "structural-event:8b2184b6ba65c7e88f152ef879aa4ab2b8c68997"
+        ],
+        "evaluations": [
+          {
+            "entity_id": "approach-moving-animals-008fm:rabbit:20",
+            "score": 23.799999818205833,
+            "context_key": [
+              2,
+              "capsule044-height18-sweep4-native-contour-v1",
+              false
+            ],
+            "observation_ids": [
+              "structural-event:ef298651be53d5efa6ce1f9eec1fca120df32cf3",
+              "structural-event:8b2184b6ba65c7e88f152ef879aa4ab2b8c68997"
+            ]
+          },
+          {
+            "entity_id": "approach-moving-animals-008fm:rabbit:21",
+            "score": 6.133332401514067,
+            "context_key": [
+              3,
+              "capsule044-height18-sweep4-native-contour-v1",
+              false
+            ],
+            "observation_ids": [
+              "structural-event:64532625c5acfdf7916d357a168f934a3a4a426a",
+              "structural-event:c992fa6ce66d78904347eee669d36e149d3754ee"
+            ]
+          }
+        ],
+        "cost_revalidation": {
+          "epoch_start_ms": 0,
+          "epoch_ms": 300000,
+          "sample_limit_per_context": 2,
+          "max_contexts": 2,
+          "uses_ram_counter": false,
+          "counts": [
+            {
+              "context_key": [
+                2,
+                "capsule044-height18-sweep4-native-contour-v1",
+                false
+              ],
+              "measured_in_epoch": 2
+            },
+            {
+              "context_key": [
+                3,
+                "capsule044-height18-sweep4-native-contour-v1",
+                false
+              ],
+              "measured_in_epoch": 2
+            }
+          ]
+        },
+        "reservation_token": null,
+        "exploration_budget": {
+          "epoch_start_ms": 0,
+          "used_attempts": 0,
+          "attempt_limit": 4,
+          "intent_only": true
+        }
+      },
+      "adaptive": {
+        "animal_positions_final": {
+          "far": [
+            1.0,
+            0.200000002980232,
+            24.7499580383301
+          ],
+          "near": [
+            18.7499580383301,
+            0.200000002980232,
+            0.0
+          ]
+        },
+        "animal_steps": 55,
+        "candidates": [
+          {
+            "context": {
+              "blocked_ahead": false,
+              "profile": "capsule044-height18-sweep4-native-contour-v1",
+              "sample_logical_ms": 200000,
+              "sweep_m": 4.0
+            },
+            "distance_m": 16.0,
+            "entity_id": "approach-moving-animals-008fm:rabbit:20"
+          },
+          {
+            "context": {
+              "blocked_ahead": false,
+              "profile": "capsule044-height18-sweep4-native-contour-v1",
+              "sample_logical_ms": 200000,
+              "sweep_m": 4.0
+            },
+            "distance_m": 22.0227146148682,
+            "entity_id": "approach-moving-animals-008fm:rabbit:21"
+          }
+        ],
+        "contacts": 0,
+        "context_fact": {
+          "approach": {
+            "absence_claim": false,
+            "capture": false,
+            "censored": false,
+            "contains_prediction": false,
+            "distance_m": 18.3999972045422,
+            "ended_ms": 205500,
+            "entity_id": "approach-moving-animals-008fm:rabbit:21",
+            "final_observed_remaining_m": 6.32060861587524,
+            "id": "approach-moving-animals-008fm:animal-approach:7d0bfb060f3aae8f:1",
+            "initial_observed_remaining_m": 22.0227146148682,
+            "learning_eligible": true,
+            "result": "approached",
+            "revision": 2,
+            "started_ms": 200000,
+            "world_id": "approach-moving-animals-008fm",
+            "world_write_authority": false
+          },
+          "contacts": 0,
+          "context": {
+            "blocked_ahead": false,
+            "profile": "capsule044-height18-sweep4-native-contour-v1",
+            "sample_logical_ms": 200000,
+            "sweep_m": 4.0
+          }
+        },
+        "distance_m": 18.3999972045422,
+        "fact": {
+          "absence_claim": false,
+          "capture": false,
+          "censored": false,
+          "contains_prediction": false,
+          "distance_m": 18.3999972045422,
+          "ended_ms": 205500,
+          "entity_id": "approach-moving-animals-008fm:rabbit:21",
+          "final_observed_remaining_m": 6.32060861587524,
+          "id": "approach-moving-animals-008fm:animal-approach:7d0bfb060f3aae8f:1",
+          "initial_observed_remaining_m": 22.0227146148682,
+          "learning_eligible": true,
+          "result": "approached",
+          "revision": 2,
+          "started_ms": 200000,
+          "world_id": "approach-moving-animals-008fm",
+          "world_write_authority": false
+        },
+        "fixture": {
+          "animal_serial": 20,
+          "animal_speed_m_s": 0.5,
+          "far_m": 22.0,
+          "near_m": 16.0,
+          "speed_m_s": 4.0,
+          "wall_at_m": 6.0,
+          "wall_length_m": 80.0
+        },
+        "future_position_given_to_controller": false,
+        "motion_model": "native local motion; production stabilized body heading and 0.25s scan scheduler; moving collidable animals; flat terrain",
+        "navigation_status": "perception",
+        "probe": false,
+        "reverse": false,
+        "route_plan_builds": 0,
+        "scan_count": 19,
+        "world_write_authority": false
+      },
+      "control_decision": {
+        "entity_id": "approach-moving-animals-008fm:rabbit:20",
+        "source": "perception",
+        "reason": "unseen_physical_context",
+        "observation_ids": []
+      },
+      "perception_control": {
+        "animal_positions_final": {
+          "far": [
+            1.0,
+            0.200000002980232,
+            23.6999740600586
+          ],
+          "near": [
+            17.6999740600586,
+            0.200000002980232,
+            0.0
+          ]
+        },
+        "animal_steps": 34,
+        "candidates": [
+          {
+            "context": {
+              "blocked_ahead": false,
+              "profile": "capsule044-height18-sweep4-native-contour-v1",
+              "sample_logical_ms": 200000,
+              "sweep_m": 4.0
+            },
+            "distance_m": 16.0,
+            "entity_id": "approach-moving-animals-008fm:rabbit:20"
+          },
+          {
+            "context": {
+              "blocked_ahead": false,
+              "profile": "capsule044-height18-sweep4-native-contour-v1",
+              "sample_logical_ms": 200000,
+              "sweep_m": 4.0
+            },
+            "distance_m": 22.0227146148682,
+            "entity_id": "approach-moving-animals-008fm:rabbit:21"
+          }
+        ],
+        "contacts": 0,
+        "context_fact": {
+          "approach": {
+            "absence_claim": false,
+            "capture": false,
+            "censored": false,
+            "contains_prediction": false,
+            "distance_m": 11.3999994546175,
+            "ended_ms": 203400,
+            "entity_id": "approach-moving-animals-008fm:rabbit:20",
+            "final_observed_remaining_m": 15.2791223526001,
+            "id": "approach-moving-animals-008fm:animal-approach:4fb765edca1b2f78:1",
+            "initial_observed_remaining_m": 16.0,
+            "learning_eligible": true,
+            "result": "contact_lost",
+            "revision": 1,
+            "started_ms": 200000,
+            "world_id": "approach-moving-animals-008fm",
+            "world_write_authority": false
+          },
+          "contacts": 0,
+          "context": {
+            "blocked_ahead": false,
+            "profile": "capsule044-height18-sweep4-native-contour-v1",
+            "sample_logical_ms": 200000,
+            "sweep_m": 4.0
+          }
+        },
+        "distance_m": 11.3999994546175,
+        "fact": {
+          "absence_claim": false,
+          "capture": false,
+          "censored": false,
+          "contains_prediction": false,
+          "distance_m": 11.3999994546175,
+          "ended_ms": 203400,
+          "entity_id": "approach-moving-animals-008fm:rabbit:20",
+          "final_observed_remaining_m": 15.2791223526001,
+          "id": "approach-moving-animals-008fm:animal-approach:4fb765edca1b2f78:1",
+          "initial_observed_remaining_m": 16.0,
+          "learning_eligible": true,
+          "result": "contact_lost",
+          "revision": 1,
+          "started_ms": 200000,
+          "world_id": "approach-moving-animals-008fm",
+          "world_write_authority": false
+        },
+        "fixture": {
+          "animal_serial": 20,
+          "animal_speed_m_s": 0.5,
+          "far_m": 22.0,
+          "near_m": 16.0,
+          "speed_m_s": 4.0,
+          "wall_at_m": 6.0,
+          "wall_length_m": 80.0
+        },
+        "future_position_given_to_controller": false,
+        "motion_model": "native local motion; production stabilized body heading and 0.25s scan scheduler; moving collidable animals; flat terrain",
+        "navigation_status": "perception",
+        "probe": false,
+        "reverse": false,
+        "route_plan_builds": 0,
+        "scan_count": 12,
+        "world_write_authority": false
+      },
+      "control_outcome_ingested": false
+    },
+    {
+      "decision": {
+        "entity_id": "approach-moving-animals-008fm:rabbit:21",
+        "source": "recovered-contextual-evidence",
+        "reason": "lower_contextual_failure_cost",
+        "observation_ids": [
+          "structural-event:c992fa6ce66d78904347eee669d36e149d3754ee",
+          "structural-event:72e36c8c06710fc17dcaf8cc87a20a249579ab52",
+          "structural-event:ef298651be53d5efa6ce1f9eec1fca120df32cf3",
+          "structural-event:8b2184b6ba65c7e88f152ef879aa4ab2b8c68997"
+        ],
+        "evaluations": [
+          {
+            "entity_id": "approach-moving-animals-008fm:rabbit:20",
+            "score": 23.799999818205833,
+            "context_key": [
+              2,
+              "capsule044-height18-sweep4-native-contour-v1",
+              false
+            ],
+            "observation_ids": [
+              "structural-event:ef298651be53d5efa6ce1f9eec1fca120df32cf3",
+              "structural-event:8b2184b6ba65c7e88f152ef879aa4ab2b8c68997"
+            ]
+          },
+          {
+            "entity_id": "approach-moving-animals-008fm:rabbit:21",
+            "score": 6.133332401514067,
+            "context_key": [
+              3,
+              "capsule044-height18-sweep4-native-contour-v1",
+              false
+            ],
+            "observation_ids": [
+              "structural-event:c992fa6ce66d78904347eee669d36e149d3754ee",
+              "structural-event:72e36c8c06710fc17dcaf8cc87a20a249579ab52"
+            ]
+          }
+        ],
+        "cost_revalidation": {
+          "epoch_start_ms": 0,
+          "epoch_ms": 300000,
+          "sample_limit_per_context": 2,
+          "max_contexts": 2,
+          "uses_ram_counter": false,
+          "counts": [
+            {
+              "context_key": [
+                2,
+                "capsule044-height18-sweep4-native-contour-v1",
+                false
+              ],
+              "measured_in_epoch": 2
+            },
+            {
+              "context_key": [
+                3,
+                "capsule044-height18-sweep4-native-contour-v1",
+                false
+              ],
+              "measured_in_epoch": 3
+            }
+          ]
+        },
+        "reservation_token": null,
+        "exploration_budget": {
+          "epoch_start_ms": 0,
+          "used_attempts": 0,
+          "attempt_limit": 4,
+          "intent_only": true
+        }
+      },
+      "adaptive": {
+        "animal_positions_final": {
+          "far": [
+            1.0,
+            0.200000002980232,
+            24.7499580383301
+          ],
+          "near": [
+            18.7499580383301,
+            0.200000002980232,
+            0.0
+          ]
+        },
+        "animal_steps": 55,
+        "candidates": [
+          {
+            "context": {
+              "blocked_ahead": false,
+              "profile": "capsule044-height18-sweep4-native-contour-v1",
+              "sample_logical_ms": 220000,
+              "sweep_m": 4.0
+            },
+            "distance_m": 16.0,
+            "entity_id": "approach-moving-animals-008fm:rabbit:20"
+          },
+          {
+            "context": {
+              "blocked_ahead": false,
+              "profile": "capsule044-height18-sweep4-native-contour-v1",
+              "sample_logical_ms": 220000,
+              "sweep_m": 4.0
+            },
+            "distance_m": 22.0227146148682,
+            "entity_id": "approach-moving-animals-008fm:rabbit:21"
+          }
+        ],
+        "contacts": 0,
+        "context_fact": {
+          "approach": {
+            "absence_claim": false,
+            "capture": false,
+            "censored": false,
+            "contains_prediction": false,
+            "distance_m": 18.3999972045422,
+            "ended_ms": 225500,
+            "entity_id": "approach-moving-animals-008fm:rabbit:21",
+            "final_observed_remaining_m": 6.32060861587524,
+            "id": "approach-moving-animals-008fm:animal-approach:7652debe5fb93340:1",
+            "initial_observed_remaining_m": 22.0227146148682,
+            "learning_eligible": true,
+            "result": "approached",
+            "revision": 2,
+            "started_ms": 220000,
+            "world_id": "approach-moving-animals-008fm",
+            "world_write_authority": false
+          },
+          "contacts": 0,
+          "context": {
+            "blocked_ahead": false,
+            "profile": "capsule044-height18-sweep4-native-contour-v1",
+            "sample_logical_ms": 220000,
+            "sweep_m": 4.0
+          }
+        },
+        "distance_m": 18.3999972045422,
+        "fact": {
+          "absence_claim": false,
+          "capture": false,
+          "censored": false,
+          "contains_prediction": false,
+          "distance_m": 18.3999972045422,
+          "ended_ms": 225500,
+          "entity_id": "approach-moving-animals-008fm:rabbit:21",
+          "final_observed_remaining_m": 6.32060861587524,
+          "id": "approach-moving-animals-008fm:animal-approach:7652debe5fb93340:1",
+          "initial_observed_remaining_m": 22.0227146148682,
+          "learning_eligible": true,
+          "result": "approached",
+          "revision": 2,
+          "started_ms": 220000,
+          "world_id": "approach-moving-animals-008fm",
+          "world_write_authority": false
+        },
+        "fixture": {
+          "animal_serial": 20,
+          "animal_speed_m_s": 0.5,
+          "far_m": 22.0,
+          "near_m": 16.0,
+          "speed_m_s": 4.0,
+          "wall_at_m": 6.0,
+          "wall_length_m": 80.0
+        },
+        "future_position_given_to_controller": false,
+        "motion_model": "native local motion; production stabilized body heading and 0.25s scan scheduler; moving collidable animals; flat terrain",
+        "navigation_status": "perception",
+        "probe": false,
+        "reverse": false,
+        "route_plan_builds": 0,
+        "scan_count": 19,
+        "world_write_authority": false
+      },
+      "control_decision": {
+        "entity_id": "approach-moving-animals-008fm:rabbit:20",
+        "source": "perception",
+        "reason": "unseen_physical_context",
+        "observation_ids": []
+      },
+      "perception_control": {
+        "animal_positions_final": {
+          "far": [
+            1.0,
+            0.200000002980232,
+            23.6999740600586
+          ],
+          "near": [
+            17.6999740600586,
+            0.200000002980232,
+            0.0
+          ]
+        },
+        "animal_steps": 34,
+        "candidates": [
+          {
+            "context": {
+              "blocked_ahead": false,
+              "profile": "capsule044-height18-sweep4-native-contour-v1",
+              "sample_logical_ms": 220000,
+              "sweep_m": 4.0
+            },
+            "distance_m": 16.0,
+            "entity_id": "approach-moving-animals-008fm:rabbit:20"
+          },
+          {
+            "context": {
+              "blocked_ahead": false,
+              "profile": "capsule044-height18-sweep4-native-contour-v1",
+              "sample_logical_ms": 220000,
+              "sweep_m": 4.0
+            },
+            "distance_m": 22.0227146148682,
+            "entity_id": "approach-moving-animals-008fm:rabbit:21"
+          }
+        ],
+        "contacts": 0,
+        "context_fact": {
+          "approach": {
+            "absence_claim": false,
+            "capture": false,
+            "censored": false,
+            "contains_prediction": false,
+            "distance_m": 11.3999994546175,
+            "ended_ms": 223400,
+            "entity_id": "approach-moving-animals-008fm:rabbit:20",
+            "final_observed_remaining_m": 15.2791223526001,
+            "id": "approach-moving-animals-008fm:animal-approach:18ad2d4a3e58dbcc:1",
+            "initial_observed_remaining_m": 16.0,
+            "learning_eligible": true,
+            "result": "contact_lost",
+            "revision": 1,
+            "started_ms": 220000,
+            "world_id": "approach-moving-animals-008fm",
+            "world_write_authority": false
+          },
+          "contacts": 0,
+          "context": {
+            "blocked_ahead": false,
+            "profile": "capsule044-height18-sweep4-native-contour-v1",
+            "sample_logical_ms": 220000,
+            "sweep_m": 4.0
+          }
+        },
+        "distance_m": 11.3999994546175,
+        "fact": {
+          "absence_claim": false,
+          "capture": false,
+          "censored": false,
+          "contains_prediction": false,
+          "distance_m": 11.3999994546175,
+          "ended_ms": 223400,
+          "entity_id": "approach-moving-animals-008fm:rabbit:20",
+          "final_observed_remaining_m": 15.2791223526001,
+          "id": "approach-moving-animals-008fm:animal-approach:18ad2d4a3e58dbcc:1",
+          "initial_observed_remaining_m": 16.0,
+          "learning_eligible": true,
+          "result": "contact_lost",
+          "revision": 1,
+          "started_ms": 220000,
+          "world_id": "approach-moving-animals-008fm",
+          "world_write_authority": false
+        },
+        "fixture": {
+          "animal_serial": 20,
+          "animal_speed_m_s": 0.5,
+          "far_m": 22.0,
+          "near_m": 16.0,
+          "speed_m_s": 4.0,
+          "wall_at_m": 6.0,
+          "wall_length_m": 80.0
+        },
+        "future_position_given_to_controller": false,
+        "motion_model": "native local motion; production stabilized body heading and 0.25s scan scheduler; moving collidable animals; flat terrain",
+        "navigation_status": "perception",
+        "probe": false,
+        "reverse": false,
+        "route_plan_builds": 0,
+        "scan_count": 12,
+        "world_write_authority": false
+      },
+      "control_outcome_ingested": false
+    },
+    {
+      "decision": {
+        "entity_id": "approach-moving-animals-008fm:rabbit:21",
+        "source": "recovered-contextual-evidence",
+        "reason": "lower_contextual_failure_cost",
+        "observation_ids": [
+          "structural-event:72e36c8c06710fc17dcaf8cc87a20a249579ab52",
+          "structural-event:124f46bea29f056210adaf6c5684f696c43228cc",
+          "structural-event:ef298651be53d5efa6ce1f9eec1fca120df32cf3",
+          "structural-event:8b2184b6ba65c7e88f152ef879aa4ab2b8c68997"
+        ],
+        "evaluations": [
+          {
+            "entity_id": "approach-moving-animals-008fm:rabbit:20",
+            "score": 23.799999818205833,
+            "context_key": [
+              2,
+              "capsule044-height18-sweep4-native-contour-v1",
+              false
+            ],
+            "observation_ids": [
+              "structural-event:ef298651be53d5efa6ce1f9eec1fca120df32cf3",
+              "structural-event:8b2184b6ba65c7e88f152ef879aa4ab2b8c68997"
+            ]
+          },
+          {
+            "entity_id": "approach-moving-animals-008fm:rabbit:21",
+            "score": 6.133332401514067,
+            "context_key": [
+              3,
+              "capsule044-height18-sweep4-native-contour-v1",
+              false
+            ],
+            "observation_ids": [
+              "structural-event:72e36c8c06710fc17dcaf8cc87a20a249579ab52",
+              "structural-event:124f46bea29f056210adaf6c5684f696c43228cc"
+            ]
+          }
+        ],
+        "cost_revalidation": {
+          "epoch_start_ms": 0,
+          "epoch_ms": 300000,
+          "sample_limit_per_context": 2,
+          "max_contexts": 2,
+          "uses_ram_counter": false,
+          "counts": [
+            {
+              "context_key": [
+                2,
+                "capsule044-height18-sweep4-native-contour-v1",
+                false
+              ],
+              "measured_in_epoch": 2
+            },
+            {
+              "context_key": [
+                3,
+                "capsule044-height18-sweep4-native-contour-v1",
+                false
+              ],
+              "measured_in_epoch": 4
+            }
+          ]
+        },
+        "reservation_token": null,
+        "exploration_budget": {
+          "epoch_start_ms": 0,
+          "used_attempts": 0,
+          "attempt_limit": 4,
+          "intent_only": true
+        }
+      },
+      "adaptive": {
+        "animal_positions_final": {
+          "far": [
+            1.0,
+            0.200000002980232,
+            24.7499580383301
+          ],
+          "near": [
+            18.7499580383301,
+            0.200000002980232,
+            0.0
+          ]
+        },
+        "animal_steps": 55,
+        "candidates": [
+          {
+            "context": {
+              "blocked_ahead": false,
+              "profile": "capsule044-height18-sweep4-native-contour-v1",
+              "sample_logical_ms": 240000,
+              "sweep_m": 4.0
+            },
+            "distance_m": 16.0,
+            "entity_id": "approach-moving-animals-008fm:rabbit:20"
+          },
+          {
+            "context": {
+              "blocked_ahead": false,
+              "profile": "capsule044-height18-sweep4-native-contour-v1",
+              "sample_logical_ms": 240000,
+              "sweep_m": 4.0
+            },
+            "distance_m": 22.0227146148682,
+            "entity_id": "approach-moving-animals-008fm:rabbit:21"
+          }
+        ],
+        "contacts": 0,
+        "context_fact": {
+          "approach": {
+            "absence_claim": false,
+            "capture": false,
+            "censored": false,
+            "contains_prediction": false,
+            "distance_m": 18.3999972045422,
+            "ended_ms": 245500,
+            "entity_id": "approach-moving-animals-008fm:rabbit:21",
+            "final_observed_remaining_m": 6.32060861587524,
+            "id": "approach-moving-animals-008fm:animal-approach:720828daa24ccf57:1",
+            "initial_observed_remaining_m": 22.0227146148682,
+            "learning_eligible": true,
+            "result": "approached",
+            "revision": 2,
+            "started_ms": 240000,
+            "world_id": "approach-moving-animals-008fm",
+            "world_write_authority": false
+          },
+          "contacts": 0,
+          "context": {
+            "blocked_ahead": false,
+            "profile": "capsule044-height18-sweep4-native-contour-v1",
+            "sample_logical_ms": 240000,
+            "sweep_m": 4.0
+          }
+        },
+        "distance_m": 18.3999972045422,
+        "fact": {
+          "absence_claim": false,
+          "capture": false,
+          "censored": false,
+          "contains_prediction": false,
+          "distance_m": 18.3999972045422,
+          "ended_ms": 245500,
+          "entity_id": "approach-moving-animals-008fm:rabbit:21",
+          "final_observed_remaining_m": 6.32060861587524,
+          "id": "approach-moving-animals-008fm:animal-approach:720828daa24ccf57:1",
+          "initial_observed_remaining_m": 22.0227146148682,
+          "learning_eligible": true,
+          "result": "approached",
+          "revision": 2,
+          "started_ms": 240000,
+          "world_id": "approach-moving-animals-008fm",
+          "world_write_authority": false
+        },
+        "fixture": {
+          "animal_serial": 20,
+          "animal_speed_m_s": 0.5,
+          "far_m": 22.0,
+          "near_m": 16.0,
+          "speed_m_s": 4.0,
+          "wall_at_m": 6.0,
+          "wall_length_m": 80.0
+        },
+        "future_position_given_to_controller": false,
+        "motion_model": "native local motion; production stabilized body heading and 0.25s scan scheduler; moving collidable animals; flat terrain",
+        "navigation_status": "perception",
+        "probe": false,
+        "reverse": false,
+        "route_plan_builds": 0,
+        "scan_count": 19,
+        "world_write_authority": false
+      },
+      "control_decision": {
+        "entity_id": "approach-moving-animals-008fm:rabbit:20",
+        "source": "perception",
+        "reason": "unseen_physical_context",
+        "observation_ids": []
+      },
+      "perception_control": {
+        "animal_positions_final": {
+          "far": [
+            1.0,
+            0.200000002980232,
+            23.6999740600586
+          ],
+          "near": [
+            17.6999740600586,
+            0.200000002980232,
+            0.0
+          ]
+        },
+        "animal_steps": 34,
+        "candidates": [
+          {
+            "context": {
+              "blocked_ahead": false,
+              "profile": "capsule044-height18-sweep4-native-contour-v1",
+              "sample_logical_ms": 240000,
+              "sweep_m": 4.0
+            },
+            "distance_m": 16.0,
+            "entity_id": "approach-moving-animals-008fm:rabbit:20"
+          },
+          {
+            "context": {
+              "blocked_ahead": false,
+              "profile": "capsule044-height18-sweep4-native-contour-v1",
+              "sample_logical_ms": 240000,
+              "sweep_m": 4.0
+            },
+            "distance_m": 22.0227146148682,
+            "entity_id": "approach-moving-animals-008fm:rabbit:21"
+          }
+        ],
+        "contacts": 0,
+        "context_fact": {
+          "approach": {
+            "absence_claim": false,
+            "capture": false,
+            "censored": false,
+            "contains_prediction": false,
+            "distance_m": 11.3999994546175,
+            "ended_ms": 243400,
+            "entity_id": "approach-moving-animals-008fm:rabbit:20",
+            "final_observed_remaining_m": 15.2791223526001,
+            "id": "approach-moving-animals-008fm:animal-approach:01509c191a1a309f:1",
+            "initial_observed_remaining_m": 16.0,
+            "learning_eligible": true,
+            "result": "contact_lost",
+            "revision": 1,
+            "started_ms": 240000,
+            "world_id": "approach-moving-animals-008fm",
+            "world_write_authority": false
+          },
+          "contacts": 0,
+          "context": {
+            "blocked_ahead": false,
+            "profile": "capsule044-height18-sweep4-native-contour-v1",
+            "sample_logical_ms": 240000,
+            "sweep_m": 4.0
+          }
+        },
+        "distance_m": 11.3999994546175,
+        "fact": {
+          "absence_claim": false,
+          "capture": false,
+          "censored": false,
+          "contains_prediction": false,
+          "distance_m": 11.3999994546175,
+          "ended_ms": 243400,
+          "entity_id": "approach-moving-animals-008fm:rabbit:20",
+          "final_observed_remaining_m": 15.2791223526001,
+          "id": "approach-moving-animals-008fm:animal-approach:01509c191a1a309f:1",
+          "initial_observed_remaining_m": 16.0,
+          "learning_eligible": true,
+          "result": "contact_lost",
+          "revision": 1,
+          "started_ms": 240000,
+          "world_id": "approach-moving-animals-008fm",
+          "world_write_authority": false
+        },
+        "fixture": {
+          "animal_serial": 20,
+          "animal_speed_m_s": 0.5,
+          "far_m": 22.0,
+          "near_m": 16.0,
+          "speed_m_s": 4.0,
+          "wall_at_m": 6.0,
+          "wall_length_m": 80.0
+        },
+        "future_position_given_to_controller": false,
+        "motion_model": "native local motion; production stabilized body heading and 0.25s scan scheduler; moving collidable animals; flat terrain",
+        "navigation_status": "perception",
+        "probe": false,
+        "reverse": false,
+        "route_plan_builds": 0,
+        "scan_count": 12,
+        "world_write_authority": false
+      },
+      "control_outcome_ingested": false
+    },
+    {
+      "decision": {
+        "entity_id": "approach-moving-animals-008fm:rabbit:21",
+        "source": "recovered-contextual-evidence",
+        "reason": "lower_contextual_failure_cost",
+        "observation_ids": [
+          "structural-event:124f46bea29f056210adaf6c5684f696c43228cc",
+          "structural-event:ef9b80df8d09da7f640a0e02b3166951ff0cb65e",
+          "structural-event:ef298651be53d5efa6ce1f9eec1fca120df32cf3",
+          "structural-event:8b2184b6ba65c7e88f152ef879aa4ab2b8c68997"
+        ],
+        "evaluations": [
+          {
+            "entity_id": "approach-moving-animals-008fm:rabbit:20",
+            "score": 23.799999818205833,
+            "context_key": [
+              2,
+              "capsule044-height18-sweep4-native-contour-v1",
+              false
+            ],
+            "observation_ids": [
+              "structural-event:ef298651be53d5efa6ce1f9eec1fca120df32cf3",
+              "structural-event:8b2184b6ba65c7e88f152ef879aa4ab2b8c68997"
+            ]
+          },
+          {
+            "entity_id": "approach-moving-animals-008fm:rabbit:21",
+            "score": 6.133332401514067,
+            "context_key": [
+              3,
+              "capsule044-height18-sweep4-native-contour-v1",
+              false
+            ],
+            "observation_ids": [
+              "structural-event:124f46bea29f056210adaf6c5684f696c43228cc",
+              "structural-event:ef9b80df8d09da7f640a0e02b3166951ff0cb65e"
+            ]
+          }
+        ],
+        "cost_revalidation": {
+          "epoch_start_ms": 0,
+          "epoch_ms": 300000,
+          "sample_limit_per_context": 2,
+          "max_contexts": 2,
+          "uses_ram_counter": false,
+          "counts": [
+            {
+              "context_key": [
+                2,
+                "capsule044-height18-sweep4-native-contour-v1",
+                false
+              ],
+              "measured_in_epoch": 2
+            },
+            {
+              "context_key": [
+                3,
+                "capsule044-height18-sweep4-native-contour-v1",
+                false
+              ],
+              "measured_in_epoch": 5
+            }
+          ]
+        },
+        "reservation_token": null,
+        "exploration_budget": {
+          "epoch_start_ms": 0,
+          "used_attempts": 0,
+          "attempt_limit": 4,
+          "intent_only": true
+        }
+      },
+      "adaptive": {
+        "animal_positions_final": {
+          "far": [
+            1.0,
+            0.200000002980232,
+            24.7499580383301
+          ],
+          "near": [
+            18.7499580383301,
+            0.200000002980232,
+            0.0
+          ]
+        },
+        "animal_steps": 55,
+        "candidates": [
+          {
+            "context": {
+              "blocked_ahead": false,
+              "profile": "capsule044-height18-sweep4-native-contour-v1",
+              "sample_logical_ms": 260000,
+              "sweep_m": 4.0
+            },
+            "distance_m": 16.0,
+            "entity_id": "approach-moving-animals-008fm:rabbit:20"
+          },
+          {
+            "context": {
+              "blocked_ahead": false,
+              "profile": "capsule044-height18-sweep4-native-contour-v1",
+              "sample_logical_ms": 260000,
+              "sweep_m": 4.0
+            },
+            "distance_m": 22.0227146148682,
+            "entity_id": "approach-moving-animals-008fm:rabbit:21"
+          }
+        ],
+        "contacts": 0,
+        "context_fact": {
+          "approach": {
+            "absence_claim": false,
+            "capture": false,
+            "censored": false,
+            "contains_prediction": false,
+            "distance_m": 18.3999972045422,
+            "ended_ms": 265500,
+            "entity_id": "approach-moving-animals-008fm:rabbit:21",
+            "final_observed_remaining_m": 6.32060861587524,
+            "id": "approach-moving-animals-008fm:animal-approach:2cb856d25cf368c7:1",
+            "initial_observed_remaining_m": 22.0227146148682,
+            "learning_eligible": true,
+            "result": "approached",
+            "revision": 2,
+            "started_ms": 260000,
+            "world_id": "approach-moving-animals-008fm",
+            "world_write_authority": false
+          },
+          "contacts": 0,
+          "context": {
+            "blocked_ahead": false,
+            "profile": "capsule044-height18-sweep4-native-contour-v1",
+            "sample_logical_ms": 260000,
+            "sweep_m": 4.0
+          }
+        },
+        "distance_m": 18.3999972045422,
+        "fact": {
+          "absence_claim": false,
+          "capture": false,
+          "censored": false,
+          "contains_prediction": false,
+          "distance_m": 18.3999972045422,
+          "ended_ms": 265500,
+          "entity_id": "approach-moving-animals-008fm:rabbit:21",
+          "final_observed_remaining_m": 6.32060861587524,
+          "id": "approach-moving-animals-008fm:animal-approach:2cb856d25cf368c7:1",
+          "initial_observed_remaining_m": 22.0227146148682,
+          "learning_eligible": true,
+          "result": "approached",
+          "revision": 2,
+          "started_ms": 260000,
+          "world_id": "approach-moving-animals-008fm",
+          "world_write_authority": false
+        },
+        "fixture": {
+          "animal_serial": 20,
+          "animal_speed_m_s": 0.5,
+          "far_m": 22.0,
+          "near_m": 16.0,
+          "speed_m_s": 4.0,
+          "wall_at_m": 6.0,
+          "wall_length_m": 80.0
+        },
+        "future_position_given_to_controller": false,
+        "motion_model": "native local motion; production stabilized body heading and 0.25s scan scheduler; moving collidable animals; flat terrain",
+        "navigation_status": "perception",
+        "probe": false,
+        "reverse": false,
+        "route_plan_builds": 0,
+        "scan_count": 19,
+        "world_write_authority": false
+      },
+      "control_decision": {
+        "entity_id": "approach-moving-animals-008fm:rabbit:20",
+        "source": "perception",
+        "reason": "unseen_physical_context",
+        "observation_ids": []
+      },
+      "perception_control": {
+        "animal_positions_final": {
+          "far": [
+            1.0,
+            0.200000002980232,
+            23.6999740600586
+          ],
+          "near": [
+            17.6999740600586,
+            0.200000002980232,
+            0.0
+          ]
+        },
+        "animal_steps": 34,
+        "candidates": [
+          {
+            "context": {
+              "blocked_ahead": false,
+              "profile": "capsule044-height18-sweep4-native-contour-v1",
+              "sample_logical_ms": 260000,
+              "sweep_m": 4.0
+            },
+            "distance_m": 16.0,
+            "entity_id": "approach-moving-animals-008fm:rabbit:20"
+          },
+          {
+            "context": {
+              "blocked_ahead": false,
+              "profile": "capsule044-height18-sweep4-native-contour-v1",
+              "sample_logical_ms": 260000,
+              "sweep_m": 4.0
+            },
+            "distance_m": 22.0227146148682,
+            "entity_id": "approach-moving-animals-008fm:rabbit:21"
+          }
+        ],
+        "contacts": 0,
+        "context_fact": {
+          "approach": {
+            "absence_claim": false,
+            "capture": false,
+            "censored": false,
+            "contains_prediction": false,
+            "distance_m": 11.3999994546175,
+            "ended_ms": 263400,
+            "entity_id": "approach-moving-animals-008fm:rabbit:20",
+            "final_observed_remaining_m": 15.2791223526001,
+            "id": "approach-moving-animals-008fm:animal-approach:9c1b6d13c4a1abbe:1",
+            "initial_observed_remaining_m": 16.0,
+            "learning_eligible": true,
+            "result": "contact_lost",
+            "revision": 1,
+            "started_ms": 260000,
+            "world_id": "approach-moving-animals-008fm",
+            "world_write_authority": false
+          },
+          "contacts": 0,
+          "context": {
+            "blocked_ahead": false,
+            "profile": "capsule044-height18-sweep4-native-contour-v1",
+            "sample_logical_ms": 260000,
+            "sweep_m": 4.0
+          }
+        },
+        "distance_m": 11.3999994546175,
+        "fact": {
+          "absence_claim": false,
+          "capture": false,
+          "censored": false,
+          "contains_prediction": false,
+          "distance_m": 11.3999994546175,
+          "ended_ms": 263400,
+          "entity_id": "approach-moving-animals-008fm:rabbit:20",
+          "final_observed_remaining_m": 15.2791223526001,
+          "id": "approach-moving-animals-008fm:animal-approach:9c1b6d13c4a1abbe:1",
+          "initial_observed_remaining_m": 16.0,
+          "learning_eligible": true,
+          "result": "contact_lost",
+          "revision": 1,
+          "started_ms": 260000,
+          "world_id": "approach-moving-animals-008fm",
+          "world_write_authority": false
+        },
+        "fixture": {
+          "animal_serial": 20,
+          "animal_speed_m_s": 0.5,
+          "far_m": 22.0,
+          "near_m": 16.0,
+          "speed_m_s": 4.0,
+          "wall_at_m": 6.0,
+          "wall_length_m": 80.0
+        },
+        "future_position_given_to_controller": false,
+        "motion_model": "native local motion; production stabilized body heading and 0.25s scan scheduler; moving collidable animals; flat terrain",
+        "navigation_status": "perception",
+        "probe": false,
+        "reverse": false,
+        "route_plan_builds": 0,
+        "scan_count": 12,
+        "world_write_authority": false
+      },
+      "control_outcome_ingested": false
+    }
+  ],
+  "persisted_actual_facts": [
+    {
+      "approach": {
+        "absence_claim": false,
+        "capture": false,
+        "censored": false,
+        "contains_prediction": false,
+        "distance_m": 11.3999994546175,
+        "ended_ms": 103400,
+        "entity_id": "approach-moving-animals-008fm:rabbit:0",
+        "final_observed_remaining_m": 15.2791223526001,
+        "id": "approach-moving-animals-008fm:animal-approach:7879e546519a0fbf:1",
+        "initial_observed_remaining_m": 16.0,
+        "learning_eligible": true,
+        "result": "contact_lost",
+        "revision": 1,
+        "started_ms": 100000,
+        "world_id": "approach-moving-animals-008fm",
+        "world_write_authority": false
+      },
+      "contacts": 0,
+      "context": {
+        "blocked_ahead": false,
+        "profile": "capsule044-height18-sweep4-native-contour-v1",
+        "sample_logical_ms": 100000,
+        "sweep_m": 4.0
+      }
+    },
+    {
+      "approach": {
+        "absence_claim": false,
+        "capture": false,
+        "censored": false,
+        "contains_prediction": false,
+        "distance_m": 18.3999972045422,
+        "ended_ms": 125500,
+        "entity_id": "approach-moving-animals-008fm:rabbit:1",
+        "final_observed_remaining_m": 6.32060861587524,
+        "id": "approach-moving-animals-008fm:animal-approach:21b60308c72f8330:1",
+        "initial_observed_remaining_m": 22.0227146148682,
+        "learning_eligible": true,
+        "result": "approached",
+        "revision": 2,
+        "started_ms": 120000,
+        "world_id": "approach-moving-animals-008fm",
+        "world_write_authority": false
+      },
+      "contacts": 0,
+      "context": {
+        "blocked_ahead": false,
+        "profile": "capsule044-height18-sweep4-native-contour-v1",
+        "sample_logical_ms": 120000,
+        "sweep_m": 4.0
+      }
+    },
+    {
+      "approach": {
+        "absence_claim": false,
+        "capture": false,
+        "censored": false,
+        "contains_prediction": false,
+        "distance_m": 11.3999994546175,
+        "ended_ms": 143400,
+        "entity_id": "approach-moving-animals-008fm:rabbit:0",
+        "final_observed_remaining_m": 15.2791223526001,
+        "id": "approach-moving-animals-008fm:animal-approach:3012c9aa1b2bc214:1",
+        "initial_observed_remaining_m": 16.0,
+        "learning_eligible": true,
+        "result": "contact_lost",
+        "revision": 1,
+        "started_ms": 140000,
+        "world_id": "approach-moving-animals-008fm",
+        "world_write_authority": false
+      },
+      "contacts": 0,
+      "context": {
+        "blocked_ahead": false,
+        "profile": "capsule044-height18-sweep4-native-contour-v1",
+        "sample_logical_ms": 140000,
+        "sweep_m": 4.0
+      }
+    },
+    {
+      "approach": {
+        "absence_claim": false,
+        "capture": false,
+        "censored": false,
+        "contains_prediction": false,
+        "distance_m": 18.3999972045422,
+        "ended_ms": 165500,
+        "entity_id": "approach-moving-animals-008fm:rabbit:1",
+        "final_observed_remaining_m": 6.32060861587524,
+        "id": "approach-moving-animals-008fm:animal-approach:6297edf5afe425c1:1",
+        "initial_observed_remaining_m": 22.0227146148682,
+        "learning_eligible": true,
+        "result": "approached",
+        "revision": 2,
+        "started_ms": 160000,
+        "world_id": "approach-moving-animals-008fm",
+        "world_write_authority": false
+      },
+      "contacts": 0,
+      "context": {
+        "blocked_ahead": false,
+        "profile": "capsule044-height18-sweep4-native-contour-v1",
+        "sample_logical_ms": 160000,
+        "sweep_m": 4.0
+      }
+    },
+    {
+      "approach": {
+        "absence_claim": false,
+        "capture": false,
+        "censored": false,
+        "contains_prediction": false,
+        "distance_m": 18.3999972045422,
+        "ended_ms": 205500,
+        "entity_id": "approach-moving-animals-008fm:rabbit:21",
+        "final_observed_remaining_m": 6.32060861587524,
+        "id": "approach-moving-animals-008fm:animal-approach:7d0bfb060f3aae8f:1",
+        "initial_observed_remaining_m": 22.0227146148682,
+        "learning_eligible": true,
+        "result": "approached",
+        "revision": 2,
+        "started_ms": 200000,
+        "world_id": "approach-moving-animals-008fm",
+        "world_write_authority": false
+      },
+      "contacts": 0,
+      "context": {
+        "blocked_ahead": false,
+        "profile": "capsule044-height18-sweep4-native-contour-v1",
+        "sample_logical_ms": 200000,
+        "sweep_m": 4.0
+      }
+    },
+    {
+      "approach": {
+        "absence_claim": false,
+        "capture": false,
+        "censored": false,
+        "contains_prediction": false,
+        "distance_m": 18.3999972045422,
+        "ended_ms": 225500,
+        "entity_id": "approach-moving-animals-008fm:rabbit:21",
+        "final_observed_remaining_m": 6.32060861587524,
+        "id": "approach-moving-animals-008fm:animal-approach:7652debe5fb93340:1",
+        "initial_observed_remaining_m": 22.0227146148682,
+        "learning_eligible": true,
+        "result": "approached",
+        "revision": 2,
+        "started_ms": 220000,
+        "world_id": "approach-moving-animals-008fm",
+        "world_write_authority": false
+      },
+      "contacts": 0,
+      "context": {
+        "blocked_ahead": false,
+        "profile": "capsule044-height18-sweep4-native-contour-v1",
+        "sample_logical_ms": 220000,
+        "sweep_m": 4.0
+      }
+    },
+    {
+      "approach": {
+        "absence_claim": false,
+        "capture": false,
+        "censored": false,
+        "contains_prediction": false,
+        "distance_m": 18.3999972045422,
+        "ended_ms": 245500,
+        "entity_id": "approach-moving-animals-008fm:rabbit:21",
+        "final_observed_remaining_m": 6.32060861587524,
+        "id": "approach-moving-animals-008fm:animal-approach:720828daa24ccf57:1",
+        "initial_observed_remaining_m": 22.0227146148682,
+        "learning_eligible": true,
+        "result": "approached",
+        "revision": 2,
+        "started_ms": 240000,
+        "world_id": "approach-moving-animals-008fm",
+        "world_write_authority": false
+      },
+      "contacts": 0,
+      "context": {
+        "blocked_ahead": false,
+        "profile": "capsule044-height18-sweep4-native-contour-v1",
+        "sample_logical_ms": 240000,
+        "sweep_m": 4.0
+      }
+    },
+    {
+      "approach": {
+        "absence_claim": false,
+        "capture": false,
+        "censored": false,
+        "contains_prediction": false,
+        "distance_m": 18.3999972045422,
+        "ended_ms": 265500,
+        "entity_id": "approach-moving-animals-008fm:rabbit:21",
+        "final_observed_remaining_m": 6.32060861587524,
+        "id": "approach-moving-animals-008fm:animal-approach:2cb856d25cf368c7:1",
+        "initial_observed_remaining_m": 22.0227146148682,
+        "learning_eligible": true,
+        "result": "approached",
+        "revision": 2,
+        "started_ms": 260000,
+        "world_id": "approach-moving-animals-008fm",
+        "world_write_authority": false
+      },
+      "contacts": 0,
+      "context": {
+        "blocked_ahead": false,
+        "profile": "capsule044-height18-sweep4-native-contour-v1",
+        "sample_logical_ms": 260000,
+        "sweep_m": 4.0
+      }
+    }
+  ],
+  "cold_recoveries": [
+    {
+      "schema": "live-infinita-native-contextual-approach-core-status/v1",
+      "world_id": "approach-moving-animals-008fm",
+      "profile": "capsule044-height18-sweep4-native-contour-v1",
+      "generated_at_unix": 1791663989.589141,
+      "source": "memoria.ia-local-structural-api",
+      "acked_this_poll": 0,
+      "confirmed_total": 1,
+      "eligible_in_source": 1,
+      "recovered_this_poll": 1,
+      "cached_recovered": 1,
+      "decision_use": false,
+      "world_write_authority": false,
+      "capture": false
+    },
+    {
+      "schema": "live-infinita-native-contextual-approach-core-status/v1",
+      "world_id": "approach-moving-animals-008fm",
+      "profile": "capsule044-height18-sweep4-native-contour-v1",
+      "generated_at_unix": 1791663991.9903004,
+      "source": "memoria.ia-local-structural-api",
+      "acked_this_poll": 0,
+      "confirmed_total": 2,
+      "eligible_in_source": 1,
+      "recovered_this_poll": 2,
+      "cached_recovered": 2,
+      "decision_use": false,
+      "world_write_authority": false,
+      "capture": false
+    },
+    {
+      "schema": "live-infinita-native-contextual-approach-core-status/v1",
+      "world_id": "approach-moving-animals-008fm",
+      "profile": "capsule044-height18-sweep4-native-contour-v1",
+      "generated_at_unix": 1791663993.9701896,
+      "source": "memoria.ia-local-structural-api",
+      "acked_this_poll": 0,
+      "confirmed_total": 3,
+      "eligible_in_source": 1,
+      "recovered_this_poll": 3,
+      "cached_recovered": 3,
+      "decision_use": false,
+      "world_write_authority": false,
+      "capture": false
+    },
+    {
+      "schema": "live-infinita-native-contextual-approach-core-status/v1",
+      "world_id": "approach-moving-animals-008fm",
+      "profile": "capsule044-height18-sweep4-native-contour-v1",
+      "generated_at_unix": 1791663996.3568928,
+      "source": "memoria.ia-local-structural-api",
+      "acked_this_poll": 0,
+      "confirmed_total": 4,
+      "eligible_in_source": 1,
+      "recovered_this_poll": 4,
+      "cached_recovered": 4,
+      "decision_use": false,
+      "world_write_authority": false,
+      "capture": false
+    },
+    {
+      "schema": "live-infinita-native-contextual-approach-core-status/v1",
+      "world_id": "approach-moving-animals-008fm",
+      "profile": "capsule044-height18-sweep4-native-contour-v1",
+      "generated_at_unix": 1791664001.6094158,
+      "source": "memoria.ia-local-structural-api",
+      "acked_this_poll": 0,
+      "confirmed_total": 5,
+      "eligible_in_source": 1,
+      "recovered_this_poll": 5,
+      "cached_recovered": 5,
+      "decision_use": false,
+      "world_write_authority": false,
+      "capture": false
+    },
+    {
+      "schema": "live-infinita-native-contextual-approach-core-status/v1",
+      "world_id": "approach-moving-animals-008fm",
+      "profile": "capsule044-height18-sweep4-native-contour-v1",
+      "generated_at_unix": 1791664007.3888226,
+      "source": "memoria.ia-local-structural-api",
+      "acked_this_poll": 0,
+      "confirmed_total": 6,
+      "eligible_in_source": 1,
+      "recovered_this_poll": 6,
+      "cached_recovered": 6,
+      "decision_use": false,
+      "world_write_authority": false,
+      "capture": false
+    },
+    {
+      "schema": "live-infinita-native-contextual-approach-core-status/v1",
+      "world_id": "approach-moving-animals-008fm",
+      "profile": "capsule044-height18-sweep4-native-contour-v1",
+      "generated_at_unix": 1791664013.4850528,
+      "source": "memoria.ia-local-structural-api",
+      "acked_this_poll": 0,
+      "confirmed_total": 7,
+      "eligible_in_source": 1,
+      "recovered_this_poll": 7,
+      "cached_recovered": 7,
+      "decision_use": false,
+      "world_write_authority": false,
+      "capture": false
+    },
+    {
+      "schema": "live-infinita-native-contextual-approach-core-status/v1",
+      "world_id": "approach-moving-animals-008fm",
+      "profile": "capsule044-height18-sweep4-native-contour-v1",
+      "generated_at_unix": 1791664018.378762,
+      "source": "memoria.ia-local-structural-api",
+      "acked_this_poll": 0,
+      "confirmed_total": 8,
+      "eligible_in_source": 1,
+      "recovered_this_poll": 8,
+      "cached_recovered": 8,
+      "decision_use": false,
+      "world_write_authority": false,
+      "capture": false
+    }
+  ],
+  "animal_speed_m_s": 0.5,
+  "exploration_reservations": 0,
+  "adaptive_total_distance_m": 73.5999888181688,
+  "perception_total_distance_m": 45.59999781847,
+  "adaptive_successes": 4,
+  "perception_successes": 0,
+  "production_changed": false
+}
