@@ -1,0 +1,5 @@
+008FP_PAIR completed 0 reacquired
+008FP_PAIR completed 1 reacquired
+008FP_PAIR interrupted 0 renderer_restart
+008FP_PAIR interrupted 1 renderer_restart
+008FP_CONTACT_SEARCH_PASS traversals=8 actual_facts=4 cold_recoveries=4

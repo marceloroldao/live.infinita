@@ -43,12 +43,12 @@ func _initialize()->void:
     s=seeded()
     var all_allowed:=true
     for i in range(32):
-        var now:=2000+i*100
+        var now:=2000+i*300000
         s.observe(sight(now-1600))
         var row:=fact(now);row.id="w:animal-approach:quota:"+str(i)
         all_allowed=all_allowed and s.begin(row,Vector3.ZERO,now,Callable(self,"allowed"))
         s.choose(Vector3.ZERO,"other",now)
     check(all_allowed,"32 bounded distinct launches")
-    var extra:=fact(5300);extra.id="w:animal-approach:quota:extra"
-    check(not s.begin(extra,Vector3.ZERO,5300,Callable(self,"allowed")),"process quota must not evict ids and reopen old attempts")
+    var extra:=fact(9602000);extra.id="w:animal-approach:quota:extra"
+    check(not s.begin(extra,Vector3.ZERO,9602000,Callable(self,"allowed")),"process quota must not evict ids and reopen old attempts")
     print("008FO_CONTRACT_PASS checks="+str(count));quit(1 if failures else 0)

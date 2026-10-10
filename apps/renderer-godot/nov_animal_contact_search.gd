@@ -9,10 +9,12 @@ var _previous:=Vector3(INF,INF,INF)
 var _distance:=0.0
 var _last_ms:=-1
 var result:Dictionary={}
+var journal=preload("res://nov_contact_search_journal.gd").new()
+func configure(path:String,shared_guard:String="")->void:journal.configure(path,shared_guard)
 func _init()->void:_eyes.enabled=true
 func observe(value:Dictionary)->void:_eyes.observe(value)
 func begin(outcome:Dictionary,current:Vector3,now:int,resolve:Callable)->bool:
-    if _used.size()>=32 or not _active.is_empty() or not current.is_finite() or not resolve.is_valid() or now<_last_ms:return false
+    if not journal.ready or _used.size()>=32 or not _active.is_empty() or not current.is_finite() or not resolve.is_valid() or now<_last_ms:return false
     if outcome.get("result")!="contact_lost" or outcome.get("censored")!=false or outcome.get("capture")!=false or outcome.get("world_write_authority")!=false:return false
     var ended=outcome.get("ended_ms")
     if typeof(ended) not in [TYPE_INT,TYPE_FLOAT] or not is_finite(float(ended)) or float(ended)!=floorf(float(ended)) or ended>now or now-int(ended)>300:return false
@@ -33,6 +35,8 @@ func begin(outcome:Dictionary,current:Vector3,now:int,resolve:Callable)->bool:
     _active={"phase":"contact_search","source":"last_eye_observation_hypothesis","entity_id":entity,"world_id":world,"approach_id":id,
         "started_ms":now,"deadline_ms":now+MAX_MS,"wall_started":Time.get_ticks_msec(),"seed_observed_ms":seen.stamp,
         "last_observed_point":[point.x,point.y,point.z],"goal":[goal.x,goal.y,goal.z],"contains_prediction":true,"capture":false,"world_write_authority":false}
+    if not journal.reserve(_active):
+        _active.clear();return false
     _used.append(id)
     _previous=current;_distance=0.0;_last_ms=now;result={}
     return true
@@ -42,6 +46,7 @@ func _finish(reason:String,now:int,seen:Dictionary={})->void:
         "seed_observed_ms":_active.seed_observed_ms,"reacquired_observed_ms":seen.get("stamp",null),
         "observed_position_m":[seen.point.x,seen.point.y,seen.point.z] if seen.has("point") else null,
         "capture":false,"absence_claim":false,"approach_confirmed":false,"learning_eligible":false,"world_write_authority":false}
+    journal.settle(result)
     _active.clear()
 func choose(current:Vector3,world:String,now:int)->Dictionary:
     if _active.is_empty():return {}

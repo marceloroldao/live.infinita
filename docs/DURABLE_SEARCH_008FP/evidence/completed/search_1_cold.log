@@ -1,0 +1,3 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+008FP_COLD {"clocks":{"approach-contact-search-008fp":226000.0},"pending":{},"records":[{"absence_claim":false,"approach_confirmed":false,"approach_id":"approach-contact-search-008fp:animal-approach:e77dfdab5c4c6bc7:1","capture":false,"distance_m":5.79999989271164,"ended_ms":226000.0,"entity_id":"approach-contact-search-008fp:rabbit:21","learning_eligible":false,"observed_position_m":[2.99999928474426,0.200000002980232,26.0000152587891],"reacquired_observed_ms":226000.0,"result":"reacquired","seed_observed_ms":222700.0,"started_ms":224300.0,"world_id":"approach-contact-search-008fp","world_write_authority":false}]}

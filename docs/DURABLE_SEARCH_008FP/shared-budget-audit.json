@@ -1,0 +1,42 @@
+{
+  "checks": [
+    {
+      "case": "completed",
+      "trial": 0,
+      "count_before_cold": 1,
+      "count_after_cold": 1,
+      "pending_before_cold": false,
+      "pending_after_cold": false,
+      "result": "reacquired"
+    },
+    {
+      "case": "completed",
+      "trial": 1,
+      "count_before_cold": 1,
+      "count_after_cold": 1,
+      "pending_before_cold": false,
+      "pending_after_cold": false,
+      "result": "reacquired"
+    },
+    {
+      "case": "interrupted",
+      "trial": 0,
+      "count_before_cold": 1,
+      "count_after_cold": 1,
+      "pending_before_cold": true,
+      "pending_after_cold": false,
+      "result": "renderer_restart"
+    },
+    {
+      "case": "interrupted",
+      "trial": 1,
+      "count_before_cold": 1,
+      "count_after_cold": 1,
+      "pending_before_cold": true,
+      "pending_after_cold": false,
+      "result": "renderer_restart"
+    }
+  ],
+  "cold_renderer_reloads": 4,
+  "learning_core_search_facts": 0
+}

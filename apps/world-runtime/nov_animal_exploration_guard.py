@@ -52,10 +52,11 @@ def locked(path):
         raw=json.dumps(state,sort_keys=True,separators=(",",":"),allow_nan=False)
         write_checkpoint(path,{"payload":raw,"sha256":sha256(raw.encode()).hexdigest()},mode=0o600)
     finally:os.close(fd)
-def recommend_and_reserve(path,candidates,entries,world,now):
+def recommend_and_reserve(path,candidates,entries,world,now,contact_search_journal=None):
     decision=cost_recommend(candidates,entries,world,now)
     with locked(path) as state:
         epoch=int(now)//EPOCH_MS*EPOCH_MS
+        search_count,search_pending=search_budget(contact_search_journal,world,now) if contact_search_journal is not None else (0,False)
         if world not in state["worlds"]:
             if len(state["worlds"])==MAX_WORLDS:raise GuardError("guard_scope_limit")
             state["worlds"][world]={"last_ms":int(now),"epoch_start_ms":epoch,"reservations":[]}
@@ -63,13 +64,13 @@ def recommend_and_reserve(path,candidates,entries,world,now):
         if now<scope["last_ms"]:raise GuardError("guard_clock_rewind")
         scope["last_ms"]=int(now)
         rows=scope["reservations"]
-        if any(r["status"]=="reserved" for r in rows):
+        if search_pending or any(r["status"]=="reserved" for r in rows):
             return {"entity_id":None,"source":"exploration_guard","reason":"pending_reservation","reservation_token":None}
         if epoch>scope["epoch_start_ms"]:
             scope["epoch_start_ms"]=epoch;rows=[];scope["reservations"]=rows
-        status={"epoch_start_ms":epoch,"used_attempts":len(rows),"attempt_limit":MAX_ATTEMPTS,"intent_only":True}
+        status={"epoch_start_ms":epoch,"used_attempts":len(rows)+search_count,"attempt_limit":MAX_ATTEMPTS,"intent_only":True}
         if decision["source"] not in EXPLORATION:return dict(decision,reservation_token=None,exploration_budget=status)
-        if len(rows)==MAX_ATTEMPTS:
+        if len(rows)+search_count>=MAX_ATTEMPTS:
             closest=min(candidates,key=lambda c:(c["distance_m"],c["entity_id"]))
             return {"entity_id":closest["entity_id"],"source":"perception","reason":"exploration_budget_exhausted",
                     "observation_ids":[],"reservation_token":None,"exploration_budget":status}
@@ -77,7 +78,7 @@ def recommend_and_reserve(path,candidates,entries,world,now):
         token=uuid.uuid4().hex
         rows.append({"token":token,"entity_id":chosen["entity_id"],"started_ms":int(now),
                      "context_key":list(key(chosen["distance_m"],chosen["context"])),"status":"reserved","outcome_id":None,"outcome_sha256":None})
-        status["used_attempts"]=len(rows)
+        status["used_attempts"]=len(rows)+search_count
         return dict(decision,reservation_token=token,exploration_budget=status)
 def settle(path,token,actual_base_outcome):
     row=validate(actual_base_outcome)
@@ -96,3 +97,36 @@ def settle(path,token,actual_base_outcome):
         reservation["status"]="interrupted" if row["censored"] else "closed"
         reservation["outcome_id"]=row["id"];reservation["outcome_sha256"]=digest
         return reservation["status"]
+
+
+def search_budget(path,world,now):
+    """Single actor: share measured and interrupted Godot search starts, not facts."""
+    sealed=read_json(path)
+    if type(sealed.get("payload")) is not str or sealed.get("sha256")!=sha256(sealed["payload"].encode()).hexdigest():raise GuardError("invalid_search_checksum")
+    s=json.loads(sealed["payload"])
+    if set(s)!={"schema","records","pending","clocks"} or s["schema"]!="live-infinita-contact-search-journal/v1" or not isinstance(s["records"],list) or len(s["records"])>64 or not isinstance(s["pending"],dict) or not isinstance(s["clocks"],dict) or len(s["clocks"])>16:raise GuardError("invalid_search_state")
+    if any(not isinstance(w,str) or not w or not number(t,True) for w,t in s["clocks"].items()):raise GuardError("invalid_search_clock")
+    if now<s["clocks"].get(world,0):raise GuardError("search_clock_rewind")
+    rows=s["records"]+([s["pending"]] if s["pending"] else [])
+    if len(rows)>64:raise GuardError("search_history_limit")
+    ids=set();count=0
+    fields={"approach_id","entity_id","world_id","started_ms","seed_observed_ms","ended_ms","result","distance_m","reacquired_observed_ms","observed_position_m","capture","absence_claim","approach_confirmed","learning_eligible","world_write_authority"}
+    for r in rows:
+        if not isinstance(r,dict) or set(r)!=fields or any(r[f] is not False for f in ("capture","absence_claim","approach_confirmed","learning_eligible","world_write_authority")):raise GuardError("invalid_search_record")
+        w=r["world_id"]
+        if not isinstance(w,str) or not w or not isinstance(r["approach_id"],str) or not r["approach_id"].startswith(w+":animal-approach:") or r["approach_id"] in ids or not isinstance(r["entity_id"],str) or not r["entity_id"].startswith(w+":rabbit:"):raise GuardError("invalid_search_identity")
+        ids.add(r["approach_id"])
+        if not number(r["started_ms"],True) or not number(r["seed_observed_ms"],True) or r["seed_observed_ms"]>r["started_ms"] or s["clocks"].get(w,-1)<r["started_ms"]:raise GuardError("invalid_search_timestamp")
+        if r["result"] in ("reserved","renderer_restart"):
+            if any(r[f] is not None for f in ("ended_ms","distance_m","reacquired_observed_ms","observed_position_m")):raise GuardError("fabricated_interruption")
+        elif r["result"] in ("reacquired","search_budget_exhausted","invalid_context"):
+            if not number(r["ended_ms"],True) or r["ended_ms"]<r["started_ms"] or not number(r["distance_m"]):raise GuardError("invalid_search_measurement")
+            if r["result"]=="reacquired":
+                t=r["reacquired_observed_ms"];p=r["observed_position_m"]
+                if not number(t,True) or not r["seed_observed_ms"]<t<=r["ended_ms"] or r["ended_ms"]-t>300 or not isinstance(p,list) or len(p)!=3 or any(type(v) not in (int,float) or not -100000<=v<=100000 for v in p):raise GuardError("invalid_reacquisition")
+            elif r["reacquired_observed_ms"] is not None or r["observed_position_m"] is not None:raise GuardError("unobserved_reacquisition")
+        else:raise GuardError("invalid_search_result")
+        if r in s["records"] and r["result"]=="reserved":raise GuardError("misplaced_search_reservation")
+        if w==world and int(r["started_ms"])//EPOCH_MS==int(now)//EPOCH_MS:count+=1
+    if s["pending"] and s["pending"]["result"]!="reserved":raise GuardError("invalid_pending_search")
+    return count,bool(s["pending"])
