@@ -255,3 +255,14 @@ func recover_to(current: Vector3, destination: Vector3, body: CharacterBody3D, s
 
 func abort_journey(reason: String, termination: String) -> void:
     _journey.abort(reason,termination)
+
+func approach_context(current: Vector3, observed: Vector3, logical_ms: int) -> Dictionary:
+    if _body_ref==null or logical_ms<0 or not current.is_finite() or not observed.is_finite():return {}
+    var body=_body_ref.get_ref()
+    if not is_instance_valid(body) or not body.is_inside_tree():return {}
+    var direction:=Vector3(observed.x-current.x,0,observed.z-current.z)
+    if direction.length_squared()<0.0001:return {}
+    var pose:Transform3D=body.global_transform
+    pose.origin=current+Vector3(0,BODY_CENTER_Y,0)
+    return {"profile":"capsule044-height18-sweep4-native-contour-v1","sweep_m":4.0,
+        "blocked_ahead":body.test_move(pose,direction.normalized()*4.0),"sample_logical_ms":logical_ms}

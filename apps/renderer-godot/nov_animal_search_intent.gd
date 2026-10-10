@@ -51,6 +51,7 @@ func _sealed_read(path: String) -> Dictionary:
 
 func configure(state_path: String, public_path: String, source_path: String, session: String) -> void:
     _approach.enabled=OS.get_environment("LIVE_INFINITA_ANIMAL_APPROACH_ENABLED")=="1"
+    _approach.context_enabled=OS.get_environment("LIVE_INFINITA_ANIMAL_CONTEXT_ENABLED")=="1"
     _approach.configure(state_path+".approach" if not state_path.is_empty() else "")
     _path=state_path;_public=public_path;_source=source_path;_session=session
     enabled=not state_path.is_empty() and not public_path.is_empty() and not source_path.is_empty() and session.length()==32

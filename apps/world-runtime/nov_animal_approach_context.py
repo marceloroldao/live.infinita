@@ -1,11 +1,12 @@
-"""Experimental physical context and failure-driven reassessment; no live caller."""
+"""Physical-context contracts and experimental reassessment; live collection has no decision authority."""
 from hashlib import blake2b,sha256
 from nov_animal_approach_sync import validate,number
 from nov_spatial_memory_sync import _canonical,_observation_id
 PROFILE="capsule044-height18-sweep4-v1"
+NATIVE_PROFILE="capsule044-height18-sweep4-native-contour-v1"
 KIND="native_contextual_approach_outcome"
 def context(value):
-    if not isinstance(value,dict) or set(value)!={"profile","sweep_m","blocked_ahead","sample_logical_ms"} or value["profile"]!=PROFILE or type(value["sweep_m"]) not in (int,float) or value["sweep_m"]!=4 or type(value["blocked_ahead"]) is not bool or not number(value["sample_logical_ms"],True):
+    if not isinstance(value,dict) or set(value)!={"profile","sweep_m","blocked_ahead","sample_logical_ms"} or value["profile"] not in (PROFILE,NATIVE_PROFILE) or type(value["sweep_m"]) not in (int,float) or value["sweep_m"]!=4 or type(value["blocked_ahead"]) is not bool or not number(value["sample_logical_ms"],True):
         raise ValueError("invalid_physical_context")
     return dict(value,sweep_m=4.0,sample_logical_ms=int(value["sample_logical_ms"]))
 def fact(value):

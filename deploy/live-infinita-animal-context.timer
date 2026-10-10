@@ -1,0 +1,12 @@
+[Unit]
+Description=Sync native contour approach context (collection only) every 30 seconds
+
+[Timer]
+OnBootSec=45
+OnUnitInactiveSec=30
+RandomizedDelaySec=3
+AccuracySec=1
+Unit=live-infinita-animal-context.service
+
+[Install]
+WantedBy=timers.target

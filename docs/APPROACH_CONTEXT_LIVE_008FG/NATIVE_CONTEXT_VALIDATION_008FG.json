@@ -1,0 +1,834 @@
+{
+  "schema": "live-infinita-native-approach-context-validation/v1",
+  "sdk_commit": "dfd87c995b50c49b45a9d5dd4c43cce456983d4f",
+  "actual_native_traversals": 8,
+  "native_facts_stored": 8,
+  "prior_actual_direct_facts_retained": 4,
+  "cold_recoveries": [
+    {
+      "schema": "live-infinita-native-contextual-approach-core-status/v1",
+      "world_id": "approach-context-008ff",
+      "profile": "capsule044-height18-sweep4-native-contour-v1",
+      "generated_at_unix": 1791607939.187823,
+      "source": "memoria.ia-local-structural-api",
+      "acked_this_poll": 0,
+      "confirmed_total": 4,
+      "eligible_in_source": 1,
+      "recovered_this_poll": 4,
+      "cached_recovered": 4,
+      "decision_use": false,
+      "world_write_authority": false,
+      "capture": false
+    },
+    {
+      "schema": "live-infinita-native-contextual-approach-core-status/v1",
+      "world_id": "approach-context-008ff",
+      "profile": "capsule044-height18-sweep4-native-contour-v1",
+      "generated_at_unix": 1791607950.417227,
+      "source": "memoria.ia-local-structural-api",
+      "acked_this_poll": 0,
+      "confirmed_total": 8,
+      "eligible_in_source": 1,
+      "recovered_this_poll": 8,
+      "cached_recovered": 8,
+      "decision_use": false,
+      "world_write_authority": false,
+      "capture": false
+    }
+  ],
+  "runs": [
+    {
+      "candidates": [
+        {
+          "context": {
+            "blocked_ahead": true,
+            "profile": "capsule044-height18-sweep4-native-contour-v1",
+            "sample_logical_ms": 300000,
+            "sweep_m": 4.0
+          },
+          "distance_m": 16.0,
+          "entity_id": "approach-context-008ff:rabbit:0"
+        },
+        {
+          "context": {
+            "blocked_ahead": false,
+            "profile": "capsule044-height18-sweep4-native-contour-v1",
+            "sample_logical_ms": 300000,
+            "sweep_m": 4.0
+          },
+          "distance_m": 22.3606796264648,
+          "entity_id": "approach-context-008ff:rabbit:1"
+        }
+      ],
+      "contacts": 0,
+      "context_fact": {
+        "approach": {
+          "absence_claim": false,
+          "capture": false,
+          "censored": false,
+          "contains_prediction": false,
+          "distance_m": 12.4000000804663,
+          "ended_ms": 303700,
+          "entity_id": "approach-context-008ff:rabbit:0",
+          "final_observed_remaining_m": 6.31119441986084,
+          "id": "approach-context-008ff:animal-approach:18f8026484b8c718:1",
+          "initial_observed_remaining_m": 16.0,
+          "learning_eligible": true,
+          "result": "approached",
+          "revision": 1,
+          "started_ms": 300000,
+          "world_id": "approach-context-008ff",
+          "world_write_authority": false
+        },
+        "contacts": 0,
+        "context": {
+          "blocked_ahead": true,
+          "profile": "capsule044-height18-sweep4-native-contour-v1",
+          "sample_logical_ms": 300000,
+          "sweep_m": 4.0
+        }
+      },
+      "distance_m": 12.4000000804663,
+      "fact": {
+        "absence_claim": false,
+        "capture": false,
+        "censored": false,
+        "contains_prediction": false,
+        "distance_m": 12.4000000804663,
+        "ended_ms": 303700,
+        "entity_id": "approach-context-008ff:rabbit:0",
+        "final_observed_remaining_m": 6.31119441986084,
+        "id": "approach-context-008ff:animal-approach:18f8026484b8c718:1",
+        "initial_observed_remaining_m": 16.0,
+        "learning_eligible": true,
+        "result": "approached",
+        "revision": 1,
+        "started_ms": 300000,
+        "world_id": "approach-context-008ff",
+        "world_write_authority": false
+      },
+      "motion_model": "native local motion with anticipation, collision guards and observed contour on flat terrain",
+      "navigation_status": "perception",
+      "probe": false,
+      "reverse": false,
+      "route_plan_builds": 0,
+      "world_write_authority": false,
+      "bridge": {
+        "schema": "live-infinita-native-contextual-approach-core-status/v1",
+        "world_id": "approach-context-008ff",
+        "profile": "capsule044-height18-sweep4-native-contour-v1",
+        "generated_at_unix": 1791607932.5601194,
+        "source": "memoria.ia-local-structural-api",
+        "acked_this_poll": 1,
+        "confirmed_total": 1,
+        "eligible_in_source": 1,
+        "recovered_this_poll": 1,
+        "cached_recovered": 1,
+        "decision_use": false,
+        "world_write_authority": false,
+        "capture": false
+      },
+      "old_direct_profile_rejected": {
+        "entity_id": "approach-context-008ff:rabbit:0",
+        "source": "perception",
+        "reason": "unseen_physical_context",
+        "observation_ids": []
+      }
+    },
+    {
+      "candidates": [
+        {
+          "context": {
+            "blocked_ahead": true,
+            "profile": "capsule044-height18-sweep4-native-contour-v1",
+            "sample_logical_ms": 400000,
+            "sweep_m": 4.0
+          },
+          "distance_m": 16.0,
+          "entity_id": "approach-context-008ff:rabbit:0"
+        },
+        {
+          "context": {
+            "blocked_ahead": false,
+            "profile": "capsule044-height18-sweep4-native-contour-v1",
+            "sample_logical_ms": 400000,
+            "sweep_m": 4.0
+          },
+          "distance_m": 22.3606796264648,
+          "entity_id": "approach-context-008ff:rabbit:1"
+        }
+      ],
+      "contacts": 0,
+      "context_fact": {
+        "approach": {
+          "absence_claim": false,
+          "capture": false,
+          "censored": false,
+          "contains_prediction": false,
+          "distance_m": 19.4000009596348,
+          "ended_ms": 405800,
+          "entity_id": "approach-context-008ff:rabbit:1",
+          "final_observed_remaining_m": 6.31780433654785,
+          "id": "approach-context-008ff:animal-approach:250f5abe4e7474c1:1",
+          "initial_observed_remaining_m": 22.3606796264648,
+          "learning_eligible": true,
+          "result": "approached",
+          "revision": 1,
+          "started_ms": 400000,
+          "world_id": "approach-context-008ff",
+          "world_write_authority": false
+        },
+        "contacts": 0,
+        "context": {
+          "blocked_ahead": false,
+          "profile": "capsule044-height18-sweep4-native-contour-v1",
+          "sample_logical_ms": 400000,
+          "sweep_m": 4.0
+        }
+      },
+      "distance_m": 19.4000009596348,
+      "fact": {
+        "absence_claim": false,
+        "capture": false,
+        "censored": false,
+        "contains_prediction": false,
+        "distance_m": 19.4000009596348,
+        "ended_ms": 405800,
+        "entity_id": "approach-context-008ff:rabbit:1",
+        "final_observed_remaining_m": 6.31780433654785,
+        "id": "approach-context-008ff:animal-approach:250f5abe4e7474c1:1",
+        "initial_observed_remaining_m": 22.3606796264648,
+        "learning_eligible": true,
+        "result": "approached",
+        "revision": 1,
+        "started_ms": 400000,
+        "world_id": "approach-context-008ff",
+        "world_write_authority": false
+      },
+      "motion_model": "native local motion with anticipation, collision guards and observed contour on flat terrain",
+      "navigation_status": "perception",
+      "probe": false,
+      "reverse": false,
+      "route_plan_builds": 0,
+      "world_write_authority": false,
+      "bridge": {
+        "schema": "live-infinita-native-contextual-approach-core-status/v1",
+        "world_id": "approach-context-008ff",
+        "profile": "capsule044-height18-sweep4-native-contour-v1",
+        "generated_at_unix": 1791607934.6138837,
+        "source": "memoria.ia-local-structural-api",
+        "acked_this_poll": 1,
+        "confirmed_total": 2,
+        "eligible_in_source": 1,
+        "recovered_this_poll": 2,
+        "cached_recovered": 2,
+        "decision_use": false,
+        "world_write_authority": false,
+        "capture": false
+      },
+      "old_direct_profile_rejected": {
+        "entity_id": "approach-context-008ff:rabbit:0",
+        "source": "perception",
+        "reason": "unseen_physical_context",
+        "observation_ids": []
+      }
+    },
+    {
+      "candidates": [
+        {
+          "context": {
+            "blocked_ahead": false,
+            "profile": "capsule044-height18-sweep4-native-contour-v1",
+            "sample_logical_ms": 500000,
+            "sweep_m": 4.0
+          },
+          "distance_m": 16.0,
+          "entity_id": "approach-context-008ff:rabbit:0"
+        },
+        {
+          "context": {
+            "blocked_ahead": true,
+            "profile": "capsule044-height18-sweep4-native-contour-v1",
+            "sample_logical_ms": 500000,
+            "sweep_m": 4.0
+          },
+          "distance_m": 22.3606796264648,
+          "entity_id": "approach-context-008ff:rabbit:1"
+        }
+      ],
+      "contacts": 0,
+      "context_fact": {
+        "approach": {
+          "absence_claim": false,
+          "capture": false,
+          "censored": false,
+          "contains_prediction": false,
+          "distance_m": 9.79999923706055,
+          "ended_ms": 502900,
+          "entity_id": "approach-context-008ff:rabbit:0",
+          "final_observed_remaining_m": 6.20000076293945,
+          "id": "approach-context-008ff:animal-approach:5af002b8fa797291:1",
+          "initial_observed_remaining_m": 16.0,
+          "learning_eligible": true,
+          "result": "approached",
+          "revision": 1,
+          "started_ms": 500000,
+          "world_id": "approach-context-008ff",
+          "world_write_authority": false
+        },
+        "contacts": 0,
+        "context": {
+          "blocked_ahead": false,
+          "profile": "capsule044-height18-sweep4-native-contour-v1",
+          "sample_logical_ms": 500000,
+          "sweep_m": 4.0
+        }
+      },
+      "distance_m": 9.79999923706055,
+      "fact": {
+        "absence_claim": false,
+        "capture": false,
+        "censored": false,
+        "contains_prediction": false,
+        "distance_m": 9.79999923706055,
+        "ended_ms": 502900,
+        "entity_id": "approach-context-008ff:rabbit:0",
+        "final_observed_remaining_m": 6.20000076293945,
+        "id": "approach-context-008ff:animal-approach:5af002b8fa797291:1",
+        "initial_observed_remaining_m": 16.0,
+        "learning_eligible": true,
+        "result": "approached",
+        "revision": 1,
+        "started_ms": 500000,
+        "world_id": "approach-context-008ff",
+        "world_write_authority": false
+      },
+      "motion_model": "native local motion with anticipation, collision guards and observed contour on flat terrain",
+      "navigation_status": "perception",
+      "probe": false,
+      "reverse": true,
+      "route_plan_builds": 0,
+      "world_write_authority": false,
+      "bridge": {
+        "schema": "live-infinita-native-contextual-approach-core-status/v1",
+        "world_id": "approach-context-008ff",
+        "profile": "capsule044-height18-sweep4-native-contour-v1",
+        "generated_at_unix": 1791607935.9122012,
+        "source": "memoria.ia-local-structural-api",
+        "acked_this_poll": 1,
+        "confirmed_total": 3,
+        "eligible_in_source": 1,
+        "recovered_this_poll": 3,
+        "cached_recovered": 3,
+        "decision_use": false,
+        "world_write_authority": false,
+        "capture": false
+      },
+      "old_direct_profile_rejected": {
+        "entity_id": "approach-context-008ff:rabbit:0",
+        "source": "perception",
+        "reason": "unseen_physical_context",
+        "observation_ids": []
+      }
+    },
+    {
+      "candidates": [
+        {
+          "context": {
+            "blocked_ahead": false,
+            "profile": "capsule044-height18-sweep4-native-contour-v1",
+            "sample_logical_ms": 600000,
+            "sweep_m": 4.0
+          },
+          "distance_m": 16.0,
+          "entity_id": "approach-context-008ff:rabbit:0"
+        },
+        {
+          "context": {
+            "blocked_ahead": true,
+            "profile": "capsule044-height18-sweep4-native-contour-v1",
+            "sample_logical_ms": 600000,
+            "sweep_m": 4.0
+          },
+          "distance_m": 22.3606796264648,
+          "entity_id": "approach-context-008ff:rabbit:1"
+        }
+      ],
+      "contacts": 0,
+      "context_fact": {
+        "approach": {
+          "absence_claim": false,
+          "capture": false,
+          "censored": false,
+          "contains_prediction": false,
+          "distance_m": 19.4000001400709,
+          "ended_ms": 605800,
+          "entity_id": "approach-context-008ff:rabbit:1",
+          "final_observed_remaining_m": 6.40984582901001,
+          "id": "approach-context-008ff:animal-approach:f8d352f41a43f1dc:1",
+          "initial_observed_remaining_m": 22.3606796264648,
+          "learning_eligible": true,
+          "result": "approached",
+          "revision": 1,
+          "started_ms": 600000,
+          "world_id": "approach-context-008ff",
+          "world_write_authority": false
+        },
+        "contacts": 0,
+        "context": {
+          "blocked_ahead": true,
+          "profile": "capsule044-height18-sweep4-native-contour-v1",
+          "sample_logical_ms": 600000,
+          "sweep_m": 4.0
+        }
+      },
+      "distance_m": 19.4000001400709,
+      "fact": {
+        "absence_claim": false,
+        "capture": false,
+        "censored": false,
+        "contains_prediction": false,
+        "distance_m": 19.4000001400709,
+        "ended_ms": 605800,
+        "entity_id": "approach-context-008ff:rabbit:1",
+        "final_observed_remaining_m": 6.40984582901001,
+        "id": "approach-context-008ff:animal-approach:f8d352f41a43f1dc:1",
+        "initial_observed_remaining_m": 22.3606796264648,
+        "learning_eligible": true,
+        "result": "approached",
+        "revision": 1,
+        "started_ms": 600000,
+        "world_id": "approach-context-008ff",
+        "world_write_authority": false
+      },
+      "motion_model": "native local motion with anticipation, collision guards and observed contour on flat terrain",
+      "navigation_status": "perception",
+      "probe": false,
+      "reverse": true,
+      "route_plan_builds": 0,
+      "world_write_authority": false,
+      "bridge": {
+        "schema": "live-infinita-native-contextual-approach-core-status/v1",
+        "world_id": "approach-context-008ff",
+        "profile": "capsule044-height18-sweep4-native-contour-v1",
+        "generated_at_unix": 1791607939.0884306,
+        "source": "memoria.ia-local-structural-api",
+        "acked_this_poll": 1,
+        "confirmed_total": 4,
+        "eligible_in_source": 1,
+        "recovered_this_poll": 4,
+        "cached_recovered": 4,
+        "decision_use": false,
+        "world_write_authority": false,
+        "capture": false
+      },
+      "old_direct_profile_rejected": {
+        "entity_id": "approach-context-008ff:rabbit:0",
+        "source": "perception",
+        "reason": "unseen_physical_context",
+        "observation_ids": []
+      }
+    },
+    {
+      "candidates": [
+        {
+          "context": {
+            "blocked_ahead": false,
+            "profile": "capsule044-height18-sweep4-native-contour-v1",
+            "sample_logical_ms": 700000,
+            "sweep_m": 4.0
+          },
+          "distance_m": 16.0,
+          "entity_id": "approach-context-008ff:rabbit:0"
+        },
+        {
+          "context": {
+            "blocked_ahead": false,
+            "profile": "capsule044-height18-sweep4-native-contour-v1",
+            "sample_logical_ms": 700000,
+            "sweep_m": 4.0
+          },
+          "distance_m": 22.3606796264648,
+          "entity_id": "approach-context-008ff:rabbit:1"
+        }
+      ],
+      "contacts": 0,
+      "context_fact": {
+        "approach": {
+          "absence_claim": false,
+          "capture": false,
+          "censored": false,
+          "contains_prediction": false,
+          "distance_m": 12.80000038445,
+          "ended_ms": 703800,
+          "entity_id": "approach-context-008ff:rabbit:0",
+          "final_observed_remaining_m": 6.18383932113647,
+          "id": "approach-context-008ff:animal-approach:b53694b49f32c633:1",
+          "initial_observed_remaining_m": 16.0,
+          "learning_eligible": true,
+          "result": "approached",
+          "revision": 1,
+          "started_ms": 700000,
+          "world_id": "approach-context-008ff",
+          "world_write_authority": false
+        },
+        "contacts": 0,
+        "context": {
+          "blocked_ahead": false,
+          "profile": "capsule044-height18-sweep4-native-contour-v1",
+          "sample_logical_ms": 700000,
+          "sweep_m": 4.0
+        }
+      },
+      "distance_m": 12.80000038445,
+      "fact": {
+        "absence_claim": false,
+        "capture": false,
+        "censored": false,
+        "contains_prediction": false,
+        "distance_m": 12.80000038445,
+        "ended_ms": 703800,
+        "entity_id": "approach-context-008ff:rabbit:0",
+        "final_observed_remaining_m": 6.18383932113647,
+        "id": "approach-context-008ff:animal-approach:b53694b49f32c633:1",
+        "initial_observed_remaining_m": 16.0,
+        "learning_eligible": true,
+        "result": "approached",
+        "revision": 1,
+        "started_ms": 700000,
+        "world_id": "approach-context-008ff",
+        "world_write_authority": false
+      },
+      "motion_model": "native local motion with anticipation, collision guards and observed contour on flat terrain",
+      "navigation_status": "perception",
+      "probe": false,
+      "reverse": false,
+      "route_plan_builds": 0,
+      "world_write_authority": false,
+      "bridge": {
+        "schema": "live-infinita-native-contextual-approach-core-status/v1",
+        "world_id": "approach-context-008ff",
+        "profile": "capsule044-height18-sweep4-native-contour-v1",
+        "generated_at_unix": 1791607940.9102566,
+        "source": "memoria.ia-local-structural-api",
+        "acked_this_poll": 1,
+        "confirmed_total": 5,
+        "eligible_in_source": 1,
+        "recovered_this_poll": 5,
+        "cached_recovered": 5,
+        "decision_use": false,
+        "world_write_authority": false,
+        "capture": false
+      },
+      "old_direct_profile_rejected": {
+        "entity_id": "approach-context-008ff:rabbit:0",
+        "source": "perception",
+        "reason": "unseen_physical_context",
+        "observation_ids": []
+      }
+    },
+    {
+      "candidates": [
+        {
+          "context": {
+            "blocked_ahead": false,
+            "profile": "capsule044-height18-sweep4-native-contour-v1",
+            "sample_logical_ms": 800000,
+            "sweep_m": 4.0
+          },
+          "distance_m": 16.0,
+          "entity_id": "approach-context-008ff:rabbit:0"
+        },
+        {
+          "context": {
+            "blocked_ahead": false,
+            "profile": "capsule044-height18-sweep4-native-contour-v1",
+            "sample_logical_ms": 800000,
+            "sweep_m": 4.0
+          },
+          "distance_m": 22.3606796264648,
+          "entity_id": "approach-context-008ff:rabbit:1"
+        }
+      ],
+      "contacts": 0,
+      "context_fact": {
+        "approach": {
+          "absence_claim": false,
+          "capture": false,
+          "censored": false,
+          "contains_prediction": false,
+          "distance_m": 19.4000009596348,
+          "ended_ms": 805800,
+          "entity_id": "approach-context-008ff:rabbit:1",
+          "final_observed_remaining_m": 6.31780433654785,
+          "id": "approach-context-008ff:animal-approach:0029609ed280730d:1",
+          "initial_observed_remaining_m": 22.3606796264648,
+          "learning_eligible": true,
+          "result": "approached",
+          "revision": 1,
+          "started_ms": 800000,
+          "world_id": "approach-context-008ff",
+          "world_write_authority": false
+        },
+        "contacts": 0,
+        "context": {
+          "blocked_ahead": false,
+          "profile": "capsule044-height18-sweep4-native-contour-v1",
+          "sample_logical_ms": 800000,
+          "sweep_m": 4.0
+        }
+      },
+      "distance_m": 19.4000009596348,
+      "fact": {
+        "absence_claim": false,
+        "capture": false,
+        "censored": false,
+        "contains_prediction": false,
+        "distance_m": 19.4000009596348,
+        "ended_ms": 805800,
+        "entity_id": "approach-context-008ff:rabbit:1",
+        "final_observed_remaining_m": 6.31780433654785,
+        "id": "approach-context-008ff:animal-approach:0029609ed280730d:1",
+        "initial_observed_remaining_m": 22.3606796264648,
+        "learning_eligible": true,
+        "result": "approached",
+        "revision": 1,
+        "started_ms": 800000,
+        "world_id": "approach-context-008ff",
+        "world_write_authority": false
+      },
+      "motion_model": "native local motion with anticipation, collision guards and observed contour on flat terrain",
+      "navigation_status": "perception",
+      "probe": false,
+      "reverse": false,
+      "route_plan_builds": 0,
+      "world_write_authority": false,
+      "bridge": {
+        "schema": "live-infinita-native-contextual-approach-core-status/v1",
+        "world_id": "approach-context-008ff",
+        "profile": "capsule044-height18-sweep4-native-contour-v1",
+        "generated_at_unix": 1791607944.491574,
+        "source": "memoria.ia-local-structural-api",
+        "acked_this_poll": 1,
+        "confirmed_total": 6,
+        "eligible_in_source": 1,
+        "recovered_this_poll": 6,
+        "cached_recovered": 6,
+        "decision_use": false,
+        "world_write_authority": false,
+        "capture": false
+      },
+      "old_direct_profile_rejected": {
+        "entity_id": "approach-context-008ff:rabbit:0",
+        "source": "perception",
+        "reason": "unseen_physical_context",
+        "observation_ids": []
+      }
+    },
+    {
+      "candidates": [
+        {
+          "context": {
+            "blocked_ahead": false,
+            "profile": "capsule044-height18-sweep4-native-contour-v1",
+            "sample_logical_ms": 900000,
+            "sweep_m": 4.0
+          },
+          "distance_m": 16.0,
+          "entity_id": "approach-context-008ff:rabbit:0"
+        },
+        {
+          "context": {
+            "blocked_ahead": false,
+            "profile": "capsule044-height18-sweep4-native-contour-v1",
+            "sample_logical_ms": 900000,
+            "sweep_m": 4.0
+          },
+          "distance_m": 22.3606796264648,
+          "entity_id": "approach-context-008ff:rabbit:1"
+        }
+      ],
+      "contacts": 0,
+      "context_fact": {
+        "approach": {
+          "absence_claim": false,
+          "capture": false,
+          "censored": false,
+          "contains_prediction": false,
+          "distance_m": 9.79999923706055,
+          "ended_ms": 902900,
+          "entity_id": "approach-context-008ff:rabbit:0",
+          "final_observed_remaining_m": 6.20000076293945,
+          "id": "approach-context-008ff:animal-approach:408123e6b480829e:1",
+          "initial_observed_remaining_m": 16.0,
+          "learning_eligible": true,
+          "result": "approached",
+          "revision": 1,
+          "started_ms": 900000,
+          "world_id": "approach-context-008ff",
+          "world_write_authority": false
+        },
+        "contacts": 0,
+        "context": {
+          "blocked_ahead": false,
+          "profile": "capsule044-height18-sweep4-native-contour-v1",
+          "sample_logical_ms": 900000,
+          "sweep_m": 4.0
+        }
+      },
+      "distance_m": 9.79999923706055,
+      "fact": {
+        "absence_claim": false,
+        "capture": false,
+        "censored": false,
+        "contains_prediction": false,
+        "distance_m": 9.79999923706055,
+        "ended_ms": 902900,
+        "entity_id": "approach-context-008ff:rabbit:0",
+        "final_observed_remaining_m": 6.20000076293945,
+        "id": "approach-context-008ff:animal-approach:408123e6b480829e:1",
+        "initial_observed_remaining_m": 16.0,
+        "learning_eligible": true,
+        "result": "approached",
+        "revision": 1,
+        "started_ms": 900000,
+        "world_id": "approach-context-008ff",
+        "world_write_authority": false
+      },
+      "motion_model": "native local motion with anticipation, collision guards and observed contour on flat terrain",
+      "navigation_status": "perception",
+      "probe": false,
+      "reverse": true,
+      "route_plan_builds": 0,
+      "world_write_authority": false,
+      "bridge": {
+        "schema": "live-infinita-native-contextual-approach-core-status/v1",
+        "world_id": "approach-context-008ff",
+        "profile": "capsule044-height18-sweep4-native-contour-v1",
+        "generated_at_unix": 1791607945.844252,
+        "source": "memoria.ia-local-structural-api",
+        "acked_this_poll": 1,
+        "confirmed_total": 7,
+        "eligible_in_source": 1,
+        "recovered_this_poll": 7,
+        "cached_recovered": 7,
+        "decision_use": false,
+        "world_write_authority": false,
+        "capture": false
+      },
+      "old_direct_profile_rejected": {
+        "entity_id": "approach-context-008ff:rabbit:0",
+        "source": "perception",
+        "reason": "unseen_physical_context",
+        "observation_ids": []
+      }
+    },
+    {
+      "candidates": [
+        {
+          "context": {
+            "blocked_ahead": false,
+            "profile": "capsule044-height18-sweep4-native-contour-v1",
+            "sample_logical_ms": 1000000,
+            "sweep_m": 4.0
+          },
+          "distance_m": 16.0,
+          "entity_id": "approach-context-008ff:rabbit:0"
+        },
+        {
+          "context": {
+            "blocked_ahead": false,
+            "profile": "capsule044-height18-sweep4-native-contour-v1",
+            "sample_logical_ms": 1000000,
+            "sweep_m": 4.0
+          },
+          "distance_m": 22.3606796264648,
+          "entity_id": "approach-context-008ff:rabbit:1"
+        }
+      ],
+      "contacts": 0,
+      "context_fact": {
+        "approach": {
+          "absence_claim": false,
+          "capture": false,
+          "censored": false,
+          "contains_prediction": false,
+          "distance_m": 16.7999989688396,
+          "ended_ms": 1005000,
+          "entity_id": "approach-context-008ff:rabbit:1",
+          "final_observed_remaining_m": 6.40479850769043,
+          "id": "approach-context-008ff:animal-approach:ade17a824cca829b:1",
+          "initial_observed_remaining_m": 22.3606796264648,
+          "learning_eligible": true,
+          "result": "approached",
+          "revision": 1,
+          "started_ms": 1000000,
+          "world_id": "approach-context-008ff",
+          "world_write_authority": false
+        },
+        "contacts": 0,
+        "context": {
+          "blocked_ahead": false,
+          "profile": "capsule044-height18-sweep4-native-contour-v1",
+          "sample_logical_ms": 1000000,
+          "sweep_m": 4.0
+        }
+      },
+      "distance_m": 16.7999989688396,
+      "fact": {
+        "absence_claim": false,
+        "capture": false,
+        "censored": false,
+        "contains_prediction": false,
+        "distance_m": 16.7999989688396,
+        "ended_ms": 1005000,
+        "entity_id": "approach-context-008ff:rabbit:1",
+        "final_observed_remaining_m": 6.40479850769043,
+        "id": "approach-context-008ff:animal-approach:ade17a824cca829b:1",
+        "initial_observed_remaining_m": 22.3606796264648,
+        "learning_eligible": true,
+        "result": "approached",
+        "revision": 1,
+        "started_ms": 1000000,
+        "world_id": "approach-context-008ff",
+        "world_write_authority": false
+      },
+      "motion_model": "native local motion with anticipation, collision guards and observed contour on flat terrain",
+      "navigation_status": "perception",
+      "probe": false,
+      "reverse": true,
+      "route_plan_builds": 0,
+      "world_write_authority": false,
+      "bridge": {
+        "schema": "live-infinita-native-contextual-approach-core-status/v1",
+        "world_id": "approach-context-008ff",
+        "profile": "capsule044-height18-sweep4-native-contour-v1",
+        "generated_at_unix": 1791607950.304696,
+        "source": "memoria.ia-local-structural-api",
+        "acked_this_poll": 1,
+        "confirmed_total": 8,
+        "eligible_in_source": 1,
+        "recovered_this_poll": 8,
+        "cached_recovered": 8,
+        "decision_use": false,
+        "world_write_authority": false,
+        "capture": false
+      },
+      "old_direct_profile_rejected": {
+        "entity_id": "approach-context-008ff:rabbit:0",
+        "source": "perception",
+        "reason": "unseen_physical_context",
+        "observation_ids": []
+      }
+    }
+  ],
+  "production_changed": false,
+  "target_decision_changed_in_production": false,
+  "production_benefit_demonstrated": false,
+  "limits": [
+    "Actual local motion, anticipation and contour on flat terrain; full presentation, terrain streaming and fleeing prey not exercised.",
+    "All eight attempts conclude: direct-motion failure advantage from 008FF does not transfer to these native navigation cases.",
+    "Speed fixed at 4 m/s in fixture; live uses acceleration and variable speed.",
+    "Contexts are coarse; collection integration only. Native selector remains nearest visible target."
+  ]
+}

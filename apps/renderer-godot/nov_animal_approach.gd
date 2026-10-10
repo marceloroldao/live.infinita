@@ -4,6 +4,12 @@ const MAX_MS := 20000
 const SIGHT_MS := 1500
 const COOLDOWN_MS := 60000
 const APPROACHED_M := 6.5
+var context_enabled := false
+var context_probe := Callable()
+var _context_history = preload("res://nov_animal_context_history.gd").new()
+var _context_at_start:Dictionary = {}
+var _contacts := 0
+var _context_error := ""
 var _history = preload("res://nov_animal_approach_history.gd").new()
 var _boot_wait := false
 var _restart_cooldown := false
@@ -22,6 +28,7 @@ var _last_remaining := 0.0
 var _previous := Vector3(INF,INF,INF)
 func configure(path: String) -> void:
     _history.configure(path)
+    if context_enabled:_context_history.configure(path+".context" if not path.is_empty() else "")
     if not _history.ready:enabled=false;return
     _results=_history.records.slice(maxi(0,_history.records.size()-16)).duplicate(true)
     if not _results.is_empty():
@@ -67,7 +74,12 @@ func finish(reason: String, now: int = -1) -> void:
         "initial_observed_remaining_m":row.initial_observed_remaining_m,"final_observed_remaining_m":_last_remaining,"revision":row.revision,
         "censored":censored,"learning_eligible":not censored and _distance>0,
         "capture":false,"contains_prediction":false,"absence_claim":false,"world_write_authority":false}
-    if not _history.record(fact):enabled=false
+    var base_stored:=_history.record(fact)
+    if not base_stored:enabled=false
+    if base_stored and context_enabled and fact.learning_eligible and not _context_at_start.is_empty():
+        if not _context_history.record({"approach":fact,"context":_context_at_start,"contacts":_contacts}):
+            _context_error="context_checkpoint_failed"
+    _context_at_start.clear();_contacts=0
     _results=_history.records.slice(maxi(0,_history.records.size()-16)).duplicate(true)
     print("NOV_ANIMAL_APPROACH_END "+JSON.stringify(row))
     _last_end=int(row.ended_ms);_active.clear();_previous=Vector3(INF,INF,INF)
@@ -108,6 +120,10 @@ func choose(current: Vector3, world: String, now: int, resolve: Callable, headin
             "scan_started_ms":0,"heading":heading,"base_heading":heading,"revision":0,"updated_ms":now-1000,
             "best_remaining":remaining,"initial_observed_remaining_m":remaining,"world_id":world,"progress_ms":now,"source":"local_physics_eye_sensor","contains_prediction":true}
         _last_remaining=remaining
+        _context_at_start={};_contacts=0
+        if context_enabled and context_probe.is_valid():
+            _context_at_start=context_probe.call(current,_seen[best].point,now)
+            if _context_at_start.is_empty():_context_error="context_probe_unavailable"
         if not _history.begin(_active):
             enabled=false;_active.clear();return {}
         print("NOV_ANIMAL_APPROACH_START "+JSON.stringify(_active))
@@ -131,6 +147,17 @@ func choose(current: Vector3, world: String, now: int, resolve: Callable, headin
         _active.goal=[goal.x,goal.y,goal.z];_active.observed_point=[point.x,point.y,point.z];_active.updated_ms=now;_active.revision+=1
     _selection=_active.duplicate(true)
     return _selection.duplicate(true)
+func observe_movement(value: Dictionary) -> void:
+    if _active.is_empty() or not context_enabled:return
+    var count=value.get("collisions",0)
+    if typeof(count)==TYPE_INT and count>=0:_contacts=mini(10000,_contacts+count)
 func status() -> Dictionary:
     return {"enabled":enabled,"active":not _selection.is_empty(),"intent":_selection.duplicate(true),
-        "results":_results.duplicate(true),"history":_history.status(),"capture":false,"learned_hunting":false}
+        "results":_results.duplicate(true),"history":_history.status(),
+        "context_history":dict_context_status(),"capture":false,"learned_hunting":false}
+
+func dict_context_status() -> Dictionary:
+    var value:Dictionary=_context_history.status()
+    value["collection_enabled"]=context_enabled
+    value["last_error"]=_context_error
+    return value

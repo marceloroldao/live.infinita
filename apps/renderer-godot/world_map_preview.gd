@@ -951,6 +951,7 @@ func _advance_live_walk(delta: float) -> void:
         if not bool(_day_cycle.sample().get("synced",false)) or _day_cycle._paused or _day_cycle._world_id!=world:
             _animal_search_intent.suspend("clock_unavailable")
         else:
+            _animal_search_intent._approach.context_probe=Callable(_local_motion,"approach_context")
             _animal_search_selection = _animal_search_intent.choose(_position,world,logical_ms,
                 not _route_goal.active and _local_motion._journey.closed,Callable(_local_motion,"resolve_destination"),
                 _visual_perception.latest(),atan2(_camera_forward.x,_camera_forward.z))
@@ -998,6 +999,7 @@ func _advance_live_walk(delta: float) -> void:
         _position, Vector2.ZERO, committed_target, dt, _walker,
         get_world_3d().direct_space_state, true, _live_walk_velocity.length()
     )
+    _animal_search_intent._approach.observe_movement(movement)
     _position = movement.get("position", _position)
     _local_surface = str(movement.get("surface", "terrain"))
     _local_block_reason = str(movement.get("reason", ""))
@@ -1093,6 +1095,7 @@ func _process(delta: float) -> void:
         not _local_explore_enabled
     )
     var previous_position := _position
+    _animal_search_intent._approach.observe_movement(movement)
     _position = movement.get("position", _position)
     _update_camera_heading(previous_position, _position, delta)
     _local_surface = str(movement.get("surface", "terrain"))

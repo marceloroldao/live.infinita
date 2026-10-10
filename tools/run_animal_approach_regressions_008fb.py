@@ -13,7 +13,7 @@ all_rows=[]
 for mode,flag in (("on","1"),("off","0")):
     env=dict(os.environ,LIVE_INFINITA_NAVIGATION_COST_SHIFT="1",LIVE_INFINITA_NAVIGATION_CONTACT_TURNS="1",
              LIVE_INFINITA_NAVIGATION_EXIT_DIRECTION="1",LIVE_INFINITA_NAVIGATION_FAILURE_PREFERENCE="1",
-             LIVE_INFINITA_ANIMAL_APPROACH_ENABLED=flag)
+             LIVE_INFINITA_ANIMAL_APPROACH_ENABLED=flag,LIVE_INFINITA_ANIMAL_CONTEXT_ENABLED=flag)
     rows=[];lines=[]
     for name in names:
         run=subprocess.run([engine,"--headless","--audio-driver","Dummy","--path",str(a.project),
