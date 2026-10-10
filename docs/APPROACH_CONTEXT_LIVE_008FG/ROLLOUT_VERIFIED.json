@@ -1,0 +1,74 @@
+{
+  "verified_at_unix": 1791646015.7729068,
+  "installed_source_commit": "edc4b52",
+  "installed_modules_match": true,
+  "services": {
+    "live-infinita-renderer.service": {
+      "ActiveState": "active",
+      "SubState": "running",
+      "Result": "success",
+      "NRestarts": "0"
+    },
+    "live-infinita-animal-context.service": {
+      "ActiveState": "inactive",
+      "SubState": "dead",
+      "Result": "success",
+      "NRestarts": "0"
+    },
+    "live-infinita-animal-context.timer": {
+      "ActiveState": "active",
+      "SubState": "waiting",
+      "Result": "success"
+    },
+    "live-infinita-memoria-local.service": {
+      "ActiveState": "active",
+      "SubState": "running",
+      "Result": "success",
+      "NRestarts": "0"
+    }
+  },
+  "context_history": {
+    "collection_enabled": true,
+    "decision_use": false,
+    "last_error": "",
+    "persistent": true,
+    "profile": "capsule044-height18-sweep4-native-contour-v1",
+    "storage_ready": true,
+    "stored_attempts": 0
+  },
+  "context_core": {
+    "acked_this_poll": 0,
+    "cached_recovered": 0,
+    "capture": false,
+    "confirmed_total": 0,
+    "decision_use": false,
+    "eligible_in_source": 0,
+    "generated_at_unix": 1791646004.7274597,
+    "profile": "capsule044-height18-sweep4-native-contour-v1",
+    "recovered_this_poll": 0,
+    "schema": "live-infinita-native-contextual-approach-core-status/v1",
+    "source": "memoria.ia-local-structural-api",
+    "world_id": "nov-live-autonomous-001",
+    "world_write_authority": false
+  },
+  "base_approach_core": {
+    "acked_this_poll": 0,
+    "cached_recovered": 20,
+    "capture": false,
+    "censored_in_source": 0,
+    "confirmed_total": 20,
+    "decision_use": false,
+    "eligible_in_source": 20,
+    "generated_at_unix": 1791646015.2847002,
+    "learned_hunting": false,
+    "pending_intention": false,
+    "recovered_this_poll": 0,
+    "schema": "live-infinita-animal-approach-core-status/v1",
+    "source": "memoria.ia-local-structural-api",
+    "world_id": "nov-live-autonomous-001",
+    "world_write_authority": false
+  },
+  "new_contextual_attempt_observed": false,
+  "new_contextual_core_recovery_observed": false,
+  "production_benefit_demonstrated": false
+}
