@@ -1,0 +1,361 @@
+{
+  "animal_positions_final": {
+    "far": [
+      2.99999928474426,
+      0.200000002980232,
+      24.8000106811523
+    ],
+    "near": [
+      20.8000183105469,
+      0.200000002980232,
+      0.0
+    ]
+  },
+  "animal_steps": 48,
+  "base_distance_m": 14.4000010937452,
+  "candidates": [
+    {
+      "context": {
+        "blocked_ahead": false,
+        "profile": "capsule044-height18-sweep4-native-contour-v1",
+        "sample_logical_ms": 200000,
+        "sweep_m": 4.0
+      },
+      "distance_m": 16.0,
+      "entity_id": "approach-contact-search-008fo:rabbit:20"
+    },
+    {
+      "context": {
+        "blocked_ahead": false,
+        "profile": "capsule044-height18-sweep4-native-contour-v1",
+        "sample_logical_ms": 200000,
+        "sweep_m": 4.0
+      },
+      "distance_m": 22.0227146148682,
+      "entity_id": "approach-contact-search-008fo:rabbit:21"
+    }
+  ],
+  "contact_search_enabled": true,
+  "contact_search_result": {
+    "absence_claim": false,
+    "approach_confirmed": false,
+    "approach_id": "approach-contact-search-008fo:animal-approach:0cafe165f3f7bb62:1",
+    "capture": false,
+    "distance_m": 1.79999989271164,
+    "ended_ms": 204800,
+    "entity_id": "approach-contact-search-008fo:rabbit:21",
+    "learning_eligible": false,
+    "observed_position_m": [
+      2.99999928474426,
+      0.200000002980232,
+      24.8000106811523
+    ],
+    "reacquired_observed_ms": 204800,
+    "result": "reacquired",
+    "seed_observed_ms": 202700,
+    "started_ms": 204300,
+    "world_id": "approach-contact-search-008fo",
+    "world_write_authority": false
+  },
+  "contacts": 0,
+  "context_fact": {
+    "approach": {
+      "absence_claim": false,
+      "capture": false,
+      "censored": false,
+      "contains_prediction": false,
+      "distance_m": 14.4000010937452,
+      "ended_ms": 204300,
+      "entity_id": "approach-contact-search-008fo:rabbit:21",
+      "final_observed_remaining_m": 10.0706186294556,
+      "id": "approach-contact-search-008fo:animal-approach:0cafe165f3f7bb62:1",
+      "initial_observed_remaining_m": 22.0227146148682,
+      "learning_eligible": true,
+      "result": "contact_lost",
+      "revision": 2,
+      "started_ms": 200000,
+      "world_id": "approach-contact-search-008fo",
+      "world_write_authority": false
+    },
+    "contacts": 0,
+    "context": {
+      "blocked_ahead": false,
+      "profile": "capsule044-height18-sweep4-native-contour-v1",
+      "sample_logical_ms": 200000,
+      "sweep_m": 4.0
+    }
+  },
+  "direction_changes": [
+    {
+      "direction": "x",
+      "ms": 202000
+    },
+    {
+      "direction": "z",
+      "ms": 204000
+    }
+  ],
+  "distance_m": 16.2000009864569,
+  "fact": {
+    "absence_claim": false,
+    "capture": false,
+    "censored": false,
+    "contains_prediction": false,
+    "distance_m": 14.4000010937452,
+    "ended_ms": 204300,
+    "entity_id": "approach-contact-search-008fo:rabbit:21",
+    "final_observed_remaining_m": 10.0706186294556,
+    "id": "approach-contact-search-008fo:animal-approach:0cafe165f3f7bb62:1",
+    "initial_observed_remaining_m": 22.0227146148682,
+    "learning_eligible": true,
+    "result": "contact_lost",
+    "revision": 2,
+    "started_ms": 200000,
+    "world_id": "approach-contact-search-008fo",
+    "world_write_authority": false
+  },
+  "fixture": {
+    "animal_serial": 20,
+    "animal_speed_m_s": 1.0,
+    "far_m": 22.0,
+    "near_m": 16.0,
+    "occlusion_s": 2.0,
+    "speed_m_s": 4.0,
+    "turn_end_s": 4.0,
+    "turn_start_s": 2.0,
+    "wall_at_m": 6.0,
+    "wall_length_m": 80.0
+  },
+  "future_position_given_to_controller": false,
+  "motion_model": "native local motion; production stabilized body heading and 0.25s scan scheduler; moving collidable animals; flat terrain",
+  "navigation_status": "perception",
+  "probe": false,
+  "reverse": false,
+  "route_plan_builds": 0,
+  "scan_count": 17,
+  "visibility_trace": [
+    {
+      "ms": 200000,
+      "visible": [
+        {
+          "distance_m": 16.0568523406982,
+          "entity_id": "approach-contact-search-008fo:rabbit:20",
+          "evidence": "eye_ray_unobstructed",
+          "kind": "rabbit",
+          "observed_position_m": [
+            16.0,
+            0.200000002980232,
+            0.0
+          ]
+        },
+        {
+          "distance_m": 22.0640544891357,
+          "entity_id": "approach-contact-search-008fo:rabbit:21",
+          "evidence": "eye_ray_unobstructed",
+          "kind": "rabbit",
+          "observed_position_m": [
+            1.0,
+            0.200000002980232,
+            22.0
+          ]
+        }
+      ]
+    },
+    {
+      "ms": 200300,
+      "visible": [
+        {
+          "distance_m": 16.341121673584,
+          "entity_id": "approach-contact-search-008fo:rabbit:20",
+          "evidence": "eye_ray_unobstructed",
+          "kind": "rabbit",
+          "observed_position_m": [
+            16.3000011444092,
+            0.200000002980232,
+            0.0
+          ]
+        },
+        {
+          "distance_m": 21.3651065826416,
+          "entity_id": "approach-contact-search-008fo:rabbit:21",
+          "evidence": "eye_ray_unobstructed",
+          "kind": "rabbit",
+          "observed_position_m": [
+            1.0,
+            0.200000002980232,
+            22.3000011444092
+          ]
+        }
+      ]
+    },
+    {
+      "ms": 200600,
+      "visible": [
+        {
+          "distance_m": 20.6662578582764,
+          "entity_id": "approach-contact-search-008fo:rabbit:21",
+          "evidence": "eye_ray_unobstructed",
+          "kind": "rabbit",
+          "observed_position_m": [
+            1.0,
+            0.200000002980232,
+            22.6000022888184
+          ]
+        }
+      ]
+    },
+    {
+      "ms": 200900,
+      "visible": [
+        {
+          "distance_m": 19.9675197601318,
+          "entity_id": "approach-contact-search-008fo:rabbit:21",
+          "evidence": "eye_ray_unobstructed",
+          "kind": "rabbit",
+          "observed_position_m": [
+            1.0,
+            0.200000002980232,
+            22.9000034332275
+          ]
+        }
+      ]
+    },
+    {
+      "ms": 201200,
+      "visible": [
+        {
+          "distance_m": 19.2689075469971,
+          "entity_id": "approach-contact-search-008fo:rabbit:21",
+          "evidence": "eye_ray_unobstructed",
+          "kind": "rabbit",
+          "observed_position_m": [
+            1.0,
+            0.200000002980232,
+            23.2000045776367
+          ]
+        }
+      ]
+    },
+    {
+      "ms": 201500,
+      "visible": [
+        {
+          "distance_m": 18.5704345703125,
+          "entity_id": "approach-contact-search-008fo:rabbit:21",
+          "evidence": "eye_ray_unobstructed",
+          "kind": "rabbit",
+          "observed_position_m": [
+            1.0,
+            0.200000002980232,
+            23.5000057220459
+          ]
+        }
+      ]
+    },
+    {
+      "ms": 201800,
+      "visible": [
+        {
+          "distance_m": 17.8721141815186,
+          "entity_id": "approach-contact-search-008fo:rabbit:21",
+          "evidence": "eye_ray_unobstructed",
+          "kind": "rabbit",
+          "observed_position_m": [
+            1.0,
+            0.200000002980232,
+            23.8000068664551
+          ]
+        }
+      ]
+    },
+    {
+      "ms": 202100,
+      "visible": [
+        {
+          "distance_m": 17.0786437988281,
+          "entity_id": "approach-contact-search-008fo:rabbit:21",
+          "evidence": "eye_ray_unobstructed",
+          "kind": "rabbit",
+          "observed_position_m": [
+            1.10000002384186,
+            0.200000002980232,
+            24.0000076293945
+          ]
+        }
+      ]
+    },
+    {
+      "ms": 202400,
+      "visible": [
+        {
+          "distance_m": 16.0984897613525,
+          "entity_id": "approach-contact-search-008fo:rabbit:21",
+          "evidence": "eye_ray_unobstructed",
+          "kind": "rabbit",
+          "observed_position_m": [
+            1.40000009536743,
+            0.200000002980232,
+            24.0000076293945
+          ]
+        }
+      ]
+    },
+    {
+      "ms": 202700,
+      "visible": [
+        {
+          "distance_m": 15.1250638961792,
+          "entity_id": "approach-contact-search-008fo:rabbit:21",
+          "evidence": "eye_ray_unobstructed",
+          "kind": "rabbit",
+          "observed_position_m": [
+            1.70000016689301,
+            0.200000002980232,
+            24.0000076293945
+          ]
+        }
+      ]
+    },
+    {
+      "ms": 203000,
+      "visible": []
+    },
+    {
+      "ms": 203300,
+      "visible": []
+    },
+    {
+      "ms": 203600,
+      "visible": []
+    },
+    {
+      "ms": 203900,
+      "visible": []
+    },
+    {
+      "ms": 204200,
+      "visible": []
+    },
+    {
+      "ms": 204500,
+      "visible": []
+    },
+    {
+      "ms": 204800,
+      "visible": [
+        {
+          "distance_m": 9.62459278106689,
+          "entity_id": "approach-contact-search-008fo:rabbit:21",
+          "evidence": "eye_ray_unobstructed",
+          "kind": "rabbit",
+          "observed_position_m": [
+            2.99999928474426,
+            0.200000002980232,
+            24.8000106811523
+          ]
+        }
+      ]
+    }
+  ],
+  "world_write_authority": false
+}
