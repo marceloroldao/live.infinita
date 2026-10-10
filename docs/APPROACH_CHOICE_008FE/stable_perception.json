@@ -1,0 +1,36 @@
+{
+  "candidates": [
+    {
+      "distance_m": 10.0,
+      "entity_id": "approach-choice-008fe:rabbit:0"
+    },
+    {
+      "distance_m": 18.8679618835449,
+      "entity_id": "approach-choice-008fe:rabbit:1"
+    }
+  ],
+  "contacts": 76,
+  "distance_m": 2.86786103248596,
+  "fact": {
+    "absence_claim": false,
+    "capture": false,
+    "censored": false,
+    "contains_prediction": false,
+    "distance_m": 2.86786103248596,
+    "ended_ms": 210400,
+    "entity_id": "approach-choice-008fe:rabbit:0",
+    "final_observed_remaining_m": 7.13833713531494,
+    "id": "approach-choice-008fe:animal-approach:6db6b64d05057df3:1",
+    "initial_observed_remaining_m": 10.0,
+    "learning_eligible": true,
+    "result": "no_progress",
+    "revision": 1,
+    "started_ms": 200000,
+    "world_id": "approach-choice-008fe",
+    "world_write_authority": false
+  },
+  "motion_model": "incremental direct CharacterBody approach; full scene contour navigation not exercised",
+  "probe": false,
+  "reverse": false,
+  "world_write_authority": false
+}

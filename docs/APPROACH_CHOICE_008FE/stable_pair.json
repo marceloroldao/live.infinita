@@ -1,0 +1,106 @@
+{
+  "phase": "stable",
+  "decision": {
+    "source": "recovered-approach-evidence",
+    "entity_id": "approach-choice-008fe:rabbit:1",
+    "reason": "lower_measured_cost_after_failures",
+    "observation_ids": [
+      "structural-event:25e13a4171d1ca17ca4a863d35672d353be31a3d",
+      "structural-event:c495a46cf437739dfda2a43dd9c8ac4fe839ad88",
+      "structural-event:f866686102d81b2459c7f730f2a902a75679497c",
+      "structural-event:7106122064976a2d0994203e8bcac66658377a23"
+    ],
+    "evaluations": [
+      {
+        "entity_id": "approach-choice-008fe:rabbit:0",
+        "distance_bucket": 1,
+        "score": 20.95595367749532,
+        "observation_ids": [
+          "structural-event:f866686102d81b2459c7f730f2a902a75679497c",
+          "structural-event:7106122064976a2d0994203e8bcac66658377a23"
+        ]
+      },
+      {
+        "entity_id": "approach-choice-008fe:rabbit:1",
+        "distance_bucket": 3,
+        "score": 4.1333315099279,
+        "observation_ids": [
+          "structural-event:25e13a4171d1ca17ca4a863d35672d353be31a3d",
+          "structural-event:c495a46cf437739dfda2a43dd9c8ac4fe839ad88"
+        ]
+      }
+    ]
+  },
+  "perception": {
+    "candidates": [
+      {
+        "distance_m": 10.0,
+        "entity_id": "approach-choice-008fe:rabbit:0"
+      },
+      {
+        "distance_m": 18.8679618835449,
+        "entity_id": "approach-choice-008fe:rabbit:1"
+      }
+    ],
+    "contacts": 76,
+    "distance_m": 2.86786103248596,
+    "fact": {
+      "absence_claim": false,
+      "capture": false,
+      "censored": false,
+      "contains_prediction": false,
+      "distance_m": 2.86786103248596,
+      "ended_ms": 210400,
+      "entity_id": "approach-choice-008fe:rabbit:0",
+      "final_observed_remaining_m": 7.13833713531494,
+      "id": "approach-choice-008fe:animal-approach:6db6b64d05057df3:1",
+      "initial_observed_remaining_m": 10.0,
+      "learning_eligible": true,
+      "result": "no_progress",
+      "revision": 1,
+      "started_ms": 200000,
+      "world_id": "approach-choice-008fe",
+      "world_write_authority": false
+    },
+    "motion_model": "incremental direct CharacterBody approach; full scene contour navigation not exercised",
+    "probe": false,
+    "reverse": false,
+    "world_write_authority": false
+  },
+  "memory": {
+    "candidates": [
+      {
+        "distance_m": 10.0,
+        "entity_id": "approach-choice-008fe:rabbit:0"
+      },
+      {
+        "distance_m": 18.8679618835449,
+        "entity_id": "approach-choice-008fe:rabbit:1"
+      }
+    ],
+    "contacts": 0,
+    "distance_m": 12.3999945297837,
+    "fact": {
+      "absence_claim": false,
+      "capture": false,
+      "censored": false,
+      "contains_prediction": false,
+      "distance_m": 12.3999945297837,
+      "ended_ms": 212400,
+      "entity_id": "approach-choice-008fe:rabbit:1",
+      "final_observed_remaining_m": 6.46796751022339,
+      "id": "approach-choice-008fe:animal-approach:841bfdcce7a35fba:1",
+      "initial_observed_remaining_m": 18.8679618835449,
+      "learning_eligible": true,
+      "result": "approached",
+      "revision": 1,
+      "started_ms": 200000,
+      "world_id": "approach-choice-008fe",
+      "world_write_authority": false
+    },
+    "motion_model": "incremental direct CharacterBody approach; full scene contour navigation not exercised",
+    "probe": false,
+    "reverse": false,
+    "world_write_authority": false
+  }
+}
