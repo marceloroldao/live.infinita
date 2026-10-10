@@ -1,0 +1,29 @@
+{
+  "verified_at_utc": "2026-10-10T01:27:15.345416+00:00",
+  "production_bridge_commit": "d8d23a5",
+  "rollout_result": "008FD_OK",
+  "timer_active": true,
+  "last_execution_result": "success",
+  "installed_module_matches_repository": true,
+  "bridge_errors_since_rollout": [],
+  "public_status": {
+    "acked_this_poll": 0,
+    "cached_recovered": 6,
+    "capture": false,
+    "censored_in_source": 0,
+    "confirmed_total": 6,
+    "decision_use": false,
+    "eligible_in_source": 6,
+    "generated_at_unix": 1791595618.6828918,
+    "learned_hunting": false,
+    "pending_intention": false,
+    "recovered_this_poll": 0,
+    "schema": "live-infinita-animal-approach-core-status/v1",
+    "source": "memoria.ia-local-structural-api",
+    "world_id": "nov-live-autonomous-001",
+    "world_write_authority": false
+  },
+  "six_recovered_during_rollout": true,
+  "production_cold_recovery_tested": false,
+  "decision_improvement_tested": false
+}
