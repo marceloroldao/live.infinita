@@ -1,0 +1,12 @@
+[Unit]
+Description=Sync observed animal approach outcomes every 30 seconds
+
+[Timer]
+OnBootSec=45
+OnUnitInactiveSec=30
+RandomizedDelaySec=3
+AccuracySec=1
+Unit=live-infinita-animal-approach.service
+
+[Install]
+WantedBy=timers.target

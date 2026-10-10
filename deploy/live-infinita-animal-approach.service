@@ -1,0 +1,34 @@
+[Unit]
+Description=Live Infinita — observed animal approach outcomes into local Memoria.ia
+After=live-infinita-memoria-local.service
+Requires=live-infinita-memoria-local.service
+ConditionPathExists=/var/lib/live-infinita/wildlife/search-policy.json.approach
+
+[Service]
+Type=oneshot
+User=liveinfinita
+Group=liveinfinita
+WorkingDirectory=/opt/live.infinita
+Environment="PYTHONUNBUFFERED=1"
+Environment="PYTHONDONTWRITEBYTECODE=1"
+Environment="PYTHONPATH=/opt/live.infinita:/opt/live.infinita/apps/world-runtime"
+EnvironmentFile=/etc/live-infinita/memoria-local.env
+ExecStart=/opt/live.infinita/.venv/bin/python /opt/live.infinita/apps/world-runtime/nov_animal_approach_sync.py
+TimeoutStartSec=160
+UMask=0077
+Nice=15
+CPUWeight=10
+IOWeight=10
+MemoryHigh=128M
+MemoryMax=256M
+TasksMax=16
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadOnlyPaths=/var/lib/live-infinita/wildlife
+ReadOnlyPaths=/var/lib/live-infinita/autonomous-world
+ReadWritePaths=/var/lib/live-infinita/memoria-local
+IPAddressDeny=any
+IPAddressAllow=localhost
+ReadWritePaths=/var/www/live-infinita-godot/wildlife
