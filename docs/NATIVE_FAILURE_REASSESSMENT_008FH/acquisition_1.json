@@ -1,0 +1,78 @@
+{
+  "candidates": [
+    {
+      "context": {
+        "blocked_ahead": false,
+        "profile": "capsule044-height18-sweep4-native-contour-v1",
+        "sample_logical_ms": 130000,
+        "sweep_m": 4.0
+      },
+      "distance_m": 16.0,
+      "entity_id": "approach-native-failure-008fh:rabbit:0"
+    },
+    {
+      "context": {
+        "blocked_ahead": false,
+        "profile": "capsule044-height18-sweep4-native-contour-v1",
+        "sample_logical_ms": 130000,
+        "sweep_m": 4.0
+      },
+      "distance_m": 22.0227146148682,
+      "entity_id": "approach-native-failure-008fh:rabbit:1"
+    }
+  ],
+  "contacts": 0,
+  "context_fact": {
+    "approach": {
+      "absence_claim": false,
+      "capture": false,
+      "censored": false,
+      "contains_prediction": false,
+      "distance_m": 15.799997985363,
+      "ended_ms": 134700,
+      "entity_id": "approach-native-failure-008fh:rabbit:1",
+      "final_observed_remaining_m": 6.22271728515625,
+      "id": "approach-native-failure-008fh:animal-approach:3e703a0118f24a7f:1",
+      "initial_observed_remaining_m": 22.0227146148682,
+      "learning_eligible": true,
+      "result": "approached",
+      "revision": 1,
+      "started_ms": 130000,
+      "world_id": "approach-native-failure-008fh",
+      "world_write_authority": false
+    },
+    "contacts": 0,
+    "context": {
+      "blocked_ahead": false,
+      "profile": "capsule044-height18-sweep4-native-contour-v1",
+      "sample_logical_ms": 130000,
+      "sweep_m": 4.0
+    }
+  },
+  "distance_m": 15.799997985363,
+  "fact": {
+    "absence_claim": false,
+    "capture": false,
+    "censored": false,
+    "contains_prediction": false,
+    "distance_m": 15.799997985363,
+    "ended_ms": 134700,
+    "entity_id": "approach-native-failure-008fh:rabbit:1",
+    "final_observed_remaining_m": 6.22271728515625,
+    "id": "approach-native-failure-008fh:animal-approach:3e703a0118f24a7f:1",
+    "initial_observed_remaining_m": 22.0227146148682,
+    "learning_eligible": true,
+    "result": "approached",
+    "revision": 1,
+    "started_ms": 130000,
+    "world_id": "approach-native-failure-008fh",
+    "world_write_authority": false
+  },
+  "motion_model": "native local motion with anticipation, collision guards and observed contour on flat terrain",
+  "navigation_status": "perception",
+  "probe": false,
+  "reverse": false,
+  "route_plan_builds": 0,
+  "world_write_authority": false,
+  "label": "acquisition_1"
+}

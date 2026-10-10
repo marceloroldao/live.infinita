@@ -1,0 +1,26 @@
+{
+  "candidates": [
+    {
+      "context": {
+        "blocked_ahead": false,
+        "profile": "capsule044-height18-sweep4-native-contour-v1",
+        "sample_logical_ms": 360000,
+        "sweep_m": 4.0
+      },
+      "distance_m": 16.0,
+      "entity_id": "approach-native-failure-008fh:rabbit:0"
+    },
+    {
+      "context": {
+        "blocked_ahead": false,
+        "profile": "capsule044-height18-sweep4-native-contour-v1",
+        "sample_logical_ms": 360000,
+        "sweep_m": 4.0
+      },
+      "distance_m": 22.0227146148682,
+      "entity_id": "approach-native-failure-008fh:rabbit:1"
+    }
+  ],
+  "probe": true,
+  "label": "reassessment_probe_2"
+}
