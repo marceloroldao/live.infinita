@@ -8,6 +8,8 @@ const MAX_ATTEMPT_MS := 45000
 const SCAN_MS := 8000
 const MAX_DISTANCE_M := 40.0
 var _approach = preload("res://nov_animal_approach.gd").new()
+var _contact_search = preload("res://nov_animal_contact_search.gd").new()
+var _contact_search_enabled := false
 var enabled := false
 var _failed := false
 var _world := ""
@@ -55,6 +57,9 @@ func configure(state_path: String, public_path: String, source_path: String, ses
     _approach.configure(state_path+".approach" if not state_path.is_empty() else "")
     _path=state_path;_public=public_path;_source=source_path;_session=session
     enabled=not state_path.is_empty() and not public_path.is_empty() and not source_path.is_empty() and session.length()==32
+    _contact_search_enabled=enabled and _approach.enabled and OS.get_environment("LIVE_INFINITA_ANIMAL_CONTACT_SEARCH_ENABLED")=="1"
+    if _contact_search_enabled:
+        _contact_search.configure(state_path+".contact-search",OS.get_environment("LIVE_INFINITA_ANIMAL_EXPLORATION_GUARD"))
     if not enabled or not FileAccess.file_exists(_path):return
     var saved := _sealed_read(_path)
     if saved.get("schema")!=POLICY_SCHEMA or typeof(saved.get("world_id"))!=TYPE_STRING or saved.world_id.is_empty() or saved.get("session_id")!=_session or not _integer(saved.get("logical_time_ms")) or not _integer(saved.get("serial")) or not _integer(saved.get("cycle_starts")) or float(saved.cycle_starts)>4 or not _integer(saved.get("cycle")) or typeof(saved.get("active"))!=TYPE_DICTIONARY or typeof(saved.get("results"))!=TYPE_ARRAY or saved.results.size()>16 or typeof(saved.get("counts"))!=TYPE_DICTIONARY:
@@ -119,10 +124,12 @@ func save(force: bool = false) -> bool:
         "active":_active,"results":_results,"counts":_counts}
     if not _write(_path,saved,true):_failed=true;return false
     var approach: Dictionary=_approach.status()
-    var selected: Dictionary=approach.intent if approach.active else _active
+    var contact:Dictionary=_contact_search.status()
+    contact.enabled=_contact_search_enabled
+    var selected: Dictionary=contact.intent if _contact_search_enabled and contact.active else (approach.intent if approach.active else _active)
     var public := {"schema":SCHEMA,"world_id":_world,"generated_at_unix":Time.get_unix_time_from_system(),
         "logical_time_ms":_last_ms,"source":"native_bounded_animal_search","world_write_authority":false,
-        "decision_use":true,"absence_claim":false,"active":not selected.is_empty(),"approach":approach,
+        "decision_use":true,"absence_claim":false,"active":not selected.is_empty(),"approach":approach,"contact_search":contact,
         "intent":selected,"counts":_counts,"results":_results,"cooldown_ms":COOLDOWN_MS,
         "attempt_budget_ms":MAX_ATTEMPT_MS,"cycle_attempt_limit":4,"last_error":"search_policy_unavailable" if _failed else null}
     if not _write(_public,public,false):_failed=true;return false
@@ -130,10 +137,12 @@ func save(force: bool = false) -> bool:
     return true
 
 func finish(reason: String, confirmed: bool = false, stamp: int = -1) -> void:
+    var had_contact:bool=not _contact_search._active.is_empty()
+    _contact_search.cancel(maxi(stamp,_last_ms))
     var had_approach: bool=not _approach._active.is_empty()
     _approach.finish(reason,stamp)
     if _active.is_empty():
-        if had_approach:save(true)
+        if had_approach or had_contact:save(true)
         return
     var row := _active.duplicate(true)
     _last_ms=maxi(_last_ms,stamp)
@@ -153,7 +162,9 @@ func suspend(reason: String) -> void:
     _boot_wait=true
 
 func observe(value: Dictionary) -> void:
-    if enabled and not _failed:_approach.observe(value)
+    if enabled and not _failed:
+        _approach.observe(value)
+        if _contact_search_enabled:_contact_search.observe(value)
     if not enabled or _failed or _active.is_empty() or value.get("schema")!="live-infinita-nov-visual-observation/v1" or value.get("source")!="local_physics_eye_sensor" or value.get("observer_entity_id")!="nov" or value.get("world_id")!=_world or value.get("world_write_authority")!=false or value.get("absence_claim")!=false or not _integer(value.get("logical_time_ms")) or value.logical_time_ms<=_active.started_ms or value.logical_time_ms>_active.deadline_ms or value.logical_time_ms<_last_ms or typeof(value.get("visible_entities"))!=TYPE_ARRAY:
         return
     for seen in value.visible_entities:
@@ -164,18 +175,32 @@ func observe(value: Dictionary) -> void:
 func choose(current: Vector3, world: String, now: int, normal_finished: bool, resolve: Callable, visible: Dictionary = {}, heading: float = 0.0) -> Dictionary:
     if not enabled or _failed or world.is_empty() or now<0 or not current.is_finite():return {}
     if not _world.is_empty() and _world!=world:
-        _failed=true;return {}
+        finish("world_changed");_failed=true;save(true);return {}
     _world=world
     if now<_last_ms and _boot_wait:return {}
     _boot_wait=false
     if now<_last_ms:
         finish("clock_rewind");_failed=true;save(true);return {}
     _last_ms=now
+    if _contact_search_enabled and not _contact_search._active.is_empty():
+        var recovery:Dictionary=_contact_search.choose(current,world,now)
+        if not save(recovery.is_empty()):
+            _contact_search.cancel(now)
+            return {}
+        return recovery
     if _active.is_empty():
+        var had_approach:bool=not _approach._active.is_empty()
         var approach: Dictionary=_approach.choose(current,world,now,resolve,heading)
         if not approach.is_empty():
             save()
             return approach
+        if had_approach and _contact_search_enabled and not _approach._results.is_empty():
+            if _contact_search.begin(_approach._results.back(),current,now,resolve):
+                var recovery:Dictionary=_contact_search.choose(current,world,now)
+                if not save(true):
+                    _contact_search.cancel(now)
+                    return {}
+                return recovery
     if _restart_pending:
         _restart_pending=false;finish("renderer_restart")
     var cycle := floori(float(now)/CYCLE_MS)

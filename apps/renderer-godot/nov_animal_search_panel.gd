@@ -94,9 +94,17 @@ func _accept(raw: String, kind: String) -> bool:
         if typeof(selected) != TYPE_DICTIONARY:
             return false
         if bool(data.active):
+            var contact_search:bool=selected.get("arm")=="contact_search"
+            if contact_search:
+                if selected.get("phase")!="contact_search" or selected.get("source")!="last_eye_observation_hypothesis" or selected.get("contains_prediction")!=true or selected.get("capture")!=false or selected.get("world_write_authority")!=false or not _integer(selected.get("revision")) or not _integer(selected.get("seed_observed_ms")) or not _integer(selected.get("started_ms")) or selected.seed_observed_ms>selected.started_ms:return false
+                if typeof(selected.get("entity_id"))!=TYPE_STRING or not str(selected.entity_id).begins_with(world_id+":rabbit:") or typeof(selected.get("approach_id"))!=TYPE_STRING or not str(selected.approach_id).begins_with(world_id+":animal-approach:") or selected.get("id")!=selected.approach_id+":contact-search":return false
+                var seed=selected.get("last_observed_point")
+                if typeof(seed)!=TYPE_ARRAY or seed.size()!=3:return false
+                for coordinate in seed:
+                    if typeof(coordinate) not in [TYPE_INT,TYPE_FLOAT] or not is_finite(float(coordinate)) or absf(float(coordinate))>100000:return false
             var visible_approach: bool=selected.get("arm")=="visible"
             if visible_approach and (selected.get("source")!="local_physics_eye_sensor" or selected.get("contains_prediction")!=true or selected.get("phase")!="approach" or not _integer(selected.get("revision")) or typeof(selected.get("entity_id"))!=TYPE_STRING or not str(selected.entity_id).begins_with(world_id+":rabbit:")):return false
-            if selected.get("arm") not in ["memory","last_seen","visible"] or selected.get("phase") not in ["approach","scan"] or typeof(selected.get("id")) != TYPE_STRING or not str(selected.id).begins_with(world_id+(":animal-approach:" if visible_approach else ":animal-search:")) or not _integer(selected.get("started_ms")) or not _integer(selected.get("deadline_ms")) or selected.started_ms>data.logical_time_ms or selected.deadline_ms<=selected.started_ms or selected.deadline_ms>selected.started_ms+(20000 if visible_approach else 45000):
+            if selected.get("arm") not in ["memory","last_seen","visible","contact_search"] or selected.get("phase") not in (["contact_search"] if contact_search else ["approach","scan"]) or typeof(selected.get("id")) != TYPE_STRING or not str(selected.id).begins_with(world_id+(":animal-approach:" if visible_approach or contact_search else ":animal-search:")) or not _integer(selected.get("started_ms")) or not _integer(selected.get("deadline_ms")) or selected.started_ms>data.logical_time_ms or selected.deadline_ms<=selected.started_ms or selected.deadline_ms>selected.started_ms+(5000 if contact_search else (20000 if visible_approach else 45000)):
                 return false
             if not _integer(selected.get("scan_started_ms")) or typeof(selected.get("base_heading")) not in [TYPE_INT,TYPE_FLOAT] or not is_finite(float(selected.base_heading)):
                 return false
@@ -151,6 +159,7 @@ func lines(now: float = -1.0) -> String:
     var search_fresh := _fresh(_search,now)
     var first := "Animais: %d lembrados" % int(_memory.stored) if memory_fresh else "Animais: aguardando memória"
     var approach := intent(now)
+    if approach.get("arm")=="contact_search":return first+"\nBusca: voltando ao último ponto observado"
     if approach.get("arm")=="visible":return first+"\nBusca: aproximando-se de coelho avistado"
     if not search_fresh:
         return first+"\nBusca: aguardando dados do servidor"

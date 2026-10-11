@@ -32,7 +32,7 @@ func begin(outcome:Dictionary,current:Vector3,now:int,resolve:Callable)->bool:
     var goal:Vector3=resolved.get("position",Vector3(INF,INF,INF))
     if not bool(resolved.get("allowed",false)) or not goal.is_finite() or goal.distance_to(requested)>2.0 or Vector2(goal.x-current.x,goal.z-current.z).length()>MAX_DISTANCE_M:return false
     _eyes._world=world
-    _active={"phase":"contact_search","source":"last_eye_observation_hypothesis","entity_id":entity,"world_id":world,"approach_id":id,
+    _active={"id":id+":contact-search","arm":"contact_search","revision":0,"heading":0.0,"base_heading":0.0,"scan_started_ms":0,"phase":"contact_search","source":"last_eye_observation_hypothesis","entity_id":entity,"world_id":world,"approach_id":id,
         "started_ms":now,"deadline_ms":now+MAX_MS,"wall_started":Time.get_ticks_msec(),"seed_observed_ms":seen.stamp,
         "last_observed_point":[point.x,point.y,point.z],"goal":[goal.x,goal.y,goal.z],"contains_prediction":true,"capture":false,"world_write_authority":false}
     if not journal.reserve(_active):
@@ -62,3 +62,12 @@ func choose(current:Vector3,world:String,now:int)->Dictionary:
     var selection:=_active.duplicate(true)
     selection["distance_m"]=_distance
     return selection
+
+func cancel(now:int)->void:
+    if not _active.is_empty():_finish("invalid_context",maxi(now,_last_ms))
+func status()->Dictionary:
+    return {"enabled":true,"active":not _active.is_empty(),"storage_ready":journal.ready,
+        "persistent":not journal.path.is_empty(),"intent":_active.duplicate(true),"result":(journal.records.back().duplicate(true) if result.is_empty() and not journal.records.is_empty() else result.duplicate(true)),
+        "attempt_budget_ms":MAX_MS,"distance_budget_m":MAX_DISTANCE_M,
+        "cycle_attempt_limit":4,"cycle_ms":300000,"recorded_attempts":journal.records.size(),
+        "capture":false,"learning_eligible":false,"world_write_authority":false}
