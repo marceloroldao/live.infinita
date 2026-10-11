@@ -1,0 +1,27 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+WORLD_MAP_PERCEPTUAL_VEGETATION region= trees=10 undergrowth=84 env=
+WORLD_MAP_TILE_READY cell=9:14 biome=forest features=trail decor=1
+WORLD_MAP_DECOR_CULL tree=145 rock=110 plant=82 margin=12
+WORLD_MAP_TILE_READY cell=10:14 biome=forest features=trail decor=3
+WORLD_MAP_TILE_READY cell=11:14 biome=forest features=trail decor=1
+WORLD_MAP_TILE_READY cell=9:15 biome=forest features=trail decor=3
+WORLD_MAP_TILE_READY cell=10:15 biome=forest features=trail,landmark_shelter decor=6
+WORLD_MAP_TILE_READY cell=11:15 biome=forest features=trail decor=3
+WORLD_MAP_TILE_READY cell=9:16 biome=forest features=trail decor=1
+WORLD_MAP_TILE_READY cell=10:16 biome=forest features=trail decor=3
+WORLD_MAP_TILE_READY cell=11:16 biome=forest features=trail decor=1
+WORLD_MAP_PREVIEW_READY grid=32x32 m=2048 tiles=9 decor=22
+WORLD_MAP_PERCEPTUAL_VEGETATION region= trees=10 undergrowth=84 env=
+WORLD_MAP_TILE_READY cell=9:14 biome=forest features=trail decor=1
+WORLD_MAP_DECOR_CULL tree=145 rock=110 plant=82 margin=12
+WORLD_MAP_TILE_READY cell=10:14 biome=forest features=trail decor=3
+WORLD_MAP_TILE_READY cell=11:14 biome=forest features=trail decor=1
+WORLD_MAP_TILE_READY cell=9:15 biome=forest features=trail decor=3
+WORLD_MAP_TILE_READY cell=10:15 biome=forest features=trail,landmark_shelter decor=6
+WORLD_MAP_TILE_READY cell=11:15 biome=forest features=trail decor=3
+WORLD_MAP_TILE_READY cell=9:16 biome=forest features=trail decor=1
+WORLD_MAP_TILE_READY cell=10:16 biome=forest features=trail decor=3
+WORLD_MAP_TILE_READY cell=11:16 biome=forest features=trail decor=1
+WORLD_MAP_PREVIEW_READY grid=32x32 m=2048 tiles=9 decor=22
+008FS_GRAVITY checks=33 failures=0

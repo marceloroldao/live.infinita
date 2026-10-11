@@ -9,6 +9,8 @@ var _experience = preload("res://nov_navigation_experience.gd").new()
 var _traversability: RefCounted
 var route_goal_id := ""
 var inertial_enabled := false
+var gravity_enabled := false
+var _ground_response = preload("res://nov_ground_response.gd").new()
 var _locomotion = preload("res://nov_locomotion_response.gd").new()
 var _journey = preload("res://nov_navigation_journey.gd").new(_experience.working_memory)
 var _pattern_collector = preload("res://nov_navigation_pattern_collector.gd").new(_journey)
@@ -51,6 +53,7 @@ func create_body(parent: Node3D, _material: Material) -> CharacterBody3D:
 func snap_body(body: CharacterBody3D, ground_position: Vector3) -> void:
     body.position = ground_position + Vector3(0, BODY_CENTER_Y, 0)
     body.velocity = Vector3.ZERO
+    _ground_response.reset()
 
 func advance(
     current: Vector3,
@@ -62,6 +65,9 @@ func advance(
     auto_route: bool = true,
     speed_mps: float = SPEED_MPS
 ) -> Dictionary:
+    _traversability.max_up_step_m = _ground_response.MAX_UP_STEP_M if gravity_enabled else _traversability.MAX_STEP_M
+    if gravity_enabled and _ground_response.airborne:
+        return advance_gravity(current,delta,body)
     _pattern_collector.poll(Time.get_unix_time_from_system())
     if _experience.working_memory.enabled and Time.get_ticks_msec() >= _working_memory_log_at:
         _working_memory_log_at = Time.get_ticks_msec() + 30000
@@ -111,6 +117,10 @@ func advance(
     policy["working_memory_session"] = _experience.working_memory.session
     policy["working_memory_key"] = _experience.working_memory_key
     policy["working_memory_changed_choice"] = _experience.working_memory_changed_choice
+    if gravity_enabled and bool(policy.get("allowed",false)) and float(policy.get("position",current).y)-current.y>_ground_response.MAX_UP_STEP_M:
+        policy["allowed"]=false
+        policy["position"]=current
+        policy["reason"]="step_too_high"
     if not bool(policy.get("allowed", false)):
         if auto_route and not manual:
             _experience.blocked()
@@ -122,18 +132,30 @@ func advance(
         return policy
 
     var target: Vector3 = policy.get("position", current)
-    snap_body(body, current)
+    body.position = current+Vector3(0,BODY_CENTER_Y,0)
+    body.velocity = Vector3.ZERO
     var displacement := Vector3(target.x - current.x, 0, target.z - current.z)
     # Swept motion uses the requested dt even in presentation smoke calls.
     body.move_and_collide(displacement)
     policy["executed_motion"] = true
 
     var resolved: Vector3 = _traversability.ground_position(body.position.x, body.position.z)
-    body.position.y = resolved.y + BODY_CENTER_Y
+    var vertical:Dictionary={}
+    if gravity_enabled:
+        var horizontal_m:=Vector2(resolved.x-current.x,resolved.z-current.z).length()
+        var follow_slope:=horizontal_m>0.001 and absf(resolved.y-current.y)/horizontal_m<=0.7
+        vertical=_apply_vertical(Vector3(resolved.x,current.y,resolved.z),resolved.y,delta,body,follow_slope)
+        resolved=vertical.position
+        policy["grounded"]=vertical.grounded
+        policy["vertical_speed_mps"]=vertical.vertical_speed_mps
+        policy["gravity_enabled"]=true
+        if not vertical.grounded:_locomotion.stop()
+    else:
+        body.position.y = resolved.y + BODY_CENTER_Y
     var collisions := 1 if Vector2(resolved.x - target.x, resolved.z - target.z).length() > 0.02 else 0
     if inertial_enabled:
-        _locomotion.executed(Vector2(resolved.x-current.x,resolved.z-current.z),delta,collisions>0)
-        body.velocity = Vector3(_locomotion.velocity.x,0,_locomotion.velocity.y)
+        _locomotion.executed(Vector2(resolved.x-current.x,resolved.z-current.z),delta,collisions>0 or (gravity_enabled and _ground_response.airborne))
+        body.velocity = Vector3(_locomotion.velocity.x,_ground_response.vertical_speed if gravity_enabled else 0.0,_locomotion.velocity.y)
         policy["physical_speed_mps"] = _locomotion.velocity.length()
         policy["inertial_motion"] = true
     policy["position"] = resolved
@@ -146,7 +168,8 @@ func advance(
         elif _experience.active and Vector2(resolved.x, resolved.z).distance_to(_experience.pending) < 0.03:
             _experience.arrived(Vector2(route_target.x, route_target.z))
     policy["reached"] = (
-        auto_route
+        (not gravity_enabled or not _ground_response.airborne)
+        and auto_route
         and not manual
         and Vector2(resolved.x, resolved.z).distance_to(Vector2(route_target.x, route_target.z)) < 0.1
     )
@@ -279,3 +302,29 @@ func approach_context(current: Vector3, observed: Vector3, logical_ms: int) -> D
     pose.origin=current+Vector3(0,BODY_CENTER_Y,0)
     return {"profile":"capsule044-height18-sweep4-native-contour-v1","sweep_m":4.0,
         "blocked_ahead":body.test_move(pose,direction.normalized()*4.0),"sample_logical_ms":logical_ms}
+
+func _apply_vertical(current:Vector3,ground:float,dt:float,body:CharacterBody3D,follow_surface:bool=false)->Dictionary:
+    var next:Dictionary=_ground_response.advance(current.y,ground,dt,follow_surface)
+    body.position=current+Vector3(0,BODY_CENTER_Y,0)
+    var collision=body.move_and_collide(Vector3(0,float(next.height)-current.y,0))
+    var actual:=body.position-Vector3(0,BODY_CENTER_Y,0)
+    if collision!=null:
+        _ground_response.reset()
+    body.velocity.y=_ground_response.vertical_speed
+    return {"position":actual,"grounded":not _ground_response.airborne,"vertical_speed_mps":_ground_response.vertical_speed,"collisions":1 if collision!=null else 0}
+
+func advance_gravity(current:Vector3,dt:float,body:CharacterBody3D)->Dictionary:
+    _locomotion.stop()
+    var ground:Vector3=_traversability.ground_position(current.x,current.z)
+    var result:Dictionary=_apply_vertical(current,ground.y,dt,body)
+    result["allowed"]=true
+    result["gravity_enabled"]=true
+    result["executed_motion"]=true
+    result["surface"]="terrain" if result.grounded else "airborne"
+    result["reason"]=""
+    result["reached"]=false
+    result["decision_source"]="local_physics_gravity"
+    if _episodes.enabled:
+        _journey.motion_state="walking" if result.grounded else "falling"
+        _journey.save_status()
+    return result

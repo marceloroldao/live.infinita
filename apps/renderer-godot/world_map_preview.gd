@@ -176,6 +176,7 @@ func _ready() -> void:
     _cognitive_terrain = CognitiveTerrain.new(self)
     _local_motion = LocalMotion.new(Callable(_features, "walk_height"), _layout.half_m, Callable(_cognitive_terrain, "surface_at"))
     _local_motion.inertial_enabled = OS.get_environment("LIVE_INFINITA_NOV_INERTIAL_MOTION")=="1" or bool(ProjectSettings.get_setting("live_infinita/nov_inertial_motion",false))
+    _local_motion.gravity_enabled = OS.get_environment("LIVE_INFINITA_NOV_GRAVITY")=="1" or bool(ProjectSettings.get_setting("live_infinita/nov_gravity",false))
     if _live_feed != null and _live_feed.has_signal("navigation_context_received"):
         _live_feed.navigation_context_received.connect(Callable(_local_motion._episodes, "set_context"))
         _live_feed.navigation_context_received.connect(Callable(_local_motion._experience.working_memory, "set_context"))
@@ -943,6 +944,14 @@ func _advance_live_walk(delta: float) -> void:
     _local_motion._experience.working_memory.enabled = _local_motion._episodes.enabled and not _local_motion._experience.working_memory.world_id.is_empty()
     _local_motion._pattern_collector.set_enabled(_local_motion._episodes.enabled)
     var dt := clampf(delta, 0.0, 0.1)
+    if _local_motion.gravity_enabled and _local_motion._ground_response.airborne:
+        var before_fall:=_position
+        var fall:Dictionary=_local_motion.advance_gravity(_position,dt,_walker)
+        _position=fall.position
+        _live_walk_velocity=Vector2.ZERO
+        _follow_camera(false,dt)
+        _animate_nov_movement(before_fall,dt)
+        return
     var world := str(_local_motion._episodes.context.get("world_id", ""))
     var logical_ms := floori(_day_cycle._logical_ms+_day_cycle._elapsed*1000.0)
     _animal_search_selection = {}

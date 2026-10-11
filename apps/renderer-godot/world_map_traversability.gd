@@ -12,6 +12,7 @@ const CAPSULE_RADIUS := 0.44
 const CAPSULE_HEIGHT := 1.8
 const MAX_COLLISION_HITS := 8
 
+var max_up_step_m := MAX_STEP_M
 var _walk_height: Callable
 var _half_m := 512.0
 var _dynamic_surface: Callable
@@ -90,7 +91,7 @@ func validate_step(current: Vector3, candidate: Vector3, space_state: PhysicsDir
         var classification := surface(probe)
         if not bool(classification.get("walkable", false)) and not _water_egress_allowed(previous_surface,classification):
             return {"allowed": false, "position": current, "reason": classification.get("reason", "blocked"), "surface": classification.get("surface", "terrain")}
-        if absf(probe.y - current.y) > MAX_STEP_M:
+        if probe.y-current.y>max_up_step_m or current.y-probe.y>MAX_STEP_M:
             return {"allowed": false, "position": current, "reason": "step_too_high", "surface": classification.get("surface", "terrain"), "collisions": 0}
         previous_surface = classification
     if space_state != null and length_m > 0.001:
@@ -117,7 +118,7 @@ func validate_step(current: Vector3, candidate: Vector3, space_state: PhysicsDir
         }
 
     var step_height := absf(target.y - current.y)
-    if step_height > MAX_STEP_M:
+    if target.y-current.y>max_up_step_m or current.y-target.y>MAX_STEP_M:
         return {
             "allowed": false,
             "position": current,
