@@ -177,6 +177,7 @@ func _ready() -> void:
     _local_motion = LocalMotion.new(Callable(_features, "walk_height"), _layout.half_m, Callable(_cognitive_terrain, "surface_at"))
     _local_motion.inertial_enabled = OS.get_environment("LIVE_INFINITA_NOV_INERTIAL_MOTION")=="1" or bool(ProjectSettings.get_setting("live_infinita/nov_inertial_motion",false))
     _local_motion.gravity_enabled = OS.get_environment("LIVE_INFINITA_NOV_GRAVITY")=="1" or bool(ProjectSettings.get_setting("live_infinita/nov_gravity",false))
+    _local_motion.terrain_response_enabled = OS.get_environment("LIVE_INFINITA_NOV_TERRAIN_RESPONSE")=="1" or bool(ProjectSettings.get_setting("live_infinita/nov_terrain_response",false))
     if _live_feed != null and _live_feed.has_signal("navigation_context_received"):
         _live_feed.navigation_context_received.connect(Callable(_local_motion._episodes, "set_context"))
         _live_feed.navigation_context_received.connect(Callable(_local_motion._experience.working_memory, "set_context"))

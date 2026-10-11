@@ -10,6 +10,8 @@ var _traversability: RefCounted
 var route_goal_id := ""
 var inertial_enabled := false
 var gravity_enabled := false
+var terrain_response_enabled := false
+var _terrain_response = preload("res://nov_terrain_response.gd").new()
 var _ground_response = preload("res://nov_ground_response.gd").new()
 var _locomotion = preload("res://nov_locomotion_response.gd").new()
 var _journey = preload("res://nov_navigation_journey.gd").new(_experience.working_memory)
@@ -95,8 +97,24 @@ func advance(
         candidate.x = flat.x
         candidate.z = flat.y
 
+    var terrain:Dictionary={}
+    var effective_speed:=speed_mps
+    if terrain_response_enabled:
+        terrain=_terrain_response.sample(current,Vector2(candidate.x-current.x,candidate.z-current.z),Callable(_traversability,"ground_position"))
+        terrain["base_speed_mps"]=speed_mps
+        effective_speed=speed_mps*float(terrain.speed_factor)
+        terrain["speed_limit_mps"]=effective_speed
+        if not terrain.sample_valid:
+            body.velocity=Vector3.ZERO
+            _locomotion.stop()
+            terrain["actual_speed_mps"]=0.0
+            _journey.terrain_motion=terrain
+            _journey.save_status()
+            return {"allowed":false,"position":current,"reason":"terrain_sample_unavailable","collisions":0,"reached":false,"terrain_motion":terrain}
+        if not inertial_enabled:
+            candidate=current+(candidate-current)*float(terrain.speed_factor)
     if inertial_enabled:
-        var move: Vector2 = _locomotion.displacement(Vector2(current.x,current.z),Vector2(candidate.x,candidate.z),Vector2(route_target.x,route_target.z) if auto_route and not manual else Vector2(current.x,current.z)+input_axis*100.0,speed_mps,delta)
+        var move: Vector2 = _locomotion.displacement(Vector2(current.x,current.z),Vector2(candidate.x,candidate.z),Vector2(route_target.x,route_target.z) if auto_route and not manual else Vector2(current.x,current.z)+input_axis*100.0,effective_speed,delta)
         candidate = current+Vector3(move.x,0,move.y)
     var policy: Dictionary = _traversability.validate_step(current, candidate, space_state)
     if _episodes.enabled:
@@ -106,8 +124,12 @@ func advance(
         else:
             _journey.motion_state = "water_egress" if bool(policy.get("environment_escape",false)) else "walking"
             _journey.last_reason = ""
-        # Publish a heartbeat even when perception rejects every candidate.
-        _journey.save_status()
+        # Terrain diagnostics are published after physical execution.
+        if not terrain_response_enabled:_journey.save_status()
+    if terrain_response_enabled:
+        terrain["actual_speed_mps"]=0.0
+        policy["terrain_motion"]=terrain
+        _journey.terrain_motion=terrain
     policy["route_goal_id"] = route_goal_id
     if _experience._route_search.running and not manual:
         policy["reason"] = "route_search_in_progress"
@@ -122,6 +144,7 @@ func advance(
         policy["position"]=current
         policy["reason"]="step_too_high"
     if not bool(policy.get("allowed", false)):
+        if terrain_response_enabled:_journey.save_status()
         if auto_route and not manual:
             _experience.blocked()
         policy["reached"] = false
@@ -158,6 +181,10 @@ func advance(
         body.velocity = Vector3(_locomotion.velocity.x,_ground_response.vertical_speed if gravity_enabled else 0.0,_locomotion.velocity.y)
         policy["physical_speed_mps"] = _locomotion.velocity.length()
         policy["inertial_motion"] = true
+    if terrain_response_enabled:
+        terrain["actual_speed_mps"]=Vector2(resolved.x-current.x,resolved.z-current.z).length()/maxf(delta,0.001)
+        _journey.terrain_motion=terrain
+        _journey.save_status()
     policy["position"] = resolved
     policy["collisions"] = collisions
     if collisions > 0:
@@ -324,6 +351,9 @@ func advance_gravity(current:Vector3,dt:float,body:CharacterBody3D)->Dictionary:
     result["reason"]=""
     result["reached"]=false
     result["decision_source"]="local_physics_gravity"
+    if terrain_response_enabled:
+        _journey.terrain_motion={"enabled":true,"phase":"airborne" if not result.grounded else "landed","actual_speed_mps":0.0,"speed_limit_mps":0.0,"source":"local_physics_gravity","world_write_authority":false}
+        result["terrain_motion"]=_journey.terrain_motion
     if _episodes.enabled:
         _journey.motion_state="walking" if result.grounded else "falling"
         _journey.save_status()

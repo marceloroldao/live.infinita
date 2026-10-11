@@ -1,0 +1,18 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+008FU_SLOPE fps=15 flat=14.4800262451172 uphill=10.7047424316406 downhill=12.7942276000977 speeds=[7.99999189376831, 5.71426343917847, 6.95651960372925]
+008FU_SLOPE fps=30 flat=14.3531951904297 uphill=10.6140975952148 downhill=12.6822814941406 speeds=[8.00010681152344, 5.71426343917847, 6.95663404464722]
+008FU_SLOPE fps=60 flat=14.2871780395508 uphill=10.568489074707 downhill=12.6258010864258 speeds=[7.99987745285034, 5.71426343917847, 6.95663404464722]
+WORLD_MAP_PERCEPTUAL_VEGETATION region= trees=10 undergrowth=84 env=
+WORLD_MAP_TILE_READY cell=9:14 biome=forest features=trail decor=1
+WORLD_MAP_DECOR_CULL tree=145 rock=110 plant=82 margin=12
+WORLD_MAP_TILE_READY cell=10:14 biome=forest features=trail decor=3
+WORLD_MAP_TILE_READY cell=11:14 biome=forest features=trail decor=1
+WORLD_MAP_TILE_READY cell=9:15 biome=forest features=trail decor=3
+WORLD_MAP_TILE_READY cell=10:15 biome=forest features=trail,landmark_shelter decor=6
+WORLD_MAP_TILE_READY cell=11:15 biome=forest features=trail decor=3
+WORLD_MAP_TILE_READY cell=9:16 biome=forest features=trail decor=1
+WORLD_MAP_TILE_READY cell=10:16 biome=forest features=trail decor=3
+WORLD_MAP_TILE_READY cell=11:16 biome=forest features=trail decor=1
+WORLD_MAP_PREVIEW_READY grid=32x32 m=2048 tiles=9 decor=22
+008FU_TERRAIN checks=22 failures=0

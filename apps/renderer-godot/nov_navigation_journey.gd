@@ -23,6 +23,7 @@ var causal_ram_steps := 0
 var causal_memoria_steps := 0
 var last_result := "aguardando caminhada"
 var motion_state := "idle"
+var terrain_motion:Dictionary={}
 var last_reason := ""
 # Session telemetry only; never supplied to route learning or World State.
 const ATTEMPT_HISTORY_LIMIT := 32
@@ -122,6 +123,7 @@ func status() -> Dictionary:
     return {"recoveries":recoveries,"arrivals":arrivals,"interruptions":interruptions,"blocked_attempts":blocked_attempts,
         "completed_steps":completed_steps,"causal_ram_steps":causal_ram_steps,"causal_memoria_steps":causal_memoria_steps,
         "distance_m":distance_m,"result":last_result,"active":not closed,"motion_state":motion_state,"last_reason":last_reason,
+        "terrain_motion":terrain_motion.duplicate(true),
         "patterns":pattern_status.call() if pattern_status.is_valid() else {},
         "active_attempt":_attempt_snapshot() if not closed else {},"recent_attempts":recent_attempts.duplicate(true)}
 
