@@ -175,6 +175,7 @@ func _ready() -> void:
     _live_visual = LiveVisual.new(self, _features, _map)
     _cognitive_terrain = CognitiveTerrain.new(self)
     _local_motion = LocalMotion.new(Callable(_features, "walk_height"), _layout.half_m, Callable(_cognitive_terrain, "surface_at"))
+    _local_motion.inertial_enabled = OS.get_environment("LIVE_INFINITA_NOV_INERTIAL_MOTION")=="1" or bool(ProjectSettings.get_setting("live_infinita/nov_inertial_motion",false))
     if _live_feed != null and _live_feed.has_signal("navigation_context_received"):
         _live_feed.navigation_context_received.connect(Callable(_local_motion._episodes, "set_context"))
         _live_feed.navigation_context_received.connect(Callable(_local_motion._experience.working_memory, "set_context"))
@@ -987,6 +988,7 @@ func _advance_live_walk(delta: float) -> void:
             _attempt_stuck_recovery()
             return
         _live_walk_velocity = Vector2.ZERO
+        _local_motion._locomotion.stop()
         _follow_camera(false, dt)
         _animate_nov_movement(previous, dt)
         return
@@ -997,7 +999,7 @@ func _advance_live_walk(delta: float) -> void:
     var old_cell := Vector2i(_cell(_position.x), _cell(_position.z))
     var movement: Dictionary = _local_motion.advance(
         _position, Vector2.ZERO, committed_target, dt, _walker,
-        get_world_3d().direct_space_state, true, _live_walk_velocity.length()
+        get_world_3d().direct_space_state, true, LIVE_WALK_SPEED_MPS if _local_motion.inertial_enabled else _live_walk_velocity.length()
     )
     _animal_search_intent._approach.observe_movement(movement)
     _position = movement.get("position", _position)

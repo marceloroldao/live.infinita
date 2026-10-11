@@ -47,6 +47,12 @@ func run() -> void:
         water, Vector2(1, 0), stage._waypoint([9, 7]), 0.20, body,
         stage.get_world_3d().direct_space_state
     )
+    # With acceleration, contact may require several physical steps.
+    var water_current:Vector3=result.get("position",water)
+    for _i in range(30):
+        if not bool(result.get("allowed",true)):break
+        result=stage._local_motion.advance(water_current,Vector2.RIGHT,stage._waypoint([9,7]),.05,body,stage.get_world_3d().direct_space_state)
+        water_current=result.get("position",water_current)
     check(not bool(result.get("allowed", true)), "River outside bridge must be blocked")
     check(str(result.get("reason", "")) == "river_without_bridge", "River block reason")
 
@@ -72,6 +78,11 @@ func run() -> void:
         house, Vector2(1, 0), stage._waypoint([12, 9]), 0.20, body,
         stage.get_world_3d().direct_space_state
     )
+    var house_current:Vector3=result.get("position",house)
+    for _i in range(30):
+        if not bool(result.get("allowed",true)):break
+        result=stage._local_motion.advance(house_current,Vector2.RIGHT,stage._waypoint([12,9]),.05,body,stage.get_world_3d().direct_space_state)
+        house_current=result.get("position",house_current)
     check(not bool(result.get("allowed", true)), "House collider must block candidate")
     check(str(result.get("reason", "")) == "static_obstacle", "House block reason")
 

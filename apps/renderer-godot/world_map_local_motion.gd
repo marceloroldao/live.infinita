@@ -8,6 +8,8 @@ const BODY_CENTER_Y := 0.9
 var _experience = preload("res://nov_navigation_experience.gd").new()
 var _traversability: RefCounted
 var route_goal_id := ""
+var inertial_enabled := false
+var _locomotion = preload("res://nov_locomotion_response.gd").new()
 var _journey = preload("res://nov_navigation_journey.gd").new(_experience.working_memory)
 var _pattern_collector = preload("res://nov_navigation_pattern_collector.gd").new(_journey)
 var _inference_log_at := 0
@@ -67,6 +69,7 @@ func advance(
     if auto_route and input_axis.length_squared()<=0.01 and _episodes.enabled and not route_goal_id.is_empty():
         commit_journey(route_goal_id,route_target,current)
         if _journey.closed:
+            _locomotion.stop()
             return {"allowed":true,"position":current,"reached":true,"collisions":0,"surface":"terrain"}
     var candidate := current
     var manual := input_axis.length_squared() > 0.01
@@ -86,6 +89,9 @@ func advance(
         candidate.x = flat.x
         candidate.z = flat.y
 
+    if inertial_enabled:
+        var move: Vector2 = _locomotion.displacement(Vector2(current.x,current.z),Vector2(candidate.x,candidate.z),Vector2(route_target.x,route_target.z) if auto_route and not manual else Vector2(current.x,current.z)+input_axis*100.0,speed_mps,delta)
+        candidate = current+Vector3(move.x,0,move.y)
     var policy: Dictionary = _traversability.validate_step(current, candidate, space_state)
     if _episodes.enabled:
         if not bool(policy.get("allowed",false)) or _experience.last_decision_source=="perception-no-passage":
@@ -110,6 +116,7 @@ func advance(
             _experience.blocked()
         policy["reached"] = false
         body.velocity = Vector3.ZERO
+        _locomotion.stop()
         if auto_route and not manual:
             _episodes.observe(_experience.decision_serial, current, route_target, _experience.pending, _experience.decision_evidence, policy)
         return policy
@@ -124,6 +131,11 @@ func advance(
     var resolved: Vector3 = _traversability.ground_position(body.position.x, body.position.z)
     body.position.y = resolved.y + BODY_CENTER_Y
     var collisions := 1 if Vector2(resolved.x - target.x, resolved.z - target.z).length() > 0.02 else 0
+    if inertial_enabled:
+        _locomotion.executed(Vector2(resolved.x-current.x,resolved.z-current.z),delta,collisions>0)
+        body.velocity = Vector3(_locomotion.velocity.x,0,_locomotion.velocity.y)
+        policy["physical_speed_mps"] = _locomotion.velocity.length()
+        policy["inertial_motion"] = true
     policy["position"] = resolved
     policy["collisions"] = collisions
     if collisions > 0:
@@ -249,6 +261,7 @@ func recover_to(current: Vector3, destination: Vector3, body: CharacterBody3D, s
     _experience.reset_route_plan()
     _experience.visits.clear()
     route_goal_id = ""
+    _locomotion.stop()
     snap_body(body,destination)
     print("NOV_STUCK_RECOVERY from=(%.1f,%.1f) to=(%.1f,%.1f)" % [current.x,current.z,destination.x,destination.z])
     return true
