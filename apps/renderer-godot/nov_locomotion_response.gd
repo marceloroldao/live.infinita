@@ -14,7 +14,12 @@ func displacement(current: Vector2, waypoint: Vector2, goal: Vector2, speed: flo
     if offset.length() < 0.001 or remaining < 0.04:
         stop(); return Vector2.ZERO
     var limit := minf(maxf(speed,0.0),sqrt(2.0*BRAKE_MPS2*remaining))
-    var desired := offset.normalized()*limit
+    var direction := offset.normalized()
+    # Brake before sharp turns. Seeking a nearby waypoint at full speed
+    # otherwise makes the capsule orbit it under bounded acceleration.
+    if velocity.length()>0.3:
+        limit *= maxf(0.0,velocity.normalized().dot(direction))
+    var desired := direction*limit
     var braking := desired.length()<velocity.length() or velocity.dot(desired)<0.0
     velocity = velocity.move_toward(desired,(BRAKE_MPS2 if braking else ACCEL_MPS2)*dt)
     var move := velocity*dt

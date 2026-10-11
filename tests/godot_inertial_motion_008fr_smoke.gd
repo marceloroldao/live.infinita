@@ -12,6 +12,7 @@ func run()->void:
     var d:Vector2=r.displacement(p,Vector2(100,0),Vector2(100,0),8,.05)
     check(is_equal_approx(d.length(),.045),"Acceleration starts at 18 m/s2")
     p+=d
+    r.velocity=Vector2(4,0)
     var previous:Vector2=r.velocity
     r.displacement(p,Vector2(0,100),Vector2(0,100),8,.05)
     check(r.velocity.distance_to(previous)<=1.2+0.001 and r.velocity.x>0,"Corner retains momentum with bounded acceleration")

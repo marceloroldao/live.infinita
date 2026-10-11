@@ -1,0 +1,12 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+008FT_TURN fps=15 target=(0.0, 1.0) rotation_deg=136.847630216905 remaining_m=0.0
+008FT_TURN fps=15 target=(-1.0, 0.0) rotation_deg=180.0 remaining_m=0.0
+008FT_TURN fps=15 target=(0.0, -1.0) rotation_deg=136.847630216905 remaining_m=0.0
+008FT_TURN fps=30 target=(0.0, 1.0) rotation_deg=140.194440763943 remaining_m=0.00204963213764
+008FT_TURN fps=30 target=(-1.0, 0.0) rotation_deg=180.0 remaining_m=0.0
+008FT_TURN fps=30 target=(0.0, -1.0) rotation_deg=140.194440763943 remaining_m=0.00204963213764
+008FT_TURN fps=60 target=(0.0, 1.0) rotation_deg=141.70985898904 remaining_m=0.00000001490116
+008FT_TURN fps=60 target=(-1.0, 0.0) rotation_deg=180.0 remaining_m=0.0
+008FT_TURN fps=60 target=(0.0, -1.0) rotation_deg=141.70985898904 remaining_m=0.00000001490116
+008FT_TURN_BRAKING checks=20 failures=0

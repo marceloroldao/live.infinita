@@ -1,0 +1,42 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+ERROR: Sharp turn does not produce a full orbit at 15 FPS
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (/home/etbra/live.infinita/tests/godot_turn_braking_008ft_smoke.gd:6)
+       [1] run (/home/etbra/live.infinita/tests/godot_turn_braking_008ft_smoke.gd:30)
+008FT_TURN fps=15 target=(0.0, 1.0) rotation_deg=690.554723731266 remaining_m=0.02224657312036
+008FT_TURN fps=15 target=(-1.0, 0.0) rotation_deg=180.0 remaining_m=0.0
+ERROR: Sharp turn does not produce a full orbit at 15 FPS
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (/home/etbra/live.infinita/tests/godot_turn_braking_008ft_smoke.gd:6)
+       [1] run (/home/etbra/live.infinita/tests/godot_turn_braking_008ft_smoke.gd:30)
+008FT_TURN fps=15 target=(0.0, -1.0) rotation_deg=690.554723731266 remaining_m=0.02224657312036
+ERROR: Sharp turn does not produce a full orbit at 30 FPS
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (/home/etbra/live.infinita/tests/godot_turn_braking_008ft_smoke.gd:6)
+       [1] run (/home/etbra/live.infinita/tests/godot_turn_braking_008ft_smoke.gd:30)
+008FT_TURN fps=30 target=(0.0, 1.0) rotation_deg=792.00115662266 remaining_m=0.02921334095299
+008FT_TURN fps=30 target=(-1.0, 0.0) rotation_deg=180.0 remaining_m=0.0
+ERROR: Sharp turn does not produce a full orbit at 30 FPS
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (/home/etbra/live.infinita/tests/godot_turn_braking_008ft_smoke.gd:6)
+       [1] run (/home/etbra/live.infinita/tests/godot_turn_braking_008ft_smoke.gd:30)
+008FT_TURN fps=30 target=(0.0, -1.0) rotation_deg=792.00115662266 remaining_m=0.02921334095299
+ERROR: Sharp turn does not produce a full orbit at 60 FPS
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (/home/etbra/live.infinita/tests/godot_turn_braking_008ft_smoke.gd:6)
+       [1] run (/home/etbra/live.infinita/tests/godot_turn_braking_008ft_smoke.gd:30)
+008FT_TURN fps=60 target=(0.0, 1.0) rotation_deg=581.782824552823 remaining_m=0.02325211837888
+008FT_TURN fps=60 target=(-1.0, 0.0) rotation_deg=180.0 remaining_m=0.0
+ERROR: Sharp turn does not produce a full orbit at 60 FPS
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] check (/home/etbra/live.infinita/tests/godot_turn_braking_008ft_smoke.gd:6)
+       [1] run (/home/etbra/live.infinita/tests/godot_turn_braking_008ft_smoke.gd:30)
+008FT_TURN fps=60 target=(0.0, -1.0) rotation_deg=581.782824552823 remaining_m=0.02325211837888
+008FT_TURN_BRAKING checks=18 failures=6
