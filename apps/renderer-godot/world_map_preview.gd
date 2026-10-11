@@ -938,7 +938,8 @@ func _animate_nov_movement(previous: Vector3, delta: float) -> void:
     var heading := atan2(velocity.x, velocity.z) - _walker.rotation.y
     if Vector2(velocity.x, velocity.z).length() < 0.08:
         heading = float(visual.get("_visual_heading"))
-    visual.call("set_motion_velocity", velocity, heading)
+    var grounded:bool=not _local_motion.gravity_enabled or not _local_motion._ground_response.airborne
+    visual.call("set_motion_velocity", velocity, heading, grounded)
 
 func _advance_live_walk(delta: float) -> void:
     _local_motion._episodes.enabled = not OS.has_feature("web") and not OS.get_cmdline_user_args().has("--offline-tour")
