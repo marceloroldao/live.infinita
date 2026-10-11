@@ -1,0 +1,28 @@
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+008FW_FLIGHT fps=15 speed=3.60008215904236 air_distance=1.44003295898438 frames=6
+008FW_FLIGHT fps=30 speed=3.59939551353455 air_distance=1.55973815917969 frames=13
+008FW_FLIGHT fps=60 speed=3.2981870174408 air_distance=1.42921447753906 frames=26
+WORLD_MAP_PERCEPTUAL_VEGETATION region= trees=10 undergrowth=84 env=
+WORLD_MAP_TILE_READY cell=9:14 biome=forest features=trail decor=1
+WORLD_MAP_DECOR_CULL tree=145 rock=110 plant=82 margin=12
+WORLD_MAP_TILE_READY cell=10:14 biome=forest features=trail decor=3
+WORLD_MAP_TILE_READY cell=11:14 biome=forest features=trail decor=1
+WORLD_MAP_TILE_READY cell=9:15 biome=forest features=trail decor=3
+WORLD_MAP_TILE_READY cell=10:15 biome=forest features=trail,landmark_shelter decor=6
+WORLD_MAP_TILE_READY cell=11:15 biome=forest features=trail decor=3
+WORLD_MAP_TILE_READY cell=9:16 biome=forest features=trail decor=1
+WORLD_MAP_TILE_READY cell=10:16 biome=forest features=trail decor=3
+WORLD_MAP_TILE_READY cell=11:16 biome=forest features=trail decor=1
+WORLD_MAP_PREVIEW_READY grid=32x32 m=2048 tiles=9 decor=22
+WORLD_MAP_TILE_READY cell=13:14 biome=clearing features=trail decor=1
+WORLD_MAP_TILE_READY cell=14:14 biome=clearing features=trail decor=3
+WORLD_MAP_TILE_READY cell=15:14 biome=forest features=trail decor=1
+WORLD_MAP_TILE_READY cell=13:15 biome=clearing features=trail,landmark_old_grove decor=3
+WORLD_MAP_TILE_READY cell=14:15 biome=clearing features=trail decor=6
+WORLD_MAP_TILE_READY cell=15:15 biome=forest features=trail decor=3
+WORLD_MAP_TILE_READY cell=13:16 biome=clearing features=trail decor=1
+WORLD_MAP_TILE_READY cell=14:16 biome=clearing features=trail decor=3
+WORLD_MAP_TILE_READY cell=15:16 biome=forest features=trail decor=1
+WORLD_MAP_HERO_NATURE region= trees=0 mid_trees=0 understory=0 rocks=0 tree_asset=CommonTree_1.gltf mid_asset=CommonTree_5.gltf under_asset=Bush_Common.gltf
+008FW_AIRBORNE_MOMENTUM checks=50 failures=0

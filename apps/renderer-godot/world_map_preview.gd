@@ -176,6 +176,7 @@ func _ready() -> void:
     _cognitive_terrain = CognitiveTerrain.new(self)
     _local_motion = LocalMotion.new(Callable(_features, "walk_height"), _layout.half_m, Callable(_cognitive_terrain, "surface_at"))
     _local_motion.inertial_enabled = OS.get_environment("LIVE_INFINITA_NOV_INERTIAL_MOTION")=="1" or bool(ProjectSettings.get_setting("live_infinita/nov_inertial_motion",false))
+    _local_motion.airborne_momentum_enabled = OS.get_environment("LIVE_INFINITA_NOV_AIRBORNE_MOMENTUM")=="1" or bool(ProjectSettings.get_setting("live_infinita/nov_airborne_momentum",false))
     _local_motion.gravity_enabled = OS.get_environment("LIVE_INFINITA_NOV_GRAVITY")=="1" or bool(ProjectSettings.get_setting("live_infinita/nov_gravity",false))
     _local_motion.terrain_response_enabled = OS.get_environment("LIVE_INFINITA_NOV_TERRAIN_RESPONSE")=="1" or bool(ProjectSettings.get_setting("live_infinita/nov_terrain_response",false))
     if _live_feed != null and _live_feed.has_signal("navigation_context_received"):
@@ -948,9 +949,22 @@ func _advance_live_walk(delta: float) -> void:
     var dt := clampf(delta, 0.0, 0.1)
     if _local_motion.gravity_enabled and _local_motion._ground_response.airborne:
         var before_fall:=_position
+        var fall_cell:=Vector2i(_cell(_position.x),_cell(_position.z))
         var fall:Dictionary=_local_motion.advance_gravity(_position,dt,_walker)
         _position=fall.position
+        _animal_search_intent._approach.observe_movement(fall)
+        _local_surface=str(fall.get("surface","airborne"))
+        _local_block_reason=str(fall.get("reason",""))
         _live_walk_velocity=Vector2.ZERO
+        if Vector2(_position.x-before_fall.x,_position.z-before_fall.z).length_squared()>0.000001:
+            _update_camera_heading(before_fall,_position,dt)
+            if fall_cell!=Vector2i(_cell(_position.x),_cell(_position.z)):
+                _sync_tiles()
+                _rebuild_horizon_ground()
+                _rebuild_distant_vegetation()
+                _rebuild_midground_vegetation()
+            _perceptual_vegetation.rebuild(_position,_camera_forward,_live_region_id)
+            _perceptual_assets.rebuild(_position,_camera_forward,_live_region_id)
         _follow_camera(false,dt)
         _animate_nov_movement(before_fall,dt)
         return

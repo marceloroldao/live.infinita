@@ -10,6 +10,8 @@ var _traversability: RefCounted
 var route_goal_id := ""
 var inertial_enabled := false
 var gravity_enabled := false
+var airborne_momentum_enabled := false
+var _air_velocity := Vector2.ZERO
 var terrain_response_enabled := false
 var _terrain_response = preload("res://nov_terrain_response.gd").new()
 var _ground_response = preload("res://nov_ground_response.gd").new()
@@ -56,6 +58,7 @@ func snap_body(body: CharacterBody3D, ground_position: Vector3) -> void:
     body.position = ground_position + Vector3(0, BODY_CENTER_Y, 0)
     body.velocity = Vector3.ZERO
     _ground_response.reset()
+    _air_velocity=Vector2.ZERO
 
 func advance(
     current: Vector3,
@@ -176,11 +179,21 @@ func advance(
     else:
         body.position.y = resolved.y + BODY_CENTER_Y
     var collisions := 1 if Vector2(resolved.x - target.x, resolved.z - target.z).length() > 0.02 else 0
+    if airborne_momentum_enabled and gravity_enabled:
+        _air_velocity=Vector2.ZERO
+        if _ground_response.airborne and collisions==0 and is_finite(delta) and delta>0.0:
+            # Carry only the displacement actually executed on the departure frame.
+            _air_velocity=(Vector2(resolved.x-current.x,resolved.z-current.z)/minf(delta,0.1)).limit_length(clampf(speed_mps,0.0,SPEED_MPS))
+        policy["airborne_momentum"]=true
     if inertial_enabled:
         _locomotion.executed(Vector2(resolved.x-current.x,resolved.z-current.z),delta,collisions>0 or (gravity_enabled and _ground_response.airborne))
         body.velocity = Vector3(_locomotion.velocity.x,_ground_response.vertical_speed if gravity_enabled else 0.0,_locomotion.velocity.y)
         policy["physical_speed_mps"] = _locomotion.velocity.length()
         policy["inertial_motion"] = true
+    if airborne_momentum_enabled and gravity_enabled and _ground_response.airborne:
+        body.velocity.x=_air_velocity.x
+        body.velocity.z=_air_velocity.y
+        policy["physical_speed_mps"]=_air_velocity.length()
     if terrain_response_enabled:
         terrain["actual_speed_mps"]=Vector2(resolved.x-current.x,resolved.z-current.z).length()/maxf(delta,0.001)
         _journey.terrain_motion=terrain
@@ -342,19 +355,67 @@ func _apply_vertical(current:Vector3,ground:float,dt:float,body:CharacterBody3D,
 
 func advance_gravity(current:Vector3,dt:float,body:CharacterBody3D)->Dictionary:
     _locomotion.stop()
-    var ground:Vector3=_traversability.ground_position(current.x,current.z)
-    var result:Dictionary=_apply_vertical(current,ground.y,dt,body)
+    _traversability.max_up_step_m=_ground_response.MAX_UP_STEP_M
+    var horizontal:=current
+    var horizontal_collisions:=0
+    var blocked_reason:=""
+    var step_dt:=minf(dt,0.1) if is_finite(dt) and dt>0.0 else 0.0
+    if not airborne_momentum_enabled or not _air_velocity.is_finite():_air_velocity=Vector2.ZERO
+    if airborne_momentum_enabled and _ground_response.airborne and step_dt>0.0 and _air_velocity.length_squared()>0.000001:
+        var candidate:=current+Vector3(_air_velocity.x,0,_air_velocity.y)*step_dt
+        var valid_geometry:=current.is_finite() and candidate.is_finite()
+        var samples:=maxi(1,ceili(current.distance_to(candidate)/0.2))
+        for i in range(samples+1):
+            var point:=current.lerp(candidate,float(i)/samples)
+            if not _traversability.ground_position(point.x,point.z).is_finite():
+                valid_geometry=false
+                break
+        var policy:Dictionary={"allowed":false,"reason":"terrain_sample_unavailable","collisions":0}
+        if valid_geometry:policy=_traversability.validate_step(current,candidate,body.get_world_3d().direct_space_state)
+        if not bool(policy.get("allowed",false)):
+            blocked_reason=str(policy.get("reason","airborne_horizontal_blocked"))
+            horizontal_collisions=int(policy.get("collisions",0))
+            _air_velocity=Vector2.ZERO
+        else:
+            body.position=current+Vector3(0,BODY_CENTER_Y,0)
+            var collision=body.move_and_collide(candidate-current)
+            horizontal=body.position-Vector3(0,BODY_CENTER_Y,0)
+            if collision!=null:
+                horizontal_collisions=1
+                blocked_reason="static_obstacle"
+                _air_velocity=Vector2.ZERO
+    var ground:Vector3=_traversability.ground_position(horizontal.x,horizontal.z)
+    var result:Dictionary=_apply_vertical(horizontal,ground.y,dt,body)
+    var executed:=Vector2(result.position.x-current.x,result.position.z-current.z)
+    var actual_speed:=executed.length()/step_dt if step_dt>0.0 else 0.0
+    var carry_speed:=_air_velocity.length() if airborne_momentum_enabled else 0.0
+    if airborne_momentum_enabled:
+        body.velocity.x=_air_velocity.x
+        body.velocity.z=_air_velocity.y
+        if result.grounded:
+            # Continue from surviving momentum; the next supported frame can brake or steer.
+            if inertial_enabled:_locomotion.velocity=_air_velocity
+            _air_velocity=Vector2.ZERO
+    else:
+        body.velocity.x=0.0
+        body.velocity.z=0.0
     result["allowed"]=true
     result["gravity_enabled"]=true
     result["executed_motion"]=true
     result["surface"]="terrain" if result.grounded else "airborne"
-    result["reason"]=""
+    result["reason"]=blocked_reason
+    result["horizontal_blocked"]=not blocked_reason.is_empty()
+    result["collisions"]=int(result.collisions)+horizontal_collisions
     result["reached"]=false
     result["decision_source"]="local_physics_gravity"
+    result["physical_speed_mps"]=actual_speed
+    result["airborne_momentum"]=airborne_momentum_enabled
     if terrain_response_enabled:
-        _journey.terrain_motion={"enabled":true,"phase":"airborne" if not result.grounded else "landed","actual_speed_mps":0.0,"speed_limit_mps":0.0,"source":"local_physics_gravity","world_write_authority":false}
+        _journey.terrain_motion={"enabled":true,"phase":"airborne" if not result.grounded else "landed","actual_speed_mps":actual_speed,"speed_limit_mps":carry_speed,"source":"local_physics_gravity","world_write_authority":false}
         result["terrain_motion"]=_journey.terrain_motion
     if _episodes.enabled:
         _journey.motion_state="walking" if result.grounded else "falling"
+        _journey.last_reason=blocked_reason
+        if airborne_momentum_enabled:_journey.movement(current,result.position)
         _journey.save_status()
     return result
